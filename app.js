@@ -27,6 +27,17 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
   function round(n) { return Math.round(n / P.roundTo) * P.roundTo; }
+  function monthlyOf(annual) { return Math.round(Number(annual) / 12); }
+  /* Lead with monthly equivalent; asterisk explains how it is billed. */
+  function billLine(kind, annualTotal) {
+    if (kind === "quarterly") return "*Billed quarterly (" + money(annualTotal / 4) + " every 3 months)";
+    if (kind === "annualDiscount") return "*Billed annually (" + money(annualTotal) + "/yr, 10% off)";
+    return "*Billed annually (" + money(annualTotal) + "/yr)";
+  }
+  function priceBlock(annualTotal, kind) {
+    return '<div class="price">' + money(monthlyOf(annualTotal)) + '<small>/Month</small></div>' +
+      '<p class="price-bill">' + billLine(kind, annualTotal) + '</p>';
+  }
 
   /* ---------- Pricing ---------- */
   function num(id, def) { var v = S.answers[id]; return (v === undefined || v === "unsure") ? def : Number(v); }
@@ -197,8 +208,7 @@
         var t = P.tiers[k], amt = p[k], sel = S.tier === k;
         return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
           '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
-          '<p class="small muted" style="margin:0">Estimated Price</p><div class="price">' + money(amt) + '<small> / year</small></div>' +
-          '<p class="small muted">About ' + money(amt / 12) + ' a month' + (k === "platinum" ? ", or " + money(amt / 4) + " a quarter" : ", paid annually") + '</p>' +
+          '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") +
           '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
           '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
       }).join("") + '</div>' +
@@ -209,10 +219,10 @@
 
   function totals() {
     var amt = price()[S.tier];
-    if (S.tier === "gold") return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt, year: amt, note: "Gold is paid in full for the year, up front." };
-    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: amt / 4, year: amt, note: "4 payments of " + money(amt / 4) + "." };
+    if (S.tier === "gold") return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt, year: amt, billKind: "annual", note: "Gold is paid in full for the year, up front." };
+    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: amt / 4, year: amt, billKind: "quarterly", note: "4 payments of " + money(amt / 4) + "." };
     var disc = round(amt * (1 - P.platinumAnnualDiscount));
-    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc, year: disc, save: amt - disc, note: "You save " + money(amt - disc) + " (draft discount)." };
+    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc, year: disc, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " (draft discount)." };
   }
 
   var AGREEMENT = '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation</h4><p>Cancellation and refund terms are to be determined.</p>';
@@ -227,9 +237,16 @@
   function signup() {
     var p = price(), su = S.signup || {}, t = totals();
     var addr = su.address || (S.answers.zip && S.answers.zip !== "unsure" ? S.answers.zip : "");
+    var platDisc = round(p.platinum * (1 - P.platinumAnnualDiscount));
     var planHtml = S.tier === "gold"
-      ? '<div class="card"><strong>Gold: Paid in Full Annually, Up Front.</strong><p class="small muted" style="margin:0">' + money(p.gold) + ' a year.</p></div>'
-      : '<div class="opts">' + [["quarterly", "4 Quarterly Payments", money(p.platinum / 4) + " each, " + money(p.platinum) + " a year"], ["annual", "Pay Annually, Up Front, Save 10% (Draft)", money(round(p.platinum * (1 - P.platinumAnnualDiscount))) + " a year"]].map(function (o) { var s = S.plan === o[0]; return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong><br><span class="small muted">' + o[2] + '</span></span></button>'; }).join("") + '</div>';
+      ? '<div class="card"><strong>Gold: Paid in Full Annually, Up Front.</strong>' + priceBlock(p.gold, "annual") + '</div>'
+      : '<div class="opts">' + [
+          ["quarterly", "4 Quarterly Payments", p.platinum, "quarterly"],
+          ["annual", "Pay Annually, Up Front, Save 10% (Draft)", platDisc, "annualDiscount"]
+        ].map(function (o) {
+          var s = S.plan === o[0];
+          return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + '</span></button>';
+        }).join("") + '</div>';
     return backBtn() + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
       '<form id="suF" novalidate class="stack">' +
       '<div class="card"><h3>Your Details</h3><label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
@@ -241,9 +258,10 @@
       '<div class="card"><h3>Liability Waiver</h3><div class="legal" tabindex="0">' + WAIVER + '</div>' +
       '<label class="checkrow"><input type="checkbox" id="waive"><span>I have read and accept the Liability Waiver.</span></label><p class="fl">Signature</p>' + sigBlock("waiverSig") + '</div>' +
       '<div class="card"><h3>Payment Plan</h3>' + planHtml +
-      '<div class="summary" style="margin-top:1rem"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
+      '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
+      '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
       (t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
-      '<div><span>Total per Year (Estimated)</span><span>' + money(t.year) + '</span></div><div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
+      '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
       '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: Payment Processing Coming Soon (Secure Checkout via Stripe)</div><p class="small muted">No card is charged or stored. These fields are disabled.</p>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
       '<div class="err" id="suErr" role="alert"></div><button class="btn btn-primary btn-big mw-hover" type="submit">Complete Sign Up (Demo)</button></form>';
@@ -253,7 +271,9 @@
     var su = S.signup || {}, t = su.totals || totals();
     var next = S.visit ? "We'll confirm your free tech visit by text and email. The tech will log your equipment and confirm your final price." : S.photosComplete ? "We'll review your photos and confirm your final price within one business day." : "We'll reach out to collect a few photos or schedule a quick tech visit to confirm your final price.";
     return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">You\'re In</p><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
-      '<div class="card"><h3>Summary</h3><div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div><div><span>Per Year (Estimated)</span><span>' + money(t.year) + '</span></div><div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
+      '<div class="card"><h3>Summary</h3>' +
+      '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
+      '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div><div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>&#128276; Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
       '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
@@ -390,7 +410,7 @@
   document.getElementById("shareBtn").addEventListener("click", function () {
     var url = location.origin + location.pathname, p = price(), msg = document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
-    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " My estimate: Gold " + money(p.gold) + "/yr, Platinum " + money(p.platinum) + "/yr.";
+    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " My estimate: Gold " + money(monthlyOf(p.gold)) + "/Month (billed annually " + money(p.gold) + "/yr), Platinum " + money(monthlyOf(p.platinum)) + "/Month (from " + money(p.platinum) + "/yr).";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + " " + url).then(done, fallbackCopy); else fallbackCopy();
