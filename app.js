@@ -21,8 +21,8 @@
   ];
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
-  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; return o; } } catch (e) {} return fresh(); }
+  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
@@ -56,6 +56,11 @@
     if (a.note) return mo + "/Month · " + range + " <span>(draft)</span>";
     return mo + "/Month · " + range + unit + " <span>(draft)</span>";
   }
+  function applyFloor(raw) {
+    var minA = P.minAnnual || 1188;
+    var r = round(raw);
+    return { raw: r, amt: Math.max(r, minA), floored: r < minA };
+  }
   function buildLines() {
     var a = S.answers, d = P.unsureDefaults;
     var sqft = num("sqft", d.sqft), f = num("furnaces", d.furnaces), ac = num("acs", d.acs), wh = num("waterHeaters", d.waterHeaters);
@@ -63,19 +68,31 @@
     var stories = num("stories", d.stories), extras = Array.isArray(a.extras) ? a.extras : [];
     var tankless = whType === "tankless" ? wh : whType === "both" ? Math.max(1, Math.floor(wh / 2)) : 0;
     var tank = wh - tankless;
+    var silverV = (P.silverVisit || P.seasonalVisit).base + (P.silverVisit || P.seasonalVisit).perSqft * sqft;
     var seasonal = P.seasonalVisit.base + P.seasonalVisit.perSqft * sqft;
     var checkIn = P.checkInVisit.base + P.checkInVisit.perSqft * sqft;
     var gutters = P.gutters2Cleanings[Math.min(3, stories)] || 540;
     var uSqft = isUnsure("sqft"), uF = isUnsure("furnaces"), uAc = isUnsure("acs");
     var uWh = isUnsure("waterHeaters") || isUnsure("whType") || a.whType === "unsure";
     var uSt = isUnsure("stories"), uEx = isUnsure("extras");
+    function hvacLines() {
+      var L = [];
+      if (f > 0) L.push({ label: f + " Furnace" + (f > 1 ? "s" : "") + " × " + money(P.perUnit.furnace), amt: f * P.perUnit.furnace, est: uF });
+      if (ac > 0) L.push({ label: ac + " AC Unit" + (ac > 1 ? "s" : "") + " × " + money(P.perUnit.ac), amt: ac * P.perUnit.ac, est: uAc });
+      if (tank > 0) L.push({ label: tank + " Tank Water Heater" + (tank > 1 ? "s" : "") + " × " + money(P.perUnit.tankWaterHeater), amt: tank * P.perUnit.tankWaterHeater, est: uWh });
+      if (tankless > 0) L.push({ label: tankless + " Tankless Water Heater" + (tankless > 1 ? "s" : "") + " × " + money(P.perUnit.tanklessWaterHeater), amt: tankless * P.perUnit.tanklessWaterHeater, est: uWh });
+      L.push({ label: "Dryer vent cleaning", amt: P.dryerVent, est: false });
+      return L;
+    }
+    var linesSilver = [];
+    linesSilver.push({ label: "2 seasonal visits × " + money(silverV) + " each", amt: 2 * silverV, est: uSqft });
+    linesSilver = linesSilver.concat(hvacLines());
+    linesSilver.push({ label: "Filter changes during visits", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
+    var silverRaw = linesSilver.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesGold = [];
     linesGold.push({ label: "4 seasonal visits × " + money(seasonal) + " each", amt: 4 * seasonal, est: uSqft });
-    if (f > 0) linesGold.push({ label: f + " Furnace" + (f > 1 ? "s" : "") + " × " + money(P.perUnit.furnace), amt: f * P.perUnit.furnace, est: uF });
-    if (ac > 0) linesGold.push({ label: ac + " AC Unit" + (ac > 1 ? "s" : "") + " × " + money(P.perUnit.ac), amt: ac * P.perUnit.ac, est: uAc });
-    if (tank > 0) linesGold.push({ label: tank + " Tank Water Heater" + (tank > 1 ? "s" : "") + " × " + money(P.perUnit.tankWaterHeater), amt: tank * P.perUnit.tankWaterHeater, est: uWh });
-    if (tankless > 0) linesGold.push({ label: tankless + " Tankless Water Heater" + (tankless > 1 ? "s" : "") + " × " + money(P.perUnit.tanklessWaterHeater), amt: tankless * P.perUnit.tanklessWaterHeater, est: uWh });
-    linesGold.push({ label: "Dryer vent cleaning", amt: P.dryerVent, est: false });
+    linesGold = linesGold.concat(hvacLines());
     linesGold.push({ label: "Gutter cleaning, spring and fall (" + stories + "-story home)", amt: gutters, est: uSt });
     extras.forEach(function (k) {
       var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
@@ -90,22 +107,49 @@
       linesPlat.push({ label: e.label, amt: e.platinumOnly, est: uEx });
     });
     var platRaw = linesPlat.reduce(function (s, L) { return s + L.amt; }, 0);
+    var sF = applyFloor(silverRaw), gF = applyFloor(goldRaw), pF = applyFloor(platRaw);
     return {
-      sqft: sqft, seasonal: seasonal, checkIn: checkIn,
-      goldRaw: goldRaw, platinumRaw: platRaw,
-      gold: round(goldRaw), platinum: round(platRaw),
-      goldLines: linesGold, platinumLines: linesPlat
+      sqft: sqft, seasonal: seasonal, checkIn: checkIn, silverV: silverV,
+      silverRaw: sF.raw, goldRaw: gF.raw, platinumRaw: pF.raw,
+      silver: sF.amt, gold: gF.amt, platinum: pF.amt,
+      silverFloored: sF.floored, goldFloored: gF.floored, platinumFloored: pF.floored,
+      silverLines: linesSilver, goldLines: linesGold, platinumLines: linesPlat
     };
   }
   function price(answers) {
     var b = buildLines();
-    return { gold: b.gold, platinum: b.platinum, sqft: b.sqft };
+    return { silver: b.silver, gold: b.gold, platinum: b.platinum, sqft: b.sqft,
+      silverFloored: b.silverFloored, goldFloored: b.goldFloored, platinumFloored: b.platinumFloored };
+  }
+  function tierLines(b, tier) {
+    if (tier === "silver") return b.silverLines;
+    if (tier === "platinum") return b.platinumLines;
+    return b.goldLines;
+  }
+  function tierAmt(b, tier) {
+    if (tier === "silver") return b.silver;
+    if (tier === "platinum") return b.platinum;
+    return b.gold;
+  }
+  function tierFloored(b, tier) {
+    if (tier === "silver") return b.silverFloored;
+    if (tier === "platinum") return b.platinumFloored;
+    return b.goldFloored;
+  }
+  function tierRaw(b, tier) {
+    if (tier === "silver") return b.silverRaw;
+    if (tier === "platinum") return b.platinumRaw;
+    return b.goldRaw;
   }
   function breakdown(tier) {
-    var b = buildLines(), mem = tier === "platinum" ? b.platinum : b.gold;
-    var lines = (tier === "platinum" ? b.platinumLines : b.goldLines).map(function (L) {
-      return { label: L.label, amt: L.amt, est: L.est, kind: "item" };
+    var b = buildLines(), mem = tierAmt(b, tier);
+    var lines = tierLines(b, tier).filter(function (L) { return L.amt > 0 || L.note; }).map(function (L) {
+      return { label: L.label + (L.note ? " (" + L.note + ")" : ""), amt: L.amt, est: L.est, kind: "item" };
     });
+    var floorLine = null;
+    if (tierFloored(b, tier)) {
+      floorLine = { label: "Membership minimum ($99/Month)", amt: mem - tierRaw(b, tier), kind: "floor" };
+    }
     var add = selectedAddons();
     add.forEach(function (x) {
       lines.push({ label: "Add-on: " + x.label, amt: x.annual, est: false, kind: "addon" });
@@ -114,14 +158,14 @@
     var membership = mem;
     var discLine = null, year;
     if (tier === "platinum" && S.plan === "annual") {
-      var disc = round(mem * (1 - P.platinumAnnualDiscount));
+      var disc = Math.max(round(mem * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
       discLine = { label: "Annual pay-in-full discount (10%, draft)", amt: -(mem - disc), kind: "discount" };
       membership = disc;
       year = disc + addSum;
     } else {
       year = mem + addSum;
     }
-    return { tier: tier, lines: lines, discLine: discLine, membership: membership, addons: addSum, year: year, monthly: monthlyOf(year) };
+    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, membership: membership, addons: addSum, year: year, monthly: monthlyOf(year), floored: tierFloored(b, tier) };
   }
   window.SmartUpkeepPrice = price; // exposed for testing
 
@@ -140,6 +184,8 @@
     else if (s === "photos") html = photos();
     else if (s === "visit") html = visitForm();
     else if (s === "quote") html = quote();
+    else if (s === "alacarte") html = alacarte();
+    else if (s === "alacarteConfirm") html = alacarteConfirm();
     else if (s === "signup") html = signup();
     else if (s === "confirm") html = confirm();
     else { S.screen = "home"; html = home(); }
@@ -161,23 +207,24 @@
       '<p class="eyebrow">Home Maintenance Membership &middot; Metro Detroit</p><div class="rule" aria-hidden="true"></div>' +
       '<h1>Your Home, Taken Care Of.</h1>' +
       '<p class="lead">Smart Upkeep is one membership for the maintenance your home needs all year: HVAC tune-ups, water heater service, gutters, dryer vents, safety checks and more, done by our licensed techs on a set schedule.</p>' +
+      '<p class="start-at">Membership Starting at $99/Month</p>' +
       '<button class="link watch mw-hover" data-act="watch" type="button">&#9654; Watch Video</button>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button>' +
       '</section>' +
       '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l) { return '<div class="line card mw-hover"><span class="ico" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
       '<h3 class="grp">Learn More</h3>' +
-      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li></ul><p class="small muted">Gold is 4 visits a year. Platinum is 12 visits a year and adds roof inspection, generator service, winter checks and more.</p>') +
+      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
       acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
       acc("Recall Tracking", '<p>When we log your equipment (brand, model and serial from the labels), we watch for manufacturer and safety recalls on it. If something you own is recalled, we tell you and help you get it fixed. It is included in every membership.</p>') +
       acc("Service Area: Metro Detroit", '<p>We serve Wayne, Oakland and Macomb counties and nearby, including Detroit, Bloomfield Hills, Birmingham, Troy, Farmington Hills, Novi, West Bloomfield, Rochester, Grosse Pointe, Northville and Plymouth. Not sure if you are covered? Enter your ZIP in step 1.</p>') +
       acc("FAQ", '<h4>Do I need to send photos?</h4><p>No. You get an estimate without them. Photos let us give a final price.</p><h4>What if my home is different than I described?</h4><p>Your price is an estimate. If what we find on site does not match, we adjust the price before your first billed visit.</p><h4>Are your techs licensed and insured?</h4><p>Yes. Specialist work like HVAC is done by licensed pros.</p><h4>Can I cancel?</h4><p>Membership terms are being finalized. See the draft agreement at sign up.</p>') +
-      '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>';
+      '<p class="start-at">Membership Starting at $99/Month</p><div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>';
   }
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
   function overview() {
     return backBtn() + '<p class="eyebrow">How It Works</p><h1>Four Quick Steps</h1>' +
-      '<ol class="steps">' + [["Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."], ["Take Some Photos (Optional)", "Equipment labels give you a final price."], ["Review Your Membership", "Gold or Platinum, with your estimated price."], ["Sign Up", "Sign the agreement and pick a payment plan."]]
+      '<ol class="steps">' + [["Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."], ["Take Some Photos (Optional)", "Equipment labels give you a final price."], ["Review Your Membership", "Silver, Gold or Platinum, with your estimated price."], ["Sign Up", "Sign the agreement and pick a payment plan."]]
         .map(function (s, i) { return '<li class="card mw-hover"><span class="num">' + (i + 1) + '</span><div><h3 style="margin:0">' + s[0] + '</h3><p class="muted small" style="margin:0">' + s[1] + '</p></div></li>'; }).join("") + '</ol>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Continue to Step 1</button>';
   }
@@ -222,7 +269,7 @@
       '<p>We have enough to build your estimate now. Want a final price? Add a few photos of your equipment labels.</p>' +
       '<div class="stack"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Estimate Now</button>' +
       '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button></div>' +
-      '<p class="small muted" style="margin-top:1rem">Estimates start around ' + money(p.gold) + ' a year for Gold.</p>';
+      '<p class="small muted" style="margin-top:1rem">Memberships start at $99/Month. Silver from ' + money(p.silver) + '/yr for your home.</p>';
   }
 
   function photoCards() {
@@ -262,22 +309,23 @@
   }
 
   function quote() {
-    var p = price(), a = S.answers, d = P.unsureDefaults;
+    var p = price(), a = S.answers;
     var final = S.photosComplete && S.visit && S.visit.completed;
     var status = S.visit ? '<p class="small"><strong>Free tech visit requested</strong> for ' + esc(S.visit.date) + ' (' + esc((S.visit.windows || []).join(", ")) + '). We will confirm by text.</p>' : S.photosComplete ? '<p class="small"><strong>Photos added.</strong> We will review them and confirm your final price.</p>' : "";
     var unsure = Object.keys(a).filter(function (k) { return a[k] === "unsure"; }).length;
     var addSum = addonsAnnual();
-    var tiersHtml = '<div class="tiers">' + ["gold", "platinum"].map(function (k) {
+    var tiersHtml = '<div class="tiers">' + ["silver", "gold", "platinum"].map(function (k) {
       var t = P.tiers[k], amt = p[k], sel = S.tier === k;
+      var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our $99/Month membership minimum</p>' : "";
       return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
-        '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") +
+        '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") + floorNote +
         '<button type="button" class="detail-link" data-detail="' + k + '">*See Detailed Pricing</button>' +
         '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
     var addonsHtml = '<div class="addons"><h3>Add-Ons (À La Carte)</h3>' +
-      '<p class="lead-sm">Optional services you can add to Gold or Platinum. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
+      '<p class="lead-sm">Optional services you can add to any membership. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
       '<div class="addon-list">' + (P.addons || []).map(function (ad) {
         var on = (S.addons || []).indexOf(ad.id) > -1;
         return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-addon="' + ad.id + '" aria-pressed="' + on + '">' +
@@ -292,11 +340,15 @@
       (addSum ? '<p class="small muted" style="margin:0">Includes ' + money(addSum) + '/yr in selected add-ons (draft).</p>' : '<p class="small muted" style="margin:0">Tap add-ons above to include them in your total.</p>') +
       (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Platinum can save 10% when you pay annually at sign-up (draft).</p>' : "") +
       '</div>';
-    // place running total after addons
+    var alacarteCta = '<div class="alacarte-cta card">' +
+      '<h3>Not Ready for a Membership?</h3>' +
+      '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Same skilled techs, one-time pricing.</p>' +
+      '<button class="btn btn-outline btn-big mw-hover" data-act="alacarte" type="button">Book Services A La Carte</button></div>';
     return backBtn() + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p><h1>Your Estimated Price</h1>' + status +
       (final ? "" : '<div class="notice"><strong>Your price is an estimate.</strong> It may change after we review your photos or complete a site visit. If photos don\'t match what we find on site, pricing will be adjusted.</div>') +
       (unsure ? '<p class="small muted" style="margin-top:.6rem">You answered Unsure ' + unsure + (unsure > 1 ? " times" : " time") + ', so we used a typical metro Detroit home for those.</p>' : "") +
-      tiersHtml + addonsHtml + runHtml +
+      '<p class="small muted">Memberships start at $99/Month. We do not offer subscriptions below that.</p>' +
+      tiersHtml + addonsHtml + runHtml + alacarteCta +
       '<p class="small muted">Photo policy: if the photos you send don\'t match what we find on site, pricing will be adjusted before your first billed visit. Prices are draft and assume metro Detroit.</p>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">Schedule a Free Tech Visit</button></div>' : "");
@@ -305,13 +357,16 @@
   function totals() {
     var amt = price()[S.tier], add = addonsAnnual();
     var addonIds = (S.addons || []).slice();
-    if (S.tier === "gold") return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "annual", note: "Gold is paid in full for the year, up front." };
+    if (S.tier === "silver" || S.tier === "gold") {
+      return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "annual",
+        note: (S.tier === "silver" ? "Silver" : "Gold") + " is paid in full for the year, up front." };
+    }
     if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "quarterly", note: "4 payments of " + money((amt + add) / 4) + "." };
-    var disc = round(amt * (1 - P.platinumAnnualDiscount));
+    var disc = Math.max(round(amt * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
     return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc + add, year: disc + add, membership: disc, addons: add, addonIds: addonIds, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
   }
 
-  var AGREEMENT = '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation</h4><p>Cancellation and refund terms are to be determined.</p>';
+  var AGREEMENT = '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount. No membership is priced below $99/Month.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation</h4><p>Cancellation and refund terms are to be determined.</p>';
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
   function sigBlock(id) {
@@ -320,13 +375,71 @@
       '<button type="button" class="link mw-hover" data-sigclear="1">Clear</button></div>';
   }
 
+  function selectedAlacarte() {
+    var ids = Array.isArray(S.alacarte) ? S.alacarte : [];
+    return (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+  }
+  function alacarteTotal() {
+    return selectedAlacarte().reduce(function (s, a) { return s + (a.annual || 0); }, 0);
+  }
+  function oncePriceLabel(a) {
+    var range = a.note ? a.note : (a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high));
+    var unit = a.unit === "season" ? "/season" : " one-time";
+    if (a.note) return money(a.annual) + " <span>(draft) · " + range + "</span>";
+    return money(a.annual) + unit + " <span>(draft) · " + range + "</span>";
+  }
+  function alacarte() {
+    var bk = S.alacarteBooking || {};
+    var list = selectedAlacarte();
+    var total = alacarteTotal();
+    var picks = '<div class="addon-list">' + (P.addons || []).map(function (ad) {
+      var on = (S.alacarte || []).indexOf(ad.id) > -1;
+      return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-alacarte="' + ad.id + '" aria-pressed="' + on + '">' +
+        '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
+        '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
+        '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
+        '<p class="addon-price">' + oncePriceLabel(ad) + '</p></span></button>';
+    }).join("") + '</div>';
+    return backBtn() + '<p class="eyebrow">A La Carte · No Membership</p><h1>Book Services A La Carte</h1>' +
+      '<p class="lead" style="font-size:1.05rem">Pick the one-off services you need. No subscription — just a booking request. Memberships start at $99/Month if you change your mind later.</p>' +
+      '<div class="addons"><h3>Choose Services</h3>' + picks + '</div>' +
+      '<div class="running card"><h3>One-Time Total (Draft)</h3>' +
+      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(x.annual) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Select at least one service above.</p>') +
+      '</div>' +
+      '<form id="acF" novalidate class="stack">' +
+      '<div class="card"><h3>Booking Request</h3>' +
+      '<label class="fl" for="acName">Full Name</label><input id="acName" type="text" autocomplete="name" value="' + esc(bk.name || "") + '">' +
+      '<div class="grid2"><div><label class="fl" for="acPhone">Phone</label><input id="acPhone" type="tel" autocomplete="tel" value="' + esc(bk.phone || "") + '"></div>' +
+      '<div><label class="fl" for="acEmail">Email</label><input id="acEmail" type="email" autocomplete="email" value="' + esc(bk.email || "") + '"></div></div>' +
+      '<label class="fl" for="acDates">Preferred Dates</label><textarea id="acDates" rows="3" placeholder="e.g. Week of Oct 20, or any Tuesday morning">' + esc(bk.dates || "") + '</textarea>' +
+      '<label class="fl" for="acNotes">Notes (Optional)</label><textarea id="acNotes" rows="2" placeholder="Gate code, pets, access notes…">' + esc(bk.notes || "") + '</textarea></div>' +
+      '<div class="err" id="acErr" role="alert"></div>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit">Submit Booking Request</button></form>' +
+      '<p class="small muted" style="margin-top:1rem">Prefer a membership? <button type="button" class="link mw-hover" data-act="toQuote">Back to Silver, Gold and Platinum</button></p>';
+  }
+  function alacarteConfirm() {
+    var bk = S.alacarteBooking || {}, list = (bk.services || []).map(function (id) {
+      return (P.addons || []).find(function (a) { return a.id === id; });
+    }).filter(Boolean);
+    var total = list.reduce(function (s, a) { return s + (a.annual || 0); }, 0);
+    return '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">Request Received</p><h1>Thanks' + (bk.name ? ", " + esc(bk.name.split(" ")[0]) : "") + '. We Got Your Booking Request.</h1>' +
+      '<div class="card"><h3>Summary</h3><div class="summary">' +
+      '<div><span>Type</span><span>A La Carte (No Membership)</span></div>' +
+      list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + money(x.annual) + '</span></div>'; }).join("") +
+      '<div><span>One-Time Total (Draft)</span><span>' + money(total) + '</span></div>' +
+      '<div><span>Preferred Dates</span><span>' + esc(bk.dates) + '</span></div>' +
+      '<div><span>Contact</span><span>' + esc(bk.phone) + ' · ' + esc(bk.email) + '</span></div></div></div>' +
+      '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>We will confirm availability by phone or email within one business day.</li><li>No card is charged in this prototype.</li><li>Want ongoing care instead? Memberships start at $99/Month.</li></ol></div>' +
+      '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See Memberships</button><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
+  }
+
   function signup() {
     var p = price(), su = S.signup || {}, t = totals();
     var addr = su.address || (S.answers.zip && S.answers.zip !== "unsure" ? S.answers.zip : "");
     var add = addonsAnnual();
-    var platDisc = round(p.platinum * (1 - P.platinumAnnualDiscount));
-    var planHtml = S.tier === "gold"
-      ? '<div class="card"><strong>Gold: Paid in Full Annually, Up Front.</strong>' + priceBlock(p.gold + add, "annual") + '</div>'
+    var platDisc = Math.max(round(p.platinum * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
+    var planHtml = (S.tier === "silver" || S.tier === "gold")
+      ? '<div class="card"><strong>' + P.tiers[S.tier].label + ': Paid in Full Annually, Up Front.</strong>' + priceBlock(p[S.tier] + add, "annual") + '</div>'
       : '<div class="opts">' + [
           ["quarterly", "4 Quarterly Payments", p.platinum + add, "quarterly"],
           ["annual", "Pay Annually, Up Front, Save 10% (Draft)", platDisc + add, "annualDiscount"]
@@ -406,6 +519,7 @@
         b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
       });
     }
+    if (s === "alacarte") bindAlacarte();
     if (s === "photos") app.querySelectorAll("[data-photo]").forEach(function (inp) {
       inp.addEventListener("change", function () {
         var id = inp.getAttribute("data-photo"); photoMem[id] = photoMem[id] || [];
@@ -424,7 +538,8 @@
     if (a === "photos") return go("photos");
     if (a === "visit") return go("visit");
     if (a === "toQuote") return go("quote");
-    if (a === "signup") { if (S.tier === "gold") S.plan = "annual"; return go("signup"); }
+    if (a === "signup") { if (S.tier === "silver" || S.tier === "gold") S.plan = "annual"; return go("signup"); }
+    if (a === "alacarte") return go("alacarte");
     if (a === "photosDone") { var c = photoCards(); S.photosComplete = c.every(function (x) { return (S.photos[x[0]] || 0) > 0; }); return go("quote"); }
     if (a === "restart") { S = fresh(); photoMem = {}; save(); render(); window.scrollTo(0, 0); }
   }
@@ -453,6 +568,40 @@
       S.answers[q.id] = "unsure"; if (q.type === "wh" && !S.answers.whType) S.answers.whType = "unsure";
       if (zip) zip.value = "";
       save(); if (q.type === "zip" || q.type === "multi" || q.type === "wh") render(); else go(i + 1 < Q.length ? "q" + (i + 1) : "choice");
+    });
+  }
+  function bindAlacarte() {
+    app.querySelectorAll("[data-alacarte]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.getAttribute("data-alacarte");
+        S.alacarte = Array.isArray(S.alacarte) ? S.alacarte.slice() : [];
+        var ix = S.alacarte.indexOf(id);
+        if (ix > -1) S.alacarte.splice(ix, 1); else S.alacarte.push(id);
+        save();
+        var y = window.scrollY; render(); window.scrollTo(0, y);
+      });
+    });
+    function keep() {
+      S.alacarteBooking = Object.assign({}, S.alacarteBooking, {
+        name: val("acName"), phone: val("acPhone"), email: val("acEmail"), dates: val("acDates"), notes: val("acNotes")
+      });
+    }
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+    ["acName","acPhone","acEmail","acDates","acNotes"].forEach(function (id) {
+      var el = document.getElementById(id); if (el) el.addEventListener("input", keep);
+    });
+    document.getElementById("acF").addEventListener("submit", function (e) {
+      e.preventDefault(); keep();
+      var b = S.alacarteBooking || {}, err = "";
+      if (!(S.alacarte && S.alacarte.length)) err = "Pick at least one service.";
+      else if (!b.name) err = "Enter your full name.";
+      else if (!/\d{3}.*\d{3}.*\d{4}/.test(b.phone || "")) err = "Enter a valid phone number.";
+      else if (!/^\S+@\S+\.\S+$/.test(b.email || "")) err = "Enter a valid email.";
+      else if (!(b.dates && b.dates.length > 2)) err = "Share your preferred dates.";
+      if (err) { document.getElementById("acErr").textContent = err; return; }
+      b.services = (S.alacarte || []).slice();
+      b.submittedAt = new Date().toISOString();
+      S.alacarteBooking = b; save(); go("alacarteConfirm");
     });
   }
   function bindVisit() {
@@ -527,8 +676,12 @@
   function openPriceDetail(tier) {
     var bd = breakdown(tier), t = P.tiers[tier];
     var rows = bd.lines.map(function (L) {
-      return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Estimated</span>' : "") + '</span><span>' + money(L.amt) + '</span></li>';
+      var right = L.amt === 0 ? "Included" : money(L.amt);
+      return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Estimated</span>' : "") + '</span><span>' + right + '</span></li>';
     }).join("");
+    if (bd.floorLine) {
+      rows += '<li class="sub"><span>' + esc(bd.floorLine.label) + '</span><span>+' + money(bd.floorLine.amt) + '</span></li>';
+    }
     if (bd.discLine) {
       rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
     }
@@ -560,6 +713,15 @@
     if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-9x16.jpg" : "assets/poster-16x9.jpg"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute";
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
+    var badge = document.getElementById("videoStartAt");
+    if (!badge) {
+      badge = document.createElement("p");
+      badge.id = "videoStartAt";
+      badge.className = "start-at video-start-at";
+      badge.textContent = "Membership Starting at $99/Month";
+      var actions = modal.querySelector(".modal-actions");
+      if (actions) actions.parentNode.insertBefore(badge, actions);
+    }
     modal.hidden = false; document.body.style.overflow = "hidden";
     try { vid.currentTime = 0; } catch (e) {}
     var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; vid.play().catch(function () {}); });
@@ -577,7 +739,7 @@
   document.getElementById("shareBtn").addEventListener("click", function () {
     var url = location.origin + location.pathname, p = price(), msg = document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
-    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " My estimate: Gold " + money(monthlyOf(p.gold)) + "/Month (billed annually " + money(p.gold) + "/yr), Platinum " + money(monthlyOf(p.platinum)) + "/Month (from " + money(p.platinum) + "/yr).";
+    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Silver " + money(monthlyOf(p.silver)) + "/Month, Gold " + money(monthlyOf(p.gold)) + "/Month, Platinum " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + " " + url).then(done, fallbackCopy); else fallbackCopy();
