@@ -378,7 +378,7 @@
     var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; vid.play().catch(function () {}); });
     document.getElementById("skipBtn").focus({ preventScroll: true });
   }
-  function closeVideo() { vid.pause(); modal.hidden = true; document.body.style.overflow = ""; try { localStorage.setItem(VKEY, "1"); } catch (e) {} }
+  function closeVideo() { vid.pause(); modal.hidden = true; document.body.style.overflow = ""; try { sessionStorage.setItem(VKEY, "1"); } catch (e) {} }
   document.getElementById("videoClose").addEventListener("click", closeVideo);
   document.getElementById("skipBtn").addEventListener("click", closeVideo);
   unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; if (vid.paused) vid.play().catch(function () {}); });
@@ -403,6 +403,6 @@
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); });
 
   render();
-  var dismissed = false; try { dismissed = localStorage.getItem(VKEY) === "1"; } catch (e) {}
+  var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
   if (!dismissed && S.screen === "home") openVideo(false);
 })();
