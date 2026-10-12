@@ -104,3 +104,5 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--mw-primary);outl
 @media(max-width:600px){.modal-inner{width:min(420px,100%)}.modal video{max-height:68vh}.modal-x{right:-4px}}
 .check-big{width:72px;height:72px;border-radius:50%;border:3px solid var(--mw-primary);display:grid;place-items:center;font-size:2.2rem;margin:.5rem 0 1rem}
 .hide{display:none!important}
+.modal-inner.portrait{width:min(460px,100%,calc(68vh * .5625 + 26px))}
+.modal-inner.portrait video{max-height:68vh}

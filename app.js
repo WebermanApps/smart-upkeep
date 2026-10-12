@@ -372,6 +372,7 @@
     var src = vSrc();
     if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-9x16.jpg" : "assets/poster-16x9.jpg"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute";
+    modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     modal.hidden = false; document.body.style.overflow = "hidden";
     try { vid.currentTime = 0; } catch (e) {}
     var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; vid.play().catch(function () {}); });
