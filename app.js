@@ -242,6 +242,48 @@
   }
 
   /* ---------- Screens ---------- */
+  var LARA_LOOKUP = "https://aca-prod.accela.com/MILARA/GeneralProperty/PropertyLookUp.aspx?searchtype=Contractor";
+  function sampleVisitCard() {
+    var tasks = [
+      { task: "Furnace Tune-Up", by: "Licensed Partner (Sample)", kind: "Mechanical Contractor · Active", verify: true },
+      { task: "Filter Change", by: "Smart Upkeep Tech (Sample)", kind: "Member Tech", verify: false },
+      { task: "Smoke and CO Checks", by: "Smart Upkeep Tech (Sample)", kind: "Member Tech", verify: false },
+      { task: "Water Heater Flush", by: "Licensed Partner (Sample)", kind: "Plumbing Contractor · Active", verify: true }
+    ];
+    return '<div class="card visit-preview" id="sampleVisit">' +
+      '<p class="eyebrow">Sample · Your Visit</p>' +
+      '<h3>Fall Visit Preview</h3>' +
+      '<p class="muted small">Each task lists who did the work. Licensed partner tasks link to Michigan LARA so you can tap to verify. Sample labels only — not a real contractor.</p>' +
+      '<ul class="visit-tasks">' + tasks.map(function (t) {
+        return '<li><div><strong>' + t.task + '</strong><span class="muted small">Done by: ' + t.by + '</span><span class="task-kind">' + t.kind + '</span></div>' +
+          (t.verify
+            ? '<a class="btn btn-outline verify-btn mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener">Tap to Verify License</a>'
+            : '<span class="done-badge">In-House</span>') +
+          '</li>';
+      }).join("") + '</ul></div>';
+  }
+  function vettingSection() {
+    return '<div class="card vetting" id="howWeVet">' +
+      '<h3>How We Vet Every Partner</h3>' +
+      '<p class="muted small">Before a licensed partner works in your home, we check the basics and keep them current. Yearly background re-checks are shown to members.</p>' +
+      '<ul class="vet-list">' +
+      '<li><span class="vet-ico accent-1" aria-hidden="true">&#10003;</span><div><strong>State License Checked</strong><span class="muted small">Active status on Michigan LARA for the trade on the job.</span></div></li>' +
+      '<li><span class="vet-ico accent-3" aria-hidden="true">&#10003;</span><div><strong>Workers\' Comp Certificate or Filed Exemption</strong><span class="muted small">Current certificate, or a filed WC-337 exclusion, on file.</span></div></li>' +
+      '<li><span class="vet-ico accent-0" aria-hidden="true">&#10003;</span><div><strong>General Liability and Auto Insurance</strong><span class="muted small">Certificates on file for work and travel to your home.</span></div></li>' +
+      '<li><span class="vet-ico accent-2" aria-hidden="true">&#10003;</span><div><strong>Yearly Background Re-Check</strong><span class="muted small">Shown to members. We re-check on a yearly cycle through a third party.</span></div></li>' +
+      '</ul>' +
+      '<p class="small muted" style="margin:0">You can also <a class="link mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener">Tap to Verify License</a> on Michigan LARA for partner tasks on your visit report.</p></div>';
+  }
+  function trustBlock() {
+    return '<h3 class="grp">Trust and Licensing</h3>' + sampleVisitCard() + vettingSection();
+  }
+  function miCancelNotice() {
+    return '<div class="mi-cancel notice" role="note">' +
+      '<span class="draft">DRAFT, pending legal review</span>' +
+      '<p><strong>Michigan Home Solicitation Sales Notice (MCL 445.113).</strong> You, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.</p>' +
+      '<p class="small muted" style="margin:0">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</p></div>';
+  }
+
   function home() {
     var lines = [
       ["&#128167;", "When Was the Last Time You Flushed Your Water Heater?", "Or cleaned the dryer vent, or tested the sump pump?"],
@@ -263,12 +305,13 @@
         return '<div class="svc-card card mw-hover"><span class="svc-ico accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><strong>' + s[1] + '</strong><span class="muted small">' + s[2] + '</span></div>';
       }).join("") + '</div>' +
       '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l, i) { return '<div class="line card mw-hover"><span class="ico accent-' + (i % 4) + '" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
+      trustBlock() +
       '<h3 class="grp">Learn More</h3>' +
-      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
+      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li><li>Maintenance Proof Pack for warranty claims</li><li>Home Record transfers when you sell</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
       acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
       acc("Recall Tracking", '<p>When we log your equipment (brand, model and serial from the labels), we watch for manufacturer and safety recalls on it. If something you own is recalled, we tell you and help you get it fixed. It is included in every membership.</p>') +
       acc("Service Area: Metro Detroit", '<p>We serve Wayne, Oakland and Macomb counties and nearby, including Detroit, Bloomfield Hills, Birmingham, Troy, Farmington Hills, Novi, West Bloomfield, Rochester, Grosse Pointe, Northville and Plymouth. Not sure if you are covered? Enter your ZIP in step 1.</p>') +
-      acc("FAQ", '<h4>Do I need to send photos?</h4><p>No. You get an estimate without them. Photos let us give a final price.</p><h4>What if my home is different than I described?</h4><p>Your price is an estimate. If what we find on site does not match, we adjust the price before your first billed visit.</p><h4>Are your techs licensed and insured?</h4><p>Yes. Specialist work like HVAC is done by licensed pros.</p><h4>Can I cancel?</h4><p>Membership terms are being finalized. See the draft agreement at sign up.</p>') +
+      acc("FAQ", '<h4>Do I need to send photos?</h4><p>No. You get an estimate without them. Photos let us give a final price.</p><h4>What if my home is different than I described?</h4><p>Your price is an estimate. If what we find on site does not match, we adjust the price before your first billed visit.</p><h4>Are your techs licensed and insured?</h4><p>Yes. Specialist work like HVAC is done by licensed pros.</p><h4>Can I cancel?</h4><p>You may cancel anytime. Refunds equal prepaid amount minus completed work (no fee). Michigan home sign-ups also get a 3-business-day notice. See the draft agreement at sign up.</p>') +
       '<p class="start-at">Membership Starting at $99/Month</p><div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>';
   }
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
@@ -456,7 +499,7 @@
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount. No membership is priced below $99/Month.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term.</p>' + ex.html;
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount. No membership is priced below $99/Month.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
   }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
@@ -549,7 +592,7 @@
       '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '"></div>' +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + agreementHtml() + '</div>' +
-      '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
+      miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
       '<div class="card"><h3>Liability Waiver</h3><div class="legal" tabindex="0">' + WAIVER + '</div>' +
       '<label class="checkrow"><input type="checkbox" id="waive"><span>I have read and accept the Liability Waiver.</span></label><p class="fl">Signature</p>' + sigBlock("waiverSig") + '</div>' +
       '<div class="card"><h3>Payment Plan</h3>' + planHtml +
@@ -581,7 +624,7 @@
       })() +
       '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
-      '<div class="card" style="margin-top:1rem"><h3>&#128276; Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
+      sampleVisitCard() + '<div class="card" style="margin-top:1rem"><h3>&#128276; Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
       '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 

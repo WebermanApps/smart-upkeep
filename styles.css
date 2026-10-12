@@ -299,3 +299,19 @@ h3.grp:nth-of-type(3)::before{background:var(--mw-saffron)}
 .running{border-top:3px solid var(--mw-lagoon)}
 .alacarte-cta{border-color:var(--mw-saffron);border-style:solid}
 .alacarte-cta h3{color:var(--mw-terracotta-deep)}
+
+/* Trust: Tap to Verify + Partner Vetting */
+.visit-preview{margin:0 0 1rem}
+.visit-preview h3{margin:.2rem 0 .4rem}
+.visit-tasks{list-style:none;padding:0;margin:.75rem 0 0}
+.visit-tasks li{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between;padding:.75rem 0;border-top:1px solid var(--mw-border)}
+.visit-tasks li > div{display:flex;flex-direction:column;gap:.15rem;min-width:0;flex:1}
+.task-kind{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mw-lagoon)}
+.verify-btn{min-height:44px;padding:.55rem .9rem;font-size:.72rem;flex:0 0 auto;text-decoration:none}
+.vetting{margin:0 0 1.25rem}
+.vet-list{list-style:none;padding:0;margin:.75rem 0 1rem}
+.vet-list li{display:flex;gap:.75rem;align-items:flex-start;padding:.65rem 0;border-top:1px solid var(--mw-border)}
+.vet-list li > div{display:flex;flex-direction:column;gap:.15rem}
+.vet-ico{flex:0 0 28px;width:28px;height:28px;display:grid;place-items:center;border:1px solid;background:#fff;font-size:.85rem;margin-top:2px}
+.mi-cancel{margin:1rem 0;border-left-color:var(--mw-terracotta)!important}
+.mi-cancel strong{display:block;margin:.35rem 0 .4rem;font-size:1.02rem;text-transform:uppercase;letter-spacing:.02em}
