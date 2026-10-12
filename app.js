@@ -371,7 +371,7 @@
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
-    var tiers = ["silver", "gold", "platinum"];
+    var tiers = tierKeys();
     var trust = [["shield", "Licensed Partners", "Tap to Verify"], ["van", "Techs Show Up Ready", "Parts on the Truck"], ["clipboard", "Report Every Visit", "Written and Saved"], ["refund", "Cancel Anytime", "Fair Refunds"]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -549,29 +549,77 @@
       '<div class="err" id="vErr"></div><div class="btn-row"><button class="btn btn-primary btn-big mw-hover" type="submit">Request My Free Visit</button></div></form>';
   }
 
+  var XT = { open: false, pick: null };
+  var XT_ICO = { windows: "window", carpet: "brush", pool: "pool", snow: "snow", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", handyman: "wrench", pest: "bug", guttersExtra: "gutter", backflow: "meter", lmInteriorWindows: "window", lmScreens: "window", lmBulbs: "lights" };
+  function extrasEntry() {
+    var add = P.addons || [], lm = P.lastMinute || [];
+    var nSel = (S.addons || []).length;
+    function tiles(items, attr, sel) {
+      return '<div class="xt-grid">' + items.map(function (ad) {
+        var on = sel.indexOf(ad.id) > -1, cur = XT.pick === attr + ":" + ad.id;
+        return '<button type="button" class="xt-tile mw-hover' + (on ? " sel" : "") + (cur ? " cur" : "") + '" data-xt="' + attr + ':' + ad.id + '" aria-expanded="' + cur + '">' +
+          I(XT_ICO[ad.id] || "wrench", "sm") + '<span>' + esc(ad.label) + '</span>' + (on ? '<i class="xt-on" aria-label="Added">&#10003;</i>' : '') + '</button>';
+      }).join("") + '</div>';
+    }
+    function detail(items, attr, sel, fn) {
+      if (!XT.pick || XT.pick.indexOf(attr + ":") !== 0) return "";
+      var id = XT.pick.slice(attr.length + 1), it = items.filter(function (a) { return a.id === id; });
+      return it.length ? '<div class="xt-detail">' + renderAddonList(it, sel, attr, fn) + '</div>' : "";
+    }
+    return '<button type="button" class="xt-entry mw-hover" data-xt-open="1">' + I("grid", "sm") +
+      '<span><strong>Learn About Extras</strong><small>' + add.length + ' Optional Add-Ons &middot; ' + (nSel ? nSel + ' Selected' : 'Tap to Browse') + '</small></span><b aria-hidden="true">&rsaquo;</b></button>' +
+      '<div class="xt-sheet"' + (XT.open ? "" : " hidden") + ' role="dialog" aria-modal="true" aria-label="Learn About Extras"><div class="xt-inner">' +
+      '<div class="xt-top"><h3>Learn About Extras</h3><button type="button" class="modal-x mw-hover" data-xt-close="1" aria-label="Close">&times;</button></div>' +
+      '<p class="lead-sm">Add-Ons (À La Carte): optional seasonal or specialty services for any membership. Draft market ranges; monthly figure is the yearly midpoint ÷ 12. Tap a tile for details and price.</p>' +
+      tiles(add, "addon", S.addons || []) + detail(add, "addon", S.addons || [], addonPriceLabel) +
+      '<button type="button" class="btn btn-primary mw-hover xt-done" data-xt-close="1">Done</button></div></div>';
+  }
+  function pickFinalOffer() {
+    var F = P.finalOffer || {}; if (!F.enabled) return null;
+    var have = (S.addons || []).concat(S.alacarte || []);
+    var pool = (F.candidates || []).map(function (id) { return (P.addons || []).filter(function (a) { return a.id === id; })[0]; })
+      .filter(function (a) { return a && have.indexOf(a.id) < 0; });
+    if (!pool.length) return null;
+    if (F.strategy === "random") return pool[Math.floor(Math.random() * pool.length)];
+    var key = F.storageKey || "smartUpkeep.finalOfferIdx", i = 0;
+    try { i = parseInt(localStorage.getItem(key) || "0", 10) || 0; localStorage.setItem(key, String(i + 1)); } catch (e) {}
+    return pool[i % pool.length];
+  }
+  function showFinalOffer(ad, done) {
+    var w = document.createElement("div");
+    w.className = "fo-wrap"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true"); w.setAttribute("aria-label", "One Last Extra");
+    w.innerHTML = '<div class="fo-card"><p class="eyebrow">Before You Submit</p><div class="fo-head">' + I(XT_ICO[ad.id] || "wrench") +
+      '<div><h3>Add ' + esc(ad.label) + '?</h3><p class="fo-desc">' + esc(ad.desc) + '</p><p class="addon-price">' + addonPriceLabel(ad) + '</p></div></div>' +
+      '<div class="fo-btns"><button type="button" class="btn btn-outline mw-hover" data-fo="no">No Thanks</button><button type="button" class="btn btn-primary mw-hover" data-fo="add">Add</button></div></div>';
+    document.body.appendChild(w);
+    logAddon("offer_shown", ad.id, "final-offer");
+    w.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-fo]"); if (!b) return;
+      if (b.getAttribute("data-fo") === "add") { S.addons = S.addons || []; if (S.addons.indexOf(ad.id) < 0) S.addons.push(ad.id); save(); logAddon("offer_accepted", ad.id, "final-offer"); }
+      else logAddon("offer_declined", ad.id, "final-offer");
+      w.remove(); done();
+    });
+    var f = w.querySelector('[data-fo="add"]'); if (f) f.focus();
+  }
+  function tierKeys() { return (P.tierOrder || Object.keys(P.tiers)).filter(function (k) { return P.tiers[k]; }); }
   function quote() {
     var p = price(), a = S.answers;
     var final = S.photosComplete && S.visit && S.visit.completed;
     var status = S.visit ? '<p class="small"><strong>Free tech visit requested</strong> for ' + esc(S.visit.date) + ' (' + esc((S.visit.windows || []).join(", ")) + '). We will confirm by text.</p>' : S.photosComplete ? '<p class="small"><strong>Photos added.</strong> We will review them and confirm your final price.</p>' : "";
     var unsure = Object.keys(a).filter(function (k) { return a[k] === "unsure"; }).length;
     var addSum = addonsAnnual();
-    var tiersHtml = '<div class="tiers">' + ["silver", "gold", "platinum"].map(function (k) {
+    var tiersHtml = '<div class="tiers n' + tierKeys().length + '">' + tierKeys().map(function (k) {
       var t = P.tiers[k], amt = p[k], sel = S.tier === k;
       var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our $99/Month membership minimum</p>' : "";
       return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
         '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") + floorNote +
         '<button type="button" class="detail-link" data-detail="' + k + '">*See Detailed Pricing</button>' +
-        '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
+        '<details class="tier-feats"><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
     var lmSum = lastMinuteTotal();
-    var addonsHtml = '<div class="addons"><h3>Add-Ons (À La Carte)</h3>' +
-      '<p class="lead-sm">Optional seasonal or specialty services you can add to any membership. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
-      renderAddonList(P.addons || [], S.addons || [], "addon", addonPriceLabel) + '</div>' +
-      '<div class="addons last-minute"><h3>Last-Minute Add-Ons</h3>' +
-      '<p class="lead-sm">Quick extras to tack onto an upcoming visit. Flat one-time prices (draft) — not a subscription.</p>' +
-      renderAddonList(P.lastMinute || [], S.lastMinute || [], "lastminute", lastMinutePriceLabel) + '</div>';
+    var addonsHtml = extrasEntry();
     var runYear = p[S.tier] + addSum;
     var runHtml = '<div class="running card"><h3>Your Running Total · ' + P.tiers[S.tier].label + '</h3>' +
       priceBlock(runYear, "annual") +
@@ -583,12 +631,21 @@
       '<h3>Not Ready for a Membership?</h3>' +
       '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Same skilled techs, one-time pricing.</p>' +
       '<button class="btn btn-outline btn-big mw-hover" data-act="alacarte" type="button">Book Services A La Carte</button></div>';
-    return backBtn() + stepRail(3) + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p><h1>Your Estimated Price</h1>' + status +
+    var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
+      var t = P.tiers[k], sel = S.tier === k, pts = t.keyPoints || t.features.slice(0, 3);
+      return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
+        '<span class="ps-head"><span class="ps-name">' + t.label + '</span>' + (t.recommended ? '<span class="ps-pop">Most Popular</span>' : '') +
+        '<span class="ps-amt">' + money(monthlyOf(p[k])) + '<small>/Mo</small></span></span>' +
+        '<span class="ps-pts">' + pts.map(function (x) { return '<span>' + x + '</span>'; }).join("") + '</span></button>';
+    }).join("") + '</div>';
+    return backBtn() + stepRail(3) + '<h1 class="q-h1">Your Estimated Price</h1>' + strip +
+      '<p class="small muted q-sub">Estimated Price &middot; Tap a Plan to Select &middot; Details Below</p>' +
+      tiersHtml + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p>' + status +
       welcomeBanner() +
       (final ? "" : '<div class="notice"><strong>Your price is an estimate.</strong> It may change after we review your photos or complete a site visit. If photos don\'t match what we find on site, pricing will be adjusted.</div>') +
       (unsure ? '<p class="small muted" style="margin-top:.6rem">You answered Unsure ' + unsure + (unsure > 1 ? " times" : " time") + ', so we used a typical metro Detroit home for those.</p>' : "") +
       '<p class="small muted">Memberships start at $99/Month. We do not offer subscriptions below that.</p>' +
-      tiersHtml + addonsHtml + runHtml + alacarteCta +
+      addonsHtml + runHtml + alacarteCta +
       '<p class="small muted">Photo policy: if the photos you send don\'t match what we find on site, pricing will be adjusted before your first billed visit. Prices are draft and assume metro Detroit.</p>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">Schedule a Free Tech Visit</button></div>' : "");
@@ -832,6 +889,13 @@
       if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
     }
     if (s === "quote") {
+      var xs = app.querySelector(".xt-sheet");
+      function xtSet(o) { XT.open = o; if (xs) xs.hidden = !o; document.body.classList.toggle("xt-lock", o); }
+      app.querySelectorAll("[data-xt-open]").forEach(function (b) { b.addEventListener("click", function () { xtSet(true); logAddon("view", (P.addons || []).map(function (a) { return a.id; }), "extras-sheet"); }); });
+      app.querySelectorAll("[data-xt-close]").forEach(function (b) { b.addEventListener("click", function () { XT.pick = null; xtSet(false); render(); }); });
+      if (xs) xs.addEventListener("click", function (e) { if (e.target === xs) { XT.pick = null; xtSet(false); render(); } });
+      app.querySelectorAll("[data-xt]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-xt"); XT.pick = XT.pick === v ? null : v; render(); var d = app.querySelector(".xt-detail"); if (d) d.scrollIntoView({ block: "nearest" }); }); });
+      document.body.classList.toggle("xt-lock", XT.open);
       app.querySelectorAll("[data-tier]").forEach(function (c) {
         function pick(e) {
           if (e && e.target.closest("[data-act], [data-detail], [data-addon], [data-lastminute]")) return;
@@ -999,6 +1063,8 @@
         !document.getElementById("waive").checked ? "Please accept the Liability Waiver." : !sigs.waiverSig.valid() ? "Please sign the Liability Waiver." : "";
       var box = document.getElementById("suErr"); box.textContent = err;
       if (err) { box.scrollIntoView({ block: "center" }); return; }
+      var form = this;
+      if (!form._offered) { form._offered = true; var off = pickFinalOffer(); if (off) { showFinalOffer(off, function () { form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit", { cancelable: true })); }); return; } }
       s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = sigs.waiverSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals(); s.referralCodeIn = S.referralCodeIn || s.referralCodeIn || ""; logAddon("purchase", (S.addons || []).concat(S.lastMinute || []), "signup:" + S.tier);
       if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
       go("confirm");
