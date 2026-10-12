@@ -754,7 +754,9 @@
   }
   function openPriceDetail(tier) {
     var bd = breakdown(tier), t = P.tiers[tier];
-    var rows = bd.lines.map(function (L) {
+    var memLines = bd.lines.filter(function (L) { return L.kind !== "lastMinute"; });
+    var lmLines = bd.lines.filter(function (L) { return L.kind === "lastMinute"; });
+    var rows = memLines.map(function (L) {
       var right = L.amt === 0 ? "Included" : money(L.amt);
       return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Estimated</span>' : "") + '</span><span>' + right + '</span></li>';
     }).join("");
@@ -764,8 +766,14 @@
     if (bd.discLine) {
       rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
     }
-    rows += '<li class="total"><span>Annual total</span><span>' + money(bd.year) + '</span></li>';
+    rows += '<li class="total"><span>Annual membership total</span><span>' + money(bd.year) + '</span></li>';
     rows += '<li class="total"><span>Monthly equivalent</span><span>' + money(bd.monthly) + '/Month</span></li>';
+    if (lmLines.length) {
+      rows += lmLines.map(function (L) {
+        return '<li class="sub"><span>' + esc(L.label) + ' <span class="est">Next Visit</span></span><span>' + money(L.amt) + '</span></li>';
+      }).join("");
+      rows += '<li class="total"><span>Last-minute due with next visit</span><span>' + money(bd.lastMinute) + '</span></li>';
+    }
     var bill = billLine(tier === "platinum" && S.plan === "annual" ? "annualDiscount" : (tier === "platinum" && S.plan === "quarterly" ? "quarterly" : "annual"), bd.year);
     var extrasNote = [];
     if (bd.addons) extrasNote.push("selected add-ons");
@@ -774,7 +782,7 @@
       '<p class="small muted">Here is exactly what goes into your ' + t.label + ' estimate, based on your answers' + (extrasNote.length ? " and " + extrasNote.join(" and ") : "") + '.</p>' +
       '<ul class="bd-list">' + rows + '</ul>' +
       '<p class="price-bill">' + bill + '</p>' +
-      (bd.lastMinute ? '<p class="small muted">Last-minute lines are one-time with your next visit and are not part of the monthly membership figure.</p>' : "") +
+      (bd.lastMinute ? '<p class="small muted">Last-minute extras are one-time with your next visit and are not part of the monthly membership figure.</p>' : "") +
       '<p class="small muted bd-foot">Lines marked Estimated came from an Unsure answer; we used a typical metro Detroit home for those. Prices are draft.</p>' +
       '<p class="cancel-link-wrap"><button type="button" class="detail-link" data-open-cancel="1">*Cancellation and Refund Policy</button></p>' +
       '<div id="cancelInModal" class="cancel-inline hide">' + cancelPolicyCard(tier) + '</div>' +
