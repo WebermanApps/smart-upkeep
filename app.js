@@ -302,6 +302,38 @@
           '</li>';
       }).join("") + '</ul></div>';
   }
+  var CERTS_REQ = [
+    ["epa608", "EPA Section 608", "Federal certification to safely handle and recover refrigerant in AC and heat pumps."],
+    ["rrp", "EPA Lead-Safe RRP", "Trained in lead-safe work practices for homes built before 1978."],
+    ["osha10", "OSHA 10", "Completed 10 hours of job-site safety training."],
+    ["cpr", "CPR and First Aid", "Current CPR and first aid certification."],
+    ["bg", "Annual Background Check", "Passed a third-party background check, renewed every year."]
+  ];
+  var CERTS_BONUS = [
+    ["nate", "NATE (HVAC)", "Passed national HVAC technician exams from North American Technician Excellence."],
+    ["csia", "CSIA Dryer Exhaust Technician", "Certified by the Chimney Safety Institute of America to inspect and clean dryer vents."],
+    ["nachi", "InterNACHI", "Trained to inspection standards from the International Association of Certified Home Inspectors."],
+    ["mfr", "Manufacturer Trained", "Factory-trained on specific equipment brands, like Carrier furnaces or Navien tankless heaters."],
+    ["iicrc", "IICRC", "Certified in cleaning and restoration, like water damage, by the IICRC."]
+  ];
+  function badge(c, kind) {
+    return '<button type="button" class="cert-badge cert-' + kind + ' mw-hover" data-cert="' + c[0] + '" data-explain="' + esc(c[2]) + '" aria-expanded="false">' +
+      '<span class="cert-ico" aria-hidden="true">' + (kind === "bonus" ? "&#9733;" : "&#10003;") + '</span>' + c[1] + '</button>';
+  }
+  function sampleTechCard() {
+    var held = ["nate", "csia", "mfr"];
+    return '<div class="card tech-card" id="sampleTech">' +
+      '<p class="eyebrow">Sample · Tech Profile</p>' +
+      '<div class="tech-head"><span class="tech-avatar" aria-hidden="true">JS</span><div><h3 style="margin:0">Jordan Sample</h3><span class="muted small">Smart Upkeep Tech · Fictional Example</span></div></div>' +
+      '<p class="cert-grp"><span class="cert-tag tag-verified">Verified</span> Required for Every Tech</p>' +
+      '<div class="cert-row">' + CERTS_REQ.map(function (c) { return badge(c, "req"); }).join("") + '</div>' +
+      '<p class="cert-grp"><span class="cert-tag tag-certified">Certified</span> Extra Training This Tech Holds</p>' +
+      '<div class="cert-row">' + CERTS_BONUS.filter(function (c) { return held.indexOf(c[0]) > -1; }).map(function (c) { return badge(c, "bonus"); }).join("") + '</div>' +
+      '<p class="cert-grp"><span class="cert-tag tag-licensed">Michigan Licensed</span> Trade Work by Licensed Partners</p>' +
+      '<div class="cert-row"><a class="cert-badge cert-lic mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener" title="Mechanical, plumbing, electrical and residential builder work is done under an active Michigan LARA license.">' +
+      '<span class="cert-ico" aria-hidden="true">&#9878;</span>Michigan Licensed · Tap to Verify License</a></div>' +
+      '<p class="cert-explain small" role="status" aria-live="polite">Tap any badge to see what it means.</p></div>';
+  }
   function vettingSection() {
     return '<div class="card vetting" id="howWeVet">' +
       '<h3>How We Vet Every Partner</h3>' +
@@ -312,10 +344,11 @@
       '<li><span class="vet-ico accent-0" aria-hidden="true">&#10003;</span><div><strong>General Liability and Auto Insurance</strong><span class="muted small">Certificates on file for work and travel to your home.</span></div></li>' +
       '<li><span class="vet-ico accent-2" aria-hidden="true">&#10003;</span><div><strong>Yearly Background Re-Check</strong><span class="muted small">Shown to members. We re-check on a yearly cycle through a third party.</span></div></li>' +
       '</ul>' +
+      '<p class="small cert-line"><strong>Required Certifications:</strong> EPA Section 608, EPA Lead-Safe RRP, OSHA 10, CPR and First Aid, and an Annual Background Check. Mechanical, plumbing, electrical and builder work requires an active Michigan license.</p>' +
       '<p class="small muted" style="margin:0">You can also <a class="link mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener">Tap to Verify License</a> on Michigan LARA for partner tasks on your visit report.</p></div>';
   }
   function trustBlock() {
-    return '<h3 class="grp">Trust and Licensing</h3>' + sampleVisitCard() + vettingSection();
+    return '<h3 class="grp">Trust and Licensing</h3>' + sampleVisitCard() + sampleTechCard() + vettingSection();
   }
   function miCancelNotice() {
     return '<div class="mi-cancel notice" role="note">' +
@@ -647,7 +680,9 @@
       '<div><label class="fl" for="sPhone">Phone</label><input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '"></div></div>' +
       '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' +
       '<label class="fl" for="sRef">Referral Code (Optional)</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '">' +
-      '<p class="small muted" style="margin:.35rem 0 0">Have a neighbor\'s code? Enter it here. You both get a free month — credited once your first payment clears (draft, no cap).</p></div>' +
+      '<p class="small muted" style="margin:.35rem 0 0">Have a neighbor\'s code? Enter it here. You both get a free month — credited once your first payment clears (draft, no cap).</p>' +
+      '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Okay to Place a Smart Upkeep Yard Sign? (Optional)</span></label>' +
+      '<p class="small muted" style="margin:.2rem 0 0">We\'ll place a small sign for a couple of weeks after a visit. Say yes and get a free Smoke/CO Battery Swap ($65 value).</p></div>' +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + agreementHtml() + '</div>' +
       miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
@@ -706,6 +741,14 @@
 
   /* ---------- Events ---------- */
   function bind() {
+    app.querySelectorAll("[data-cert]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var card = b.closest(".tech-card"), out = card && card.querySelector(".cert-explain");
+        card.querySelectorAll("[data-cert]").forEach(function (o) { o.classList.remove("on"); o.setAttribute("aria-expanded", "false"); });
+        b.classList.add("on"); b.setAttribute("aria-expanded", "true");
+        if (out) out.textContent = b.textContent.replace(/^\W+/, "") + ": " + b.getAttribute("data-explain");
+      });
+    });
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
     var s = S.screen;
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
@@ -867,9 +910,9 @@
     function keepFields() {
       var ref = val("sRef");
       S.referralCodeIn = ref;
-      S.signup = Object.assign({}, S.signup, { address: val("sAddr"), name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref });
+      S.signup = Object.assign({}, S.signup, { address: val("sAddr"), name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, yardSignOk: !!(document.getElementById("sYardSign") || {}).checked });
     }
-    ["sAddr", "sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keepFields(); save(); }); });
+    ["sAddr", "sName", "sPhone", "sEmail", "sRef", "sYardSign"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keepFields(); save(); }); });
     document.getElementById("suF").addEventListener("submit", function (e) {
       e.preventDefault(); keepFields();
       var s = S.signup, err = s.address.length < 5 ? "Enter your service address." : !s.name ? "Enter your full name." : !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter a valid email." : !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter a valid phone number." :

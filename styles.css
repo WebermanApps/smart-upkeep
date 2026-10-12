@@ -336,3 +336,23 @@ body.gate-locked > :not(#prelaunchGate){visibility:hidden!important}
 .price-save{margin:.25rem 0 0;font-size:.9rem;font-weight:600;color:var(--mw-jungle,#0B6E4F)}
 .referral-card .ref-code{font-family:var(--mw-font-heading,Khand,sans-serif);font-size:clamp(1.6rem,5vw,2.2rem);font-weight:700;letter-spacing:.06em;margin:.5rem 0;color:var(--mw-lagoon,#05668D);text-align:center}
 .referral-card .btn-row{justify-content:center}
+
+/* Tech certification badges */
+.tech-card{margin-top:1rem;background:var(--mw-cream)}
+.tech-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.4rem}
+.tech-avatar{flex:0 0 48px;height:48px;border-radius:50%;background:#fff;border:2px solid var(--mw-lagoon);display:grid;place-items:center;font-family:var(--mw-font-heading);font-weight:700;color:var(--mw-lagoon)}
+.cert-grp{margin:.9rem 0 .4rem;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.cert-tag{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;padding:.15rem .5rem;border-radius:99px;font-weight:700;border:1px solid}
+.tag-verified{color:var(--mw-jungle);border-color:var(--mw-jungle)}
+.tag-certified{color:#7a5c00;border-color:var(--mw-saffron);background:#fff}
+.tag-licensed{color:var(--mw-lagoon);border-color:var(--mw-lagoon)}
+.cert-row{display:flex;flex-wrap:wrap;gap:.45rem}
+.cert-badge{display:inline-flex;align-items:center;gap:.35rem;min-height:40px;padding:.4rem .75rem;border:1.5px solid var(--mw-border);border-radius:99px;background:#fff;font:inherit;font-size:.85rem;font-weight:600;color:inherit;cursor:pointer;text-decoration:none;text-align:left}
+.cert-ico{font-size:.8rem}
+.cert-req .cert-ico{color:var(--mw-jungle)}
+.cert-bonus{border-color:var(--mw-saffron)}
+.cert-bonus .cert-ico{color:var(--mw-saffron)}
+.cert-lic{border-color:var(--mw-lagoon);color:var(--mw-lagoon)}
+.cert-badge.on{border-color:var(--mw-terracotta);box-shadow:inset 0 0 0 1px var(--mw-terracotta)}
+.cert-explain{margin:.8rem 0 0;padding:.6rem .8rem;background:#fff;border-left:3px solid var(--mw-terracotta);border-radius:.4rem;min-height:2.4em}
+.cert-line{margin:.2rem 0 .6rem}
