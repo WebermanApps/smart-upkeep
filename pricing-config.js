@@ -10,6 +10,23 @@ window.SMART_UPKEEP_PRICING = {
     passwordSha256: "6df85d68da9f1f949bc43346a2d84643736b955194f25738fd74100ae1874523",
     storageKey: "smartUpkeep.gateUnlocked"
   },
+  /* Welcome offers (draft). At launch keep or tune; free months have $0 refund value. */
+  welcomeOffers: {
+    twoYear: {
+      id: "twoYear",
+      label: "Pay for 2 Years, Get 6 Months Free",
+      payMonths: 24,
+      getMonths: 30,
+      freeMonths: 6
+    },
+    referral: {
+      id: "referral",
+      label: "Refer a Neighbor, You Both Get a Month Free",
+      freeMonthsEach: 1,
+      uncapped: true,
+      creditWhen: "after_referred_first_payment_clears"
+    }
+  },
   status: "Prototype, Draft Pricing",
   roundTo: 10,
   minMonthly: 99,                              // Max: no subscription under $99/mo

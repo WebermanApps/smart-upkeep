@@ -326,3 +326,13 @@ body.gate-locked > :not(#prelaunchGate){visibility:hidden!important}
 .prelaunch-form{text-align:left;margin-top:1.1rem}
 .prelaunch-form .btn{width:100%;margin-top:.75rem}
 .prelaunch-foot{margin:1.1rem 0 0;text-align:center}
+
+/* Welcome offers */
+.welcome-offer{margin:1rem 0;border-left:3px solid var(--mw-saffron,#D4A017);background:#fff}
+.welcome-offer h3{color:var(--mw-ink,#0a0a0a)}
+.offer-list{margin:.4rem 0 .6rem;padding-left:1.1rem}
+.offer-list li{margin:.35rem 0}
+.offer-terms{margin-top:.85rem}
+.price-save{margin:.25rem 0 0;font-size:.9rem;font-weight:600;color:var(--mw-jungle,#0B6E4F)}
+.referral-card .ref-code{font-family:var(--mw-font-heading,Khand,sans-serif);font-size:clamp(1.6rem,5vw,2.2rem);font-weight:700;letter-spacing:.06em;margin:.5rem 0;color:var(--mw-lagoon,#05668D);text-align:center}
+.referral-card .btn-row{justify-content:center}
