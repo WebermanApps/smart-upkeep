@@ -252,3 +252,50 @@ main.wide{max-width:1200px}
 .cancel-link-wrap{margin:.5rem 0 1rem}
 .cancel-inline{margin:0 0 1rem}
 .cancel-inline .cancel-policy{margin:0}
+
+/* ===== Style Swipe rebrand 2 (Oct 12 2026): guided · visual · multi-accent ===== */
+.step-rail{display:flex;align-items:center;justify-content:space-between;gap:.25rem;margin:.75rem 0 1.1rem;padding:.65rem .5rem;background:var(--mw-cream);border:1px solid var(--mw-border)}
+.step-dot{flex:1;display:flex;flex-direction:column;align-items:center;gap:.25rem;min-width:0;opacity:.45}
+.step-dot.on,.step-dot.done{opacity:1}
+.step-ico{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--mw-lagoon);background:#fff;font-size:1.1rem;min-height:40px}
+.step-dot.on .step-ico{border-color:var(--mw-terracotta);background:var(--mw-terracotta);color:#fff}
+.step-dot.done .step-ico{border-color:var(--mw-jungle);background:var(--mw-jungle);color:#fff}
+.step-lab{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mw-muted-text);text-align:center;line-height:1.2}
+.step-dot.on .step-lab{color:var(--mw-terracotta)}
+.step-dot.done .step-lab{color:var(--mw-jungle)}
+.step-join{flex:0 0 12px;height:2px;background:var(--mw-border);margin-bottom:1.1rem}
+.step-dot.done + .step-join,.step-dot.on + .step-join{background:var(--mw-lagoon)}
+@media(max-width:420px){.step-lab{font-size:.55rem}.step-ico{width:36px;height:36px;font-size:1rem}}
+
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0 0 1.25rem}
+@media(min-width:700px){.svc-grid{grid-template-columns:1fr 1fr 1fr}}
+.svc-card{display:flex;flex-direction:column;gap:.25rem;padding:.9rem .85rem;margin-top:-1px;margin-left:-1px;min-height:110px}
+.svc-card strong{font-family:var(--mw-font-heading);font-size:1.15rem;letter-spacing:-.3px}
+.svc-ico{width:40px;height:40px;display:grid;place-items:center;border:1px solid;background:#fff;font-size:1.15rem;margin-bottom:.25rem}
+
+.accent-0{border-color:var(--mw-terracotta)!important;color:var(--mw-terracotta)!important}
+.accent-1{border-color:var(--mw-lagoon)!important;color:var(--mw-lagoon)!important}
+.accent-2{border-color:var(--mw-saffron)!important;color:#8a6a0a!important;border-color:var(--mw-saffron)!important}
+.accent-3{border-color:var(--mw-jungle)!important;color:var(--mw-jungle)!important}
+.num.accent-0,.num.accent-1,.num.accent-2,.num.accent-3{background:#fff;font-size:1.25rem;border-width:1px}
+
+.guide-steps .num{display:grid;place-items:center}
+h3.grp{display:flex;align-items:center;gap:.5rem}
+h3.grp::before{content:"";width:10px;height:10px;background:var(--mw-terracotta);flex:0 0 10px}
+h3.grp:nth-of-type(2)::before{background:var(--mw-lagoon)}
+h3.grp:nth-of-type(3)::before{background:var(--mw-saffron)}
+.addons > h3{position:relative;padding-left:1rem}
+.addons > h3::before{content:"";position:absolute;left:0;top:.35em;width:6px;height:1em;background:var(--mw-lagoon)}
+.addons.last-minute > h3::before{background:var(--mw-saffron)}
+.tier h2{display:flex;align-items:center;gap:.4rem}
+.tier[data-tier="silver"] h2::before{content:"";width:8px;height:8px;background:var(--mw-lagoon)}
+.tier[data-tier="gold"] h2::before{content:"";width:8px;height:8px;background:var(--mw-saffron)}
+.tier[data-tier="platinum"] h2::before{content:"";width:8px;height:8px;background:var(--mw-jungle)}
+.progress{height:4px}
+.progress>div{background:linear-gradient(90deg,var(--mw-lagoon),var(--mw-lagoon-tint))}
+.start-at{border-color:var(--mw-terracotta);color:var(--mw-terracotta)}
+.rule{background:var(--mw-terracotta)}
+.eyebrow{color:var(--mw-lagoon)}
+.running{border-top:3px solid var(--mw-lagoon)}
+.alacarte-cta{border-color:var(--mw-saffron);border-style:solid}
+.alacarte-cta h3{color:var(--mw-terracotta-deep)}

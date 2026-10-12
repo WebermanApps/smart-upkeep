@@ -1,20 +1,21 @@
-/* Max Weberman brand tokens + Smart Upkeep micro-dose color (Oct 12 2026) */
+/* Smart Upkeep brand tokens — Style Swipe rebrand (Oct 12 2026)
+   Tags: clear, system-like, warm, lively, multi-accent, visual, guided, easy.
+   Light mode only. Micro-dose accents on white/cream — never full-color blocks. */
 :root {
-  /* Base: white / warm cream, dark text, light mode only */
   --mw-background: #ffffff;
   --mw-cream: #FAF3EB;
+  --mw-cream-sel: #F3E8DC;
+  --mw-open: #FFFBF6;
   --mw-foreground: #0a0a0a;
-  --mw-muted-text: #525252; /* darkened vs #737373 for AA on cream */
+  --mw-muted-text: #525252;
 
-  /* Micro-dose accents (never full-color backgrounds) */
-  --mw-terracotta: #C1502E;       /* primary buttons */
-  --mw-terracotta-deep: #A8431F;  /* links on white */
-  --mw-lagoon: #05668D;           /* icons, progress, info tags */
-  --mw-lagoon-tint: #00A6A6;      /* secondary accent tint */
-  --mw-jungle: #0B6E4F;           /* success, done, selected checks */
-  --mw-saffron: #D4A017;          /* small badges only */
+  --mw-terracotta: #C1502E;
+  --mw-terracotta-deep: #A8431F;
+  --mw-lagoon: #05668D;
+  --mw-lagoon-tint: #00A6A6;
+  --mw-jungle: #0B6E4F;
+  --mw-saffron: #D4A017;
 
-  /* Mapped roles */
   --mw-primary: var(--mw-terracotta);
   --mw-primary-foreground: #ffffff;
   --mw-secondary: var(--mw-cream);
@@ -27,11 +28,10 @@
   --mw-font-body: "Hind", system-ui, sans-serif;
   --mw-radius: 0.625rem;
   --mw-tracking-label: 0.1em;
+  --mw-ease: cubic-bezier(.2,.8,.2,1);
+  --mw-dur: 180ms;
   color-scheme: light;
 }
-
-/* Hover motion (Max, Oct 10, 2026) */
-:root { --mw-ease: cubic-bezier(.2,.8,.2,1); --mw-dur: 180ms; }
 .mw-hover { transition: transform var(--mw-dur) var(--mw-ease), box-shadow var(--mw-dur) var(--mw-ease), background-color var(--mw-dur) var(--mw-ease), border-color var(--mw-dur) var(--mw-ease), color var(--mw-dur) var(--mw-ease); }
 .mw-hover:hover, .mw-hover:focus-visible { transform: translateY(-1px) scale(1.03); box-shadow: 0 6px 18px rgba(10,10,10,.12); }
 .mw-hover:active { transform: scale(.98); }

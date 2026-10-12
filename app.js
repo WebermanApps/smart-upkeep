@@ -225,6 +225,22 @@
     bind();
   }
 
+  /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
+  function stepRail(active) {
+    var steps = [
+      { n: 1, label: "Questions", ico: "&#9998;" },
+      { n: 2, label: "Photos", ico: "&#128247;" },
+      { n: 3, label: "Quote", ico: "&#128203;" },
+      { n: 4, label: "Sign Up", ico: "&#9997;" }
+    ];
+    return '<nav class="step-rail" aria-label="Your Progress">' + steps.map(function (s) {
+      var state = s.n < active ? " done" : (s.n === active ? " on" : "");
+      return '<div class="step-dot' + state + '" aria-current="' + (s.n === active ? "step" : "false") + '">' +
+        '<span class="step-ico" aria-hidden="true">' + s.ico + '</span>' +
+        '<span class="step-lab">' + s.label + '</span></div>';
+    }).join('<span class="step-join" aria-hidden="true"></span>') + '</nav>';
+  }
+
   /* ---------- Screens ---------- */
   function home() {
     var lines = [
@@ -242,7 +258,11 @@
       '<button class="link watch mw-hover" data-act="watch" type="button">&#9654; Watch Video</button>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button>' +
       '</section>' +
-      '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l) { return '<div class="line card mw-hover"><span class="ico" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
+      '<h3 class="grp">What We Take Care Of</h3><div class="svc-grid">' +
+      [["&#128293;","Furnace Tune-Up","Fall, every furnace"],["&#10052;","AC Tune-Up","Spring, every unit"],["&#128167;","Water Heater","Flush or descale"],["&#128168;","Dryer Vent","Cleaned yearly"],["&#127968;","Gutters","Spring and fall"],["&#128276;","Recall Watch","On your equipment"]].map(function (s, i) {
+        return '<div class="svc-card card mw-hover"><span class="svc-ico accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><strong>' + s[1] + '</strong><span class="muted small">' + s[2] + '</span></div>';
+      }).join("") + '</div>' +
+      '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l, i) { return '<div class="line card mw-hover"><span class="ico accent-' + (i % 4) + '" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
       '<h3 class="grp">Learn More</h3>' +
       acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
       acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
@@ -254,9 +274,16 @@
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
   function overview() {
-    return backBtn() + '<p class="eyebrow">How It Works</p><h1>Four Quick Steps</h1>' +
-      '<ol class="steps">' + [["Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."], ["Take Some Photos (Optional)", "Equipment labels give you a final price."], ["Review Your Membership", "Silver, Gold or Platinum, with your estimated price."], ["Sign Up", "Sign the agreement and pick a payment plan."]]
-        .map(function (s, i) { return '<li class="card mw-hover"><span class="num">' + (i + 1) + '</span><div><h3 style="margin:0">' + s[0] + '</h3><p class="muted small" style="margin:0">' + s[1] + '</p></div></li>'; }).join("") + '</ol>' +
+    var steps = [
+      ["&#9998;", "Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."],
+      ["&#128247;", "Take Some Photos (Optional)", "Equipment labels give you a final price."],
+      ["&#128203;", "Review Your Membership", "Silver, Gold or Platinum, with your estimated price."],
+      ["&#9997;", "Sign Up", "Sign the agreement and pick a payment plan."]
+    ];
+    return backBtn() + stepRail(1) + '<p class="eyebrow">How It Works</p><h1>Four Quick Steps</h1>' +
+      '<ol class="steps guide-steps">' + steps.map(function (s, i) {
+        return '<li class="card mw-hover"><span class="num accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><div><h3 style="margin:0">' + s[1] + '</h3><p class="muted small" style="margin:0">' + s[2] + '</p></div></li>';
+      }).join("") + '</ol>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Continue to Step 1</button>';
   }
 
@@ -278,7 +305,7 @@
       }
     }
     var canNext = isAnswered(q);
-    return backBtn() + '<p class="eyebrow">Step 1 &middot; Question ' + (i + 1) + ' of ' + Q.length + '</p>' +
+    return backBtn() + stepRail(1) + '<p class="eyebrow">Step 1 &middot; Question ' + (i + 1) + ' of ' + Q.length + '</p>' +
       '<div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><div style="width:' + pct + '%"></div></div>' +
       '<h2>' + q.title + '</h2><p class="muted">' + q.help + '</p>' + body +
       '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (canNext ? "" : " disabled") + '>Next</button></div>';
@@ -296,7 +323,7 @@
 
   function choice() {
     var p = price();
-    return backBtn() + '<div class="progress"><div style="width:100%"></div></div><p class="eyebrow">Questions Done</p><h1>Nice Work. What Next?</h1>' +
+    return backBtn() + stepRail(1) + '<div class="progress"><div style="width:100%"></div></div><p class="eyebrow">Questions Done</p><h1>Nice Work. What Next?</h1>' +
       '<p>We have enough to build your estimate now. Want a final price? Add a few photos of your equipment labels.</p>' +
       '<div class="stack"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Estimate Now</button>' +
       '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button></div>' +
@@ -315,7 +342,7 @@
   }
   function photos() {
     var cards = photoCards();
-    return backBtn() + '<p class="eyebrow">Step 2 &middot; Optional</p><h1>Take Some Photos</h1>' +
+    return backBtn() + stepRail(2) + '<p class="eyebrow">Step 2 &middot; Optional</p><h1>Take Some Photos</h1>' +
       '<div class="notice"><strong>Photos are needed for a FINAL price, but not for an estimate.</strong> One clear shot of each label lets us confirm your equipment and lock your price. Photos stay in this browser in this prototype; nothing is uploaded.</div>' +
       '<div class="photos" style="margin-top:1rem">' + cards.map(function (c) {
         var urls = photoMem[c[0]] || [], n = urls.length || (S.photos[c[0]] || 0);
@@ -330,7 +357,7 @@
   function visitForm() {
     var v = S.visit || {}, w = v.windows || [];
     var min = new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10);
-    return backBtn() + '<p class="eyebrow">Free Tech Visit</p><h1>Schedule a Free Tech Visit</h1><p>A tech comes by, logs your equipment and confirms your final price. About 30 minutes, no charge.</p>' +
+    return backBtn() + stepRail(2) + '<p class="eyebrow">Free Tech Visit</p><h1>Schedule a Free Tech Visit</h1><p>A tech comes by, logs your equipment and confirms your final price. About 30 minutes, no charge.</p>' +
       '<form id="visitF" novalidate><label class="fl" for="vDate">Preferred Date</label><input id="vDate" type="date" min="' + min + '" value="' + esc(v.date) + '">' +
       '<p class="fl">Preferred Time Windows</p><div class="opts two">' + ["Morning (8 to 11)", "Midday (11 to 2)", "Afternoon (2 to 5)", "Evening (5 to 7)"].map(function (t) { var s = w.indexOf(t) > -1; return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-win="' + t + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span>' + t + '</button>'; }).join("") + '</div>' +
       '<label class="fl" for="vName">Name</label><input id="vName" type="text" autocomplete="name" value="' + esc(v.name) + '">' +
@@ -373,7 +400,7 @@
       '<h3>Not Ready for a Membership?</h3>' +
       '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Same skilled techs, one-time pricing.</p>' +
       '<button class="btn btn-outline btn-big mw-hover" data-act="alacarte" type="button">Book Services A La Carte</button></div>';
-    return backBtn() + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p><h1>Your Estimated Price</h1>' + status +
+    return backBtn() + stepRail(3) + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p><h1>Your Estimated Price</h1>' + status +
       (final ? "" : '<div class="notice"><strong>Your price is an estimate.</strong> It may change after we review your photos or complete a site visit. If photos don\'t match what we find on site, pricing will be adjusted.</div>') +
       (unsure ? '<p class="small muted" style="margin-top:.6rem">You answered Unsure ' + unsure + (unsure > 1 ? " times" : " time") + ', so we used a typical metro Detroit home for those.</p>' : "") +
       '<p class="small muted">Memberships start at $99/Month. We do not offer subscriptions below that.</p>' +
@@ -514,7 +541,7 @@
       ? selectedLastMinute().map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("") +
         '<div><span>Last-Minute Due with Next Visit</span><span>' + money(lastMinuteTotal()) + '</span></div>'
       : '';
-    return backBtn() + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
+    return backBtn() + stepRail(4) + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
       '<form id="suF" novalidate class="stack">' +
       '<div class="card"><h3>Your Details</h3><label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
       '<div class="grid2"><div><label class="fl" for="sName">Full Name</label><input id="sName" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '"></div>' +
