@@ -919,7 +919,11 @@
   });
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); });
 
-  render();
-  var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
-  if (!dismissed && S.screen === "home") openVideo(false);
+  function bootApp() {
+    render();
+    var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
+    if (!dismissed && S.screen === "home") openVideo(false);
+  }
+  if (typeof window.SmartUpkeepAwaitGate === "function") window.SmartUpkeepAwaitGate(bootApp);
+  else bootApp();
 })();

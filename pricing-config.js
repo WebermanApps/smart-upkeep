@@ -4,6 +4,12 @@
    Silver targets (pre-floor): ~$700–$900 (1.2–2k sq ft), ~$800–$1,100 (2–3k),
    ~$900–$1,300 (3.5–5k). Hard floor: every membership >= $99/mo ($1,188/yr). */
 window.SMART_UPKEEP_PRICING = {
+  /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
+  prelaunchGate: {
+    enabled: true,
+    passwordSha256: "6df85d68da9f1f949bc43346a2d84643736b955194f25738fd74100ae1874523",
+    storageKey: "smartUpkeep.gateUnlocked"
+  },
   status: "Prototype, Draft Pricing",
   roundTo: 10,
   minMonthly: 99,                              // Max: no subscription under $99/mo
