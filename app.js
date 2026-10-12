@@ -82,14 +82,14 @@
       ["&#128276;", "We Even Track Recalls", "If a maker recalls your furnace, water heater or panel, we let you know."]
     ];
     return '<section class="hero">' +
-      '<p class="eyebrow">Home Maintenance Membership &middot; Metro Detroit</p>' +
+      '<p class="eyebrow">Home Maintenance Membership &middot; Metro Detroit</p><div class="rule" aria-hidden="true"></div>' +
       '<h1>Your Home, Taken Care Of.</h1>' +
       '<p class="lead">Smart Upkeep is one membership for the maintenance your home needs all year: HVAC tune-ups, water heater service, gutters, dryer vents, safety checks and more, done by our licensed techs on a set schedule.</p>' +
       '<button class="link watch mw-hover" data-act="watch" type="button">&#9654; Watch Video</button>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button>' +
       '</section>' +
-      '<div class="lines">' + lines.map(function (l) { return '<div class="line card mw-hover"><span class="ico" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
-      '<h2>Learn More</h2>' +
+      '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l) { return '<div class="line card mw-hover"><span class="ico" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
+      '<h3 class="grp">Learn More</h3>' +
       acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li></ul><p class="small muted">Gold is 4 visits a year. Platinum is 12 visits a year and adds roof inspection, generator service, winter checks and more.</p>') +
       acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
       acc("Recall Tracking", '<p>When we log your equipment (brand, model and serial from the labels), we watch for manufacturer and safety recalls on it. If something you own is recalled, we tell you and help you get it fixed. It is included in every membership.</p>') +
