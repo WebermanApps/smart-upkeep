@@ -50,5 +50,18 @@ window.SMART_UPKEEP_PRICING = {
     { id: "pest", label: "Pest Control (Quarterly)", desc: "Four quarterly visits through a coordinated partner.", low: 400, high: 1200, unit: "service", annual: 800 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
     { id: "backflow", label: "Irrigation Backflow Test", desc: "Yearly backflow preventer test where required.", low: 85, high: 100, unit: "service", annual: 90 }
+  ],
+  /* Last-minute extras tacked onto an upcoming visit. Flat one-time prices (draft).
+     Chosen to complement (not duplicate) the seasonal add-on menu: interior glass,
+     screens, bulbs, caulk, hanging, small wash, assembly, detector batteries. */
+  lastMinute: [
+    { id: "lmInteriorWindows", label: "Interior Window Washing", desc: "Inside glass on an upcoming visit. Pairs with exterior washing if you need both.", price: 175 },
+    { id: "lmScreens", label: "Window Screen Cleaning", desc: "Remove, wash and rehang screens while we are on site.", price: 85 },
+    { id: "lmBulbs", label: "High Fixture Light Bulb Swap", desc: "Replace up to 6 hard-to-reach bulbs. Common bulbs included; specialty bulbs at cost.", price: 95 },
+    { id: "lmCaulk", label: "Caulk Touch-Ups", desc: "Up to one hour of sink, tub or window caulk touch-ups.", price: 125 },
+    { id: "lmHang", label: "Picture or TV Hanging", desc: "Hang up to 2 pictures or one TV. Mounting hardware at cost if needed.", price: 150 },
+    { id: "lmSmallWash", label: "Small Patio Pressure Wash", desc: "Entry, patio or walkway wash — not a full-house wash.", price: 175 },
+    { id: "lmAssemble", label: "Furniture Assembly", desc: "Assemble one furniture item during a visit.", price: 120 },
+    { id: "lmBatteries", label: "Smoke and CO Battery Swap", desc: "Replace batteries in all smoke and CO detectors. Batteries included.", price: 65 }
   ]
 };

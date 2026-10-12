@@ -21,8 +21,8 @@
   ];
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
-  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
+  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.lastMinute)) o.lastMinute = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
@@ -49,12 +49,38 @@
   function addonsAnnual() {
     return selectedAddons().reduce(function (sum, a) { return sum + (a.annual || 0); }, 0);
   }
+  function selectedLastMinute() {
+    var ids = Array.isArray(S.lastMinute) ? S.lastMinute : [];
+    return (P.lastMinute || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+  }
+  function lastMinuteTotal() {
+    return selectedLastMinute().reduce(function (sum, a) { return sum + (a.price || 0); }, 0);
+  }
+  function findService(id) {
+    var a = (P.addons || []).find(function (x) { return x.id === id; });
+    if (a) return a;
+    return (P.lastMinute || []).find(function (x) { return x.id === id; }) || null;
+  }
+  function serviceOncePrice(a) { return a.price != null ? a.price : (a.annual || 0); }
   function addonPriceLabel(a) {
     var mo = money(monthlyOf(a.annual));
     var range = a.note ? a.note : (a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high));
     var unit = a.unit === "yr" ? "/yr" : a.unit === "season" ? "/season" : a.unit === "hr" ? "/hr" : " per service";
     if (a.note) return mo + "/Month · " + range + " <span>(draft)</span>";
     return mo + "/Month · " + range + unit + " <span>(draft)</span>";
+  }
+  function lastMinutePriceLabel(a) {
+    return money(a.price) + " one-time <span>(draft) · with next visit</span>";
+  }
+  function renderAddonList(items, selectedIds, dataAttr, priceFn) {
+    return '<div class="addon-list">' + items.map(function (ad) {
+      var on = selectedIds.indexOf(ad.id) > -1;
+      return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-' + dataAttr + '="' + ad.id + '" aria-pressed="' + on + '">' +
+        '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
+        '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
+        '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
+        '<p class="addon-price">' + priceFn(ad) + '</p></span></button>';
+    }).join("") + '</div>';
   }
   function applyFloor(raw) {
     var minA = P.minAnnual || 1188;
@@ -154,7 +180,12 @@
     add.forEach(function (x) {
       lines.push({ label: "Add-on: " + x.label, amt: x.annual, est: false, kind: "addon" });
     });
+    var lm = selectedLastMinute();
+    lm.forEach(function (x) {
+      lines.push({ label: "Last-minute: " + x.label, amt: x.price, est: false, kind: "lastMinute" });
+    });
     var addSum = addonsAnnual();
+    var lmSum = lastMinuteTotal();
     var membership = mem;
     var discLine = null, year;
     if (tier === "platinum" && S.plan === "annual") {
@@ -165,7 +196,7 @@
     } else {
       year = mem + addSum;
     }
-    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, membership: membership, addons: addSum, year: year, monthly: monthlyOf(year), floored: tierFloored(b, tier) };
+    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, membership: membership, addons: addSum, lastMinute: lmSum, year: year, monthly: monthlyOf(year), floored: tierFloored(b, tier) };
   }
   window.SmartUpkeepPrice = price; // exposed for testing
 
@@ -324,20 +355,18 @@
         '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
+    var lmSum = lastMinuteTotal();
     var addonsHtml = '<div class="addons"><h3>Add-Ons (À La Carte)</h3>' +
-      '<p class="lead-sm">Optional services you can add to any membership. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
-      '<div class="addon-list">' + (P.addons || []).map(function (ad) {
-        var on = (S.addons || []).indexOf(ad.id) > -1;
-        return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-addon="' + ad.id + '" aria-pressed="' + on + '">' +
-          '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
-          '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
-          '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
-          '<p class="addon-price">' + addonPriceLabel(ad) + '</p></span></button>';
-      }).join("") + '</div></div>';
+      '<p class="lead-sm">Optional seasonal or specialty services you can add to any membership. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
+      renderAddonList(P.addons || [], S.addons || [], "addon", addonPriceLabel) + '</div>' +
+      '<div class="addons last-minute"><h3>Last-Minute Add-Ons</h3>' +
+      '<p class="lead-sm">Quick extras to tack onto an upcoming visit. Flat one-time prices (draft) — not a subscription.</p>' +
+      renderAddonList(P.lastMinute || [], S.lastMinute || [], "lastminute", lastMinutePriceLabel) + '</div>';
     var runYear = p[S.tier] + addSum;
     var runHtml = '<div class="running card"><h3>Your Running Total · ' + P.tiers[S.tier].label + '</h3>' +
       priceBlock(runYear, "annual") +
-      (addSum ? '<p class="small muted" style="margin:0">Includes ' + money(addSum) + '/yr in selected add-ons (draft).</p>' : '<p class="small muted" style="margin:0">Tap add-ons above to include them in your total.</p>') +
+      (addSum ? '<p class="small muted" style="margin:0">Includes ' + money(addSum) + '/yr in selected add-ons (draft).</p>' : '<p class="small muted" style="margin:0">Tap seasonal add-ons above to include them in your yearly total.</p>') +
+      (lmSum ? '<p class="lm-due"><strong>Last-minute for next visit:</strong> ' + money(lmSum) + ' one-time (draft)</p>' : '') +
       (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Platinum can save 10% when you pay annually at sign-up (draft).</p>' : "") +
       '</div>';
     var alacarteCta = '<div class="alacarte-cta card">' +
@@ -355,18 +384,53 @@
   }
 
   function totals() {
-    var amt = price()[S.tier], add = addonsAnnual();
-    var addonIds = (S.addons || []).slice();
+    var amt = price()[S.tier], add = addonsAnnual(), lm = lastMinuteTotal();
+    var addonIds = (S.addons || []).slice(), lmIds = (S.lastMinute || []).slice();
     if (S.tier === "silver" || S.tier === "gold") {
-      return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "annual",
+      return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual",
         note: (S.tier === "silver" ? "Silver" : "Gold") + " is paid in full for the year, up front." };
     }
-    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "quarterly", note: "4 payments of " + money((amt + add) / 4) + "." };
+    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "quarterly", note: "4 payments of " + money((amt + add) / 4) + "." };
     var disc = Math.max(round(amt * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
-    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc + add, year: disc + add, membership: disc, addons: add, addonIds: addonIds, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
+    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc + add, year: disc + add, membership: disc, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
   }
 
-  var AGREEMENT = '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount. No membership is priced below $99/Month.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation</h4><p>Cancellation and refund terms are to be determined.</p>';
+  function cancelExample(tier) {
+    var bd = breakdown(tier || S.tier || "gold");
+    var prepaid = bd.year;
+    var done = [];
+    var spent = 0;
+    bd.lines.forEach(function (L) {
+      if (L.kind === "addon" || L.kind === "lastMinute" || L.amt <= 0) return;
+      if (done.length >= 2) return;
+      done.push(L);
+      spent += L.amt;
+    });
+    if (!done.length) {
+      spent = Math.min(400, prepaid);
+      done = [{ label: "1 seasonal visit (example)", amt: spent }];
+    }
+    var refund = Math.max(0, prepaid - spent);
+    return {
+      prepaid: prepaid, spent: spent, refund: refund, done: done,
+      html: '<p class="small"><strong>Worked example (draft):</strong> You prepaid <strong>' + money(prepaid) + '</strong> for ' + (P.tiers[tier || S.tier].label) + '. Before canceling we completed: ' +
+        done.map(function (L) { return esc(L.label) + " (" + money(L.amt) + ")"; }).join(" and ") +
+        '. Services completed total <strong>' + money(spent) + '</strong>. Your refund is <strong>' + money(refund) + '</strong> (prepaid minus completed). No cancellation fee.</p>'
+    };
+  }
+  function cancelPolicyCard(tier) {
+    var ex = cancelExample(tier);
+    return '<div class="card cancel-policy" id="cancelPolicy">' +
+      '<h3>Cancellation and Refunds</h3>' +
+      '<span class="draft">DRAFT, pending legal review</span>' +
+      '<p>You may cancel at any time. <strong>There is no cancellation fee.</strong> Your refund equals the prepaid amount minus the itemized price of services already completed — the same lines shown in Detailed Pricing. Unused visits and unfinished line items are refunded. This is not a time-based proration.</p>' +
+      ex.html +
+      '<p class="small muted" style="margin:0">Final terms pending legal review. The example uses your current estimate.</p></div>';
+  }
+  function agreementHtml() {
+    var ex = cancelExample(S.tier);
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount. No membership is priced below $99/Month.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term.</p>' + ex.html;
+  }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
   function sigBlock(id) {
@@ -377,12 +441,13 @@
 
   function selectedAlacarte() {
     var ids = Array.isArray(S.alacarte) ? S.alacarte : [];
-    return (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+    return ids.map(findService).filter(Boolean);
   }
   function alacarteTotal() {
-    return selectedAlacarte().reduce(function (s, a) { return s + (a.annual || 0); }, 0);
+    return selectedAlacarte().reduce(function (s, a) { return s + serviceOncePrice(a); }, 0);
   }
   function oncePriceLabel(a) {
+    if (a.price != null) return money(a.price) + " one-time <span>(draft) · last-minute / with visit</span>";
     var range = a.note ? a.note : (a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high));
     var unit = a.unit === "season" ? "/season" : " one-time";
     if (a.note) return money(a.annual) + " <span>(draft) · " + range + "</span>";
@@ -392,19 +457,16 @@
     var bk = S.alacarteBooking || {};
     var list = selectedAlacarte();
     var total = alacarteTotal();
-    var picks = '<div class="addon-list">' + (P.addons || []).map(function (ad) {
-      var on = (S.alacarte || []).indexOf(ad.id) > -1;
-      return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-alacarte="' + ad.id + '" aria-pressed="' + on + '">' +
-        '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
-        '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
-        '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
-        '<p class="addon-price">' + oncePriceLabel(ad) + '</p></span></button>';
-    }).join("") + '</div>';
+    var picks = '<div class="addons"><h3>Seasonal and Specialty Services</h3>' +
+      renderAddonList(P.addons || [], S.alacarte || [], "alacarte", oncePriceLabel) + '</div>' +
+      '<div class="addons last-minute"><h3>Last-Minute Add-Ons</h3>' +
+      '<p class="lead-sm">Quick extras to tack onto a visit. Flat one-time prices (draft).</p>' +
+      renderAddonList(P.lastMinute || [], S.alacarte || [], "alacarte", oncePriceLabel) + '</div>';
     return backBtn() + '<p class="eyebrow">A La Carte · No Membership</p><h1>Book Services A La Carte</h1>' +
       '<p class="lead" style="font-size:1.05rem">Pick the one-off services you need. No subscription — just a booking request. Memberships start at $99/Month if you change your mind later.</p>' +
-      '<div class="addons"><h3>Choose Services</h3>' + picks + '</div>' +
+      picks +
       '<div class="running card"><h3>One-Time Total (Draft)</h3>' +
-      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(x.annual) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Select at least one service above.</p>') +
+      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(serviceOncePrice(x)) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Select at least one service above.</p>') +
       '</div>' +
       '<form id="acF" novalidate class="stack">' +
       '<div class="card"><h3>Booking Request</h3>' +
@@ -418,14 +480,12 @@
       '<p class="small muted" style="margin-top:1rem">Prefer a membership? <button type="button" class="link mw-hover" data-act="toQuote">Back to Silver, Gold and Platinum</button></p>';
   }
   function alacarteConfirm() {
-    var bk = S.alacarteBooking || {}, list = (bk.services || []).map(function (id) {
-      return (P.addons || []).find(function (a) { return a.id === id; });
-    }).filter(Boolean);
-    var total = list.reduce(function (s, a) { return s + (a.annual || 0); }, 0);
+    var bk = S.alacarteBooking || {}, list = (bk.services || []).map(findService).filter(Boolean);
+    var total = list.reduce(function (s, a) { return s + serviceOncePrice(a); }, 0);
     return '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">Request Received</p><h1>Thanks' + (bk.name ? ", " + esc(bk.name.split(" ")[0]) : "") + '. We Got Your Booking Request.</h1>' +
       '<div class="card"><h3>Summary</h3><div class="summary">' +
       '<div><span>Type</span><span>A La Carte (No Membership)</span></div>' +
-      list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + money(x.annual) + '</span></div>'; }).join("") +
+      list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + money(serviceOncePrice(x)) + '</span></div>'; }).join("") +
       '<div><span>One-Time Total (Draft)</span><span>' + money(total) + '</span></div>' +
       '<div><span>Preferred Dates</span><span>' + esc(bk.dates) + '</span></div>' +
       '<div><span>Contact</span><span>' + esc(bk.phone) + ' · ' + esc(bk.email) + '</span></div></div></div>' +
@@ -450,13 +510,18 @@
     var addonSummary = selectedAddons().length
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("")
       : '<div><span>Add-ons</span><span>None selected</span></div>';
+    var lmSummary = selectedLastMinute().length
+      ? selectedLastMinute().map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("") +
+        '<div><span>Last-Minute Due with Next Visit</span><span>' + money(lastMinuteTotal()) + '</span></div>'
+      : '';
     return backBtn() + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
       '<form id="suF" novalidate class="stack">' +
       '<div class="card"><h3>Your Details</h3><label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
       '<div class="grid2"><div><label class="fl" for="sName">Full Name</label><input id="sName" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '"></div>' +
       '<div><label class="fl" for="sPhone">Phone</label><input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '"></div></div>' +
       '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '"></div>' +
-      '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + AGREEMENT + '</div>' +
+      cancelPolicyCard(S.tier) +
+      '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + agreementHtml() + '</div>' +
       '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
       '<div class="card"><h3>Liability Waiver</h3><div class="legal" tabindex="0">' + WAIVER + '</div>' +
       '<label class="checkrow"><input type="checkbox" id="waive"><span>I have read and accept the Liability Waiver.</span></label><p class="fl">Signature</p>' + sigBlock("waiverSig") + '</div>' +
@@ -464,7 +529,7 @@
       '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
       '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
       (t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
-      addonSummary +
+      addonSummary + lmSummary +
       '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
       '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: Payment Processing Coming Soon (Secure Checkout via Stripe)</div><p class="small muted">No card is charged or stored. These fields are disabled.</p>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
@@ -481,8 +546,11 @@
       (function () {
         var ids = t.addonIds || S.addons || [];
         var list = (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
-        if (!list.length) return '<div><span>Add-ons</span><span>None</span></div>';
-        return list.map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("");
+        var lmIds = t.lastMinuteIds || S.lastMinute || [];
+        var lm = (P.lastMinute || []).filter(function (a) { return lmIds.indexOf(a.id) > -1; });
+        var html = list.length ? list.map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("") : '<div><span>Add-ons</span><span>None</span></div>';
+        if (lm.length) html += lm.map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("");
+        return html;
       })() +
       '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
@@ -498,7 +566,7 @@
     if (s === "quote") {
       app.querySelectorAll("[data-tier]").forEach(function (c) {
         function pick(e) {
-          if (e && e.target.closest("[data-act], [data-detail], [data-addon]")) return;
+          if (e && e.target.closest("[data-act], [data-detail], [data-addon], [data-lastminute]")) return;
           S.tier = c.getAttribute("data-tier"); save(); render();
         }
         c.addEventListener("click", pick);
@@ -511,6 +579,17 @@
           S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
           var ix = S.addons.indexOf(id);
           if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id);
+          save();
+          var y = window.scrollY; render(); window.scrollTo(0, y);
+        });
+      });
+      app.querySelectorAll("[data-lastminute]").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var id = b.getAttribute("data-lastminute");
+          S.lastMinute = Array.isArray(S.lastMinute) ? S.lastMinute.slice() : [];
+          var ix = S.lastMinute.indexOf(id);
+          if (ix > -1) S.lastMinute.splice(ix, 1); else S.lastMinute.push(id);
           save();
           var y = window.scrollY; render(); window.scrollTo(0, y);
         });
@@ -688,14 +767,25 @@
     rows += '<li class="total"><span>Annual total</span><span>' + money(bd.year) + '</span></li>';
     rows += '<li class="total"><span>Monthly equivalent</span><span>' + money(bd.monthly) + '/Month</span></li>';
     var bill = billLine(tier === "platinum" && S.plan === "annual" ? "annualDiscount" : (tier === "platinum" && S.plan === "quarterly" ? "quarterly" : "annual"), bd.year);
+    var extrasNote = [];
+    if (bd.addons) extrasNote.push("selected add-ons");
+    if (bd.lastMinute) extrasNote.push("last-minute extras");
     var body = '<p class="eyebrow">Detailed Pricing · Draft</p><h2>' + t.label + '</h2>' +
-      '<p class="small muted">Here is exactly what goes into your ' + t.label + ' estimate, based on your answers' + (bd.addons ? " and selected add-ons" : "") + '.</p>' +
+      '<p class="small muted">Here is exactly what goes into your ' + t.label + ' estimate, based on your answers' + (extrasNote.length ? " and " + extrasNote.join(" and ") : "") + '.</p>' +
       '<ul class="bd-list">' + rows + '</ul>' +
       '<p class="price-bill">' + bill + '</p>' +
+      (bd.lastMinute ? '<p class="small muted">Last-minute lines are one-time with your next visit and are not part of the monthly membership figure.</p>' : "") +
       '<p class="small muted bd-foot">Lines marked Estimated came from an Unsure answer; we used a typical metro Detroit home for those. Prices are draft.</p>' +
+      '<p class="cancel-link-wrap"><button type="button" class="detail-link" data-open-cancel="1">*Cancellation and Refund Policy</button></p>' +
+      '<div id="cancelInModal" class="cancel-inline hide">' + cancelPolicyCard(tier) + '</div>' +
       '<button type="button" class="btn btn-primary btn-big mw-hover" data-price-close="1">Close</button>';
     var m = ensurePriceModal();
     document.getElementById("priceModalBody").innerHTML = body;
+    var openCancel = document.querySelector("#priceModalBody [data-open-cancel]");
+    if (openCancel) openCancel.addEventListener("click", function () {
+      var box = document.getElementById("cancelInModal");
+      if (box) box.classList.toggle("hide");
+    });
     m.hidden = false;
     document.body.style.overflow = "hidden";
   }

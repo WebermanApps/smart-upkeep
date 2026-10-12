@@ -242,3 +242,13 @@ label.fl,p.fl{font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transfo
 .alacarte-cta h3{margin:0 0 .35rem}
 main.wide{max-width:1200px}
 #priceModal .bd-list li span:last-child{white-space:nowrap}
+
+/* Last-minute add-ons + cancellation policy */
+.addons.last-minute{margin-top:1.5rem}
+.addons.last-minute h3{color:var(--mw-lagoon)}
+.lm-due{margin:.5rem 0 0;padding:.55rem .7rem;border:1px solid var(--mw-lagoon);background:#fff;font-size:.92rem}
+.cancel-policy{margin:1rem 0;border-left:3px solid var(--mw-lagoon)}
+.cancel-policy h3{margin-top:0}
+.cancel-link-wrap{margin:.5rem 0 1rem}
+.cancel-inline{margin:0 0 1rem}
+.cancel-inline .cancel-policy{margin:0}
