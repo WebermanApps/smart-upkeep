@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<title>Smart Upkeep | Home Maintenance Membership, Metro Detroit</title>
+<meta name="description" content="Smart Upkeep: a home maintenance membership for metro Detroit. Licensed and insured techs, recall tracking, one simple plan.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand-tokens.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="#" class="brand mw-hover" id="logoHome" aria-label="Smart Upkeep home"><img src="assets/A-roof-chevron.svg" alt="Smart Upkeep"></a>
+  <span class="tag">Prototype, Draft Pricing</span>
+</header>
+<main id="app" tabindex="-1"></main>
+<footer class="foot">
+  <p><a class="mw-hover" href="https://maxweberman.com" target="_blank" rel="noopener">Built by Max Weberman</a></p>
+</footer>
+<div class="sharebar"><button id="shareBtn" class="btn btn-outline mw-hover" type="button">Share</button><span id="shareMsg" class="share-msg" role="status"></span></div>
+
+<div id="videoModal" class="modal" role="dialog" aria-modal="true" aria-label="Smart Upkeep explainer video" hidden>
+  <div class="modal-inner">
+    <button id="videoClose" class="modal-x mw-hover" type="button" aria-label="Close video">&times;</button>
+    <video id="explainer" playsinline muted preload="auto"></video>
+    <div class="modal-actions">
+      <button id="unmuteBtn" class="btn btn-outline mw-hover" type="button">Unmute</button>
+      <button id="skipBtn" class="btn btn-primary mw-hover" type="button">Skip Video</button>
+    </div>
+  </div>
+</div>
+<script src="pricing-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
