@@ -6,6 +6,7 @@
   var P = window.SMART_UPKEEP_PRICING;
   var KEY = "smartUpkeep.v1", VKEY = "smartUpkeep.videoDismissed";
   var app = document.getElementById("app");
+  function I(n, c) { return window.SUIcon ? window.SUIcon(n, c) : ""; }
   var photoMem = {}; // cardId -> [objectURL], browser memory only
 
   var Q = [
@@ -265,15 +266,17 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
+    document.body.classList.toggle("on-home", s === "home");
+    if (s === "home") bindHome();
   }
 
   /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
   function stepRail(active) {
     var steps = [
-      { n: 1, label: "Questions", ico: "&#9998;" },
-      { n: 2, label: "Photos", ico: "&#128247;" },
-      { n: 3, label: "Quote", ico: "&#128203;" },
-      { n: 4, label: "Sign Up", ico: "&#9997;" }
+      { n: 1, label: "Questions", ico: I("pen","xs") },
+      { n: 2, label: "Photos", ico: I("camera","xs") },
+      { n: 3, label: "Quote", ico: I("clipboard","xs") },
+      { n: 4, label: "Sign Up", ico: I("doc","xs") }
     ];
     return '<nav class="step-rail" aria-label="Your Progress">' + steps.map(function (s) {
       var state = s.n < active ? " done" : (s.n === active ? " on" : "");
@@ -333,7 +336,7 @@
       '<div class="cert-row">' + CERTS_BONUS.filter(function (c) { return held.indexOf(c[0]) > -1; }).map(function (c) { return badge(c, "bonus"); }).join("") + '</div>' +
       '<p class="cert-grp"><span class="cert-tag tag-licensed">Michigan Licensed</span> Trade Work by Licensed Partners</p>' +
       '<div class="cert-row"><a class="cert-badge cert-lic mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener" title="Mechanical, plumbing, electrical and residential builder work is done under an active Michigan LARA license.">' +
-      '<span class="cert-ico" aria-hidden="true">&#9878;</span>Michigan Licensed · Tap to Verify License</a></div>' +
+      '<span class="cert-ico" aria-hidden="true">' + I("shield","xs") + '</span>Michigan Licensed · Tap to Verify License</a></div>' +
       '<p class="cert-explain small" role="status" aria-live="polite">Tap any badge to see what it means.</p></div>';
   }
   function vettingSection() {
@@ -359,45 +362,106 @@
       '<p class="small muted" style="margin:0">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</p></div>';
   }
 
+  /* ---------- Home: phone-first shopping-app layout ---------- */
+  var ADDON_ICO = { windows: "window", carpet: "brush", pool: "pool", snow: "snow", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", handyman: "wrench", pest: "bug", guttersExtra: "gutter", backflow: "waterheater" };
+  function priceRange(a) { return a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high); }
+  function hmAcc(id, icon, title, body) {
+    return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
+  }
+  function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   function home() {
-    var lines = [
-      ["&#128167;", "When Was the Last Time You Flushed Your Water Heater?", "Or cleaned the dryer vent, or tested the sump pump?"],
-      ["&#128203;", "There's a Simple, but Long, List of Things Every Homeowner Needs to Do.", "Most people ignore it because life gets in the way."],
-      ["&#9201;", "We Find Exactly What Your Home Needs. In Minutes.", "Answer a few questions and get your plan and price."],
-      ["&#128737;", "Licensed &amp; Insured Techs Who Show Up Prepared", "We log your equipment first, so the right parts and filters are on the truck."],
-      ["&#128276;", "We Even Track Recalls", "If a maker recalls your furnace, water heater or panel, we let you know."]
-    ];
-    return '<section class="hero">' +
-      '<p class="eyebrow">Home Maintenance Membership &middot; Metro Detroit</p><div class="rule" aria-hidden="true"></div>' +
-      '<h1>Your Home, Taken Care Of.</h1>' +
-      '<p class="lead">Smart Upkeep is one membership for the maintenance your home needs all year: HVAC tune-ups, water heater service, gutters, dryer vents, safety checks and more, done by our licensed techs on a set schedule.</p>' +
-      '<p class="start-at">Membership Starting at $99/Month</p>' +
-      welcomeBanner() +
-      '<button class="link watch mw-hover" data-act="watch" type="button">&#9654; Watch Video</button>' +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button>' +
+    var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
+    var tiers = ["silver", "gold", "platinum"];
+    var trust = [["shield", "Licensed Partners", "Tap to Verify"], ["van", "Techs Show Up Ready", "Parts on the Truck"], ["clipboard", "Report Every Visit", "Written and Saved"], ["refund", "Cancel Anytime", "Fair Refunds"]];
+    var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
+    var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
+    function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong><span class="muted small">' + sub + '</span>' + (extra || "") + '</div>'; }
+    function row(id, title, cards, link) {
+      return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div><div class="hm-scroll">' + cards + '</div></section>';
+    }
+    return '<div class="hm">' +
+      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, Add-Ons, FAQ" aria-label="Search services, add-ons and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
+      '<section class="hm-hero">' +
+        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video"><img src="assets/poster-16x9.jpg" alt="" loading="eager" width="640" height="360">' + I("play", "hm-play") + '<span class="hm-dur">1:15</span></button>' +
+        '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1><p class="hm-sub">One membership. Every season. Licensed techs.</p>' +
+        '<p class="start-at">Membership Starting at $99/Month</p>' +
+        '<button class="hm-deal mw-hover" type="button" data-hm-open="offers">' + I("tag", "xs") + '<span><strong>Welcome Deal:</strong> Prepay 2 Years, Get 6 Months Free</span><span class="draft">Draft</span></button>' +
+        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
-      '<h3 class="grp">What We Take Care Of</h3><div class="svc-grid">' +
-      [["&#128293;","Furnace Tune-Up","Fall, every furnace"],["&#10052;","AC Tune-Up","Spring, every unit"],["&#128167;","Water Heater","Flush or descale"],["&#128168;","Dryer Vent","Cleaned yearly"],["&#127968;","Gutters","Spring and fall"],["&#128276;","Recall Watch","On your equipment"]].map(function (s, i) {
-        return '<div class="svc-card card mw-hover"><span class="svc-ico accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><strong>' + s[1] + '</strong><span class="muted small">' + s[2] + '</span></div>';
-      }).join("") + '</div>' +
-      '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l, i) { return '<div class="line card mw-hover"><span class="ico accent-' + (i % 4) + '" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
-      trustBlock() +
-      '<h3 class="grp">Learn More</h3>' +
-      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Whole-Home Moisture Scan: a pinless moisture meter and thermal camera check ceilings under bathrooms, around windows, basement walls and under sinks, with readings and photos saved to your Home Record and any hot spots flagged</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li><li>Maintenance Proof Pack for warranty claims</li><li>Home Record transfers when you sell</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
-      acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
-      acc("Recall Tracking", '<p>When we log your equipment (brand, model and serial from the labels), we watch for manufacturer and safety recalls on it. If something you own is recalled, we tell you and help you get it fixed. It is included in every membership.</p>') +
-      acc("Service Area: Metro Detroit", '<p>We serve Wayne, Oakland and Macomb counties and nearby, including Detroit, Bloomfield Hills, Birmingham, Troy, Farmington Hills, Novi, West Bloomfield, Rochester, Grosse Pointe, Northville and Plymouth. Not sure if you are covered? Enter your ZIP in step 1.</p>') +
-      acc("FAQ", '<h4>Do I need to send photos?</h4><p>No. You get an estimate without them. Photos let us give a final price.</p><h4>What if my home is different than I described?</h4><p>Your price is an estimate. If what we find on site does not match, we adjust the price before your first billed visit.</p><h4>Are your techs licensed and insured?</h4><p>Yes. Specialist work like HVAC is done by licensed pros.</p><h4>Can I cancel?</h4><p>You may cancel anytime. Refunds equal prepaid amount minus completed work (no fee). Free months from welcome offers have no refund value. Michigan home sign-ups also get a 3-business-day notice. See the draft agreement at sign up.</p><h4>What Are the Welcome Offers?</h4><p>Pay for 2 Years, Get 6 Months Free (every tier, $99/Month floor still applies), and Refer a Neighbor — you both get a month free, credited after their first payment clears, no cap. They stack. Draft terms.</p>') +
-      '<p class="start-at">Membership Starting at $99/Month</p><div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>';
+      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
+      row("plans", "Plans", tiers.map(function (k) { var t = P.tiers[k]; return card(k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label, t.tagline + " · " + t.visits + " Visits/Yr", '<span class="hm-price">' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : "") + 'From $99/Mo</span><button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button>', "hm-plan" + (t.recommended ? " rec" : "")); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>') +
+      row("addons", "Popular Add-Ons", addons.map(function (a) { return card(ADDON_ICO[a.id] || "wrench", a.label, a.unit === "season" ? "Per Season" : "Per Service", '<span class="hm-price">' + priceRange(a) + '</span>'); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="addons">See All</button>') +
+      row("trust", "Why Members Trust Us", trust.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
+      '<section class="hm-accs"><h2>Details</h2>' +
+      hmAcc("how", "clock", "How It Works", '<ol class="hm-list"><li>Answer 7 Quick Questions (2 Min)</li><li>Add Label Photos for a Final Price (Optional)</li><li>Review Your Plan and Price</li><li>Sign Up. We Schedule Visit One.</li></ol>') +
+      hmAcc("included", "house", "What's Included", ul(["Furnace Tune-Up (Fall) and AC Tune-Up (Spring)", "Water Heater Flush or Tankless Descale", "Gutter Cleaning, Spring and Fall", "Dryer Vent Cleaning", "Smoke, CO, GFCI and Shut-Off Checks", "Irrigation, Fireplace, Sump and Softener Care if You Have Them", "Recall Monitoring", "Written Report After Every Visit"]) +
+        '<div class="hm-feature">' + I("meter") + '<div><strong>Whole-Home Moisture Scan</strong><span class="muted small">Moisture meter and thermal camera. Hot spots flagged, saved to your Home Record. Every plan.</span></div></div>') +
+      tiers.map(function (k) { var t = P.tiers[k]; return hmAcc("plan-" + k, k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label + " · " + t.tagline, ul(t.features.map(function (f) { return f.split(":")[0]; })) + '<p class="small muted">' + t.visits + ' Visits a Year. Memberships Start at $99/Month.</p>'); }).join("") +
+      hmAcc("addons", "wrench", "All Add-Ons", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><p class="small muted">Draft Prices. Add at Checkout or Book One-Off.</p><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Book an Add-On</button>') +
+      hmAcc("vet", "shield", "How We Vet + Tech Badges", ul(["Michigan LARA License Checked", "Workers' Comp or Filed Exemption", "Liability and Auto Insurance", "Yearly Background Re-Check"]) + '<p class="small cert-line"><strong>Required:</strong> EPA 608, EPA Lead-Safe RRP, OSHA 10, CPR and First Aid, Annual Background Check.</p>' + sampleTechCard()) +
+      hmAcc("verify", "van", "Tap to Verify License", '<p class="small muted">Every licensed task links to Michigan LARA. Sample only.</p>' + sampleVisitCard()) +
+      hmAcc("proof", "doc", "Proof Pack + Home Record", ul(["Proof Pack: Downloadable Visit Record for Warranty Claims", "Home Record: Equipment, Readings, Photos", "Home Record Transfers When You Sell"])) +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime. No Fee.", "Refund = Prepaid Minus Completed Work", "Free Months Have No Refund Value", "Michigan Home Sales: 3-Business-Day Cancel Right (Shown at Signature)"])) +
+      hmAcc("offers", "tag", "Welcome Offers", ul(["Prepay 2 Years, Get 6 Months Free (Every Tier)", "Refer a Neighbor: You Both Get a Month Free", "They Stack. $99/Month Floor Applies."]) + '<p class="small muted">Draft Terms.</p>') +
+      hmAcc("area", "house", "Service Area: Metro Detroit", '<p class="small">Wayne, Oakland and Macomb Counties and Nearby. Check Your ZIP in Step 1.</p>') +
+      hmAcc("faq", "faq", "FAQ", '<h4>Do I Need Photos?</h4><p>No. They just make your price final.</p><h4>Home Different Than Described?</h4><p>We adjust before your first billed visit.</p><h4>Licensed and Insured?</h4><p>Yes. Trade work by licensed pros.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p>') +
+      '</section>' +
+      '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
+      '<nav class="hm-tabs" aria-label="App Sections">' +
+        [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "Add-Ons"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
+      '</nav><div class="hm-toast" role="status" aria-live="polite" hidden></div>' +
+      '</div>';
+  }
+  function bindHome() {
+    var root = app.querySelector(".hm"); if (!root) return;
+    var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function setOpen(d, open) {
+      var b = d.querySelector(".acc-body");
+      if (reduce) { d.open = open; return; }
+      if (open) { d.open = true; var h = b.scrollHeight; b.style.height = "0px"; requestAnimationFrame(function () { b.style.height = h + "px"; }); }
+      else { b.style.height = b.scrollHeight + "px"; requestAnimationFrame(function () { b.style.height = "0px"; }); }
+      b.addEventListener("transitionend", function te() { b.removeEventListener("transitionend", te); b.style.height = ""; if (!open) d.open = false; });
+    }
+    function openAcc(d, scroll) {
+      accs.forEach(function (o) { if (o !== d && o.open) setOpen(o, false); });
+      if (!d.open) setOpen(d, true);
+      if (scroll) setTimeout(function () { d.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }, 60);
+    }
+    accs.forEach(function (d) { d.querySelector("summary").addEventListener("click", function (e) { e.preventDefault(); if (d.open) setOpen(d, false); else openAcc(d, false); }); });
+    root.querySelectorAll("[data-hm-open]").forEach(function (b) { b.addEventListener("click", function () { var d = document.getElementById("acc-" + b.getAttribute("data-hm-open")); if (d) openAcc(d, true); }); });
+    var toast = root.querySelector(".hm-toast"), tt;
+    root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
+      var t = b.getAttribute("data-hm-tab");
+      if (t === "myhome" || t === "account") { toast.textContent = (t === "myhome" ? "My Home" : "Account") + " Is Coming Soon"; toast.hidden = false; clearTimeout(tt); tt = setTimeout(function () { toast.hidden = true; }, 2200); return; }
+      root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o === b); });
+      if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      else document.getElementById("row-" + t).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }); });
+    var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
+    if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
+    /* search */
+    var idx = [];
+    accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
+    P.addons.forEach(function (a) { idx.push({ t: a.label + " · " + priceRange(a), k: (a.label + " " + a.desc).toLowerCase(), acc: document.getElementById("acc-addons") }); });
+    var inp = root.querySelector(".hm-search input"), res = root.querySelector(".hm-results");
+    inp.addEventListener("input", function () {
+      var q = inp.value.trim().toLowerCase();
+      if (q.length < 2) { res.hidden = true; res.innerHTML = ""; return; }
+      var hits = idx.filter(function (x) { return x.k.indexOf(q) > -1; }).slice(0, 8);
+      res.innerHTML = hits.length ? hits.map(function (h, i) { return '<li><button type="button" class="mw-hover" data-i="' + idx.indexOf(h) + '">' + esc(h.t) + '</button></li>'; }).join("") : '<li class="muted small" style="padding:.6rem .8rem">No Matches</li>';
+      res.hidden = false;
+      res.querySelectorAll("button").forEach(function (b) { b.addEventListener("click", function () { res.hidden = true; inp.value = ""; openAcc(idx[+b.getAttribute("data-i")].acc, true); }); });
+    });
   }
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
   function overview() {
     var steps = [
-      ["&#9998;", "Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."],
-      ["&#128247;", "Take Some Photos (Optional)", "Equipment labels give you a final price."],
-      ["&#128203;", "Review Your Membership", "Silver, Gold or Platinum, with your estimated price."],
-      ["&#9997;", "Sign Up", "Sign the agreement and pick a payment plan."]
+      [I("pen"), "Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."],
+      [I("camera"), "Take Some Photos (Optional)", "Equipment labels give you a final price."],
+      [I("clipboard"), "Review Your Membership", "Silver, Gold or Platinum, with your estimated price."],
+      [I("doc"), "Sign Up", "Sign the agreement and pick a payment plan."]
     ];
     return backBtn() + stepRail(1) + '<p class="eyebrow">How It Works</p><h1>Four Quick Steps</h1>' +
       '<ol class="steps guide-steps">' + steps.map(function (s, i) {
@@ -466,7 +530,7 @@
       '<div class="photos" style="margin-top:1rem">' + cards.map(function (c) {
         var urls = photoMem[c[0]] || [], n = urls.length || (S.photos[c[0]] || 0);
         return '<div class="card pcard mw-hover"><h3>' + esc(c[1]) + (n ? '<span class="done-badge">' + n + ' Added</span>' : "") + '</h3><p class="muted small" style="margin:0 0 .6rem">' + esc(c[2]) + '</p>' +
-          '<label class="btn btn-outline mw-hover" style="width:100%">&#128247; Take or Choose Photo<input type="file" accept="image/*" capture="environment" multiple data-photo="' + c[0] + '"></label>' +
+          '<label class="btn btn-outline mw-hover" style="width:100%">' + I("camera","xs") + ' Take or Choose Photo<input type="file" accept="image/*" capture="environment" multiple data-photo="' + c[0] + '"></label>' +
           '<div class="prev">' + urls.map(function (u) { return '<img alt="Preview" src="' + u + '">'; }).join("") + (n && !urls.length ? '<span class="small muted">Previews clear on reload.</span>' : "") + '</div></div>';
       }).join("") + '</div>' +
       '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="photosDone" type="button">Continue to My Price</button></div>' +
@@ -721,7 +785,7 @@
       })() +
       '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
-      sampleVisitCard() + '<div class="card" style="margin-top:1rem"><h3>&#128276; Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
+      sampleVisitCard() + '<div class="card" style="margin-top:1rem"><h3>' + I("bell","sm") + ' Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
