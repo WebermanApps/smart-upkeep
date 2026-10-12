@@ -21,8 +21,8 @@
   ];
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
-  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) return Object.assign(fresh(), s); } catch (e) {} return fresh(); }
+  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], photos: {}, visit: null, photosComplete: false, signup: null, path: [] }; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
@@ -41,8 +41,23 @@
 
   /* ---------- Pricing ---------- */
   function num(id, def) { var v = S.answers[id]; return (v === undefined || v === "unsure") ? def : Number(v); }
-  function price(answers) {
-    var a = answers || S.answers, d = P.unsureDefaults;
+  function isUnsure(id) { var v = S.answers[id]; return v === undefined || v === "unsure"; }
+  function selectedAddons() {
+    var ids = Array.isArray(S.addons) ? S.addons : [];
+    return (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+  }
+  function addonsAnnual() {
+    return selectedAddons().reduce(function (sum, a) { return sum + (a.annual || 0); }, 0);
+  }
+  function addonPriceLabel(a) {
+    var mo = money(monthlyOf(a.annual));
+    var range = a.note ? a.note : (a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high));
+    var unit = a.unit === "yr" ? "/yr" : a.unit === "season" ? "/season" : a.unit === "hr" ? "/hr" : " per service";
+    if (a.note) return mo + "/Month · " + range + " <span>(draft)</span>";
+    return mo + "/Month · " + range + unit + " <span>(draft)</span>";
+  }
+  function buildLines() {
+    var a = S.answers, d = P.unsureDefaults;
     var sqft = num("sqft", d.sqft), f = num("furnaces", d.furnaces), ac = num("acs", d.acs), wh = num("waterHeaters", d.waterHeaters);
     var whType = (a.whType && a.whType !== "unsure") ? a.whType : d.whType;
     var stories = num("stories", d.stories), extras = Array.isArray(a.extras) ? a.extras : [];
@@ -50,13 +65,63 @@
     var tank = wh - tankless;
     var seasonal = P.seasonalVisit.base + P.seasonalVisit.perSqft * sqft;
     var checkIn = P.checkInVisit.base + P.checkInVisit.perSqft * sqft;
-    var services = f * P.perUnit.furnace + ac * P.perUnit.ac + tank * P.perUnit.tankWaterHeater + tankless * P.perUnit.tanklessWaterHeater +
-      P.dryerVent + (P.gutters2Cleanings[Math.min(3, stories)] || 540);
-    var goldExtras = 0, platExtras = 0;
-    extras.forEach(function (k) { var e = P.extras[k]; if (!e) return; goldExtras += e.gold || 0; platExtras += e.platinumOnly || 0; });
-    var gold = 4 * seasonal + services + goldExtras;
-    var platinum = gold + 8 * checkIn + P.platinumRoofInspection + platExtras;
-    return { gold: round(gold), platinum: round(platinum), sqft: sqft };
+    var gutters = P.gutters2Cleanings[Math.min(3, stories)] || 540;
+    var uSqft = isUnsure("sqft"), uF = isUnsure("furnaces"), uAc = isUnsure("acs");
+    var uWh = isUnsure("waterHeaters") || isUnsure("whType") || a.whType === "unsure";
+    var uSt = isUnsure("stories"), uEx = isUnsure("extras");
+    var linesGold = [];
+    linesGold.push({ label: "4 seasonal visits × " + money(seasonal) + " each", amt: 4 * seasonal, est: uSqft });
+    if (f > 0) linesGold.push({ label: f + " Furnace" + (f > 1 ? "s" : "") + " × " + money(P.perUnit.furnace), amt: f * P.perUnit.furnace, est: uF });
+    if (ac > 0) linesGold.push({ label: ac + " AC Unit" + (ac > 1 ? "s" : "") + " × " + money(P.perUnit.ac), amt: ac * P.perUnit.ac, est: uAc });
+    if (tank > 0) linesGold.push({ label: tank + " Tank Water Heater" + (tank > 1 ? "s" : "") + " × " + money(P.perUnit.tankWaterHeater), amt: tank * P.perUnit.tankWaterHeater, est: uWh });
+    if (tankless > 0) linesGold.push({ label: tankless + " Tankless Water Heater" + (tankless > 1 ? "s" : "") + " × " + money(P.perUnit.tanklessWaterHeater), amt: tankless * P.perUnit.tanklessWaterHeater, est: uWh });
+    linesGold.push({ label: "Dryer vent cleaning", amt: P.dryerVent, est: false });
+    linesGold.push({ label: "Gutter cleaning, spring and fall (" + stories + "-story home)", amt: gutters, est: uSt });
+    extras.forEach(function (k) {
+      var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
+      linesGold.push({ label: e.label, amt: e.gold, est: uEx });
+    });
+    var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
+    var linesPlat = linesGold.slice();
+    linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
+    linesPlat.push({ label: "Yearly roof and flashing inspection", amt: P.platinumRoofInspection, est: false });
+    extras.forEach(function (k) {
+      var e = P.extras[k]; if (!e || !(e.platinumOnly > 0)) return;
+      linesPlat.push({ label: e.label, amt: e.platinumOnly, est: uEx });
+    });
+    var platRaw = linesPlat.reduce(function (s, L) { return s + L.amt; }, 0);
+    return {
+      sqft: sqft, seasonal: seasonal, checkIn: checkIn,
+      goldRaw: goldRaw, platinumRaw: platRaw,
+      gold: round(goldRaw), platinum: round(platRaw),
+      goldLines: linesGold, platinumLines: linesPlat
+    };
+  }
+  function price(answers) {
+    var b = buildLines();
+    return { gold: b.gold, platinum: b.platinum, sqft: b.sqft };
+  }
+  function breakdown(tier) {
+    var b = buildLines(), mem = tier === "platinum" ? b.platinum : b.gold;
+    var lines = (tier === "platinum" ? b.platinumLines : b.goldLines).map(function (L) {
+      return { label: L.label, amt: L.amt, est: L.est, kind: "item" };
+    });
+    var add = selectedAddons();
+    add.forEach(function (x) {
+      lines.push({ label: "Add-on: " + x.label, amt: x.annual, est: false, kind: "addon" });
+    });
+    var addSum = addonsAnnual();
+    var membership = mem;
+    var discLine = null, year;
+    if (tier === "platinum" && S.plan === "annual") {
+      var disc = round(mem * (1 - P.platinumAnnualDiscount));
+      discLine = { label: "Annual pay-in-full discount (10%, draft)", amt: -(mem - disc), kind: "discount" };
+      membership = disc;
+      year = disc + addSum;
+    } else {
+      year = mem + addSum;
+    }
+    return { tier: tier, lines: lines, discLine: discLine, membership: membership, addons: addSum, year: year, monthly: monthlyOf(year) };
   }
   window.SmartUpkeepPrice = price; // exposed for testing
 
@@ -201,28 +266,49 @@
     var final = S.photosComplete && S.visit && S.visit.completed;
     var status = S.visit ? '<p class="small"><strong>Free tech visit requested</strong> for ' + esc(S.visit.date) + ' (' + esc((S.visit.windows || []).join(", ")) + '). We will confirm by text.</p>' : S.photosComplete ? '<p class="small"><strong>Photos added.</strong> We will review them and confirm your final price.</p>' : "";
     var unsure = Object.keys(a).filter(function (k) { return a[k] === "unsure"; }).length;
+    var addSum = addonsAnnual();
+    var tiersHtml = '<div class="tiers">' + ["gold", "platinum"].map(function (k) {
+      var t = P.tiers[k], amt = p[k], sel = S.tier === k;
+      return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
+        '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
+        '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") +
+        '<button type="button" class="detail-link" data-detail="' + k + '">*See Detailed Pricing</button>' +
+        '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
+        '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
+    }).join("") + '</div>';
+    var addonsHtml = '<div class="addons"><h3>Add-Ons (À La Carte)</h3>' +
+      '<p class="lead-sm">Optional services you can add to Gold or Platinum. Prices are draft market ranges; monthly figure is the yearly midpoint ÷ 12.</p>' +
+      '<div class="addon-list">' + (P.addons || []).map(function (ad) {
+        var on = (S.addons || []).indexOf(ad.id) > -1;
+        return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-addon="' + ad.id + '" aria-pressed="' + on + '">' +
+          '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
+          '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
+          '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
+          '<p class="addon-price">' + addonPriceLabel(ad) + '</p></span></button>';
+      }).join("") + '</div></div>';
+    var runYear = p[S.tier] + addSum;
+    var runHtml = '<div class="running card"><h3>Your Running Total · ' + P.tiers[S.tier].label + '</h3>' +
+      priceBlock(runYear, "annual") +
+      (addSum ? '<p class="small muted" style="margin:0">Includes ' + money(addSum) + '/yr in selected add-ons (draft).</p>' : '<p class="small muted" style="margin:0">Tap add-ons above to include them in your total.</p>') +
+      (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Platinum can save 10% when you pay annually at sign-up (draft).</p>' : "") +
+      '</div>';
+    // place running total after addons
     return backBtn() + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p><h1>Your Estimated Price</h1>' + status +
       (final ? "" : '<div class="notice"><strong>Your price is an estimate.</strong> It may change after we review your photos or complete a site visit. If photos don\'t match what we find on site, pricing will be adjusted.</div>') +
       (unsure ? '<p class="small muted" style="margin-top:.6rem">You answered Unsure ' + unsure + (unsure > 1 ? " times" : " time") + ', so we used a typical metro Detroit home for those.</p>' : "") +
-      '<div class="tiers">' + ["gold", "platinum"].map(function (k) {
-        var t = P.tiers[k], amt = p[k], sel = S.tier === k;
-        return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
-          '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
-          '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") +
-          '<ul>' + t.features.map(function (f) { return "<li>" + (/Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul>' +
-          '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
-      }).join("") + '</div>' +
+      tiersHtml + addonsHtml + runHtml +
       '<p class="small muted">Photo policy: if the photos you send don\'t match what we find on site, pricing will be adjusted before your first billed visit. Prices are draft and assume metro Detroit.</p>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">Schedule a Free Tech Visit</button></div>' : "");
   }
 
   function totals() {
-    var amt = price()[S.tier];
-    if (S.tier === "gold") return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt, year: amt, billKind: "annual", note: "Gold is paid in full for the year, up front." };
-    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: amt / 4, year: amt, billKind: "quarterly", note: "4 payments of " + money(amt / 4) + "." };
+    var amt = price()[S.tier], add = addonsAnnual();
+    var addonIds = (S.addons || []).slice();
+    if (S.tier === "gold") return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "annual", note: "Gold is paid in full for the year, up front." };
+    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, addons: add, addonIds: addonIds, billKind: "quarterly", note: "4 payments of " + money((amt + add) / 4) + "." };
     var disc = round(amt * (1 - P.platinumAnnualDiscount));
-    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc, year: disc, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " (draft discount)." };
+    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc + add, year: disc + add, membership: disc, addons: add, addonIds: addonIds, billKind: "annualDiscount", save: amt - disc, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
   }
 
   var AGREEMENT = '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Gold memberships are paid in full annually, up front. Platinum memberships may be paid in 4 quarterly payments or annually up front at a discount.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation</h4><p>Cancellation and refund terms are to be determined.</p>';
@@ -237,16 +323,20 @@
   function signup() {
     var p = price(), su = S.signup || {}, t = totals();
     var addr = su.address || (S.answers.zip && S.answers.zip !== "unsure" ? S.answers.zip : "");
+    var add = addonsAnnual();
     var platDisc = round(p.platinum * (1 - P.platinumAnnualDiscount));
     var planHtml = S.tier === "gold"
-      ? '<div class="card"><strong>Gold: Paid in Full Annually, Up Front.</strong>' + priceBlock(p.gold, "annual") + '</div>'
+      ? '<div class="card"><strong>Gold: Paid in Full Annually, Up Front.</strong>' + priceBlock(p.gold + add, "annual") + '</div>'
       : '<div class="opts">' + [
-          ["quarterly", "4 Quarterly Payments", p.platinum, "quarterly"],
-          ["annual", "Pay Annually, Up Front, Save 10% (Draft)", platDisc, "annualDiscount"]
+          ["quarterly", "4 Quarterly Payments", p.platinum + add, "quarterly"],
+          ["annual", "Pay Annually, Up Front, Save 10% (Draft)", platDisc + add, "annualDiscount"]
         ].map(function (o) {
           var s = S.plan === o[0];
           return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + '</span></button>';
         }).join("") + '</div>';
+    var addonSummary = selectedAddons().length
+      ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("")
+      : '<div><span>Add-ons</span><span>None selected</span></div>';
     return backBtn() + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
       '<form id="suF" novalidate class="stack">' +
       '<div class="card"><h3>Your Details</h3><label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
@@ -261,6 +351,7 @@
       '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
       '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
       (t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
+      addonSummary +
       '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
       '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: Payment Processing Coming Soon (Secure Checkout via Stripe)</div><p class="small muted">No card is charged or stored. These fields are disabled.</p>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
@@ -273,7 +364,14 @@
     return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">You\'re In</p><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
       '<div class="card"><h3>Summary</h3>' +
       '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
-      '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div><div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
+      '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div>' +
+      (function () {
+        var ids = t.addonIds || S.addons || [];
+        var list = (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+        if (!list.length) return '<div><span>Add-ons</span><span>None</span></div>';
+        return list.map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("");
+      })() +
+      '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>&#128276; Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
       '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
@@ -284,10 +382,30 @@
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
     var s = S.screen;
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
-    if (s === "quote") app.querySelectorAll("[data-tier]").forEach(function (c) {
-      function pick(e) { if (e && e.target.closest("[data-act]")) return; S.tier = c.getAttribute("data-tier"); save(); render(); }
-      c.addEventListener("click", pick); c.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
-    });
+    if (s === "quote") {
+      app.querySelectorAll("[data-tier]").forEach(function (c) {
+        function pick(e) {
+          if (e && e.target.closest("[data-act], [data-detail], [data-addon]")) return;
+          S.tier = c.getAttribute("data-tier"); save(); render();
+        }
+        c.addEventListener("click", pick);
+        c.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      });
+      app.querySelectorAll("[data-addon]").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          var id = b.getAttribute("data-addon");
+          S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
+          var ix = S.addons.indexOf(id);
+          if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id);
+          save();
+          var y = window.scrollY; render(); window.scrollTo(0, y);
+        });
+      });
+      app.querySelectorAll("[data-detail]").forEach(function (b) {
+        b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
+      });
+    }
     if (s === "photos") app.querySelectorAll("[data-photo]").forEach(function (inp) {
       inp.addEventListener("change", function () {
         var id = inp.getAttribute("data-photo"); photoMem[id] = photoMem[id] || [];
@@ -383,6 +501,55 @@
       s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = sigs.waiverSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals();
       go("confirm");
     });
+  }
+
+  /* ---------- Detailed pricing modal ---------- */
+  function ensurePriceModal() {
+    var m = document.getElementById("priceModal");
+    if (m) return m;
+    m = document.createElement("div");
+    m.id = "priceModal";
+    m.className = "modal";
+    m.setAttribute("role", "dialog");
+    m.setAttribute("aria-modal", "true");
+    m.setAttribute("aria-label", "Detailed pricing");
+    m.hidden = true;
+    m.innerHTML = '<div class="modal-inner"><button type="button" class="modal-x mw-hover" data-price-close="1" aria-label="Close">&times;</button><div id="priceModalBody"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener("click", function (e) {
+      if (e.target === m || e.target.getAttribute("data-price-close")) closePriceDetail();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !m.hidden) closePriceDetail();
+    });
+    return m;
+  }
+  function openPriceDetail(tier) {
+    var bd = breakdown(tier), t = P.tiers[tier];
+    var rows = bd.lines.map(function (L) {
+      return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Estimated</span>' : "") + '</span><span>' + money(L.amt) + '</span></li>';
+    }).join("");
+    if (bd.discLine) {
+      rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
+    }
+    rows += '<li class="total"><span>Annual total</span><span>' + money(bd.year) + '</span></li>';
+    rows += '<li class="total"><span>Monthly equivalent</span><span>' + money(bd.monthly) + '/Month</span></li>';
+    var bill = billLine(tier === "platinum" && S.plan === "annual" ? "annualDiscount" : (tier === "platinum" && S.plan === "quarterly" ? "quarterly" : "annual"), bd.year);
+    var body = '<p class="eyebrow">Detailed Pricing · Draft</p><h2>' + t.label + '</h2>' +
+      '<p class="small muted">Here is exactly what goes into your ' + t.label + ' estimate, based on your answers' + (bd.addons ? " and selected add-ons" : "") + '.</p>' +
+      '<ul class="bd-list">' + rows + '</ul>' +
+      '<p class="price-bill">' + bill + '</p>' +
+      '<p class="small muted bd-foot">Lines marked Estimated came from an Unsure answer; we used a typical metro Detroit home for those. Prices are draft.</p>' +
+      '<button type="button" class="btn btn-primary btn-big mw-hover" data-price-close="1">Close</button>';
+    var m = ensurePriceModal();
+    document.getElementById("priceModalBody").innerHTML = body;
+    m.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closePriceDetail() {
+    var m = document.getElementById("priceModal");
+    if (m) m.hidden = true;
+    document.body.style.overflow = "";
   }
 
   /* ---------- Video modal ---------- */
