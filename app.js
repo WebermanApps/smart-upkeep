@@ -146,6 +146,7 @@
     linesSilver = linesSilver.concat(hvacLines());
     linesSilver.push({ label: "Filter changes during visits", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "Whole-Home Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var silverRaw = linesSilver.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesGold = [];
     linesGold.push({ label: "4 seasonal visits × " + money(seasonal) + " each", amt: 4 * seasonal, est: uSqft });
@@ -155,6 +156,7 @@
       var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
       linesGold.push({ label: e.label, amt: e.gold, est: uEx });
     });
+    linesGold.push({ label: "Whole-Home Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
     linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
@@ -381,7 +383,7 @@
       '<h3 class="grp">Why Smart Upkeep</h3><div class="lines">' + lines.map(function (l, i) { return '<div class="line card mw-hover"><span class="ico accent-' + (i % 4) + '" aria-hidden="true">' + l[0] + '</span><div><h3>' + l[1] + '</h3><p class="muted small" style="margin:0">' + l[2] + '</p></div></div>'; }).join("") + '</div>' +
       trustBlock() +
       '<h3 class="grp">Learn More</h3>' +
-      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li><li>Maintenance Proof Pack for warranty claims</li><li>Home Record transfers when you sell</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
+      acc("What's Included", '<ul class="feat"><li>Fall furnace and spring AC tune-ups for every system</li><li>Water heater flush (tank) or descale (tankless)</li><li>Gutter cleaning in spring and fall</li><li>Dryer vent cleaning</li><li>Smoke, CO, GFCI and shut-off valve checks</li><li>Irrigation start-up and blowout, fireplace, sump pump and softener care if you have them</li><li>Whole-Home Moisture Scan: a pinless moisture meter and thermal camera check ceilings under bathrooms, around windows, basement walls and under sinks, with readings and photos saved to your Home Record and any hot spots flagged</li><li>Recall Monitoring on all your logged equipment</li><li>A written report after every visit</li><li>Maintenance Proof Pack for warranty claims</li><li>Home Record transfers when you sell</li></ul><p class="small muted">Silver is 2 seasonal visits a year. Gold is 4. Platinum is 12 and adds roof inspection, generator service, winter checks and more. Memberships start at $99/Month.</p>') +
       acc("How It Works", '<ol class="feat"><li>Answer a few questions about your home (about 2 minutes).</li><li>Optionally snap photos of your equipment labels for a final price.</li><li>Review your membership and estimated price.</li><li>Sign up. We schedule your first visit and start tracking recalls.</li></ol>') +
       acc("Recall Tracking", '<p>When we log your equipment (brand, model and serial from the labels), we watch for manufacturer and safety recalls on it. If something you own is recalled, we tell you and help you get it fixed. It is included in every membership.</p>') +
       acc("Service Area: Metro Detroit", '<p>We serve Wayne, Oakland and Macomb counties and nearby, including Detroit, Bloomfield Hills, Birmingham, Troy, Farmington Hills, Novi, West Bloomfield, Rochester, Grosse Pointe, Northville and Plymouth. Not sure if you are covered? Enter your ZIP in step 1.</p>') +
@@ -682,7 +684,7 @@
       '<label class="fl" for="sRef">Referral Code (Optional)</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '">' +
       '<p class="small muted" style="margin:.35rem 0 0">Have a neighbor\'s code? Enter it here. You both get a free month — credited once your first payment clears (draft, no cap).</p>' +
       '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Okay to Place a Smart Upkeep Yard Sign? (Optional)</span></label>' +
-      '<p class="small muted" style="margin:.2rem 0 0">We\'ll place a small sign for a couple of weeks after a visit. Say yes and get a free Smoke/CO Battery Swap ($65 value).</p></div>' +
+      '<p class="small muted" style="margin:.2rem 0 0">We\'ll place a small sign for a couple of weeks after a visit. Say yes and we\'ll swap the batteries in your smoke and CO detectors on your next visit, on us.</p></div>' +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + agreementHtml() + '</div>' +
       miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
@@ -739,6 +741,14 @@
       '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
+  /* Add-on event log: placeholder until real analytics. Local only, capped at 500 events. */
+  var EVKEY = "smartUpkeep.addonEvents";
+  function logAddon(type, ids, ctx) {
+    ids = [].concat(ids || []).filter(Boolean); if (!ids.length) return;
+    var ev = { t: new Date().toISOString(), type: type, ids: ids, ctx: ctx || "" };
+    try { var a = JSON.parse(localStorage.getItem(EVKEY) || "[]"); a.push(ev); if (a.length > 500) a = a.slice(-500); localStorage.setItem(EVKEY, JSON.stringify(a)); } catch (e) {}
+    try { console.info("[addon-event]", ev); } catch (e) {}
+  }
   /* ---------- Events ---------- */
   function bind() {
     app.querySelectorAll("[data-cert]").forEach(function (b) {
@@ -752,6 +762,11 @@
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
     var s = S.screen;
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
+    if (s === "quote" || s === "alacarte") {
+      var seen = []; app.querySelectorAll("[data-addon],[data-lastminute],[data-alacarte]").forEach(function (b) { seen.push(b.getAttribute("data-addon") || b.getAttribute("data-lastminute") || b.getAttribute("data-alacarte")); });
+      if (!bind._viewed) bind._viewed = {};
+      if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
+    }
     if (s === "quote") {
       app.querySelectorAll("[data-tier]").forEach(function (c) {
         function pick(e) {
@@ -767,7 +782,7 @@
           var id = b.getAttribute("data-addon");
           S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
           var ix = S.addons.indexOf(id);
-          if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id);
+          if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "data-addon");
           save();
           var y = window.scrollY; render(); window.scrollTo(0, y);
         });
@@ -778,7 +793,7 @@
           var id = b.getAttribute("data-lastminute");
           S.lastMinute = Array.isArray(S.lastMinute) ? S.lastMinute.slice() : [];
           var ix = S.lastMinute.indexOf(id);
-          if (ix > -1) S.lastMinute.splice(ix, 1); else S.lastMinute.push(id);
+          if (ix > -1) S.lastMinute.splice(ix, 1); else S.lastMinute.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "data-lastminute");
           save();
           var y = window.scrollY; render(); window.scrollTo(0, y);
         });
@@ -845,7 +860,7 @@
         var id = b.getAttribute("data-alacarte");
         S.alacarte = Array.isArray(S.alacarte) ? S.alacarte.slice() : [];
         var ix = S.alacarte.indexOf(id);
-        if (ix > -1) S.alacarte.splice(ix, 1); else S.alacarte.push(id);
+        if (ix > -1) S.alacarte.splice(ix, 1); else S.alacarte.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "data-alacarte");
         save();
         var y = window.scrollY; render(); window.scrollTo(0, y);
       });
@@ -870,7 +885,7 @@
       if (err) { document.getElementById("acErr").textContent = err; return; }
       b.services = (S.alacarte || []).slice();
       b.submittedAt = new Date().toISOString();
-      S.alacarteBooking = b; save(); go("alacarteConfirm");
+      logAddon("purchase", S.alacarte || [], "alacarte"); S.alacarteBooking = b; save(); go("alacarteConfirm");
     });
   }
   function bindVisit() {
@@ -920,7 +935,7 @@
         !document.getElementById("waive").checked ? "Please accept the Liability Waiver." : !sigs.waiverSig.valid() ? "Please sign the Liability Waiver." : "";
       var box = document.getElementById("suErr"); box.textContent = err;
       if (err) { box.scrollIntoView({ block: "center" }); return; }
-      s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = sigs.waiverSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals(); s.referralCodeIn = S.referralCodeIn || s.referralCodeIn || "";
+      s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = sigs.waiverSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals(); s.referralCodeIn = S.referralCodeIn || s.referralCodeIn || ""; logAddon("purchase", (S.addons || []).concat(S.lastMinute || []), "signup:" + S.tier);
       if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
       go("confirm");
     });
