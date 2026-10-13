@@ -389,11 +389,11 @@ body.on-home .sharebar{position:static;background:transparent;border:0;padding:0
 body.on-home .foot{padding-bottom:8.5rem}
 .hm h1{font-size:clamp(1.9rem,6vw,2.7rem);margin:.2rem 0 .2rem;line-height:1.05}
 .hm h2{font-family:var(--mw-font-heading);font-weight:700;font-size:1.35rem;margin:0}
-.hm-search{position:sticky;top:0;z-index:25;margin:0 -1rem;padding:.6rem 1rem;background:#ffffff;display:flex;align-items:center}
-.hm-search .su-ico{position:absolute;left:1.75rem;color:#525252}
+.hm-search{position:relative;z-index:25;margin:.5rem 0 0;padding:0;background:#ffffff;display:flex;align-items:center}
+.hm-search .su-ico{position:absolute;left:.9rem;color:#525252}
 .hm-search input{width:100%;min-height:46px;padding:.6rem .9rem .6rem 2.6rem;border:1px solid var(--mw-border);background:#fff;font:inherit;font-size:1rem;border-radius:999px!important}
 .hm-search input:focus{outline:2px solid #05668D;outline-offset:1px}
-.hm-results{position:absolute;left:1rem;right:1rem;top:100%;margin:0;padding:.3rem 0;list-style:none;background:#fff;border:1px solid var(--mw-border);box-shadow:0 8px 24px rgba(10,10,10,.1)}
+.hm-results{position:absolute;left:0;right:0;top:100%;margin:0;padding:.3rem 0;list-style:none;background:#fff;border:1px solid var(--mw-border);box-shadow:0 8px 24px rgba(10,10,10,.1)}
 .hm-results button{width:100%;text-align:left;background:none;border:0;padding:.6rem .9rem;font:inherit;cursor:pointer}
 .hm-results button:hover{background:var(--mw-cream)}
 .hm-hero{display:grid;gap:1rem;background:#fff;border:1px solid var(--mw-border);padding:1rem;margin-top:.4rem}
@@ -516,7 +516,7 @@ body.on-home .topbar{position:static;background:#ffffff;border-bottom:0;backdrop
   .sharebar{padding:.45rem .85rem}
   /* home */
   .hm h1{font-size:1.75rem}
-  .hm-search{padding:.4rem .85rem;margin:0 -.85rem}
+  .hm-search{padding:0;margin:.45rem 0 0}
   .hm-search input{min-height:42px}
   .hm-hero{grid-template-columns:42% 1fr;gap:.65rem;padding:.6rem;align-items:start}
   .hm-hero{row-gap:.35rem}
@@ -725,3 +725,79 @@ html{scroll-behavior:auto}
 .pc-inc li.pc-more::before{display:none}.pc-inc li.pc-more{padding-left:1.25rem}
 .hm-plan.pc .pc-inc .pc-more-link{text-transform:none!important;letter-spacing:normal!important;font-weight:500!important;font-size:.85rem!important;padding:0!important;min-height:0!important;margin:0!important}
 .pc-inc li.pc-lead{padding-left:0;font-weight:600;font-size:.8rem;color:var(--mw-muted-text,#555);margin-bottom:.1rem}.pc-inc li.pc-lead::before{display:none}
+
+/* Compact services tiles + trust chips (gentle tints from brand palette) */
+.hm-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+.hm-tile{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.45rem .2rem;background:#fff;border:1px solid var(--mw-border);border-radius:var(--mw-radius);text-align:center;font:600 .78rem/1.1 var(--mw-font-body);min-width:0}
+.hm-tile-ic{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:50%}
+.hm-tile-ic .su-ico{width:1.3rem;height:1.3rem}
+.t0 .hm-tile-ic{background:rgba(193,80,46,.16);color:var(--mw-terracotta-deep)}
+.t1 .hm-tile-ic{background:rgba(5,102,141,.15);color:var(--mw-lagoon)}
+.t2 .hm-tile-ic{background:rgba(212,160,23,.2);color:#8a6510}
+.t3 .hm-tile-ic{background:rgba(11,110,79,.15);color:var(--mw-jungle)}
+.hm-chips{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:0 -.85rem;padding:0 .85rem .1rem}
+.hm-chips::-webkit-scrollbar{display:none}
+.hm-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .65rem;border-radius:999px!important;border:1px solid transparent;font:600 .78rem var(--mw-font-body);cursor:pointer;white-space:nowrap}
+.hm-chip .su-ico{width:1rem;height:1rem}
+.hm-chip.t0{background:rgba(193,80,46,.11);color:var(--mw-terracotta-deep)}
+.hm-chip.t1{background:rgba(5,102,141,.1);color:var(--mw-lagoon)}
+.hm-chip.t2{background:rgba(212,160,23,.15);color:#7a5a0e}
+.hm-chip.t3{background:rgba(11,110,79,.1);color:var(--mw-jungle)}
+.hm-chip[aria-expanded="true"]{border-color:currentColor}
+.hm-chip-detail{margin:.35rem 0 0;color:var(--mw-muted-text)}
+@media (min-width:768px){
+  .hm-tiles{grid-template-columns:repeat(8,1fr);gap:.6rem}
+  .hm-tile{padding:.7rem .3rem;font-size:.85rem}
+  .hm-chips{flex-wrap:wrap;margin:0;padding:0}
+  .hm-chip{font-size:.85rem;padding:.45rem .85rem}
+}
+
+/* tiles are buttons now */
+.hm-tile{cursor:pointer;color:inherit;-webkit-tap-highlight-color:transparent}
+.hm-tile:focus-visible{outline:2px solid #05668D;outline-offset:1px}
+/* phone: trust chips as one row of 4 stacked badges, no sideways scroll */
+@media (max-width:767px){
+  .hm-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;overflow:visible;margin:0;padding:0}
+  .hm-chip{flex-direction:column;justify-content:center;gap:.15rem;padding:.4rem .15rem;border-radius:.6rem!important;white-space:normal;text-align:center;font-size:.7rem;line-height:1.1;min-height:3.3rem}
+}
+/* service popup: bottom card on phone, small popover on desktop */
+html.hm-pop-open,html.hm-pop-open body{overscroll-behavior:none}
+.hm-pop{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain;touch-action:none}
+.hm-pop[hidden]{display:none}
+.hm-pop-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
+.hm-pop-card{position:relative;width:100%;max-width:420px;background:#fff;border-radius:1rem 1rem 0 0;padding:.9rem 1rem calc(1rem + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(10,10,10,.18);text-align:center;touch-action:manipulation}
+.hm-pop-x{position:absolute;top:.35rem;right:.35rem;width:44px;height:44px;border:0;background:#F7F7F7;border-radius:50%!important;font-size:1.6rem;line-height:1;cursor:pointer;color:#0a0a0a}
+.hm-pop-art{display:flex;justify-content:center;margin:.2rem 0 .1rem}
+.hm-illo{width:150px;height:75px;stroke-width:2}
+.hm-pop-tag{display:inline-block;margin:.2rem 0;padding:.15rem .55rem;border-radius:999px;background:rgba(11,110,79,.12);color:var(--mw-jungle);font:600 .72rem var(--mw-font-body);letter-spacing:.06em;text-transform:uppercase}
+.hm-pop h3{margin:.15rem 0;font-family:var(--mw-font-heading);font-size:1.4rem}
+.hm-pop-txt{margin:0 0 .8rem;font-size:.95rem;color:#333}
+.hm-pop-go{width:100%}
+@media (min-width:768px){
+  .hm-pop{align-items:center}
+  .hm-pop-bg{background:rgba(10,10,10,.2)}
+  .hm-pop-card{max-width:340px;border-radius:1rem;box-shadow:0 12px 36px rgba(10,10,10,.2)}
+}
+
+/* Phone (tuned for 393x852): services + trust take half the old height */
+@media (max-width:767px){
+  #row-services{margin-top:.7rem}
+  #row-services .hm-row-h{margin-bottom:.2rem}
+  #row-services h2{font-size:1.3rem}
+  .hm-tiles{gap:.25rem}
+  .hm-tile{padding:.2rem .1rem .25rem;gap:.1rem;border:0;font-size:.7rem;line-height:1.05;min-height:44px;white-space:nowrap}
+  .hm-tile-ic{width:1.8rem;height:1.8rem}
+  .hm-tile-ic .su-ico{width:1.1rem;height:1.1rem}
+  #row-trust{margin-top:.35rem}
+  #row-trust .hm-row-h{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .hm-chip{flex-direction:row;gap:.25rem;padding:.25rem .3rem;min-height:38px;font-size:.66rem;text-align:left}
+  .hm-chip .su-ico{width:.95rem;height:.95rem}
+}
+@media (max-width:767px){
+  #row-services .hm-row-h{margin:0 0 .1rem;align-items:center}
+  #row-services h2{font-size:1.2rem;line-height:1.1;margin:0}
+  #row-services .hm-row-h .link{padding:0;min-height:0}
+  .hm-tile{min-height:0;padding:.1rem 0}
+  .hm-tile-ic{width:1.65rem;height:1.65rem}
+  .hm-chip{min-height:36px;padding:.2rem .3rem}
+}

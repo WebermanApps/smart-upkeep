@@ -44,5 +44,6 @@
     var b = D[name] || D.wrench;
     return '<svg class="su-ico ' + (cls || "") + ' ico-' + name + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + b + '</svg>';
   };
+  window.SUIconBody = function (name) { return D[name] || D.wrench; };
   window.SUIconNames = Object.keys(D);
 })();

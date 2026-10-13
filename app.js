@@ -145,7 +145,7 @@
     linesSilver = linesSilver.concat(hvacLines());
     linesSilver.push({ label: "Furnace filter changes during visits", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
-    linesSilver.push({ label: "Whole-Home Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var silverRaw = linesSilver.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesGold = [];
     linesGold.push({ label: "4 seasonal visits × " + money(seasonal) + " each", amt: 4 * seasonal, est: uSqft });
@@ -155,7 +155,7 @@
       var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
       linesGold.push({ label: e.label, amt: e.gold, est: uEx });
     });
-    linesGold.push({ label: "Whole-Home Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
+    linesGold.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
     linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
@@ -377,7 +377,17 @@
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
-  var selK = null;
+  var selK = null, HM_SVC = [];
+  var TIER_NOTE = { silver: "Included in Every Plan", gold: "Gold and Up", platinum: "Platinum" };
+  /* Small tech-at-work illustration: shared tech figure + the service's equipment icon. */
+  function techArt(ic) {
+    var body = window.SUIconBody ? window.SUIconBody(ic) : "";
+    return '<svg class="su-ico hm-illo" viewBox="0 0 120 60" aria-hidden="true" focusable="false"><path d="M4 56h112"/>' +
+      '<circle cx="30" cy="14" r="6"/><path class="f-t" d="M23 11c1-5 13-5 14 0z"/><path d="M37 11h4"/>' +
+      '<path class="f-l" d="M22 24c2-3 14-3 16 0l2 18H20z"/><path d="M24 42l-1 14M36 42l1 14"/>' +
+      '<path d="M38 27l12 6"/><path class="f-j" d="M50 33l6-3m-6 3l5 4"/>' +
+      '<g transform="translate(62 6) scale(1.05)">' + body + '</g></svg>';
+  }
   function FICO(f) { var m = [[/furnace/i,"furnace"],[/\bAC\b/,"ac"],[/water heater/i,"waterheater"],[/dryer/i,"dryer"],[/gutter/i,"gutter"],[/smoke|CO\b/,"detector"],[/moisture/i,"meter"],[/recall/i,"bell"],[/report/i,"clipboard"],[/proof|record/i,"doc"],[/selling/i,"gift"],[/roof|vent clearing|weatherproof/i,"house"],[/generator|garage|fridge|filter/i,"wrench"],[/visits?|check/i,"clock"],[/everything/i,"star"],[/extras|irrigation/i,"spray"]]; for (var i = 0; i < m.length; i++) if (m[i][0].test(f)) return m[i][1]; return "shield"; }
   /* Plan detail (Details section): icon checklist; anything after ":" is a collapsed drop-down. Content comes from P.tiers[k].features. */
   function planDetail(k) {
@@ -405,11 +415,20 @@
     return '<video class="hm-teaser" src="' + esc(T.src) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" width="640" height="360" aria-hidden="true" tabindex="-1"></video>';
   }
   function home() {
-    var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
+    var svc = [
+      ["furnace", "Furnace", "furnace", "Fall tune-up on every furnace, with filter changes during visits.", "silver"],
+      ["ac", "AC", "ac", "Spring tune-up on every AC unit so it is ready before the heat.", "silver"],
+      ["waterheater", "Water Heater", "waterheater", "Yearly flush, or descale for tankless, to cut sediment and extend its life.", "silver"],
+      ["dryer", "Dryer Vent", "dryer", "Dryer vent cleaned to lower fire risk and speed up drying.", "silver"],
+      ["detector", "Smoke/CO", "detector", "Smoke and CO detectors checked so alarms work when it counts.", "silver"],
+      ["meter", "Mold and Moisture", "meter", "Scanning your entire home every visit to protect against mold and water damage.", "silver"],
+      ["gutter", "Gutters", "gutter", "Gutters and downspouts cleaned every spring and fall.", "gold"],
+      ["chimney", "Roof", "chimney", "Yearly roof and flashing inspection to catch leaks early.", "platinum"]];
+    HM_SVC = svc;
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Silver, Gold, Platinum on every screen size */
-    var trust = [["shield", "Licensed"], ["van", "Show Up Ready"], ["clipboard", "Visit Reports"], ["refund", "Cancel Anytime"]];
+    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Honest Refund", "Cancel anytime, no fee. Refund = prepaid minus work done."], ["clipboard", "Report Every Visit", "Written report with photos saved to your Home Record."], ["house", "Metro Detroit", "Wayne, Oakland and Macomb counties."]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
     function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong>' + (sub ? '<span class="muted small">' + sub + '</span>' : '') + (extra || "") + '</div>'; }
@@ -417,17 +436,24 @@
       return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div>' + (pre || "") + '<div class="hm-scroll">' + cards + '</div></section>';
     }
     return '<div class="hm">' +
-      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">1:15</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
+      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
-      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="plans">See All</button>') +
-      row("trust", "Why Trust Us", trust.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button>') +
+      '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
+        '<div class="hm-tiles">' + svc.map(function (s, i) { return '<button type="button" class="hm-tile mw-hover t' + (i % 4) + '" data-svc="' + i + '" aria-haspopup="dialog"><span class="hm-tile-ic">' + I(s[0], "xs") + '</span><span>' + s[1] + '</span></button>'; }).join("") + '</div></section>' +
+      '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
+        '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">&times;</button>' +
+        '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
+        '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
+      '<section class="hm-row" id="row-trust"><div class="hm-row-h"><h2 class="hm-trust-h">Why Trust Us</h2><button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button></div>' +
+        '<div class="hm-chips">' + trust.map(function (s, i) { return '<button type="button" class="hm-chip mw-hover t' + (i % 4) + '" aria-expanded="false" data-chip="' + esc(s[2]) + '">' + I(s[0], "xs") + '<span>' + s[1] + '</span></button>'; }).join("") + '</div>' +
+        '<p class="hm-chip-detail small" aria-live="polite" hidden></p></section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", '' +
         tiers.map(function (k) { var t = P.tiers[k]; return '<details class="pd-plan" id="acc-plan-' + k + '"' + (k === selK ? " open" : "") + '><summary class="mw-hover">' + I(k === "silver" ? "house" : k === "gold" ? "star" : "shield", "xs") + '<span>' + t.label + ' · ' + t.tagline + '</span></summary>' + planDetail(k) + '</details>'; }).join("")) +
@@ -515,6 +541,37 @@
     }); });
     var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
     if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
+    /* service tiles: tap opens a small card (never automatic) */
+    var pop = root.querySelector(".hm-pop"), popTier = null, popFrom = null;
+    function popClose() { if (!pop || pop.hidden) return; pop.hidden = true; document.documentElement.classList.remove("hm-pop-open"); if (popFrom) popFrom.focus(); }
+    function popOpen(t) {
+      var d = HM_SVC[+t.getAttribute("data-svc")]; if (!d || !pop) return;
+      popFrom = t; popTier = d[4];
+      pop.querySelector(".hm-pop-art").innerHTML = techArt(d[2]);
+      pop.querySelector(".hm-pop-tag").textContent = TIER_NOTE[d[4]];
+      pop.querySelector("h3").textContent = d[1];
+      pop.querySelector(".hm-pop-txt").textContent = d[3];
+      pop.hidden = false; document.documentElement.classList.add("hm-pop-open");
+      pop.querySelector(".hm-pop-x").focus();
+    }
+    root.querySelectorAll(".hm-tile").forEach(function (t) { t.addEventListener("click", function () { popOpen(t); }); });
+    if (pop) {
+      pop.querySelectorAll("[data-pop-close]").forEach(function (c) { c.addEventListener("click", popClose); });
+      pop.querySelector(".hm-pop-go").addEventListener("click", function () {
+        pop.hidden = true; document.documentElement.classList.remove("hm-pop-open");
+        if (popTier && P.tiers[popTier]) S.tier = popTier;
+        go("q0");
+      });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") popClose(); });
+    }
+    /* trust chips: tap for a one-line detail */
+    var chipD = root.querySelector(".hm-chip-detail");
+    root.querySelectorAll(".hm-chip").forEach(function (c) { c.addEventListener("click", function () {
+      var on = c.getAttribute("aria-expanded") !== "true";
+      root.querySelectorAll(".hm-chip").forEach(function (o) { o.setAttribute("aria-expanded", "false"); });
+      c.setAttribute("aria-expanded", on ? "true" : "false");
+      chipD.hidden = !on; chipD.textContent = on ? c.getAttribute("data-chip") : "";
+    }); });
     /* search */
     var idx = [];
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
