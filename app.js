@@ -374,10 +374,10 @@
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
-  function planCard(k) {
+  function planCard(k, ord) {
     var t = P.tiers[k], inc = t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     var marks = ""; for (var i = 0; i < t.visits; i++) marks += '<span class="yv-dot"></span>';
-    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + '">' +
+    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 99) + '</span><span class="pc-per">/Mo</span></div>' +
@@ -395,6 +395,10 @@
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
     var tiers = tierKeys();
+    /* Phone swipe row only: recommended plan sits in the middle (e.g. Gold | Silver | Platinum). tierOrder is untouched elsewhere. */
+    var phoneOrder = tiers.filter(function (k) { return !P.tiers[k].recommended; });
+    var recK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0];
+    if (recK) phoneOrder.splice(Math.floor(phoneOrder.length / 2), 0, recK);
     var trust = [["shield", "Licensed"], ["van", "Show Up Ready"], ["clipboard", "Visit Reports"], ["refund", "Cancel Anytime"]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -410,8 +414,8 @@
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
-      row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>',
-        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>') +
+      row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>',
+        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
       row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
       row("trust", "Why Trust Us", trust.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
       '<section class="hm-accs"><h2>Details</h2>' +
@@ -431,8 +435,33 @@
       '</nav><div class="hm-toast" role="status" aria-live="polite" hidden></div>' +
       '</div>';
   }
+  /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
+  function bindPlanSwipe(root) {
+    var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
+    var dots = [].slice.call(root.querySelectorAll("#row-plans .pc-dot"));
+    var mq = window.matchMedia("(max-width:600px)");
+    function cards() { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
+    function center(el) { return el.offsetLeft - sc.offsetLeft + el.offsetWidth / 2 - sc.clientWidth / 2; }
+    function sync() {
+      if (!mq.matches) return;
+      var best = null, d = 1e9;
+      cards().forEach(function (c) { var x = Math.abs(center(c) - sc.scrollLeft); if (x < d) { d = x; best = c; } });
+      dots.forEach(function (o) { o.classList.toggle("on", !!best && o.getAttribute("data-dot") === best.getAttribute("data-tier")); });
+    }
+    function start() {
+      if (!mq.matches) return;
+      var rec = sc.querySelector(".hm-plan.rec") || cards()[0];
+      if (rec) sc.scrollLeft = center(rec);
+      sync();
+    }
+    var raf = 0;
+    sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
+    if (mq.addEventListener) mq.addEventListener("change", start);
+    requestAnimationFrame(start);
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
+    bindPlanSwipe(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function setOpen(d, open) {

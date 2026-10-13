@@ -649,3 +649,13 @@ details.cancel-policy.acc summary::after{margin-left:auto}
 details.est-note summary{font-size:1rem}
 .addon>.su-ico{flex:0 0 32px;width:32px;height:32px}
 .addon-list:has(.addon>.su-ico){display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+
+/* Phone plans swipe row (<=600px): recommended plan centered, neighbors peek, dots follow the swipe */
+.pc-dots{display:none}
+@media(max-width:600px){
+  #row-plans .hm-scroll{scroll-snap-type:x mandatory;padding-left:11%;padding-right:11%;scroll-padding:0 11%;gap:.6rem}
+  #row-plans .hm-plan{flex:0 0 78%;min-width:0;scroll-snap-align:center;order:var(--po,0)}
+  .pc-dots{display:flex;justify-content:center;gap:.45rem;margin:.1rem 0 .2rem}
+  .pc-dot{width:7px;height:7px;border-radius:50%;background:#d4d4d4;transition:background .2s,transform .2s}
+  .pc-dot.on{background:#0a0a0a;transform:scale(1.2)}
+}
