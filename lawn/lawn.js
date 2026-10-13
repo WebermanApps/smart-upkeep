@@ -95,8 +95,8 @@
     }
     btn.disabled = false;
     $("#perCut").textContent = "$" + q.perCut;
-    $("#priceNote").textContent = (freq === "weekly"
-      ? "About " + q.cuts + " Weekly Cuts · Est. $" + (q.perCut * q.cuts).toLocaleString() + " / Season · Billed Per Cut, Skip Anytime"
+    $("#priceNote").textContent = (freq !== "once"
+      ? "About " + q.cuts + (freq === "weekly" ? " Weekly" : " Every Other Week") + " Cuts · Est. $" + (q.perCut * q.cuts).toLocaleString() + " / Season · Billed Per Cut, Skip Anytime"
       : "One Visit · Overgrown Lawns Welcome") + (q.custom ? " · Over 1 Acre, We'll Confirm On Site" : "");
     lastQuote = { sqft: sqft, freq: freq, perCut: q.perCut, cuts: q.cuts };
   }
@@ -191,7 +191,7 @@
   $("#addPlan").addEventListener("click", function () {
     if (!lastQuote) return;
     try { localStorage.setItem("smartUpkeep.lawnAddon", JSON.stringify(Object.assign({ addedAt: Date.now() }, lastQuote))); } catch (e) {}
-    $("#planMsg").textContent = "Added To Your Plan (Demo): " + (lastQuote.freq === "weekly" ? "Weekly Mowing" : "One-Time Mowing") + " At $" + lastQuote.perCut + " / Cut.";
+    $("#planMsg").textContent = "Added To Your Plan (Demo): " + ({ weekly: "Weekly Mowing", biweekly: "Every Other Week Mowing", once: "One-Time Mowing" }[lastQuote.freq]) + " At $" + lastQuote.perCut + " / Cut.";
   });
   $("#shareBtn").addEventListener("click", function () {
     var data = { title: "Smart Upkeep Lawn Quote", text: "Get A Lawn Mowing Quote In A Minute", url: location.origin + location.pathname };

@@ -10,6 +10,8 @@ window.SMART_UPKEEP_PRICING = {
     passwordSha256: "6df85d68da9f1f949bc43346a2d84643736b955194f25738fd74100ae1874523",
     storageKey: "smartUpkeep.gateUnlocked"
   },
+  /* Retention offer (draft): shown on cancel or renewal. 6+ months a member: 1 month free to stay. 1+ year: 2 months free. */
+  retention: [{ minMonths: 12, freeMonths: 2 }, { minMonths: 6, freeMonths: 1 }],
   /* Welcome offers (draft). At launch keep or tune; free months have $0 refund value. */
   welcomeOffers: {
     twoYear: {

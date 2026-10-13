@@ -1,6 +1,6 @@
 *{box-sizing:border-box}
 :root{--cream:#FAF3EB;--ink:#0a0a0a;--rust:#C1502E;--blue:#05668D;--gold:#D4A017;--green:#0B6E4F;--line:#e5ddd1}
-body{margin:0;background:var(--cream);color:var(--ink);font-family:"Hind",system-ui,sans-serif;line-height:1.45}
+body{margin:0;background:#fff;color:var(--ink);font-family:"Hind",system-ui,sans-serif;line-height:1.45}
 h1,.big,.btn,.seg,.tool,.steps,.draft,.lbl,.maptag{font-family:"Khand",sans-serif}
 .top{display:flex;justify-content:center;padding:.9rem 1rem .2rem}
 .brand img{height:42px;width:auto;display:block}
@@ -44,7 +44,8 @@ a.mw-hover:hover{box-shadow:none;opacity:.75}
 .sqft{display:flex;align-items:baseline;gap:.4rem}
 .sqft .lbl{font-weight:600;font-size:1.1rem;flex:1}
 .sqft strong{font-family:"Khand",sans-serif;font-size:2rem;color:var(--green)}
-.freq{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.freq{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+.same{display:inline-block;margin-left:.5rem;font-size:.8rem;color:#555}
 .seg{font-weight:700;font-size:1.15rem;border:2px solid var(--line);background:var(--cream);border-radius:10px;padding:.5rem;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;line-height:1.1}
 .seg small{font-family:"Hind",sans-serif;font-weight:400;font-size:.8rem;color:#555}
 .seg.on{border-color:var(--ink);background:#fff}

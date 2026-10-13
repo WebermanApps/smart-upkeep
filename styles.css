@@ -633,3 +633,5 @@ body,body.on-home,.hm-search,body.on-home .topbar{background:#fff}
 .hm-offer-tag[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
 .hm-offer-tag .hm-offer-body{margin-top:.4rem;padding:.5rem .7rem;border-left:2px solid var(--mw-terracotta);max-width:30rem}
 .hm-offer-tag .hm-offer-body p{margin:.1rem 0}
+.retention{display:flex;gap:.5rem;align-items:flex-start;background:#fff;border:1px dashed var(--mw-border);border-radius:.6rem;padding:.6rem}
+.su-ico.xs.ico-gift,.hm-list .ico-gift{width:22px;height:22px;vertical-align:middle;flex:0 0 22px}

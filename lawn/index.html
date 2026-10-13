@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css">
-<link rel="stylesheet" href="lawn.css?v=1">
+<link rel="stylesheet" href="lawn.css?v=2">
 </head>
 <body>
 <header class="top">
@@ -49,12 +49,14 @@
       <div class="sqft"><span class="lbl">Mowable Lawn</span><strong id="sqft">0</strong><span class="unit">Sq Ft</span></div>
       <div class="freq" role="radiogroup" aria-label="Schedule">
         <button class="seg mw-hover on" data-f="weekly" role="radio" aria-checked="true" type="button">Weekly <small>Apr–Oct Season</small></button>
+        <button class="seg mw-hover" data-f="biweekly" role="radio" aria-checked="false" type="button">Every Other Week <small>Apr–Oct Season</small></button>
         <button class="seg mw-hover" data-f="once" role="radio" aria-checked="false" type="button">One-Time <small>Single Cut</small></button>
       </div>
       <div class="price">
         <div><span id="perCut" class="big">$0</span><span class="per">/ Cut</span></div>
         <p id="priceNote" class="pnote"></p>
         <span class="draft">Draft Pricing</span>
+        <span class="same">Same Price For Members</span>
       </div>
       <p class="incl">Includes Mowing, String Trimming, And Blowing Off Walks And Drive.</p>
       <button id="addPlan" class="btn btn-primary wide mw-hover" type="button">Add To My Plan</button>
@@ -71,7 +73,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.1.0/turf.min.js"></script>
-<script src="lawn-pricing.js?v=1"></script>
-<script src="lawn.js?v=1"></script>
+<script src="lawn-pricing.js?v=2"></script>
+<script src="lawn.js?v=2"></script>
 </body>
 </html>
