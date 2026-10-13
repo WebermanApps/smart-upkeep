@@ -398,7 +398,9 @@ body.on-home .foot{padding-bottom:8.5rem}
 .hm-results button:hover{background:var(--mw-cream)}
 .hm-hero{display:grid;gap:1rem;background:#fff;border:1px solid var(--mw-border);padding:1rem;margin-top:.4rem}
 .hm-thumb{position:relative;display:block;padding:0;border:0;background:#f5f0ea;cursor:pointer;aspect-ratio:16/9;overflow:hidden}
-.hm-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.hm-thumb img,.hm-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.hm-expand{position:absolute;left:.5rem;bottom:.5rem;width:1.9rem;height:1.9rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.92);border-radius:50%}
+.hm-expand svg{width:.9rem;height:.9rem}
 .hm-thumb .hm-play{position:absolute;left:50%;top:50%;width:4rem;height:4rem;transform:translate(-50%,-50%);background:rgba(255,255,255,.92);border-radius:50%}
 .hm-dur{position:absolute;right:.5rem;bottom:.5rem;background:rgba(10,10,10,.75);color:#fff;font-size:.78rem;padding:.05rem .4rem}
 .hm-sub{margin:0 0 .4rem;color:var(--mw-muted-text)}

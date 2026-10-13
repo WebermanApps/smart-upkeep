@@ -385,6 +385,13 @@
       '<div class="pc-year" aria-label="' + t.visits + ' visits a year"><span class="pc-year-l">Your Year</span><span class="yv' + (t.visits > 6 ? " many" : "") + '">' + marks + '</span><span class="pc-year-n">' + t.visits + ' Visits</span></div>' +
       '<button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button></div>';
   }
+  /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
+  function heroMedia() {
+    var T = P.teaser || {}, poster = T.poster || "assets/poster-16x9.jpg";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!T.src || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" width="640" height="360">';
+    return '<video class="hm-teaser" src="' + esc(T.src) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" width="640" height="360" aria-hidden="true" tabindex="-1"></video>';
+  }
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
     var tiers = tierKeys();
@@ -398,7 +405,7 @@
     return '<div class="hm">' +
       '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, Add-Ons, FAQ" aria-label="Search services, add-ons and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       '<section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video"><img src="assets/poster-16x9.jpg" alt="" loading="eager" width="640" height="360">' + I("play", "hm-play") + '<span class="hm-dur">1:15</span></button>' +
+        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">1:15</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
