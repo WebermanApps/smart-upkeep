@@ -33,15 +33,14 @@
   function billLine(kind, annualTotal) {
     if (kind === "quarterly") return "*Billed quarterly (" + money(annualTotal / 4) + " every 3 months)";
     if (kind === "annualDiscount") return "*Billed annually (" + money(annualTotal) + "/yr, 10% off)";
-    if (kind === "biennial") return "*Pay for 2 Years, Get 6 Months Free (" + money(annualTotal) + " for 30 months, draft)";
+    if (kind === "biennial") return "*Prepaid for 2 years (" + money(annualTotal) + "), then 6 extra months free at the end of your term (draft)";
     return "*Billed annually (" + money(annualTotal) + "/yr)";
   }
   function priceBlock(annualTotal, kind) {
     if (kind === "biennial") {
-      var eff = Math.round(Number(annualTotal) / 30);
-      return '<div class="price">' + money(eff) + '<small>/Month effective</small></div>' +
+      return '<div class="price">' + money(Math.round(Number(annualTotal) / 24)) + '<small>/Month</small></div>' +
         '<p class="price-bill">' + billLine("biennial", annualTotal) + '</p>' +
-        '<p class="price-save">6 Months Free · stacks with referrals (draft)</p>';
+        '<p class="price-save">6 Extra Months Free at the End of Your Term · stacks with referrals (draft)</p>';
     }
     return '<div class="price">' + money(monthlyOf(annualTotal)) + '<small>/Month</small></div>' +
       '<p class="price-bill">' + billLine(kind, annualTotal) + '</p>';
@@ -54,14 +53,14 @@
       '<p class="eyebrow" style="margin:0">Welcome Offer</p>' +
       '<h3 style="margin:.2rem 0 .55rem">Stackable Savings</h3>' +
       '<ul class="feat offer-list">' +
-      '<li><strong>Pay for 2 Years, Get 6 Months Free</strong> — 30 months of membership for the price of 24, paid up front. Available on every tier. Listed price still honors the $99/Month floor.</li>' +
+      '<li><strong>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</strong> — prepay 24 months at the normal monthly price; 6 extra months are added free after your 24 paid months. Available on every tier. Listed price still honors the $99/Month floor.</li>' +
       '<li><strong>Refer a Neighbor, You Both Get a Month Free</strong> — no cap on referrals. Credited once your neighbor\'s first payment clears.</li>' +
       '</ul>' +
-      '<p class="small muted" style="margin:0">Offers stack. Free months extend your term and carry no refund value. Final terms pending legal review.</p></div></details>';
+      '<p class="small muted" style="margin:0">Offers stack. Free months are added at the end of your term and apply once you complete it. Cancel early and they are forfeited. Free months carry no refund value. Final terms pending legal review.</p></div></details>';
   }
   function offerTermsShort() {
     return '<details class="acc warn-drop offer-terms"><summary class="mw-hover">1 Warning · Draft Offer Terms</summary><div class="acc-body">' +
-      '<p style="margin:0"><strong>Pay for 2 Years, Get 6 Months Free:</strong> pay 24 months at the listed membership price (minimum $99/Month), receive 30 months of coverage. <strong>Refer a Neighbor:</strong> you and your neighbor each get one free month per successful referral, with no cap. Free months are credited only after the referred neighbor\'s first payment has cleared. Offers stack. Free months have no refund value on cancel.</p></div></details>';
+      '<p style="margin:0"><strong>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term:</strong> pay 24 months at the normal membership price (minimum $99/Month); 6 extra months are added free at the end of your term, for 30 months of coverage. <strong>Refer a Neighbor:</strong> you and your neighbor each get one free month per successful referral, with no cap. Free months are credited only after the referred neighbor\'s first payment has cleared. Offers stack. Free months are added at the end of your term and apply once you complete it. Cancel early and they are forfeited; free months have no refund value.</p></div></details>';
   }
   function makeReferralCode(name) {
     var base = String(name || "HOME").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "HOME";
@@ -224,7 +223,7 @@
     if (S.plan === "biennial") {
       var two = mem * 2;
       var freeVal = Math.round(mem / 2); // 6 months at listed annual/12 * 6
-      offerLine = { label: "Welcome offer: Pay for 2 Years, Get 6 Months Free (draft)", amt: -freeVal, kind: "offer" };
+      offerLine = { label: "Welcome offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (draft)", amt: -freeVal, kind: "offer" };
       membership = two;
       year = two + addSum * 2;
       prepaid = year;
@@ -237,7 +236,7 @@
     } else {
       year = mem + addSum;
     }
-    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, offerLine: offerLine, membership: membership, addons: addSum, lastMinute: lmSum, year: year, monthly: termMonths === 30 ? Math.round(year / 30) : monthlyOf(year), termMonths: termMonths, prepaid: prepaid, floored: tierFloored(b, tier) };
+    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, offerLine: offerLine, membership: membership, addons: addSum, lastMinute: lmSum, year: year, monthly: termMonths === 30 ? Math.round(year / 24) : monthlyOf(year), termMonths: termMonths, prepaid: prepaid, floored: tierFloored(b, tier) };
   }
   window.SmartUpkeepPrice = price; // exposed for testing
 
@@ -444,7 +443,7 @@
       '</section>' +
       '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
-        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Extra Months Free</span></summary><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
         '<div class="hm-tiles">' + svc.map(function (s, i) { return '<button type="button" class="hm-tile mw-hover t' + (i % 4) + '" data-svc="' + i + '" aria-haspopup="dialog"><span class="hm-tile-ic">' + I(s[0], "xs") + '</span><span>' + s[1] + '</span></button>'; }).join("") + '</div></section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
@@ -458,7 +457,7 @@
       hmAcc("plans", "house", "What's Included", '' +
         tiers.map(function (k) { var t = P.tiers[k]; return '<details class="pd-plan" id="acc-plan-' + k + '"' + (k === selK ? " open" : "") + '><summary class="mw-hover">' + I(k === "silver" ? "house" : k === "gold" ? "star" : "shield", "xs") + '<span>' + t.label + ' · ' + t.tagline + '</span></summary>' + planDetail(k) + '</details>'; }).join("")) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: No Refund Value", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
@@ -808,6 +807,7 @@
       strip +
       '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
+      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each. Free months are added at the end of your term and apply once you complete it.</p>' +
       '<h2 class="pr-more">Plan Details</h2>' +
       tiersHtml + status +
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
@@ -837,8 +837,8 @@
     if (S.plan === "biennial") {
       var mem2 = amt * 2, add2 = add * 2, prepaid = mem2 + add2;
       var save6 = Math.round(amt / 2);
-      return { plan: "biennial", label: "Pay for 2 Years, Get 6 Months Free (Draft)", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, effectiveMonthly: Math.round(mem2 / 30), save: save6, freeMonths: 6, referralCodeIn: refIn,
-        note: money(Math.round(mem2 / 30)) + "/Month effective, 6 Months Free. Prepaid " + money(prepaid) + " for 30 months (draft)." };
+      return { plan: "biennial", label: "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (Draft)", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, save: save6, freeMonths: 6, referralCodeIn: refIn,
+        note: money(Math.round(mem2 / 24)) + "/Month, prepaid " + money(prepaid) + " for 2 years. 6 extra months free at the end of your term (draft)." };
     }
     if (S.tier === "silver" || S.tier === "gold") {
       return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
@@ -884,7 +884,7 @@
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Months Free, plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships may be paid in 4 quarterly payments, annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships may be paid in 4 quarterly payments, annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
   }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
@@ -959,10 +959,10 @@
     } else {
       planOpts.push(["annual", P.tiers[S.tier].label + ": Paid in Full Annually, Up Front", listed + add, "annual"]);
     }
-    planOpts.push(["biennial", "Pay for 2 Years, Get 6 Months Free (Draft)", twoPrepaid, "biennial"]);
+    planOpts.push(["biennial", "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (Draft)", twoPrepaid, "biennial"]);
     var planHtml = '<div class="opts">' + planOpts.map(function (o) {
       var s = S.plan === o[0];
-      var extra = o[0] === "biennial" ? '<p class="price-save">' + money(Math.round((listed * 2) / 30)) + '/Month effective · 6 Months Free</p>' : "";
+      var extra = "";
       return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + extra + '</span></button>';
     }).join("") + '</div>' + offerTermsShort();
     var addonSummary = selectedAddons().length
@@ -989,8 +989,8 @@
       '<div class="card"><h3>Payment Plan</h3>' + planHtml +
       '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
       '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
-      (t.plan === "biennial" ? '<div><span>Term</span><span>30 months (6 Months Free)</span></div><div><span>Effective Monthly (Draft)</span><span>' + money(t.effectiveMonthly) + '/Month</span></div>' : "") +
-      (t.save ? '<div><span>' + (t.plan === "biennial" ? "6 Months Free Value (Draft)" : "Annual Discount (Draft)") + '</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
+      (t.plan === "biennial" ? '<div><span>Term</span><span>24 Paid Months + 6 Free Months at the End</span></div>' : "") +
+      (t.save ? '<div><span>' + (t.plan === "biennial" ? "Value of 6 Free Months at the End (Draft)" : "Annual Discount (Draft)") + '</span><span>' + (t.plan === "biennial" ? "" : "&minus;") + money(t.save) + '</span></div>' : "") +
       ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears</span></div>' : "") +
       addonSummary + lmSummary +
       '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
@@ -1315,11 +1315,11 @@
       rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
     }
     if (bd.offerLine) {
-      rows += '<li class="sub"><span>' + esc(bd.offerLine.label) + '</span><span>6 Months Free</span></li>';
+      rows += '<li class="sub"><span>' + esc(bd.offerLine.label) + '</span><span>6 Extra Months at the End</span></li>';
       rows += '<li class="sub"><span>Prepaid for 24 months at listed price (floor honored)</span><span>' + money(bd.membership) + '</span></li>';
     }
     rows += '<li class="total"><span>' + (bd.termMonths === 30 ? "Prepaid total (30-month term)" : "Annual membership total") + '</span><span>' + money(bd.year) + '</span></li>';
-    rows += '<li class="total"><span>' + (bd.termMonths === 30 ? "Effective monthly" : "Monthly equivalent") + '</span><span>' + money(bd.monthly) + '/Month</span></li>';
+    rows += '<li class="total"><span>' + "Monthly price" + '</span><span>' + money(bd.monthly) + '/Month</span></li>';
     if (bd.termMonths === 30) {
       rows += '<li class="sub"><span>Referral free months (if any)</span><span>Credited after neighbor\'s first payment clears · $0 refund value</span></li>';
     }

@@ -16,7 +16,7 @@ window.SMART_UPKEEP_PRICING = {
   welcomeOffers: {
     twoYear: {
       id: "twoYear",
-      label: "Pay for 2 Years, Get 6 Months Free",
+      label: "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term",  /* free months added AFTER the 24 paid months; no "effective" monthly shown */
       payMonths: 24,
       getMonths: 30,
       freeMonths: 6
@@ -62,19 +62,19 @@ window.SMART_UPKEEP_PRICING = {
   teaser: { src: "video/teaser-v1-16x9.mp4", poster: "assets/teaser-v1-poster.jpg" },
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
-     against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 1 AC,
-     1 tank water heater, 1 story, no extras. Annual totals: Silver 890 -> floored to 1188, Gold 2110,
-     Platinum 3880 (roundTo 10). Recompute if any pricing input above changes. */
+     against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),
+     1 tank water heater, 1 story, no extras. Annual totals: Silver 890 -> floored to 1188, Gold 1970,
+     Platinum 3740 (roundTo 10). Recompute if any pricing input above changes. */
   tiers: {
     silver: { fromMonthly: 99, label: "Essentials", tagline: "Seasonal Care", visits: 2, recommended: true,
       keyPoints: ["Furnace/AC Tune-Up", "Water Heater Flush", "Dryer Vent Cleaning", "Mold and Moisture Scan", "And More"],
       keyPointsOnCard: true,
       features: ["2 seasonal visits a year (spring and fall)", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Furnace filter changes during visits", "Water heater flush or tankless descale", "Dryer vent cleaning", "Smoke and CO detector checks", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    gold: { fromMonthly: 176, label: "Plus", tagline: "Quarterly Care", visits: 4,
+    gold: { fromMonthly: 164, label: "Plus", tagline: "Quarterly Care", visits: 4,
       keyPoints: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Irrigation Start-Up/Blowout", "Salt in Water Softener", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Essentials", "4 seasonal visits a year (one per quarter)", "Gutter and downspout cleaning, spring and fall", "Smoke, CO, GFCI and shut-off valve checks", "Garage door lube and pre-winter weatherproofing", "Water softener salt top-off during visits", "Fridge water filter changes during visits", "Your selected extras serviced (irrigation start-up and blowout, fireplace, sump, softener)", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    platinum: { fromMonthly: 323, label: "Complete", tagline: "Monthly Care", visits: 12,
+    platinum: { fromMonthly: 312, label: "Complete", tagline: "Monthly Care", visits: 12,
       keyPoints: ["Everything in Plus, and:", "Roof and Flashing Inspections", "Pre and Post Storm Checks", "Ice Dam Clearing After Storms", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Plus", "12 visits a year (monthly check-ins)", "Yearly roof and flashing inspection", "Standby generator service (if you have one)", "Winter vent clearing and ice dam clearing after storms", "Pre-storm, post-storm and pre-travel home checks", "Fridge coil cleaning and small fixes during visits", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] }
