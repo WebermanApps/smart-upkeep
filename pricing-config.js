@@ -7,7 +7,7 @@ window.SMART_UPKEEP_PRICING = {
   /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
   prelaunchGate: {
     enabled: true,
-    passwordSha256Labels: { "fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71": "1001", "bcb9dae6ea88dbf28c262998e6661ec60f32a760faa5aef96745b39c38dbf235": "mom", "fb3cf40ba768126dbfbca0e946d98d57237a1ec875ea04e1426ae25db3a5f952": "nozomi", "4cefa6b13a8f592f55bfd46b3719f879859c3eb348e20fe34ab86bcb5cb2ca27": "brett", "43d26e8db66a76f646f2d559e592493070c7e02048ada7fd8b96fcc0369f5d11": "lenny" },  /* SHA-256 (lowercased, trimmed) -> label; unlock logged once per session via MWSubmit to upkeep */
+    passwordSha256Labels: { "fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71": "u1", "bcb9dae6ea88dbf28c262998e6661ec60f32a760faa5aef96745b39c38dbf235": "u2", "fb3cf40ba768126dbfbca0e946d98d57237a1ec875ea04e1426ae25db3a5f952": "u3", "4cefa6b13a8f592f55bfd46b3719f879859c3eb348e20fe34ab86bcb5cb2ca27": "u4", "43d26e8db66a76f646f2d559e592493070c7e02048ada7fd8b96fcc0369f5d11": "u5" },  /* SHA-256 (lowercased, trimmed) -> label; unlock logged once per session via MWSubmit to upkeep */
     storageKey: "smartUpkeep.gateUnlocked"
   },
   /* Retention offer (draft): shown on cancel or renewal. 6+ months a member: 1 month free to stay. 1+ year: 2 months free. */
