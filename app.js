@@ -388,13 +388,13 @@
       '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
   }
   function planCard(k, ord) {
-    var t = P.tiers[k], inc = t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
+    var t = P.tiers[k], inc = t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 99) + '</span><span class="pc-per">/Mo</span></div>' +
-      '<ul class="pc-inc">' + inc.map(function (f) { return '<li>' + f + '</li>'; }).join("") + '</ul>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
+      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hm-see="' + k + '">And More</button></li>' : '<li>' + f + '</li>'; }).join("") + '</ul>' +
       '<button class="btn btn-primary mw-hover pc-see" type="button" data-hm-see="' + k + '">See What\'s Included</button></div>';
   }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
@@ -701,7 +701,7 @@
       '</div>';
     var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Shop À La Carte</button></p>';
     var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
-      var t = P.tiers[k], sel = S.tier === k, pts = t.keyPoints || t.features.slice(0, 3);
+      var t = P.tiers[k], sel = S.tier === k, pts = (t.keyPoints || t.features.slice(0, 3)).filter(function (x) { return x !== "And More"; });
       return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
         '<span class="ps-head"><span class="ps-name">' + t.label + '</span>' + (t.recommended ? '<span class="ps-pop">Most Popular</span>' : '') +
         '<span class="ps-amt">' + money(monthlyOf(p[k])) + '<small>/Mo</small></span></span>' +

@@ -720,3 +720,7 @@ html{scroll-behavior:auto}
 
 /* Back pill (all pages) */
 .back-pill{display:inline-flex;align-items:center;gap:.3rem;min-height:44px;min-width:44px;padding:0 .9rem 0 .6rem;margin:.2rem 0 .4rem;border:1px solid #d4d4d4;border-radius:999px;background:#f7f7f7;color:#0a0a0a;font:700 .9rem "Hind",system-ui,sans-serif;letter-spacing:.02em;text-transform:none;text-decoration:none;cursor:pointer}.back-pill:hover{background:#efefef;border-color:#a3a3a3}
+
+.hm-plan.pc .pc-inc .pc-more{list-style:none}.hm-plan.pc .pc-more-link{background:none;border:0;padding:0;margin:0;font:inherit;font-size:.9em;color:var(--mw-terracotta,#C1502E);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.pc-inc li.pc-more::before{display:none}.pc-inc li.pc-more{padding-left:1.25rem}
+.hm-plan.pc .pc-inc .pc-more-link{text-transform:none!important;letter-spacing:normal!important;font-weight:500!important;font-size:.85rem!important;padding:0!important;min-height:0!important;margin:0!important}

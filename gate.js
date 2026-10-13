@@ -1,6 +1,6 @@
 /* Pre-launch password gate for smartupkeep.ai.
    Launch removal: set SMART_UPKEEP_PRICING.prelaunchGate.enabled = false
-   in pricing-config.js, OR remove this script tag from index.html. */
+   in pricing-config.js, OR remove the gate.js script tags (in <head> of every page). */
 (function () {
   "use strict";
   var P = window.SMART_UPKEEP_PRICING || {};
@@ -11,16 +11,48 @@
 
   function ok() { window.__SU_GATE_OK = true; }
   function unlocked() {
-    try { return !!HASH && localStorage.getItem(KEY) === HASH; } catch (e) { return false; }
+    try { return !!HASH && sessionStorage.getItem(KEY) === HASH; } catch (e) { return false; }
+  }
+  /* Base URL of this script, so the gate logo resolves from any subfolder. */
+  var BASE = (function () {
+    var c = document.currentScript && document.currentScript.src;
+    return c ? c.replace(/[^\/]*$/, "") : "";
+  })();
+  /* Loaded in <head>: hide every page element before first paint until unlocked. */
+  function lockEarly() {
+    var root = document.documentElement;
+    root.classList.add("su-gate-locked");
+    var st = document.createElement("style");
+    st.id = "suGateStyle";
+    st.textContent =
+      "html.su-gate-locked body>:not(#prelaunchGate){display:none!important}" +
+      "html.su-gate-locked body{background:#FAF3EB}" +
+      "#prelaunchGate{position:fixed;inset:0;z-index:99999;background:#FAF3EB;display:flex;align-items:center;justify-content:center;padding:1.25rem;overflow:auto;font-family:system-ui,sans-serif}" +
+      "#prelaunchGate .prelaunch-inner{width:min(420px,100%);background:#fff;border:1px solid #e5e0d8;padding:1.75rem 1.35rem 1.4rem;text-align:center}" +
+      "#prelaunchGate .prelaunch-logo{height:48px;width:auto;display:block;margin:0 auto .9rem}" +
+      "#prelaunchGate .prelaunch-sub{font-weight:700;font-size:1.2rem;color:#C1502E;letter-spacing:.04em;margin:0 0 .75rem;text-transform:uppercase}" +
+      "#prelaunchGate .prelaunch-form{text-align:left;margin-top:1.1rem}" +
+      "#prelaunchGate input{width:100%;box-sizing:border-box;font:inherit;font-size:1.05rem;padding:.7rem .8rem;border:1.5px solid #cfc5b6;border-radius:10px}" +
+      "#prelaunchGate .err{color:#C1502E;min-height:1.2em;font-size:.9rem}" +
+      "#prelaunchGate button{width:100%;margin-top:.75rem;padding:.8rem;font:inherit;font-weight:700;background:#C1502E;color:#fff;border:0;border-radius:10px;cursor:pointer}";
+    (document.head || root).appendChild(st);
+  }
+  function unlockPage() {
+    document.documentElement.classList.remove("su-gate-locked");
+  }
+  function whenBody(fn) {
+    if (document.body) fn(); else document.addEventListener("DOMContentLoaded", fn);
   }
 
   window.SmartUpkeepAwaitGate = function (cb) {
     if (!G.enabled || unlocked()) { ok(); cb(); return; }
     pending = cb;
-    show();
+    whenBody(show);
   };
 
   if (!G.enabled || unlocked()) { ok(); return; }
+  lockEarly();
+  whenBody(show);
 
   /* Pure-JS SHA-256 — works on http:// where crypto.subtle is undefined. */
   function sha256Fallback(ascii) {
@@ -109,7 +141,7 @@
     el.setAttribute("aria-label", "Private Beta Access");
     el.innerHTML =
       '<div class="prelaunch-inner">' +
-        '<img class="prelaunch-logo" src="assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep">' +
+        '<img class="prelaunch-logo" src="' + BASE + 'assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep">' +
         '<h1>Coming Soon</h1>' +
         '<p class="prelaunch-sub">Private Beta</p>' +
         '<form id="prelaunchForm" class="prelaunch-form" autocomplete="off">' +
@@ -136,10 +168,11 @@
           input.select();
           return;
         }
-        try { localStorage.setItem(KEY, HASH); } catch (ex) {}
+        try { sessionStorage.setItem(KEY, HASH); } catch (ex) {}
         ok();
         el.remove();
         document.body.classList.remove("gate-locked");
+        unlockPage();
         if (typeof pending === "function") { var cb = pending; pending = null; cb(); }
       }).catch(function () {
         err.textContent = "Could not verify password in this browser.";
