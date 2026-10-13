@@ -6,7 +6,8 @@
   var P = window.SMART_UPKEEP_PRICING || {};
   var G = P.prelaunchGate || {};
   var KEY = G.storageKey || "smartUpkeep.gateUnlocked";
-  var HASHES = (G.passwordSha256List || (G.passwordSha256 ? [G.passwordSha256] : [])).map(function (h) { return String(h).toLowerCase(); }), HASH = HASHES[0] || "";
+  var LABELS = G.passwordSha256Labels || {}; if (G.passwordSha256) LABELS[G.passwordSha256] = LABELS[G.passwordSha256] || "default";
+  var HASHES = Object.keys(LABELS).map(function (h) { return String(h).toLowerCase(); }), HASH = HASHES[0] || "";
   var pending = null;
 
   function ok() { window.__SU_GATE_OK = true; }
@@ -120,6 +121,18 @@
     return result;
   }
 
+  /* Unlock log: one small MWSubmit event per session. Never blocks unlock; failures are ignored (MWSubmit queues). */
+  function logUnlock(label) {
+    var LK = "smartUpkeep.gateLogged";
+    try { if (sessionStorage.getItem(LK)) return; sessionStorage.setItem(LK, "1"); } catch (e) {}
+    var test = /[?&]test=1\b/.test(location.search);
+    var ua = navigator.userAgent, uaShort = (/iPhone|iPad|Android|Macintosh|Windows|Linux/.exec(ua) || ["Other"])[0] + " " + ((/(Edg|CriOS|FxiOS|Chrome|Firefox|Safari)\/[\d]+/.exec(ua) || [""])[0]);
+    var payload = { agent: "upkeep", app: "smartupkeep-gate", deck: "gate-unlock", results: { app: "smartupkeep-gate", label: label, page: location.pathname, host: location.host, ts: new Date().toISOString(), userAgent: uaShort, test: test }, notes: "", test: test };
+    function go() { try { window.MWSubmit.send(payload).catch(function () {}); } catch (e) {} }
+    if (window.MWSubmit && window.MWSubmit.send) return go();
+    var s = document.createElement("script"); s.src = BASE + "submit.js?v=g1"; s.async = true; s.onload = go; s.onerror = function () {};
+    (document.head || document.documentElement).appendChild(s);
+  }
   function sha256hex(str) {
     if (window.crypto && crypto.subtle && typeof TextEncoder !== "undefined") {
       return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
@@ -169,6 +182,7 @@
           return;
         }
         try { sessionStorage.setItem(KEY, hex); } catch (ex) {}
+        try { logUnlock(LABELS[hex] || "unknown"); } catch (ex) {}
         ok();
         el.remove();
         document.body.classList.remove("gate-locked");
