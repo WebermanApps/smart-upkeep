@@ -7,7 +7,7 @@ window.SMART_UPKEEP_PRICING = {
   /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
   prelaunchGate: {
     enabled: true,
-    passwordSha256: "fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71",
+    passwordSha256List: ["fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71", "bcb9dae6ea88dbf28c262998e6661ec60f32a760faa5aef96745b39c38dbf235"]  /* SHA-256 of each accepted password (lowercased, trimmed) */,
     storageKey: "smartUpkeep.gateUnlocked"
   },
   /* Retention offer (draft): shown on cancel or renewal. 6+ months a member: 1 month free to stay. 1+ year: 2 months free. */

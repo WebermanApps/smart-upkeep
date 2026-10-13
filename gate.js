@@ -6,12 +6,12 @@
   var P = window.SMART_UPKEEP_PRICING || {};
   var G = P.prelaunchGate || {};
   var KEY = G.storageKey || "smartUpkeep.gateUnlocked";
-  var HASH = G.passwordSha256 || "";
+  var HASHES = (G.passwordSha256List || (G.passwordSha256 ? [G.passwordSha256] : [])).map(function (h) { return String(h).toLowerCase(); }), HASH = HASHES[0] || "";
   var pending = null;
 
   function ok() { window.__SU_GATE_OK = true; }
   function unlocked() {
-    try { return !!HASH && sessionStorage.getItem(KEY) === HASH; } catch (e) { return false; }
+    try { var s = sessionStorage.getItem(KEY); return !!s && HASHES.indexOf(s) > -1; } catch (e) { return false; }
   }
   /* Base URL of this script, so the gate logo resolves from any subfolder. */
   var BASE = (function () {
@@ -163,12 +163,12 @@
       var val = (input.value || "").trim().toLowerCase();
       if (!val) { err.textContent = "Enter the password."; return; }
       sha256hex(val).then(function (hex) {
-        if (hex !== HASH) {
+        if (HASHES.indexOf(hex) < 0) {
           err.textContent = "That password did not match. Try again.";
           input.select();
           return;
         }
-        try { sessionStorage.setItem(KEY, HASH); } catch (ex) {}
+        try { sessionStorage.setItem(KEY, hex); } catch (ex) {}
         ok();
         el.remove();
         document.body.classList.remove("gate-locked");
