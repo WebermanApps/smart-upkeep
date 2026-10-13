@@ -724,3 +724,4 @@ html{scroll-behavior:auto}
 .hm-plan.pc .pc-inc .pc-more{list-style:none}.hm-plan.pc .pc-more-link{background:none;border:0;padding:0;margin:0;font:inherit;font-size:.9em;color:var(--mw-terracotta,#C1502E);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .pc-inc li.pc-more::before{display:none}.pc-inc li.pc-more{padding-left:1.25rem}
 .hm-plan.pc .pc-inc .pc-more-link{text-transform:none!important;letter-spacing:normal!important;font-weight:500!important;font-size:.85rem!important;padding:0!important;min-height:0!important;margin:0!important}
+.pc-inc li.pc-lead{padding-left:0;font-weight:600;font-size:.8rem;color:var(--mw-muted-text,#555);margin-bottom:.1rem}.pc-inc li.pc-lead::before{display:none}
