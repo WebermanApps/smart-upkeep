@@ -57,14 +57,18 @@ window.SMART_UPKEEP_PRICING = {
   finalOffer: { enabled: true, strategy: "roundRobin", storageKey: "smartUpkeep.finalOfferIdx",
     candidates: ["windows", "chimney", "radon", "guttersExtra", "pressure", "ducts"] },
   tierOrder: ["silver", "gold", "platinum"],
+  /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
+     against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 1 AC,
+     1 tank water heater, 1 story, no extras. Annual totals: Silver 890 -> floored to 1188, Gold 2110,
+     Platinum 3880 (roundTo 10). Recompute if any pricing input above changes. */
   tiers: {
-    silver: { label: "Silver", tagline: "Seasonal Care", visits: 2, recommended: true,
+    silver: { fromMonthly: 99, label: "Silver", tagline: "Seasonal Care", visits: 2, recommended: true,
       keyPoints: ["2 Visits a Year", "Furnace + AC Tune-Ups", "Moisture Scan"],
       features: ["2 seasonal visits a year (spring and fall)", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Filter changes during visits", "Water heater flush or tankless descale", "Dryer vent cleaning", "Smoke and CO detector checks", "Whole-Home Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, hot spots flagged", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    gold: { label: "Gold", tagline: "Quarterly Care", visits: 4,
+    gold: { fromMonthly: 176, label: "Gold", tagline: "Quarterly Care", visits: 4,
       keyPoints: ["Everything in Silver", "4 Visits a Year", "Gutter Cleaning"],
       features: ["Everything in Silver", "4 seasonal visits a year (one per quarter)", "Gutter and downspout cleaning, spring and fall", "Smoke, CO, GFCI and shut-off valve checks", "Garage door lube and pre-winter weatherproofing", "Your selected extras serviced (irrigation start-up and blowout, fireplace, sump, softener)", "Whole-Home Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, hot spots flagged", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    platinum: { label: "Platinum", tagline: "Monthly Care", visits: 12,
+    platinum: { fromMonthly: 323, label: "Platinum", tagline: "Monthly Care", visits: 12,
       keyPoints: ["Everything in Gold", "Monthly Visits", "Roof Inspection"],
       features: ["Everything in Gold", "12 visits a year (monthly check-ins)", "Yearly roof and flashing inspection", "Standby generator service (if you have one)", "Winter vent clearing and ice dam watch", "Pre-travel and post-storm home checks", "Fridge filters, coils and small fixes during visits", "Whole-Home Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, hot spots flagged", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] }
   },

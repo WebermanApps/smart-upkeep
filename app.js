@@ -373,14 +373,14 @@
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
-  /* Deck 4 plan card: white, terracotta top bar, big $99, check list of what's included, the year shown as visits. */
+  /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
   function planCard(k) {
     var t = P.tiers[k], inc = t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     var marks = ""; for (var i = 0; i < t.visits; i++) marks += '<span class="yv-dot"></span>';
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
-      '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">$99</span><span class="pc-per">/Mo</span></div>' +
+      '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 99) + '</span><span class="pc-per">/Mo</span></div>' +
       '<ul class="pc-inc">' + inc.map(function (f) { return '<li>' + f + '</li>'; }).join("") + '</ul>' +
       '<div class="pc-year" aria-label="' + t.visits + ' visits a year"><span class="pc-year-l">Your Year</span><span class="yv' + (t.visits > 6 ? " many" : "") + '">' + marks + '</span><span class="pc-year-n">' + t.visits + ' Visits</span></div>' +
       '<button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button></div>';
