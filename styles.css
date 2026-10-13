@@ -653,9 +653,70 @@ details.est-note summary{font-size:1rem}
 /* Phone plans swipe row (<=600px): recommended plan centered, neighbors peek, dots follow the swipe */
 .pc-dots{display:none}
 @media(max-width:600px){
-  #row-plans .hm-scroll{scroll-snap-type:x mandatory;padding-left:11%;padding-right:11%;scroll-padding:0 11%;gap:.6rem}
-  #row-plans .hm-plan{flex:0 0 78%;min-width:0;scroll-snap-align:center;order:var(--po,0)}
+  #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0 .85rem;gap:.6rem}
+  #row-plans .hm-plan{flex:0 0 80%;min-width:0;scroll-snap-align:start}
   .pc-dots{display:flex;justify-content:center;gap:.45rem;margin:.1rem 0 .2rem}
   .pc-dot{width:7px;height:7px;border-radius:50%;background:#d4d4d4;transition:background .2s,transform .2s}
   .pc-dot.on{background:#0a0a0a;transform:scale(1.2)}
 }
+
+/* Plan select + plan detail (Oct 13) */
+.pc-year{display:block}
+.hm-plan.pc{cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.hm-plan.pc.sel{border:2px solid #C1502E;border-top:5px solid #C1502E;box-shadow:0 8px 22px rgba(193,80,46,.18);transform:translateY(-2px)}
+.hm-plan .pc-see{display:none;min-height:46px;width:100%;margin-top:.3rem;font-size:.82rem}
+.hm-plan.sel .pc-see{display:flex}
+.pd-list{list-style:none;margin:0 0 .4rem;padding:0;display:grid;gap:.2rem}
+.pd-list li{display:flex;gap:.45rem;align-items:flex-start;font-size:.88rem;line-height:1.3}
+.pd-list li .su-ico{flex:0 0 18px;width:18px;height:18px;margin-top:.1rem}
+.pd-more summary{cursor:pointer;text-decoration:underline dotted;list-style:none}
+.pd-more summary::-webkit-details-marker{display:none}
+.pd-more p{margin:.2rem 0}
+.pd-cta{display:flex;flex-direction:column;align-items:center;gap:.3rem;margin-top:.4rem}
+.pd-cta .btn{width:100%}
+html{scroll-behavior:auto}
+#acc-plan-silver,#acc-plan-gold,#acc-plan-platinum,#row-plans{scroll-margin-top:.5rem}
+/* ===== Condense pass 3 (Oct 13 2026): phones ===== */
+@media(max-width:600px){
+  h1{font-size:1.6rem;margin:.2rem 0 .35rem}
+  h2{font-size:1.2rem}
+  .card{padding:.6rem .7rem}
+  .fl{margin:.3rem 0}
+  .fl input,.fl select,.fl textarea{min-height:40px;padding:.35rem .55rem}
+  .fl textarea{min-height:56px}
+  .sigpad{height:96px!important}
+  .addon-list{display:grid;grid-template-columns:1fr 1fr;gap:.35rem}
+  .addon{padding:.4rem .45rem;gap:.35rem;min-height:0}
+  .addon strong{font-size:.82rem;line-height:1.15}
+  .addon-price{font-size:.75rem;margin:0}
+  .tiers{gap:.4rem}
+  .tier{padding:.55rem .7rem}
+  .tier .btn{min-height:44px}
+  .progress{margin:.2rem 0 .35rem}
+  .btn-big{min-height:48px}
+  .btn-row{gap:.4rem;margin-top:.5rem}
+  .hm-plan.pc{padding:.55rem .7rem}
+  .pc-big{font-size:2.4rem}
+  .pc-tag{display:none}
+}
+@media(max-width:600px){
+  .addon-list,.addon-list:has(.addon>.su-ico){display:grid!important;grid-template-columns:1fr 1fr!important;gap:.35rem}
+  .addon{margin-top:0}
+  .addon>.su-ico{flex:0 0 22px;width:22px;height:22px}
+  .addon .chk{flex:0 0 18px}
+}
+
+.hm-steps{display:flex;flex-wrap:wrap;gap:.25rem .9rem;margin:0 0 .4rem;padding-left:1.1rem}
+.pd-plan{border-top:1px solid var(--mw-border);padding:.35rem 0}
+.pd-plan>summary{display:flex;align-items:center;gap:.45rem;cursor:pointer;font-weight:600;list-style:none;min-height:40px}
+.pd-plan>summary::-webkit-details-marker{display:none}
+.pd-plan>summary::after{content:"";margin-left:auto;width:.45rem;height:.45rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+.pd-plan[open]>summary::after{transform:rotate(-135deg)}
+.pd-plan{scroll-margin-top:.5rem}
+.pd-list .pd-more summary{display:block;padding:0;min-height:0;font:inherit;font-size:.88rem;letter-spacing:0;text-transform:none;background:none;border:0;color:inherit}
+.pd-list .pd-more summary::after{content:" +";border:0;width:auto;height:auto;transform:none;display:inline}
+.pd-list .pd-more[open] summary::after{content:" \2212"}
+.pd-plan>summary{font-family:var(--mw-font-heading)}
+
+/* Back pill (all pages) */
+.back-pill{display:inline-flex;align-items:center;gap:.3rem;min-height:44px;min-width:44px;padding:0 .9rem 0 .6rem;margin:.2rem 0 .4rem;border:1px solid #d4d4d4;border-radius:999px;background:#f7f7f7;color:#0a0a0a;font:700 .9rem "Hind",system-ui,sans-serif;letter-spacing:.02em;text-transform:none;text-decoration:none;cursor:pointer}.back-pill:hover{background:#efefef;border-color:#a3a3a3}

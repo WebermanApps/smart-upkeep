@@ -109,7 +109,7 @@
     el.setAttribute("aria-label", "Private Beta Access");
     el.innerHTML =
       '<div class="prelaunch-inner">' +
-        '<img class="prelaunch-logo" src="assets/A-roof-chevron.svg" alt="Smart Upkeep">' +
+        '<img class="prelaunch-logo" src="assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep">' +
         '<h1>Coming Soon</h1>' +
         '<p class="prelaunch-sub">Private Beta</p>' +
         '<form id="prelaunchForm" class="prelaunch-form" autocomplete="off">' +

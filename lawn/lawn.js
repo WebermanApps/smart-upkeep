@@ -203,5 +203,5 @@
   var qp = new URLSearchParams(location.search).get("a");
   if (qp) $("#addr").value = qp;
   (window.SmartUpkeepAwaitGate || function (cb) { cb(); })(function () { if (qp) go(qp); });
-  var gl = document.querySelector("#prelaunchGate .prelaunch-logo"); if (gl) gl.src = "../assets/A-roof-chevron.svg";
+  var gl = document.querySelector("#prelaunchGate .prelaunch-logo"); if (gl) gl.src = "../assets/A-roof-chevron.svg?v=c6";
 })();

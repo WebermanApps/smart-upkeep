@@ -143,7 +143,7 @@
     var linesSilver = [];
     linesSilver.push({ label: "2 seasonal visits × " + money(silverV) + " each", amt: 2 * silverV, est: uSqft });
     linesSilver = linesSilver.concat(hvacLines());
-    linesSilver.push({ label: "Filter changes during visits", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "Furnace filter changes during visits", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Whole-Home Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var silverRaw = linesSilver.reduce(function (s, L) { return s + L.amt; }, 0);
@@ -244,9 +244,12 @@
   /* ---------- Navigation ---------- */
   function go(screen) { if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
   function back() { var p = S.path.pop(); S.screen = p || "home"; save(); render(); window.scrollTo(0, 0); }
-  function backBtn() { return '<button class="link back mw-hover" data-act="back" type="button">&larr; Back</button>'; }
+  function backBtn() { return '<button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>'; }
 
   function render() {
+    /* Intro screen retired: old links and saved state land on the first question. */
+    if (S.screen === "overview") S.screen = "q0";
+    S.path = S.path.filter(function (x) { return x !== "overview"; });
     var s = S.screen, html;
     app.classList.toggle("wide", s === "quote" || s === "photos");
     if (s === "home") html = home();
@@ -289,7 +292,7 @@
   function sampleVisitCard() {
     var tasks = [
       { task: "Furnace Tune-Up", by: "Licensed Partner (Sample)", kind: "Mechanical Contractor · Active", verify: true },
-      { task: "Filter Change", by: "Smart Upkeep Tech (Sample)", kind: "Member Tech", verify: false },
+      { task: "Furnace Filter Change", by: "Smart Upkeep Tech (Sample)", kind: "Member Tech", verify: false },
       { task: "Smoke and CO Checks", by: "Smart Upkeep Tech (Sample)", kind: "Member Tech", verify: false },
       { task: "Water Heater Flush", by: "Licensed Partner (Sample)", kind: "Plumbing Contractor · Active", verify: true }
     ];
@@ -374,16 +377,25 @@
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
+  var selK = null;
+  function FICO(f) { var m = [[/furnace/i,"furnace"],[/\bAC\b/,"ac"],[/water heater/i,"waterheater"],[/dryer/i,"dryer"],[/gutter/i,"gutter"],[/smoke|CO\b/,"detector"],[/moisture/i,"meter"],[/recall/i,"bell"],[/report/i,"clipboard"],[/proof|record/i,"doc"],[/selling/i,"gift"],[/roof|vent clearing|weatherproof/i,"house"],[/generator|garage|fridge|filter/i,"wrench"],[/visits?|check/i,"clock"],[/everything/i,"star"],[/extras|irrigation/i,"spray"]]; for (var i = 0; i < m.length; i++) if (m[i][0].test(f)) return m[i][1]; return "shield"; }
+  /* Plan detail (Details section): icon checklist; anything after ":" is a collapsed drop-down. Content comes from P.tiers[k].features. */
+  function planDetail(k) {
+    var t = P.tiers[k];
+    return '<ul class="pd-list">' + t.features.map(function (f) { var i = f.indexOf(":"), h = i > 0 ? f.slice(0, i) : f, rest = i > 0 ? f.slice(i + 1).trim() : "";
+      return '<li>' + I(FICO(f), "xs") + (rest ? '<details class="pd-more"><summary>' + h + '</summary><p class="small muted">' + rest + '</p></details>' : '<span>' + h + '</span>') + '</li>'; }).join("") + '</ul>' +
+      '<p class="small muted">Visits Per Year: ' + t.visits + '</p>' +
+      '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
+  }
   function planCard(k, ord) {
     var t = P.tiers[k], inc = t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
-    var marks = ""; for (var i = 0; i < t.visits; i++) marks += '<span class="yv-dot"></span>';
-    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" style="--po:' + (ord || 0) + '">' +
+    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 99) + '</span><span class="pc-per">/Mo</span></div>' +
       '<ul class="pc-inc">' + inc.map(function (f) { return '<li>' + f + '</li>'; }).join("") + '</ul>' +
-      '<div class="pc-year" aria-label="' + t.visits + ' visits a year"><span class="pc-year-l">Your Year</span><span class="yv' + (t.visits > 6 ? " many" : "") + '">' + marks + '</span><span class="pc-year-n">' + t.visits + ' Visits</span></div>' +
-      '<button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button></div>';
+      '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
+      '<button class="btn btn-primary mw-hover pc-see" type="button" data-hm-see="' + k + '">See What\'s Included</button></div>';
   }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
@@ -395,10 +407,8 @@
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
     var tiers = tierKeys();
-    /* Phone swipe row only: recommended plan sits in the middle (e.g. Gold | Silver | Platinum). tierOrder is untouched elsewhere. */
-    var phoneOrder = tiers.filter(function (k) { return !P.tiers[k].recommended; });
-    var recK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0];
-    if (recK) phoneOrder.splice(Math.floor(phoneOrder.length / 2), 0, recK);
+    selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
+        var phoneOrder = tiers.slice(); /* Max: Silver, Gold, Platinum on every screen size */
     var trust = [["shield", "Licensed"], ["van", "Show Up Ready"], ["clipboard", "Visit Reports"], ["refund", "Cancel Anytime"]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -407,7 +417,7 @@
       return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div>' + (pre || "") + '<div class="hm-scroll">' + cards + '</div></section>';
     }
     return '<div class="hm">' +
-      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, Add-Ons, FAQ" aria-label="Search services, add-ons and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
+      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">1:15</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
@@ -416,22 +426,18 @@
       '</section>' +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>',
         '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
-      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
-      row("trust", "Why Trust Us", trust.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
+      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="plans">See All</button>') +
+      row("trust", "Why Trust Us", trust.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button>') +
       '<section class="hm-accs"><h2>Details</h2>' +
-      hmAcc("how", "clock", "How It Works", '<ol class="hm-list"><li>7 Quick Questions</li><li>Photos (Optional)</li><li>Pick a Plan</li><li>Sign Up</li></ol>') +
-      hmAcc("included", "house", "What's Included", ul(["Furnace and AC Tune-Ups", "Water Heater Flush", "Gutter Cleaning", "Dryer Vent Cleaning", "Safety Checks", "Irrigation, Fireplace, Sump, Softener", "Recall Monitoring", "Visit Reports", "Whole-Home Moisture Scan"])) +
-      tiers.map(function (k) { var t = P.tiers[k]; return hmAcc("plan-" + k, k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label + " · " + t.tagline, ul(t.features.map(function (f) { f = f.split(":")[0]; return /^Selling\?/.test(f) ? I("gift", "xs") + ' ' + f : f; })) + '<p class="small muted">' + t.visits + ' Visits a Year</p>'); }).join("") +
-      hmAcc("addons", "wrench", "All Add-Ons", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Book an Add-On</button>') +
-      hmAcc("vet", "shield", "How We Vet + Tech Badges", ul(["State License Checked", "Insured", "Yearly Background Check"]) + sampleTechCard()) +
-      hmAcc("proof", "doc", "Proof Pack + Home Record", ul(["Proof Pack for Warranty Claims", "Home Record Moves With the Sale"]) + '<div class="hm-feature gift-feature">' + I("gift") + '<div><strong>Selling? Gift the Buyers 3 Months Free</strong></div></div>') +
+      hmAcc("plans", "house", "What's Included", '' +
+        tiers.map(function (k) { var t = P.tiers[k]; return '<details class="pd-plan" id="acc-plan-' + k + '"' + (k === selK ? " open" : "") + '><summary class="mw-hover">' + I(k === "silver" ? "house" : k === "gold" ? "star" : "shield", "xs") + '<span>' + t.label + ' · ' + t.tagline + '</span></summary>' + planDetail(k) + '</details>'; }).join("")) +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: No Refund Value", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
-      hmAcc("area", "house", "Service Area: Metro Detroit", '<p class="small">Wayne, Oakland, Macomb</p>') +
-      hmAcc("faq", "faq", "FAQ", '<h4>Photos Required?</h4><p>No. They lock your price.</p><h4>Licensed and Insured?</h4><p>Yes.</p><h4>Can I Cancel?</h4><p>Anytime, no fee.</p>') +
+      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
-        [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "Add-Ons"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
+        [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
       '</nav><div class="hm-toast" role="status" aria-live="polite" hidden></div>' +
       '</div>';
   }
@@ -441,7 +447,7 @@
     var dots = [].slice.call(root.querySelectorAll("#row-plans .pc-dot"));
     var mq = window.matchMedia("(max-width:600px)");
     function cards() { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
-    function center(el) { return el.offsetLeft - sc.offsetLeft + el.offsetWidth / 2 - sc.clientWidth / 2; }
+    function center(el) { return el.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft); }
     function sync() {
       if (!mq.matches) return;
       var best = null, d = 1e9;
@@ -450,8 +456,7 @@
     }
     function start() {
       if (!mq.matches) return;
-      var rec = sc.querySelector(".hm-plan.rec") || cards()[0];
-      if (rec) sc.scrollLeft = center(rec);
+      sc.scrollLeft = 0;
       sync();
     }
     var raf = 0;
@@ -459,9 +464,31 @@
     if (mq.addEventListener) mq.addEventListener("change", start);
     requestAnimationFrame(start);
   }
+  /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
+  function bindPlanSelect(root) {
+    var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
+    var cards = [].slice.call(sc.querySelectorAll(".hm-plan"));
+    var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    function pick(c) {
+      cards.forEach(function (x) { var on = x === c; x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on ? "true" : "false"); });
+      if (window.matchMedia("(max-width:600px)").matches) sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft), behavior: smooth });
+    }
+    cards.forEach(function (c) {
+      c.addEventListener("click", function (e) { if (e.target.closest(".pc-see")) return; pick(c); });
+      c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
+    });
+    root.querySelectorAll("[data-hm-see]").forEach(function (b) { b.addEventListener("click", function () {
+      var d = document.getElementById("acc-plan-" + b.getAttribute("data-hm-see")), g = document.getElementById("acc-plans"); if (!d || !g) return;
+      [].forEach.call(g.querySelectorAll(".pd-plan"), function (x) { x.open = x === d; });
+      if (!g.open) g.querySelector("summary").click();
+      setTimeout(function () { d.scrollIntoView({ behavior: smooth, block: "start" }); }, 340);
+    }); });
+    root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { root.querySelector("#row-plans").scrollIntoView({ behavior: smooth, block: "start" }); }); });
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanSwipe(root);
+    bindPlanSelect(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function setOpen(d, open) {
@@ -613,10 +640,10 @@
       return it.length ? '<div class="xt-detail">' + renderAddonList(it, sel, attr, fn) + '</div>' : "";
     }
     return '<button type="button" class="xt-entry mw-hover" data-xt-open="1">' + I("grid", "sm") +
-      '<span><strong>Learn About Extras</strong><small>' + add.length + ' Optional Add-Ons &middot; ' + (nSel ? nSel + ' Selected' : 'Tap to Browse') + '</small></span><b aria-hidden="true">&rsaquo;</b></button>' +
-      '<div class="xt-sheet"' + (XT.open ? "" : " hidden") + ' role="dialog" aria-modal="true" aria-label="Learn About Extras"><div class="xt-inner">' +
-      '<div class="xt-top"><h3>Learn About Extras</h3><button type="button" class="modal-x mw-hover" data-xt-close="1" aria-label="Close">&times;</button></div>' +
-      '<p class="lead-sm">Add-Ons (À La Carte): optional seasonal or specialty services for any membership. Draft market ranges; monthly figure is the yearly midpoint ÷ 12. Tap a tile for details and price.</p>' +
+      '<span><strong>Shop À La Carte</strong><small>' + add.length + ' Optional Services &middot; ' + (nSel ? nSel + ' Selected' : 'Tap to Browse') + '</small></span><b aria-hidden="true">&rsaquo;</b></button>' +
+      '<div class="xt-sheet"' + (XT.open ? "" : " hidden") + ' role="dialog" aria-modal="true" aria-label="Shop À La Carte"><div class="xt-inner">' +
+      '<div class="xt-top"><h3>Shop À La Carte</h3><button type="button" class="modal-x mw-hover" data-xt-close="1" aria-label="Close">&times;</button></div>' +
+      '<p class="lead-sm">Optional seasonal or specialty services for any membership. Draft market ranges; monthly figure is the yearly midpoint ÷ 12. Tap a tile for details and price.</p>' +
       tiles(add, "addon", S.addons || []) + detail(add, "addon", S.addons || [], addonPriceLabel) +
       '<button type="button" class="btn btn-primary mw-hover xt-done" data-xt-close="1">Done</button></div></div>';
   }
@@ -668,11 +695,11 @@
     var runYear = p[S.tier] + addSum;
     var runHtml = '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' +
       priceBlock(runYear, "annual") +
-      (addSum ? '<p class="small muted" style="margin:0">Incl. ' + money(addSum) + '/yr Add-Ons</p>' : '') +
+      (addSum ? '<p class="small muted" style="margin:0">Incl. ' + money(addSum) + '/yr À La Carte</p>' : '') +
       (lmSum ? '<p class="lm-due"><strong>Last-minute for next visit:</strong> ' + money(lmSum) + ' one-time (draft)</p>' : '') +
       (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Pay Yearly: Save 10%</p>' : "") +
       '</div>';
-    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Book One-Time Services</button></p>';
+    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Shop À La Carte</button></p>';
     var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
       var t = P.tiers[k], sel = S.tier === k, pts = t.keyPoints || t.features.slice(0, 3);
       return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
@@ -769,10 +796,10 @@
     var total = alacarteTotal();
     var picks = '<div class="addons"><h3>Services</h3>' +
       renderAddonList(P.addons || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>' +
-      '<div class="addons last-minute"><h3>Quick Extras</h3>' +
+      '<div class="addons last-minute"><h3>Shop À La Carte: Quick Jobs</h3>' +
       
       renderAddonList(P.lastMinute || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
-    return backBtn() + '<h1>One-Time Services</h1>' +
+    return backBtn() + '<h1>Shop À La Carte</h1>' +
       
       picks +
       '<div class="running card"><h3>One-Time Total (Draft)</h3>' +
@@ -996,7 +1023,7 @@
   }
   function act(a) {
     if (a === "back") return back();
-    if (a === "start") return go("overview");
+    if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
     if (a === "watch") return openVideo(true);
     if (a === "q0") return go("q0");
     if (a === "photos") return go("photos");
@@ -1246,6 +1273,7 @@
     if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { location.href = "sms:?&body=" + encodeURIComponent(text + " " + url); setTimeout(copy, 600); return; }
     copy();
   });
+  if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (S.screen !== "q0") go("q0"); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); });
 
   function bootApp() {
