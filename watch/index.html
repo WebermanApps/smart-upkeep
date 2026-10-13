@@ -3,21 +3,21 @@
 <head>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=1"><link rel="manifest" href="/manifest.webmanifest?v=1"><meta name="apple-mobile-web-app-title" content="Upkeep"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#FFFFFF">
 <meta charset="utf-8">
-<!-- HTTPS pending: OG URLs use http:// until smartupkeep.ai has a certificate -->
+<!-- HTTPS live (cert approved Oct 13 2026) -->
 <title>Watch · Smart Upkeep</title>
 <meta property="og:title" content="Smart Upkeep">
 <meta property="og:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta property="og:url" content="http://smartupkeep.ai/watch/">
+<meta property="og:url" content="https://smartupkeep.ai/watch/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Smart Upkeep">
-<meta property="og:image" content="http://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
+<meta property="og:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Smart Upkeep: Your Home, Taken Care Of. Starting at $99/Month.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Smart Upkeep">
 <meta name="twitter:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta name="twitter:image" content="http://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
+<meta name="twitter:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
 <script src="../pricing-config.js?v=c19"></script><script src="../gate.js?v=gate7"></script>
 <noscript><style>body>*{display:none!important}</style></noscript>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -67,7 +67,7 @@ footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,
   v.poster="../assets/poster-"+(port?"9x16":"16x9")+".jpg";
   v.src="../video/explainer-"+(port?"9x16":"16x9")+".mp4";
   if(port)m.classList.add("portrait");
-  var url="http://smartupkeep.ai/watch/",msg=document.getElementById("msg");
+  var url="https://smartupkeep.ai/watch/",msg=document.getElementById("msg");
   document.getElementById("share").addEventListener("click",function(){
     if(navigator.share){navigator.share({title:"Smart Upkeep",text:"Coming Soon to Metro Detroit",url:url}).catch(function(){});return;}
     var done=function(){msg.textContent="Link Copied";setTimeout(function(){msg.textContent=""},2500)};
