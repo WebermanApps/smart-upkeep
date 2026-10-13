@@ -59,7 +59,8 @@ window.SMART_UPKEEP_PRICING = {
   /* Home hero teaser loop (muted, autoplay, loop, inline). Tap opens the full explainer with sound.
      Built with ffmpeg from video/explainer-16x9.mp4 (V.1): 7.9s, 640x360 H.264, no audio, faststart.
      To swap to V.2 later, change these two paths only. */
-  teaser: { src: "video/teaser-v1-16x9.mp4", poster: "assets/teaser-v1-poster.jpg" },
+  /* V.3: first 8s of the 45s cut, 640x360, no audio. Rollback: video/teaser-v1-16x9.mp4 + assets/teaser-v1-poster.jpg */
+  teaser: { src: "video/teaser-v3-16x9.mp4?v=v3a", poster: "assets/teaser-v3-poster.jpg?v=v3a" },
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),

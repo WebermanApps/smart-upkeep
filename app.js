@@ -436,7 +436,7 @@
     }
     return '<div class="hm">' +
       '<section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">1:15</span></button>' +
+        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:45</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
@@ -1360,10 +1360,10 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return window.matchMedia("(max-width: 600px), (orientation: portrait) and (max-width: 900px)").matches ? "video/explainer-9x16.mp4" : "video/explainer-16x9.mp4"; }
+  function vSrc() { return window.matchMedia("(max-width: 600px), (orientation: portrait) and (max-width: 900px)").matches ? "video/explainer-v3-45-9x16.mp4?v=v3a" : "video/explainer-v3-45-16x9.mp4?v=v3a"; } /* rollback: video/explainer-9x16.mp4 / explainer-16x9.mp4 (V.1) */
   function openVideo(userAsked) {
     var src = vSrc();
-    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-9x16.jpg" : "assets/poster-16x9.jpg"); }
+    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v3-9x16.jpg?v=v3a" : "assets/poster-v3-16x9.jpg?v=v3a"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute";
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     var badge = document.getElementById("videoStartAt");
