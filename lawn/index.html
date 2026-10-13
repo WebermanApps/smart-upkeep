@@ -20,8 +20,7 @@
 <main>
   <section class="hero">
     <svg class="illo" viewBox="0 0 120 60" aria-hidden="true"><path d="M2 56h116" stroke="#0B6E4F" stroke-width="2"/><g stroke="#0B6E4F" stroke-width="2" fill="none" stroke-linecap="round"><path d="M8 56l-2-9M12 56l1-11M16 56l-3-8M100 56l-2-10M105 56l1-8M110 56l3-11M114 56l-1-7"/></g><g fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M34 40h40l6-10H40z" fill="#C1502E"/><path d="M80 30l14-22"/><path d="M90 8h8"/><circle cx="42" cy="46" r="6" fill="#FAF3EB"/><circle cx="72" cy="46" r="6" fill="#FAF3EB"/><path d="M48 30v-5h14v5"/></g></svg>
-    <h1>Get A Lawn Mowing Quote In A Minute</h1>
-    <p class="sub">We Measure Your Lawn From Above. You Confirm The Outline. Your Price Shows Up Instantly.</p>
+    <h1>Lawn Mowing Quote</h1>
     <form id="addrForm" class="addr" autocomplete="off">
       <label class="sr" for="addr">Home Address</label>
       <input id="addr" name="addr" type="text" inputmode="text" placeholder="Enter Your Home Address" required>
@@ -31,25 +30,25 @@
   </section>
 
   <section id="measure" class="measure" hidden>
-    <div class="steps"><span>1. Adjust To Fit Your Lawn</span><span>2. Mark What To Skip</span><span>3. Pick Your Schedule</span></div>
+    <div class="steps"><span>1. Fit</span><span>2. Skip</span><span>3. Schedule</span></div>
     <div class="mapwrap">
       <div id="map" aria-label="Satellite view of your property"></div>
       <div class="maptag" id="mapTag">Adjust To Fit Your Lawn</div>
     </div>
     <div class="tools" role="toolbar" aria-label="Lawn drawing tools">
-      <button class="tool mw-hover" data-add="lawn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 21l-1-6M9 21l1-8M13 21l-1-5M17 21l1-7M20 21l-1-4" stroke="#0B6E4F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Add Lawn Area</button>
-      <button class="tool mw-hover" data-add="drive" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L4 21M16 3l4 18M12 5v3M12 11v3M12 17v3" stroke="#05668D" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Mark Driveway</button>
-      <button class="tool mw-hover" data-add="house" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10" stroke="#C1502E" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>Mark House / Skip</button>
+      <button class="tool mw-hover" data-add="lawn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 21l-1-6M9 21l1-8M13 21l-1-5M17 21l1-7M20 21l-1-4" stroke="#0B6E4F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Add Lawn</button>
+      <button class="tool mw-hover" data-add="drive" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L4 21M16 3l4 18M12 5v3M12 11v3M12 17v3" stroke="#05668D" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Driveway</button>
+      <button class="tool mw-hover" data-add="house" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10" stroke="#C1502E" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>Skip Area</button>
       <button class="tool mw-hover" id="resetBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" stroke="#0a0a0a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Start Over</button>
     </div>
-    <p class="hint" id="hint">Drag The Corner Dots To Match Your Grass. Tap A Midpoint To Add A Corner.</p>
+    <p class="hint" id="hint">Drag Corners To Fit</p>
     <ul id="areas" class="areas"></ul>
 
     <div class="quote">
       <div class="sqft"><span class="lbl">Mowable Lawn</span><strong id="sqft">0</strong><span class="unit">Sq Ft</span></div>
       <div class="freq" role="radiogroup" aria-label="Schedule">
-        <button class="seg mw-hover on" data-f="weekly" role="radio" aria-checked="true" type="button">Weekly <small>Apr–Oct Season</small></button>
-        <button class="seg mw-hover" data-f="biweekly" role="radio" aria-checked="false" type="button">Every Other Week <small>Apr–Oct Season</small></button>
+        <button class="seg mw-hover on" data-f="weekly" role="radio" aria-checked="true" type="button">Weekly <small>Apr–Oct</small></button>
+        <button class="seg mw-hover" data-f="biweekly" role="radio" aria-checked="false" type="button">Every 2 Weeks <small>Apr–Oct</small></button>
         <button class="seg mw-hover" data-f="once" role="radio" aria-checked="false" type="button">One-Time <small>Single Cut</small></button>
       </div>
       <div class="price">
@@ -58,7 +57,7 @@
         <span class="draft">Draft Pricing</span>
         <span class="same">Same Price For Members</span>
       </div>
-      <p class="incl">Includes Mowing, String Trimming, And Blowing Off Walks And Drive.</p>
+      <p class="incl">Mow, Trim, Blow</p>
       <button id="addPlan" class="btn btn-primary wide mw-hover" type="button">Add To My Plan</button>
       <p id="planMsg" class="msg" role="status"></p>
     </div>

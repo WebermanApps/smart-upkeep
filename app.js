@@ -104,13 +104,13 @@
   function lastMinutePriceLabel(a) {
     return money(a.price) + " one-time <span>(draft) · with next visit</span>";
   }
-  function renderAddonList(items, selectedIds, dataAttr, priceFn) {
+  function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
     return '<div class="addon-list">' + items.map(function (ad) {
       var on = selectedIds.indexOf(ad.id) > -1;
       return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-' + dataAttr + '="' + ad.id + '" aria-pressed="' + on + '">' +
         '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
-        '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
-        '<p class="addon-desc">' + esc(ad.desc) + '</p>' +
+        (compact ? I(XT_ICO[ad.id] || "wrench", "sm") : '') + '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
+        (compact ? '' : '<p class="addon-desc">' + esc(ad.desc) + '</p>') +
         '<p class="addon-price">' + priceFn(ad) + '</p></span></button>';
     }).join("") + '</div>';
   }
@@ -391,10 +391,10 @@
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
     var tiers = tierKeys();
-    var trust = [["shield", "Licensed Partners", "Tap to Verify"], ["van", "Techs Show Up Ready", "Parts on the Truck"], ["clipboard", "Report Every Visit", "Written and Saved"], ["refund", "Cancel Anytime", "Fair Refunds"]];
+    var trust = [["shield", "Licensed"], ["van", "Show Up Ready"], ["clipboard", "Visit Reports"], ["refund", "Cancel Anytime"]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
-    function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong><span class="muted small">' + sub + '</span>' + (extra || "") + '</div>'; }
+    function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong>' + (sub ? '<span class="muted small">' + sub + '</span>' : '') + (extra || "") + '</div>'; }
     function row(id, title, cards, link, pre) {
       return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div>' + (pre || "") + '<div class="hm-scroll">' + cards + '</div></section>';
     }
@@ -402,28 +402,24 @@
       '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, Add-Ons, FAQ" aria-label="Search services, add-ons and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video"><img src="assets/poster-16x9.jpg" alt="" loading="eager" width="640" height="360">' + I("play", "hm-play") + '<span class="hm-dur">1:15</span></button>' +
-        '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1><p class="hm-sub">One membership. Every season. Licensed techs.</p>' +
+        '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>',
-        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years, Get 6 Months Free. Every Tier.</p><p>Refer a Neighbor: You Both Get a Month Free.</p><p class="muted">Offers Stack. $99/Month Floor Applies. Draft Terms.</p></div></details>') +
-      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
-      row("addons", "Popular Add-Ons", addons.map(function (a) { return card(ADDON_ICO[a.id] || "wrench", a.label, a.unit === "season" ? "Per Season" : "Per Service", '<span class="hm-price">' + priceRange(a) + '</span>'); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="addons">See All</button>') +
-      row("trust", "Why Members Trust Us", trust.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
+        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years: 6 Months Free</p><p>Refer a Neighbor: 1 Month Free Each</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>') +
+      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
+      row("trust", "Why Trust Us", trust.map(function (s) { return card(s[0], s[1]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
       '<section class="hm-accs"><h2>Details</h2>' +
-      hmAcc("how", "clock", "How It Works", '<ol class="hm-list"><li>Answer 7 Quick Questions (2 Min)</li><li>Add Label Photos for a Final Price (Optional)</li><li>Review Your Plan and Price</li><li>Sign Up. We Schedule Visit One.</li></ol>') +
-      hmAcc("included", "house", "What's Included", ul(["Furnace Tune-Up (Fall) and AC Tune-Up (Spring)", "Water Heater Flush or Tankless Descale", "Gutter Cleaning, Spring and Fall", "Dryer Vent Cleaning", "Smoke, CO, GFCI and Shut-Off Checks", "Irrigation, Fireplace, Sump and Softener Care if You Have Them", "Recall Monitoring", "Written Report After Every Visit"]) +
-        '<div class="hm-feature">' + I("meter") + '<div><strong>Whole-Home Moisture Scan</strong><span class="muted small">Moisture meter and thermal camera. Hot spots flagged, saved to your Home Record. Every plan.</span></div></div>') +
-      tiers.map(function (k) { var t = P.tiers[k]; return hmAcc("plan-" + k, k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label + " · " + t.tagline, ul(t.features.map(function (f) { f = f.split(":")[0]; return /^Selling\?/.test(f) ? I("gift", "xs") + ' ' + f : f; })) + '<p class="small muted">' + t.visits + ' Visits a Year. Memberships Start at $99/Month.</p>'); }).join("") +
-      hmAcc("addons", "wrench", "All Add-Ons", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><p class="small muted">Draft Prices. Add at Checkout or Book One-Off.</p><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Book an Add-On</button>') +
-      hmAcc("vet", "shield", "How We Vet + Tech Badges", ul(["Michigan LARA License Checked", "Workers' Comp or Filed Exemption", "Liability and Auto Insurance", "Yearly Background Re-Check"]) + '<p class="small cert-line"><strong>Required:</strong> EPA 608, EPA Lead-Safe RRP, OSHA 10, CPR and First Aid, Annual Background Check.</p>' + sampleTechCard()) +
-      hmAcc("verify", "van", "Tap to Verify License", '<p class="small muted">Every licensed task links to Michigan LARA. Sample only.</p>' + sampleVisitCard()) +
-      hmAcc("proof", "doc", "Proof Pack + Home Record", ul(["Proof Pack: Downloadable Visit Record for Warranty Claims", "Home Record: Equipment, Readings, Photos", "Home Record Transfers When You Sell"]) + '<div class="hm-feature gift-feature">' + I("gift") + '<div><strong>Selling? Gift the Buyers 3 Months Free</strong></div></div>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime. No Fee.", "Refund = Prepaid Minus Completed Work", "Free Months Have No Refund Value", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan Home Sales: 3-Business-Day Cancel Right (Shown at Signature)"])) +
-      hmAcc("offers", "tag", "Welcome Offers", ul(["Prepay 2 Years, Get 6 Months Free (Every Tier)", "Refer a Neighbor: You Both Get a Month Free", "They Stack. $99/Month Floor Applies."]) + '<p class="small muted">Draft Terms.</p>') +
-      hmAcc("area", "house", "Service Area: Metro Detroit", '<p class="small">Wayne, Oakland and Macomb Counties and Nearby. Check Your ZIP in Step 1.</p>') +
-      hmAcc("faq", "faq", "FAQ", '<h4>Do I Need Photos?</h4><p>No. They just make your price final.</p><h4>Home Different Than Described?</h4><p>We adjust before your first billed visit.</p><h4>Licensed and Insured?</h4><p>Yes. Trade work by licensed pros.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p>') +
+      hmAcc("how", "clock", "How It Works", '<ol class="hm-list"><li>7 Quick Questions</li><li>Photos (Optional)</li><li>Pick a Plan</li><li>Sign Up</li></ol>') +
+      hmAcc("included", "house", "What's Included", ul(["Furnace and AC Tune-Ups", "Water Heater Flush", "Gutter Cleaning", "Dryer Vent Cleaning", "Safety Checks", "Irrigation, Fireplace, Sump, Softener", "Recall Monitoring", "Visit Reports", "Whole-Home Moisture Scan"])) +
+      tiers.map(function (k) { var t = P.tiers[k]; return hmAcc("plan-" + k, k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label + " · " + t.tagline, ul(t.features.map(function (f) { f = f.split(":")[0]; return /^Selling\?/.test(f) ? I("gift", "xs") + ' ' + f : f; })) + '<p class="small muted">' + t.visits + ' Visits a Year</p>'); }).join("") +
+      hmAcc("addons", "wrench", "All Add-Ons", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Book an Add-On</button>') +
+      hmAcc("vet", "shield", "How We Vet + Tech Badges", ul(["State License Checked", "Insured", "Yearly Background Check"]) + sampleTechCard()) +
+      hmAcc("proof", "doc", "Proof Pack + Home Record", ul(["Proof Pack for Warranty Claims", "Home Record Moves With the Sale"]) + '<div class="hm-feature gift-feature">' + I("gift") + '<div><strong>Selling? Gift the Buyers 3 Months Free</strong></div></div>') +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: No Refund Value", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
+      hmAcc("area", "house", "Service Area: Metro Detroit", '<p class="small">Wayne, Oakland, Macomb</p>') +
+      hmAcc("faq", "faq", "FAQ", '<h4>Photos Required?</h4><p>No. They lock your price.</p><h4>Licensed and Insured?</h4><p>Yes.</p><h4>Can I Cancel?</h4><p>Anytime, no fee.</p>') +
       '</section>' +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
@@ -477,16 +473,16 @@
 
   function overview() {
     var steps = [
-      [I("pen"), "Answer a Few Questions", "7 quick taps. Not sure? Tap Unsure."],
-      [I("camera"), "Take Some Photos (Optional)", "Equipment labels give you a final price."],
-      [I("clipboard"), "Review Your Membership", "Silver, Gold or Platinum, with your estimated price."],
-      [I("doc"), "Sign Up", "Sign the agreement and pick a payment plan."]
+      [I("pen"), "7 Quick Questions", ""],
+      [I("camera"), "Photos (Optional)", ""],
+      [I("clipboard"), "Pick a Plan", ""],
+      [I("doc"), "Sign Up", ""]
     ];
-    return backBtn() + stepRail(1) + '<p class="eyebrow">How It Works</p><h1>Four Quick Steps</h1>' +
+    return backBtn() + stepRail(1) + '<h1>Four Quick Steps</h1>' +
       '<ol class="steps guide-steps">' + steps.map(function (s, i) {
-        return '<li class="card mw-hover"><span class="num accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><div><h3 style="margin:0">' + s[1] + '</h3><p class="muted small" style="margin:0">' + s[2] + '</p></div></li>';
+        return '<li class="card mw-hover"><span class="num accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><div><h3 style="margin:0">' + s[1] + '</h3></div></li>';
       }).join("") + '</ol>' +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Continue to Step 1</button>';
+      '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Start</button>';
   }
 
   function question(i) {
@@ -525,11 +521,9 @@
 
   function choice() {
     var p = price();
-    return backBtn() + stepRail(1) + '<div class="progress"><div style="width:100%"></div></div><p class="eyebrow">Questions Done</p><h1>Nice Work. What Next?</h1>' +
-      '<p>We have enough to build your estimate now. Want a final price? Add a few photos of your equipment labels.</p>' +
-      '<div class="stack"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Estimate Now</button>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button></div>' +
-      '<p class="small muted" style="margin-top:1rem">Memberships start at $99/Month. Silver from ' + money(p.silver) + '/yr for your home.</p>';
+    return backBtn() + stepRail(1) + '<div class="progress"><div style="width:100%"></div></div><h1>Nice Work.</h1>' +
+      '<div class="stack"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
+      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos (Optional)</button></div>';
   }
 
   function photoCards() {
@@ -545,7 +539,7 @@
   function photos() {
     var cards = photoCards();
     return backBtn() + stepRail(2) + '<p class="eyebrow">Step 2 &middot; Optional</p><h1>Take Some Photos</h1>' +
-      '<div class="notice"><strong>Photos are needed for a FINAL price, but not for an estimate.</strong> One clear shot of each label lets us confirm your equipment and lock your price. Photos stay in this browser in this prototype; nothing is uploaded.</div>' +
+      '<p class="muted">One Label Photo Each Locks Your Price.</p>' +
       '<div class="photos" style="margin-top:1rem">' + cards.map(function (c) {
         var urls = photoMem[c[0]] || [], n = urls.length || (S.photos[c[0]] || 0);
         return '<div class="card pcard mw-hover"><h3>' + esc(c[1]) + (n ? '<span class="done-badge">' + n + ' Added</span>' : "") + '</h3><p class="muted small" style="margin:0 0 .6rem">' + esc(c[2]) + '</p>' +
@@ -553,7 +547,7 @@
           '<div class="prev">' + urls.map(function (u) { return '<img alt="Preview" src="' + u + '">'; }).join("") + (n && !urls.length ? '<span class="small muted">Previews clear on reload.</span>' : "") + '</div></div>';
       }).join("") + '</div>' +
       '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="photosDone" type="button">Continue to My Price</button></div>' +
-      '<div class="btn-row"><button class="btn btn-outline btn-big mw-hover" data-act="visit" type="button">Skip Photos: Schedule a Free Tech Visit Instead</button></div>';
+      '<div class="btn-row"><button class="btn btn-outline btn-big mw-hover" data-act="visit" type="button">Free Tech Visit Instead</button></div>';
   }
 
   function visitForm() {
@@ -631,25 +625,21 @@
       var t = P.tiers[k], amt = p[k], sel = S.tier === k;
       var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our $99/Month membership minimum</p>' : "";
       return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
-        '<p class="eyebrow" style="margin-top:.4rem">' + t.tagline + ' &middot; ' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' +
-        '<p class="small muted" style="margin:0">Estimated Price</p>' + priceBlock(amt, "annual") + floorNote +
-        '<button type="button" class="detail-link" data-detail="' + k + '">*See Detailed Pricing</button>' +
+        '<p class="eyebrow" style="margin-top:.4rem">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' + priceBlock(amt, "annual") + floorNote +
+        '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button>' +
         '<details class="tier-feats"><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
     var lmSum = lastMinuteTotal();
     var addonsHtml = extrasEntry();
     var runYear = p[S.tier] + addSum;
-    var runHtml = '<div class="running card"><h3>Your Running Total · ' + P.tiers[S.tier].label + '</h3>' +
+    var runHtml = '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' +
       priceBlock(runYear, "annual") +
-      (addSum ? '<p class="small muted" style="margin:0">Includes ' + money(addSum) + '/yr in selected add-ons (draft).</p>' : '<p class="small muted" style="margin:0">Tap seasonal add-ons above to include them in your yearly total.</p>') +
+      (addSum ? '<p class="small muted" style="margin:0">Incl. ' + money(addSum) + '/yr Add-Ons</p>' : '') +
       (lmSum ? '<p class="lm-due"><strong>Last-minute for next visit:</strong> ' + money(lmSum) + ' one-time (draft)</p>' : '') +
-      (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Platinum can save 10% when you pay annually at sign-up (draft).</p>' : "") +
+      (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Pay Yearly: Save 10%</p>' : "") +
       '</div>';
-    var alacarteCta = '<div class="alacarte-cta card">' +
-      '<h3>Not Ready for a Membership?</h3>' +
-      '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Licensed techs, one-time pricing.</p>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="alacarte" type="button">Book Services A La Carte</button></div>';
+    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Book One-Time Services</button></p>';
     var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
       var t = P.tiers[k], sel = S.tier === k, pts = t.keyPoints || t.features.slice(0, 3);
       return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
@@ -657,17 +647,12 @@
         '<span class="ps-amt">' + money(monthlyOf(p[k])) + '<small>/Mo</small></span></span>' +
         '<span class="ps-pts">' + pts.map(function (x) { return '<span>' + x + '</span>'; }).join("") + '</span></button>';
     }).join("") + '</div>';
-    return backBtn() + stepRail(3) + '<h1 class="q-h1">Your Estimated Price</h1>' + strip +
-      '<p class="small muted q-sub">Estimated Price &middot; Tap a Plan to Select &middot; Details Below</p>' +
-      tiersHtml + '<p class="eyebrow">Step 3 &middot; Review Your Membership</p>' + status +
-      welcomeBanner() +
-      (final ? "" : '<div class="notice"><strong>Your price is an estimate.</strong> It may change after we review your photos or complete a site visit. If photos don\'t match what we find on site, pricing will be adjusted.</div>') +
-      (unsure ? '<p class="small muted" style="margin-top:.6rem">You answered Unsure ' + unsure + (unsure > 1 ? " times" : " time") + ', so we used a typical metro Detroit home for those.</p>' : "") +
-      '<p class="small muted">Memberships start at $99/Month. We do not offer subscriptions below that.</p>' +
-      addonsHtml + runHtml + alacarteCta +
-      '<p class="small muted">Photo policy: if the photos you send don\'t match what we find on site, pricing will be adjusted before your first billed visit. Prices are draft and assume metro Detroit.</p>' +
+    return backBtn() + stepRail(3) + '<h1 class="q-h1">Your Price</h1>' +
+      tiersHtml + status +
+      (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
+      addonsHtml + runHtml +
       '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
-      (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">Add Photos for a Final Price</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">Schedule a Free Tech Visit</button></div>' : "");
+      (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta;
   }
 
   function totals() {
@@ -714,14 +699,13 @@
   }
   function cancelPolicyCard(tier) {
     var ex = cancelExample(tier);
-    return '<div class="card cancel-policy" id="cancelPolicy">' +
-      '<h3>Cancellation and Refunds</h3>' +
+    return '<details class="card cancel-policy acc" id="cancelPolicy"><summary class="mw-hover">' + I("refund", "xs") + ' Cancel Anytime, No Fee. Fair Refunds.</summary><div class="acc-body">' +
       '<span class="draft">DRAFT, pending legal review</span>' +
       '<p>You may cancel at any time. <strong>There is no cancellation fee.</strong> Your refund equals the prepaid amount minus the itemized price of services already completed — the same lines shown in Detailed Pricing. Unused visits and unfinished line items are refunded. This is not a time-based proration.</p>' +
       '<p class="retention">' + I("gift", "xs") + '<span><strong>Stay Offer:</strong> Thinking of canceling or renewing? Members of 6+ months get 1 month free to stay. Members of 1+ year get 2 months free. Optional, never required to cancel.</span></p>' +
       '<p><strong>Welcome offers (draft):</strong> Free months from the 2-year prepay or from referrals carry <strong>no refund value</strong>. Only prepaid dollars (what you paid) are refundable after deducting completed services. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p>' +
       ex.html +
-      '<p class="small muted" style="margin:0">Final terms pending legal review. The example uses your current estimate.</p></div>';
+      '<p class="small muted" style="margin:0">Final terms pending legal review.</p></div></details>';
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
@@ -743,26 +727,23 @@
     return selectedAlacarte().reduce(function (s, a) { return s + serviceOncePrice(a); }, 0);
   }
   function oncePriceLabel(a) {
-    if (a.price != null) return money(a.price) + " one-time <span>(draft) · last-minute / with visit</span>";
-    var range = a.note ? a.note : (a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high));
-    var unit = a.unit === "season" ? "/season" : " one-time";
-    if (a.note) return money(a.annual) + " <span>(draft) · " + range + "</span>";
-    return money(a.annual) + unit + " <span>(draft) · " + range + "</span>";
+    if (a.price != null) return money(a.price);
+    return money(a.annual) + (a.unit === "season" ? "/Season" : "");
   }
   function alacarte() {
     var bk = S.alacarteBooking || {};
     var list = selectedAlacarte();
     var total = alacarteTotal();
-    var picks = '<div class="addons"><h3>Seasonal and Specialty Services</h3>' +
-      renderAddonList(P.addons || [], S.alacarte || [], "alacarte", oncePriceLabel) + '</div>' +
-      '<div class="addons last-minute"><h3>Last-Minute Add-Ons</h3>' +
-      '<p class="lead-sm">Quick extras to tack onto a visit. Flat one-time prices (draft).</p>' +
-      renderAddonList(P.lastMinute || [], S.alacarte || [], "alacarte", oncePriceLabel) + '</div>';
-    return backBtn() + '<p class="eyebrow">A La Carte · No Membership</p><h1>Book Services A La Carte</h1>' +
-      '<p class="lead" style="font-size:1.05rem">Pick the one-off services you need. No subscription — just a booking request. Memberships start at $99/Month if you change your mind later.</p>' +
+    var picks = '<div class="addons"><h3>Services</h3>' +
+      renderAddonList(P.addons || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>' +
+      '<div class="addons last-minute"><h3>Quick Extras</h3>' +
+      
+      renderAddonList(P.lastMinute || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
+    return backBtn() + '<h1>One-Time Services</h1>' +
+      
       picks +
       '<div class="running card"><h3>One-Time Total (Draft)</h3>' +
-      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(serviceOncePrice(x)) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Select at least one service above.</p>') +
+      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(serviceOncePrice(x)) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Pick a Service</p>') +
       '</div>' +
       '<form id="acF" novalidate class="stack">' +
       '<div class="card"><h3>Booking Request</h3>' +
@@ -773,7 +754,7 @@
       '<label class="fl" for="acNotes">Notes (Optional)</label><textarea id="acNotes" rows="2" placeholder="Gate code, pets, access notes…">' + esc(bk.notes || "") + '</textarea></div>' +
       '<div class="err" id="acErr" role="alert"></div>' +
       '<button class="btn btn-primary btn-big mw-hover" type="submit">Submit Booking Request</button></form>' +
-      '<p class="small muted" style="margin-top:1rem">Prefer a membership? <button type="button" class="link mw-hover" data-act="toQuote">Back to Silver, Gold and Platinum</button></p>';
+      '<p class="small" style="margin-top:1rem;text-align:center"><button type="button" class="link mw-hover" data-act="toQuote">See Memberships</button></p>';
   }
   function alacarteConfirm() {
     var bk = S.alacarteBooking || {}, list = (bk.services || []).map(findService).filter(Boolean);
@@ -808,7 +789,7 @@
       var s = S.plan === o[0];
       var extra = o[0] === "biennial" ? '<p class="price-save">' + money(Math.round((listed * 2) / 30)) + '/Month effective · 6 Months Free</p>' : "";
       return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + extra + '</span></button>';
-    }).join("") + '</div>' + offerTermsShort();
+    }).join("") + '</div><details class="acc"><summary class="mw-hover">' + I("tag", "xs") + ' Offer Terms</summary><div class="acc-body">' + offerTermsShort() + '</div></details>';
     var addonSummary = selectedAddons().length
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("")
       : '<div><span>Add-ons</span><span>None selected</span></div>';
@@ -816,20 +797,19 @@
       ? selectedLastMinute().map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("") +
         '<div><span>Last-Minute Due with Next Visit</span><span>' + money(lastMinuteTotal()) + '</span></div>'
       : '';
-    return backBtn() + stepRail(4) + '<p class="eyebrow">Step 4 &middot; Sign Up</p><h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
+    return backBtn() + stepRail(4) + '<h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
       '<form id="suF" novalidate class="stack">' +
       '<div class="card"><h3>Your Details</h3><label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
       '<div class="grid2"><div><label class="fl" for="sName">Full Name</label><input id="sName" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '"></div>' +
       '<div><label class="fl" for="sPhone">Phone</label><input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '"></div></div>' +
       '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' +
       '<label class="fl" for="sRef">Referral Code (Optional)</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '">' +
-      '<p class="small muted" style="margin:.35rem 0 0">Have a neighbor\'s code? Enter it here. You both get a free month — credited once your first payment clears (draft, no cap).</p>' +
-      '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Okay to Place a Smart Upkeep Yard Sign? (Optional)</span></label>' +
-      '<p class="small muted" style="margin:.2rem 0 0">We\'ll place a small sign for a couple of weeks after a visit. Say yes and we\'ll swap the batteries in your smoke and CO detectors on your next visit, on us.</p></div>' +
+      
+      '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label></div>' +
       cancelPolicyCard(S.tier) +
-      '<div class="card"><h3>Membership Agreement</h3><div class="legal" tabindex="0">' + agreementHtml() + '</div>' +
+      '<div class="card"><h3>Membership Agreement</h3><details class="acc"><summary class="mw-hover">Read Agreement</summary><div class="legal acc-body" tabindex="0">' + agreementHtml() + '</div></details>' +
       miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement.</span></label><p class="fl">Signature</p>' + sigBlock("agreeSig") + '</div>' +
-      '<div class="card"><h3>Liability Waiver</h3><div class="legal" tabindex="0">' + WAIVER + '</div>' +
+      '<div class="card"><h3>Liability Waiver</h3><details class="acc"><summary class="mw-hover">Read Waiver</summary><div class="legal acc-body" tabindex="0">' + WAIVER + '</div></details>' +
       '<label class="checkrow"><input type="checkbox" id="waive"><span>I have read and accept the Liability Waiver.</span></label><p class="fl">Signature</p>' + sigBlock("waiverSig") + '</div>' +
       '<div class="card"><h3>Payment Plan</h3>' + planHtml +
       '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
@@ -839,15 +819,15 @@
       ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears</span></div>' : "") +
       addonSummary + lmSummary +
       '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
-      '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: Payment Processing Coming Soon (Secure Checkout via Stripe)</div><p class="small muted">No card is charged or stored. These fields are disabled.</p>' +
+      '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: No Card Charged</div>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
       '<div class="err" id="suErr" role="alert"></div><button class="btn btn-primary btn-big mw-hover" type="submit">Complete Sign Up (Demo)</button></form>';
   }
 
   function confirm() {
     var su = S.signup || {}, t = su.totals || totals();
-    var next = S.visit ? "We'll confirm your free tech visit by text and email. The tech will log your equipment and confirm your final price." : S.photosComplete ? "We'll review your photos and confirm your final price within one business day." : "We'll reach out to collect a few photos or schedule a quick tech visit to confirm your final price.";
-    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">You\'re In</p><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
+    var next = S.visit ? "We Confirm Your Tech Visit" : S.photosComplete ? "We Review Your Photos" : "We Confirm Your Final Price";
+    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
       '<div class="card"><h3>Summary</h3>' +
       '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
       '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div>' +
@@ -861,16 +841,14 @@
         return html;
       })() +
       '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
-      '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>' + next + '</li><li>We schedule your first seasonal visit.</li><li>You get a written report after every visit.</li></ol></div>' +
-      sampleVisitCard() + '<div class="card" style="margin-top:1rem"><h3>' + I("bell","sm") + ' Recall Tracking Is On</h3><p style="margin:0">As we log your equipment, we watch for recalls and let you know right away.</p></div>' +
+      '<div class="card" style="margin-top:1rem"><h3>Next</h3><ol class="feat"><li>' + next + '</li><li>We Book Visit One</li></ol></div>' +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
         var shareText = "Join Smart Upkeep with my code " + code + " — we both get a free month after your first payment clears. " + (location.origin + location.pathname);
         return '<div class="card referral-card" style="margin-top:1rem">' +
-          '<span class="draft">DRAFT Offer Terms</span>' +
-          '<h3>Share Your Referral Code</h3>' +
-          '<p class="muted">Refer a Neighbor, You Both Get a Month Free — no cap. <strong>Credited once your neighbor\'s first payment clears.</strong></p>' +
+          '<h3>Refer a Neighbor</h3>' +
+          '<p class="muted">You Both Get a Month Free</p>' +
           '<p class="ref-code" id="myRefCode">' + esc(code) + '</p>' +
           '<div class="btn-row">' +
           '<button type="button" class="btn btn-primary mw-hover" data-copy-ref="1">Copy Code</button>' +
@@ -1180,7 +1158,7 @@
     var openCancel = document.querySelector("#priceModalBody [data-open-cancel]");
     if (openCancel) openCancel.addEventListener("click", function () {
       var box = document.getElementById("cancelInModal");
-      if (box) box.classList.toggle("hide");
+      if (box) { box.classList.toggle("hide"); var d = box.querySelector("details"); if (d) d.open = true; }
     });
     m.hidden = false;
     document.body.style.overflow = "hidden";

@@ -635,3 +635,9 @@ body,body.on-home,.hm-search,body.on-home .topbar{background:#fff}
 .hm-offer-tag .hm-offer-body p{margin:.1rem 0}
 .retention{display:flex;gap:.5rem;align-items:flex-start;background:#fff;border:1px dashed var(--mw-border);border-radius:.6rem;padding:.6rem}
 .su-ico.xs.ico-gift,.hm-list .ico-gift{width:22px;height:22px;vertical-align:middle;flex:0 0 22px}
+details.cancel-policy.acc{padding:0}
+details.cancel-policy.acc summary{justify-content:flex-start;gap:.5rem;font-size:1.05rem}
+details.cancel-policy.acc summary::after{margin-left:auto}
+details.est-note summary{font-size:1rem}
+.addon>.su-ico{flex:0 0 32px;width:32px;height:32px}
+.addon-list:has(.addon>.su-ico){display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}

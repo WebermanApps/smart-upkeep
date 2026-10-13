@@ -81,7 +81,7 @@
     });
     if (driveFt > 0) {
       var li = document.createElement("li"); li.className = "note";
-      li.textContent = "Driveway Measured: " + driveFt.toLocaleString() + " Sq Ft (Saved For Snow Clearing Quotes Later)";
+      li.textContent = "Driveway Measured: " + driveFt.toLocaleString() + " Sq Ft";
       ul.appendChild(li);
     }
   }
@@ -90,14 +90,14 @@
   function renderQuote(sqft) {
     var q = window.suLawnQuote(sqft, freq), btn = $("#addPlan");
     if (sqft < window.SU_LAWN_PRICING.minSqFt) {
-      $("#perCut").textContent = "—"; $("#priceNote").textContent = "Outline At Least 500 Sq Ft Of Lawn To See A Price.";
+      $("#perCut").textContent = "—"; $("#priceNote").textContent = "Outline 500+ Sq Ft";
       btn.disabled = true; lastQuote = null; return;
     }
     btn.disabled = false;
     $("#perCut").textContent = "$" + q.perCut;
     $("#priceNote").textContent = (freq !== "once"
-      ? "About " + q.cuts + (freq === "weekly" ? " Weekly" : " Every Other Week") + " Cuts · Est. $" + (q.perCut * q.cuts).toLocaleString() + " / Season · Billed Per Cut, Skip Anytime"
-      : "One Visit · Overgrown Lawns Welcome") + (q.custom ? " · Over 1 Acre, We'll Confirm On Site" : "");
+      ? "About " + q.cuts + (freq === "weekly" ? " Weekly" : " Every 2 Weeks") + " Cuts · ~$" + (q.perCut * q.cuts).toLocaleString() + " / Season"
+      : "One Visit") + (q.custom ? " · Over 1 Acre, We'll Confirm On Site" : "");
     lastQuote = { sqft: sqft, freq: freq, perCut: q.perCut, cuts: q.cuts };
   }
 
@@ -108,7 +108,7 @@
     register(rectAround(lat, lng, 24, 40), "lawn");
     register(rectAround(lat, lng, 12, 11), "house");
     edited = false; var token = ++starterToken;
-    $("#hint").textContent = "Drag The Corner Dots To Match Your Grass. Tap A Midpoint To Add A Corner.";
+    $("#hint").textContent = "Drag Corners To Fit";
     findBuilding(lat, lng).then(function (bld) {
       if (bld && !edited && token === starterToken) {
         layers.forEach(function (it) { map.removeLayer(it.layer); });
@@ -118,7 +118,7 @@
           [b.getSouth() - padLat, b.getEast() + padLng], [b.getSouth() - padLat, b.getWest() - padLng]]), "lawn");
         register(bld, "house");
         map.fitBounds(layers[0].layer.getBounds(), { padding: [24, 24], maxZoom: 19 });
-        $("#hint").textContent = "We Found Your House Outline. Drag The Lawn Corners To Match Your Grass.";
+        $("#hint").textContent = "House Found. Drag Corners To Fit.";
       }
     });
   }
@@ -178,7 +178,7 @@
       var t = b.getAttribute("data-add"), c = map.getCenter(); edited = true;
       var off = (layers.length % 3 - 1) * 4 / 111320;
       register(t === "drive" ? rectAround(c.lat + off, c.lng, 5, 14) : t === "house" ? rectAround(c.lat + off, c.lng, 6, 6) : rectAround(c.lat + off, c.lng, 14, 10), t);
-      $("#hint").textContent = "New Shape Added In The Middle Of The Map. Drag Its Corners Into Place.";
+      $("#hint").textContent = "Shape Added. Drag Corners To Fit.";
     });
   });
   $("#resetBtn").addEventListener("click", function () { var c = map.getCenter(); starter(c.lat, c.lng); });
@@ -191,7 +191,7 @@
   $("#addPlan").addEventListener("click", function () {
     if (!lastQuote) return;
     try { localStorage.setItem("smartUpkeep.lawnAddon", JSON.stringify(Object.assign({ addedAt: Date.now() }, lastQuote))); } catch (e) {}
-    $("#planMsg").textContent = "Added To Your Plan (Demo): " + ({ weekly: "Weekly Mowing", biweekly: "Every Other Week Mowing", once: "One-Time Mowing" }[lastQuote.freq]) + " At $" + lastQuote.perCut + " / Cut.";
+    $("#planMsg").textContent = "Added To Your Plan (Demo): " + ({ weekly: "Weekly Mowing", biweekly: "Every 2 Weeks Mowing", once: "One-Time Mowing" }[lastQuote.freq]) + " At $" + lastQuote.perCut + " / Cut.";
   });
   $("#shareBtn").addEventListener("click", function () {
     var data = { title: "Smart Upkeep Lawn Quote", text: "Get A Lawn Mowing Quote In A Minute", url: location.origin + location.pathname };
