@@ -22,7 +22,7 @@
   ];
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
+  function fresh() { return { screen: "home", answers: {}, tier: "silver", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.lastMinute)) o.lastMinute = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -244,7 +244,7 @@
   /* ---------- Navigation ---------- */
   function go(screen) { if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
   function back() { var p = S.path.pop(); S.screen = p || "home"; save(); render(); window.scrollTo(0, 0); }
-  function backBtn() { return '<button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>'; }
+  function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2.2" stroke-linejoin="round"/></svg></button></span>'; }
 
   function render() {
     /* Intro screen retired: old links and saved state land on the first question. */
@@ -378,7 +378,7 @@
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
   var selK = null, HM_SVC = [];
-  var TIER_NOTE = { silver: "Included in Every Plan", gold: "Gold and Up", platinum: "Platinum" };
+  var TIER_NOTE = { silver: "Included in Every Plan", gold: "Plus and Up", platinum: "Complete" };
   /* Small tech-at-work illustration: shared tech figure + the service's equipment icon. */
   function techArt(ic) {
     var body = window.SUIconBody ? window.SUIconBody(ic) : "";
@@ -427,7 +427,7 @@
     HM_SVC = svc;
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
-        var phoneOrder = tiers.slice(); /* Max: Silver, Gold, Platinum on every screen size */
+        var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
     var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Honest Refund", "Cancel anytime, no fee. Refund = prepaid minus work done."], ["clipboard", "Report Every Visit", "Written report with photos saved to your Home Record."], ["house", "Metro Detroit", "Wayne, Oakland and Macomb counties."]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -602,28 +602,65 @@
       '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Start</button>';
   }
 
+  /* ---------- Quote flow (one question per screen) ---------- */
+  var QART = { zip: "house", sqft: "house", furnaces: "furnace", acs: "ac", waterHeaters: "waterheater", stories: "gutter", extras: "star" };
+  var QSHORT = { zip: "Your ZIP or Address", sqft: "Home Size", furnaces: "Furnaces", acs: "AC Units", waterHeaters: "Water Heaters", stories: "Stories", extras: "Extras" };
+  var QTITLE = { zip: "Where's Your Home?", sqft: "How Big Is Your Home?", furnaces: "How Many Furnaces?", acs: "How Many AC Units?", waterHeaters: "How Many Water Heaters?", stories: "How Many Stories?", extras: "Any of These?" };
+  var QHELP = { zip: "ZIP or street address. Metro Detroit.", sqft: "A rough range is fine.", furnaces: "Most homes over 3,500 sq ft have two.", acs: "Count the outdoor units.", waterHeaters: "Then pick the type.", stories: "Sets gutter and ladder work.", extras: "Pick all that apply." };
+  var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", pool: "pool", humidifier: "radon" };
+  var SQICO = ["house", "house", "house", "house", "house", "house"];
+  var PCOL = { silver: 1, gold: 2, platinum: 3 };
+  function qTile(attr, val, label, ico, tint, sel, extra) {
+    return '<button type="button" class="qt mw-hover t' + tint + (sel ? " sel" : "") + (extra || "") + '" data-' + attr + '="' + val + '" aria-pressed="' + !!sel + '">' +
+      '<span class="qt-ic">' + ico + '</span><span class="qt-lab">' + label + '</span>' + (sel ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
+  }
+  function countIco(icoName, n) { return n === "0" ? I(icoName, "sm") + '<b class="qt-x" aria-hidden="true"></b>' : '<b class="qt-n">' + esc(n) + '</b>'; }
+  function planChip() {
+    var t = P.tiers[S.tier] || P.tiers[tierKeys()[0]];
+    return '<div class="qf-plan"><button type="button" class="qf-chip mw-hover tc' + (PCOL[S.tier] || 1) + '" data-plan-chip="1" aria-expanded="false" aria-controls="qfPlans">' + '<span class="qf-dot" aria-hidden="true"></span>' + esc(t.label) + ' Plan<span class="qf-chg">Change</span></button>' +
+      '<div class="qf-plans" id="qfPlans" hidden>' + tierKeys().map(function (k) { return '<button type="button" class="qf-pick mw-hover tc' + (PCOL[k] || 1) + (S.tier === k ? " sel" : "") + '" data-plan-pick="' + k + '"><span class="qf-dot" aria-hidden="true"></span>' + esc(P.tiers[k].label) + '</button>'; }).join("") + '</div></div>';
+  }
+  function qHead(n, total) {
+    var pct = Math.round(n / total * 100);
+    return '<div class="qf-top">' + backBtn() + planChip() + '</div>' +
+      '<div class="qf-prog"><span class="qf-step">Step ' + n + ' of ' + total + '</span><div class="qf-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:' + pct + '%"></div></div></div>';
+  }
+  function qArt(name, tint) { return '<div class="qf-art t' + tint + '" aria-hidden="true">' + I(name) + '</div>'; }
   function question(i) {
-    var q = Q[i], a = S.answers[q.id], pct = Math.round((i + 1) / Q.length * 100), body = "";
+    var q = Q[i], a = S.answers[q.id], body = "", tint = i % 4, foot = "";
     if (q.type === "zip") {
-      body = '<label class="fl" for="zip">Address or ZIP</label><input id="zip" type="text" autocomplete="street-address" placeholder="e.g. 48322 or 123 Main St, Novi" value="' + esc(a && a !== "unsure" ? a : "") + '">' +
-        '<div class="err" id="zipErr"></div>' +
-        '<div class="opts" style="margin-top:.6rem">' + unsureBtn(a === "unsure") + '</div>';
+      body = '<div class="qf-field"><label class="sr" for="zip">Address or ZIP</label>' + I("search", "sm") +
+        '<input id="zip" type="text" inputmode="text" enterkeyhint="next" autocomplete="street-address" placeholder="48322 or 123 Main St, Novi" value="' + esc(a && a !== "unsure" ? a : "") + '"></div>' +
+        '<div class="err" id="zipErr" role="alert"></div>' +
+        '<div class="qf-chips" aria-label="Good to Know"><span class="hm-chip t0">' + I("tag", "xs") + 'Free</span><span class="hm-chip t1">' + I("shield", "xs") + 'No Card Needed</span><span class="hm-chip t2">' + I("clock", "xs") + 'About 2 Minutes</span></div>';
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
+        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure? Skip for Now</button>';
     } else if (q.type === "multi") {
       var arr = Array.isArray(a) ? a : [];
-      body = '<div class="opts two">' + q.opts.map(function (o) { var sel = arr.indexOf(o[0]) > -1; return '<button type="button" class="opt mw-hover' + (sel ? " sel" : "") + '" data-multi="' + o[0] + '" aria-pressed="' + sel + '"><span class="chk">' + (sel ? "&#10003;" : "") + '</span>' + o[1] + '</button>'; }).join("") +
-        '<button type="button" class="opt mw-hover' + (a === "none" ? " sel" : "") + '" data-multi="none"><span class="chk">' + (a === "none" ? "&#10003;" : "") + '</span>None of These</button>' + unsureBtn(a === "unsure") + '</div>';
+      body = '<div class="qt-grid two" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("multi", o[0], o[1].replace("Whole-House ", ""), I(XICO[o[0]] || "wrench", "sm"), k % 4, arr.indexOf(o[0]) > -1, " chkt"); }).join("") +
+        qTile("multi", "none", "None of These", I("shield", "sm"), 3, a === "none", " chkt") + '</div>';
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>See My Price</button>' +
+        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
+    } else if (q.type === "wh") {
+      var t = S.answers.whType;
+      body = '<div class="qt-grid three" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("single", o[0], o[1], countIco("waterheater", o[0]), k % 4, String(a) === o[0]); }).join("") + '</div>' +
+        '<p class="qf-sub">Tank or Tankless?</p><div class="qt-grid three" data-ptr-ignore>' + [["tank", "Tank", "waterheater"], ["tankless", "Tankless", "tankless"], ["both", "One of Each", "grid"]].map(function (o, k) { return qTile("wh", o[0], o[1], I(o[2], "sm"), (k + 1) % 4, t === o[0]); }).join("") + '</div>';
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
+        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
     } else {
-      body = '<div class="opts two">' + q.opts.map(function (o) { return '<button type="button" class="opt mw-hover' + (String(a) === o[0] ? " sel" : "") + '" data-single="' + o[0] + '">' + o[1] + '</button>'; }).join("") + unsureBtn(a === "unsure") + '</div>';
-      if (q.type === "wh") {
-        var t = S.answers.whType;
-        body += '<div class="sub-q"><p class="fl">Tank or Tankless?</p><div class="opts two">' + [["tank", "Tank"], ["tankless", "Tankless"], ["both", "One of Each"], ["unsure", "Unsure"]].map(function (o) { return '<button type="button" class="opt mw-hover' + (o[0] === "unsure" ? " unsure" : "") + (t === o[0] ? " sel" : "") + '" data-wh="' + o[0] + '">' + o[1] + '</button>'; }).join("") + '</div></div>';
-      }
+      var cnt = q.id === "furnaces" || q.id === "acs";
+      var cls = q.opts.length > 4 ? "two" : (q.opts.length === 3 ? "three" : "two");
+      body = '<div class="qt-grid ' + cls + '" data-ptr-ignore>' + q.opts.map(function (o, k) {
+        var ico = cnt ? countIco(QART[q.id], o[0]) : q.id === "stories" ? '<b class="qt-n">' + o[0] + '</b>' : I("house", "sm");
+        var lab = cnt ? (o[0] === "0" ? "None" : o[1] === o[0] ? (o[0] === "1" ? "One" : o[0] === "2" ? "Two" : o[0] === "3" ? "Three" : o[1]) : o[1]) : o[1].replace(" sq ft", "").replace(" (Ranch)", "");
+        var sub = q.id === "sqft" ? '<small>sq ft</small>' : q.id === "stories" && o[0] === "1" ? '<small>Ranch</small>' : "";
+        return qTile("single", o[0], lab + sub, ico, k % 4, String(a) === o[0], q.id === "sqft" ? " sz" + k : "");
+      }).join("") + '</div>';
+      foot = '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
     }
-    var canNext = isAnswered(q);
-    return backBtn() + stepRail(1) + '<p class="eyebrow">Step 1 &middot; Question ' + (i + 1) + ' of ' + Q.length + '</p>' +
-      '<div class="progress" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><div style="width:' + pct + '%"></div></div>' +
-      '<h2>' + q.title + '</h2><p class="muted">' + q.help + '</p>' + body +
-      '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (canNext ? "" : " disabled") + '>Next</button></div>';
+    return '<section class="qf qf-' + q.id + '">' + qHead(i + 1, Q.length) +
+      '<div class="qf-hero">' + qArt(QART[q.id], tint) + '<div><h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div></div>' +
+      '<div class="qf-body">' + body + '</div><div class="qf-foot">' + foot + '</div></section>';
   }
   function unsureBtn(sel) { return '<button type="button" class="opt unsure mw-hover' + (sel ? " sel" : "") + '" data-unsure="1">Unsure</button>'; }
   function isAnswered(q) {
@@ -637,10 +674,12 @@
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
 
   function choice() {
-    var p = price();
-    return backBtn() + stepRail(1) + '<div class="progress"><div style="width:100%"></div></div><h1>Nice Work.</h1>' +
-      '<div class="stack"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos (Optional)</button></div>';
+    return '<section class="qf qf-done">' + '<div class="qf-top">' + backBtn() + planChip() + '</div>' +
+      '<div class="qf-prog"><span class="qf-step">All 7 Done</span><div class="qf-bar full" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:100%"></div></div></div>' +
+      '<div class="qf-done-art" aria-hidden="true"><span class="t3">' + I("clipboard") + '</span><span class="t0">' + I("furnace") + '</span><span class="t1">' + I("ac") + '</span></div>' +
+      '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' +
+      '<div class="qf-foot"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
+      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p></div></section>';
   }
 
   function photoCards() {
@@ -761,10 +800,15 @@
       var t = P.tiers[k], sel = S.tier === k, pts = (t.keyPoints || t.features.slice(0, 3)).filter(function (x) { return x !== "And More"; });
       return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
         '<span class="ps-head"><span class="ps-name">' + t.label + '</span>' + (t.recommended ? '<span class="ps-pop">Most Popular</span>' : '') +
-        '<span class="ps-amt">' + money(monthlyOf(p[k])) + '<small>/Mo</small></span></span>' +
+        '<span class="ps-amt"><span class="ps-num" data-amt="' + monthlyOf(p[k]) + '">' + money(monthlyOf(p[k])) + '</span><small>/Mo</small></span></span>' +
         '<span class="ps-pts">' + pts.map(function (x) { return '<span>' + x + '</span>'; }).join("") + '</span></button>';
     }).join("") + '</div>';
-    return backBtn() + stepRail(3) + '<h1 class="q-h1">Your Price</h1>' +
+    return '<section class="pr-top"><div class="qf-top">' + backBtn() + '<span class="pr-tag hm-chip t3">' + I("shield", "xs") + 'Free Estimate</span></div>' +
+      '<div class="pr-head">' + qArt("clipboard", 3) + '<div><h1 class="qf-h">Your Price</h1><p class="qf-help">Tap a plan. ' + esc(P.tiers[S.tier].label) + ' is selected.</p></div></div>' +
+      strip +
+      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
+      '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
+      '<h2 class="pr-more">Plan Details</h2>' +
       tiersHtml + status +
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
       addonsHtml + runHtml +
@@ -772,6 +816,20 @@
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta;
   }
 
+  var lastScreen = null;
+  function revealPrices() {
+    var fresh = lastScreen !== "quote"; lastScreen = "quote";
+    var rows = app.querySelector(".price-strip");
+    if (!rows || !fresh) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    rows.classList.add("reveal");
+    app.querySelectorAll(".ps-num[data-amt]").forEach(function (el, ix) {
+      var to = Number(el.getAttribute("data-amt")), t0 = null, dur = 750, delay = 120 * ix;
+      el.textContent = money(0);
+      function step(ts) { if (t0 === null) t0 = ts + delay; var k = Math.max(0, Math.min(1, (ts - t0) / dur)); var e = 1 - Math.pow(1 - k, 3); el.textContent = money(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = money(to); }
+      requestAnimationFrame(step);
+    });
+  }
   function totals() {
     var amt = price()[S.tier], add = addonsAnnual(), lm = lastMinuteTotal();
     var addonIds = (S.addons || []).slice(), lmIds = (S.lastMinute || []).slice();
@@ -784,7 +842,7 @@
     }
     if (S.tier === "silver" || S.tier === "gold") {
       return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
-        note: (S.tier === "silver" ? "Silver" : "Gold") + " is paid in full for the year, up front." };
+        note: (S.tier === "silver" ? "Essentials" : "Plus") + " is paid in full for the year, up front." };
     }
     if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "quarterly", termMonths: 12, referralCodeIn: refIn, note: "4 payments of " + money((amt + add) / 4) + "." };
     var disc = Math.max(round(amt * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
@@ -826,7 +884,7 @@
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Months Free, plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Silver and Gold memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Platinum memberships may be paid in 4 quarterly payments, annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Months Free, plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships may be paid in 4 quarterly payments, annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
   }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
@@ -1019,6 +1077,14 @@
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
     var s = S.screen;
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
+    var pc = app.querySelector("[data-plan-chip]"), pl = app.querySelector("#qfPlans");
+    if (pc && pl) {
+      pc.addEventListener("click", function () { var o = pl.hidden; pl.hidden = !o; pc.setAttribute("aria-expanded", String(o)); });
+      app.querySelectorAll("[data-plan-pick]").forEach(function (b) { b.addEventListener("click", function () { S.tier = b.getAttribute("data-plan-pick"); save(); render(); }); });
+    }
+    document.body.classList.toggle("on-qf", /^q\d$/.test(s) || s === "choice");
+    var tb = document.querySelector(".topbar"); if (tb) document.documentElement.style.setProperty("--tb", tb.offsetHeight + "px");
+    if (s === "quote") revealPrices(); else lastScreen = s;
     if (s === "quote" || s === "alacarte") {
       var seen = []; app.querySelectorAll("[data-addon],[data-lastminute],[data-alacarte]").forEach(function (b) { seen.push(b.getAttribute("data-addon") || b.getAttribute("data-lastminute") || b.getAttribute("data-alacarte")); });
       if (!bind._viewed) bind._viewed = {};
@@ -1080,6 +1146,7 @@
   }
   function act(a) {
     if (a === "back") return back();
+    if (a === "home") return go("home");
     if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
     if (a === "watch") return openVideo(true);
     if (a === "q0") return go("q0");
@@ -1092,7 +1159,7 @@
     if (a === "restart") { S = fresh(); photoMem = {}; save(); render(); window.scrollTo(0, 0); }
   }
   function bindQ(i) {
-    var q = Q[i], nextB = app.querySelector('[data-act="next"]');
+    var q = Q[i], nextB = app.querySelector('[data-act="next"]') || document.createElement("button");
     function refresh() { nextB.disabled = !isAnswered(q); save(); }
     nextB.removeAttribute("data-act");
     nextB.addEventListener("click", function () {
@@ -1105,8 +1172,13 @@
     });
     var zip = document.getElementById("zip");
     if (zip) zip.addEventListener("input", function () { S.answers.zip = zip.value; S._zipOk = false; document.getElementById("zipErr").textContent = ""; app.querySelector("[data-unsure]").classList.remove("sel"); refresh(); });
-    app.querySelectorAll("[data-single]").forEach(function (b) { b.addEventListener("click", function () { S.answers[q.id] = b.getAttribute("data-single"); if (q.type !== "wh") { save(); go(i + 1 < Q.length ? "q" + (i + 1) : "choice"); } else { save(); render(); } }); });
-    app.querySelectorAll("[data-wh]").forEach(function (b) { b.addEventListener("click", function () { S.answers.whType = b.getAttribute("data-wh"); save(); render(); }); });
+    function nextQ() { go(i + 1 < Q.length ? "q" + (i + 1) : "choice"); }
+    /* Tap to auto-advance: brief selected flash, then the next step. */
+    function flashGo(b) { b.classList.add("sel", "pop"); app.classList.add("qf-busy"); setTimeout(function () { app.classList.remove("qf-busy"); nextQ(); }, 220); }
+    function whReady() { var c = S.answers.waterHeaters, t = S.answers.whType; return c !== undefined && c !== "unsure" && t && t !== "unsure"; }
+    app.querySelectorAll("[data-single]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers[q.id] = b.getAttribute("data-single"); save(); if (q.type !== "wh" || whReady()) flashGo(b); else render(); }); });
+    app.querySelectorAll("[data-wh]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers.whType = b.getAttribute("data-wh"); if (S.answers.waterHeaters === "unsure") delete S.answers.waterHeaters; save(); if (whReady()) flashGo(b); else render(); }); });
+    if (zip) zip.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (!nextB.disabled) nextB.click(); } });
     app.querySelectorAll("[data-multi]").forEach(function (b) { b.addEventListener("click", function () {
       var k = b.getAttribute("data-multi"), cur = Array.isArray(S.answers[q.id]) ? S.answers[q.id] : [];
       if (k === "none") S.answers[q.id] = "none"; else { var ix = cur.indexOf(k); if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers[q.id] = cur.length ? cur : undefined; }
@@ -1115,7 +1187,7 @@
     if (u) u.addEventListener("click", function () {
       S.answers[q.id] = "unsure"; if (q.type === "wh" && !S.answers.whType) S.answers.whType = "unsure";
       if (zip) zip.value = "";
-      save(); if (q.type === "zip" || q.type === "multi" || q.type === "wh") render(); else go(i + 1 < Q.length ? "q" + (i + 1) : "choice");
+      save(); if (q.type === "multi") render(); else go(i + 1 < Q.length ? "q" + (i + 1) : "choice");
     });
   }
   function bindAlacarte() {
@@ -1320,7 +1392,7 @@
   document.getElementById("shareBtn").addEventListener("click", function () {
     var url = location.origin + location.pathname, p = price(), msg = document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
-    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Silver " + money(monthlyOf(p.silver)) + "/Month, Gold " + money(monthlyOf(p.gold)) + "/Month, Platinum " + money(monthlyOf(p.platinum)) + "/Month.";
+    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + " " + url).then(done, fallbackCopy); else fallbackCopy();
@@ -1330,6 +1402,7 @@
     if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { location.href = "sms:?&body=" + encodeURIComponent(text + " " + url); setTimeout(copy, 600); return; }
     copy();
   });
+  if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (S.screen !== "q0") go("q0"); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); });
 
