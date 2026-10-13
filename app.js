@@ -33,14 +33,14 @@
   function billLine(kind, annualTotal) {
     if (kind === "quarterly") return "*Billed quarterly (" + money(annualTotal / 4) + " every 3 months)";
     if (kind === "annualDiscount") return "*Billed annually (" + money(annualTotal) + "/yr, 10% off)";
-    if (kind === "biennial") return "*Prepaid for 2 years (" + money(annualTotal) + "), then 6 extra months free at the end of your term (draft)";
+    if (kind === "biennial") return "*Prepaid for 2 years (" + money(annualTotal) + "), then 6 extra months free at the end of your term, once you complete it (draft)";
     return "*Billed annually (" + money(annualTotal) + "/yr)";
   }
   function priceBlock(annualTotal, kind) {
     if (kind === "biennial") {
       return '<div class="price">' + money(Math.round(Number(annualTotal) / 24)) + '<small>/Month</small></div>' +
         '<p class="price-bill">' + billLine("biennial", annualTotal) + '</p>' +
-        '<p class="price-save">6 Extra Months Free at the End of Your Term · stacks with referrals (draft)</p>';
+        '<p class="price-save">6 Extra Months Free at the End of Your Term, Once You Complete It · stacks with referrals (draft)</p>';
     }
     return '<div class="price">' + money(monthlyOf(annualTotal)) + '<small>/Month</small></div>' +
       '<p class="price-bill">' + billLine(kind, annualTotal) + '</p>';
@@ -54,7 +54,7 @@
       '<h3 style="margin:.2rem 0 .55rem">Stackable Savings</h3>' +
       '<ul class="feat offer-list">' +
       '<li><strong>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</strong> — prepay 24 months at the normal monthly price; 6 extra months are added free after your 24 paid months. Available on every tier. Listed price still honors the $99/Month floor.</li>' +
-      '<li><strong>Refer a Neighbor, You Both Get a Month Free</strong> — no cap on referrals. Credited once your neighbor\'s first payment clears.</li>' +
+      '<li><strong>Refer a Neighbor, You Both Get a Month Free</strong> — no cap on referrals. Credited once your neighbor\'s first payment clears, added at the end of your term and applied once you complete it.</li>' +
       '</ul>' +
       '<p class="small muted" style="margin:0">Offers stack. Free months are added at the end of your term and apply once you complete it. Cancel early and they are forfeited. Free months carry no refund value. Final terms pending legal review.</p></div></details>';
   }
@@ -223,7 +223,7 @@
     if (S.plan === "biennial") {
       var two = mem * 2;
       var freeVal = Math.round(mem / 2); // 6 months at listed annual/12 * 6
-      offerLine = { label: "Welcome offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (draft)", amt: -freeVal, kind: "offer" };
+      offerLine = { label: "+6 Free Months Added At The End Of Your Term (Once You Complete It)", amt: 0, kind: "offer" };
       membership = two;
       year = two + addSum * 2;
       prepaid = year;
@@ -443,7 +443,7 @@
       '</section>' +
       '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
-        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Extra Months Free</span></summary><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Extra Months Free, Once You Complete Your Term</span></summary><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
         '<div class="hm-tiles">' + svc.map(function (s, i) { return '<button type="button" class="hm-tile mw-hover t' + (i % 4) + '" data-svc="' + i + '" aria-haspopup="dialog"><span class="hm-tile-ic">' + I(s[0], "xs") + '</span><span>' + s[1] + '</span></button>'; }).join("") + '</div></section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
@@ -807,7 +807,7 @@
       strip +
       '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
-      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each. Free months are added at the end of your term and apply once you complete it.</p>' +
+      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
       '<h2 class="pr-more">Plan Details</h2>' +
       tiersHtml + status +
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
@@ -838,7 +838,7 @@
       var mem2 = amt * 2, add2 = add * 2, prepaid = mem2 + add2;
       var save6 = Math.round(amt / 2);
       return { plan: "biennial", label: "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (Draft)", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, save: save6, freeMonths: 6, referralCodeIn: refIn,
-        note: money(Math.round(mem2 / 24)) + "/Month, prepaid " + money(prepaid) + " for 2 years. 6 extra months free at the end of your term (draft)." };
+        note: money(Math.round(mem2 / 24)) + "/Month, prepaid " + money(prepaid) + " for 2 years. 6 extra months free at the end of your term, once you complete it (draft)." };
     }
     if (S.tier === "silver" || S.tier === "gold") {
       return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
@@ -989,9 +989,9 @@
       '<div class="card"><h3>Payment Plan</h3>' + planHtml +
       '<div class="summary-price" style="margin-top:1rem">' + priceBlock(t.year, t.billKind) + '</div>' +
       '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
-      (t.plan === "biennial" ? '<div><span>Term</span><span>24 Paid Months + 6 Free Months at the End</span></div>' : "") +
-      (t.save ? '<div><span>' + (t.plan === "biennial" ? "Value of 6 Free Months at the End (Draft)" : "Annual Discount (Draft)") + '</span><span>' + (t.plan === "biennial" ? "" : "&minus;") + money(t.save) + '</span></div>' : "") +
-      ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears</span></div>' : "") +
+      (t.plan === "biennial" ? '<div><span>Term</span><span>24 Paid Months + 6 Free Months at the End (Once You Complete It)</span></div>' : "") +
+      (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>No Charge</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
+      ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears, added at the end of your term once you complete it</span></div>' : "") +
       addonSummary + lmSummary +
       '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div></div>' +
       '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: No Card Charged</div>' +
@@ -1020,10 +1020,10 @@
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
-        var shareText = "Join Smart Upkeep with my code " + code + " — we both get a free month after your first payment clears. " + (location.origin + location.pathname);
+        var shareText = "Join Smart Upkeep with my code " + code + " — we both get a free month after your first payment clears, added at the end of our terms once completed. " + (location.origin + location.pathname);
         return '<div class="card referral-card" style="margin-top:1rem">' +
           '<h3>Refer a Neighbor</h3>' +
-          '<p class="muted">You Both Get a Month Free</p>' +
+          '<p class="muted">You Both Get a Month Free, Added at the End of Your Term Once You Complete It</p>' +
           '<p class="ref-code" id="myRefCode">' + esc(code) + '</p>' +
           '<div class="btn-row">' +
           '<button type="button" class="btn btn-primary mw-hover" data-copy-ref="1">Copy Code</button>' +
@@ -1315,13 +1315,13 @@
       rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
     }
     if (bd.offerLine) {
-      rows += '<li class="sub"><span>' + esc(bd.offerLine.label) + '</span><span>6 Extra Months at the End</span></li>';
+      rows += '<li class="sub"><span>' + esc(bd.offerLine.label) + '</span><span>No Charge</span></li>';
       rows += '<li class="sub"><span>Prepaid for 24 months at listed price (floor honored)</span><span>' + money(bd.membership) + '</span></li>';
     }
     rows += '<li class="total"><span>' + (bd.termMonths === 30 ? "Prepaid total (30-month term)" : "Annual membership total") + '</span><span>' + money(bd.year) + '</span></li>';
     rows += '<li class="total"><span>' + "Monthly price" + '</span><span>' + money(bd.monthly) + '/Month</span></li>';
     if (bd.termMonths === 30) {
-      rows += '<li class="sub"><span>Referral free months (if any)</span><span>Credited after neighbor\'s first payment clears · $0 refund value</span></li>';
+      rows += '<li class="sub"><span>Referral free months (if any)</span><span>Credited after neighbor\'s first payment clears · added at the end of your term, once you complete it · $0 refund value</span></li>';
     }
     if (lmLines.length) {
       rows += lmLines.map(function (L) {
