@@ -407,8 +407,8 @@
         '<button class="hm-deal mw-hover" type="button" data-hm-open="offers">' + I("tag", "xs") + '<span><strong>Welcome Deal:</strong> Prepay 2 Years, Get 6 Months Free</span><span class="draft">Draft</span></button>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
-      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
       row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>') +
+      row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
       row("addons", "Popular Add-Ons", addons.map(function (a) { return card(ADDON_ICO[a.id] || "wrench", a.label, a.unit === "season" ? "Per Season" : "Per Service", '<span class="hm-price">' + priceRange(a) + '</span>'); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="addons">See All</button>') +
       row("trust", "Why Members Trust Us", trust.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
       '<section class="hm-accs"><h2>Details</h2>' +
