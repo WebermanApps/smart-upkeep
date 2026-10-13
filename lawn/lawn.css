@@ -78,3 +78,11 @@ body.gate-locked > :not(#prelaunchGate){visibility:hidden!important}
 .prelaunch-form input{width:100%;font:inherit;font-size:1.05rem;padding:.7rem .8rem;border:1.5px solid #cfc5b6;border-radius:10px}
 .prelaunch-form .fl{font-weight:600}.prelaunch-form .err{color:#C1502E;min-height:1.2em;font-size:.9rem}
 .prelaunch-form .btn{width:100%;margin-top:.75rem}
+
+/* Urgent/warning dropdown (Max Oct 13) */
+details:not([open])>.warn-body{display:none}
+.lawn-draft{margin:.35rem 0;position:relative}
+.lawn-draft>summary{list-style:none;cursor:pointer;font-family:"Khand",sans-serif;font-weight:700;font-size:.9rem;color:var(--rust);border:1.5px solid var(--rust);border-radius:6px;padding:.25rem .55rem;min-height:44px;display:inline-flex;align-items:center}
+.lawn-draft>summary::-webkit-details-marker{display:none}
+.lawn-draft .warn-body{margin-top:.35rem;font-size:.85rem;color:#525252;max-width:22rem}
+.draft{display:none} /* replaced by lawn-draft summary */

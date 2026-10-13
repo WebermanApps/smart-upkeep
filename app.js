@@ -50,20 +50,18 @@
     return price()[tier || S.tier];
   }
   function welcomeBanner() {
-    var o = P.welcomeOffers || {};
-    return '<div class="welcome-offer card" role="region" aria-label="Welcome Offer">' +
-      '<span class="draft">DRAFT Offer Terms</span>' +
+    return '<details class="acc warn-drop"><summary class="mw-hover">1 Warning · Draft Offer Terms</summary><div class="acc-body">' +
       '<p class="eyebrow" style="margin:0">Welcome Offer</p>' +
       '<h3 style="margin:.2rem 0 .55rem">Stackable Savings</h3>' +
       '<ul class="feat offer-list">' +
       '<li><strong>Pay for 2 Years, Get 6 Months Free</strong> — 30 months of membership for the price of 24, paid up front. Available on every tier. Listed price still honors the $99/Month floor.</li>' +
       '<li><strong>Refer a Neighbor, You Both Get a Month Free</strong> — no cap on referrals. Credited once your neighbor\'s first payment clears.</li>' +
       '</ul>' +
-      '<p class="small muted" style="margin:0">Offers stack. Free months extend your term and carry no refund value. Final terms pending legal review.</p></div>';
+      '<p class="small muted" style="margin:0">Offers stack. Free months extend your term and carry no refund value. Final terms pending legal review.</p></div></details>';
   }
   function offerTermsShort() {
-    return '<div class="offer-terms notice"><span class="draft">DRAFT Offer Terms</span>' +
-      '<p style="margin:.35rem 0 0"><strong>Pay for 2 Years, Get 6 Months Free:</strong> pay 24 months at the listed membership price (minimum $99/Month), receive 30 months of coverage. <strong>Refer a Neighbor:</strong> you and your neighbor each get one free month per successful referral, with no cap. Free months are credited only after the referred neighbor\'s first payment has cleared. Offers stack. Free months have no refund value on cancel.</p></div>';
+    return '<details class="acc warn-drop offer-terms"><summary class="mw-hover">1 Warning · Draft Offer Terms</summary><div class="acc-body">' +
+      '<p style="margin:0"><strong>Pay for 2 Years, Get 6 Months Free:</strong> pay 24 months at the listed membership price (minimum $99/Month), receive 30 months of coverage. <strong>Refer a Neighbor:</strong> you and your neighbor each get one free month per successful referral, with no cap. Free months are credited only after the referred neighbor\'s first payment has cleared. Offers stack. Free months have no refund value on cancel.</p></div></details>';
   }
   function makeReferralCode(name) {
     var base = String(name || "HOME").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "HOME";
@@ -364,9 +362,8 @@
   }
   function miCancelNotice() {
     return '<div class="mi-cancel notice" role="note">' +
-      '<span class="draft">DRAFT, pending legal review</span>' +
       '<p><strong>Michigan Home Solicitation Sales Notice (MCL 445.113).</strong> You, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.</p>' +
-      '<p class="small muted" style="margin:0">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</p></div>';
+      '<details class="warn-drop mi-draft"><summary class="mw-hover">1 Warning · Draft Wording</summary><div class="warn-body small muted">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</div></details></div>';
   }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
@@ -789,7 +786,7 @@
       var s = S.plan === o[0];
       var extra = o[0] === "biennial" ? '<p class="price-save">' + money(Math.round((listed * 2) / 30)) + '/Month effective · 6 Months Free</p>' : "";
       return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + extra + '</span></button>';
-    }).join("") + '</div><details class="acc"><summary class="mw-hover">' + I("tag", "xs") + ' Offer Terms</summary><div class="acc-body">' + offerTermsShort() + '</div></details>';
+    }).join("") + '</div>' + offerTermsShort();
     var addonSummary = selectedAddons().length
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.annual) + '/yr</span></div>'; }).join("")
       : '<div><span>Add-ons</span><span>None selected</span></div>';

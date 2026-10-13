@@ -39,6 +39,12 @@ details.acc summary::-webkit-details-marker{display:none}
 details.acc summary::after{content:"+";font-size:1.5rem;transition:transform .18s}
 details.acc[open] summary::after{transform:rotate(45deg)}
 details.acc .acc-body{padding:0 1.1rem 1rem}
+details:not([open])>.acc-body,details:not([open])>.warn-body,details:not([open])>.hm-offer-body{display:none}
+.warn-drop>summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.warn-drop>summary::-webkit-details-marker{display:none}
+.mi-draft{margin-top:.5rem;border:0}
+.mi-draft>summary{font:600 .78rem var(--mw-font-body);text-transform:uppercase;letter-spacing:.08em;color:#5c4a00;border:1px solid #e8d48a;background:#fff;padding:.25rem .6rem;min-height:44px}
+.mi-draft .warn-body{padding:.45rem 0 0}
 .steps{display:grid;gap:.75rem;margin:1rem 0 1.25rem;padding:0;list-style:none}
 .steps li{display:flex;gap:1rem;align-items:center}
 .num{flex:0 0 46px;height:46px;border:2px solid var(--mw-primary);display:grid;place-items:center;font-family:var(--mw-font-heading);font-weight:700;font-size:1.4rem}
