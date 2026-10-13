@@ -1,11 +1,11 @@
-/* Smart Upkeep brand tokens — Style Swipe rebrand (Oct 12 2026)
+/* Smart Upkeep brand tokens (V.2: Deck 4 pure white base, one small accent per screen) — Style Swipe rebrand (Oct 12 2026)
    Tags: clear, system-like, warm, lively, multi-accent, visual, guided, easy.
    Light mode only. Micro-dose accents on white/cream — never full-color blocks. */
 :root {
   --mw-background: #ffffff;
-  --mw-cream: #FAF3EB;
-  --mw-cream-sel: #F3E8DC;
-  --mw-open: #FFFBF6;
+  --mw-cream: #F7F7F7;
+  --mw-cream-sel: #F0F0F0;
+  --mw-open: #ffffff;
   --mw-foreground: #0a0a0a;
   --mw-muted-text: #525252;
 
@@ -21,7 +21,7 @@
   --mw-secondary: var(--mw-cream);
   --mw-accent: var(--mw-lagoon);
   --mw-success: var(--mw-jungle);
-  --mw-border: #e5e0d8;
+  --mw-border: #e5e5e5;
   --mw-dark-surface: #0a0a0a;
 
   --mw-font-heading: "Khand", sans-serif;

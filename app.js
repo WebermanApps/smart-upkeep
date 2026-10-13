@@ -325,19 +325,26 @@
     return '<button type="button" class="cert-badge cert-' + kind + ' mw-hover" data-cert="' + c[0] + '" data-explain="' + esc(c[2]) + '" aria-expanded="false">' +
       '<span class="cert-ico" aria-hidden="true">' + (kind === "bonus" ? "&#9733;" : "&#10003;") + '</span>' + c[1] + '</button>';
   }
+  /* Deck 4: big centered portrait, round seal badges with colored outlines, big lagoon Verify with the result under the card, the van to look for. No stats, no note from the tech. */
+  function seal(c, kind) {
+    return '<button type="button" class="seal seal-' + kind + ' mw-hover" data-cert="' + c[0] + '" data-explain="' + esc(c[2]) + '" aria-expanded="false">' +
+      '<span class="seal-ring" aria-hidden="true">' + I(kind === "bonus" ? "star" : "shield", "xs") + '</span><span class="seal-lab">' + c[1] + '</span></button>';
+  }
   function sampleTechCard() {
     var held = ["nate", "csia", "mfr"];
-    return '<div class="card tech-card" id="sampleTech">' +
-      '<p class="eyebrow">Sample · Tech Profile</p>' +
-      '<div class="tech-head"><span class="tech-avatar" aria-hidden="true">JS</span><div><h3 style="margin:0">Jordan Sample</h3><span class="muted small">Smart Upkeep Tech · Fictional Example</span></div></div>' +
-      '<p class="cert-grp"><span class="cert-tag tag-verified">Verified</span> Required for Every Tech</p>' +
-      '<div class="cert-row">' + CERTS_REQ.map(function (c) { return badge(c, "req"); }).join("") + '</div>' +
-      '<p class="cert-grp"><span class="cert-tag tag-certified">Certified</span> Extra Training This Tech Holds</p>' +
-      '<div class="cert-row">' + CERTS_BONUS.filter(function (c) { return held.indexOf(c[0]) > -1; }).map(function (c) { return badge(c, "bonus"); }).join("") + '</div>' +
-      '<p class="cert-grp"><span class="cert-tag tag-licensed">Michigan Licensed</span> Trade Work by Licensed Partners</p>' +
-      '<div class="cert-row"><a class="cert-badge cert-lic mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener" title="Mechanical, plumbing, electrical and residential builder work is done under an active Michigan LARA license.">' +
-      '<span class="cert-ico" aria-hidden="true">' + I("shield","xs") + '</span>Michigan Licensed · Tap to Verify License</a></div>' +
-      '<p class="cert-explain small" role="status" aria-live="polite">Tap any badge to see what it means.</p></div>';
+    return '<div class="tech-wrap" id="sampleTech"><div class="card tech-card">' +
+      '<p class="eyebrow">Sample Tech Profile</p>' +
+      '<div class="tech-portrait" aria-hidden="true">' + I("user", "tech-portrait-ico") + '</div>' +
+      '<h3 class="tech-name">Jordan Sample</h3><p class="muted small tech-role">Smart Upkeep Tech · Fictional Example</p>' +
+      '<p class="tech-rule"><strong>Not Always the Same Tech, but Always Licensed.</strong></p>' +
+      '<div class="seal-row">' + CERTS_REQ.map(function (c) { return seal(c, "req"); }).join("") +
+        CERTS_BONUS.filter(function (c) { return held.indexOf(c[0]) > -1; }).map(function (c) { return seal(c, "bonus"); }).join("") + '</div>' +
+      '<p class="cert-explain small" role="status" aria-live="polite">Tap Any Seal to See What It Means.</p>' +
+      '<button type="button" class="btn verify-big mw-hover" data-verify="1">' + I("shield", "xs") + 'Verify License</button>' +
+      '<div class="tech-van">' + I("van", "sm") + '<div><strong>Look for This Van</strong><span class="muted small">White van, black Smart Upkeep logo, terracotta stripe.</span></div></div>' +
+      '</div>' +
+      '<div class="verify-result" role="status" aria-live="polite" hidden>' + I("shield", "xs") + '<div><strong>Michigan License: Active (Sample)</strong><span class="muted small">Trade work is done under an active Michigan LARA license. <a class="link mw-hover" href="' + LARA_LOOKUP + '" target="_blank" rel="noopener">Check on LARA</a></span></div></div>' +
+      '</div>';
   }
   function vettingSection() {
     return '<div class="card vetting" id="howWeVet">' +
@@ -369,6 +376,18 @@
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
+  /* Deck 4 plan card: white, terracotta top bar, big $99, check list of what's included, the year shown as visits. */
+  function planCard(k) {
+    var t = P.tiers[k], inc = t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
+    var marks = ""; for (var i = 0; i < t.visits; i++) marks += '<span class="yv-dot"></span>';
+    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + '">' +
+      '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
+      '<span class="pc-tag muted small">' + t.tagline + '</span>' +
+      '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">$99</span><span class="pc-per">/Mo</span></div>' +
+      '<ul class="pc-inc">' + inc.map(function (f) { return '<li>' + f + '</li>'; }).join("") + '</ul>' +
+      '<div class="pc-year" aria-label="' + t.visits + ' visits a year"><span class="pc-year-l">Your Year</span><span class="yv' + (t.visits > 6 ? " many" : "") + '">' + marks + '</span><span class="pc-year-n">' + t.visits + ' Visits</span></div>' +
+      '<button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button></div>';
+  }
   function home() {
     var svc = [["furnace", "Furnace Tune-Up", "Every Fall"], ["ac", "AC Tune-Up", "Every Spring"], ["waterheater", "Water Heater", "Flush or Descale"], ["dryer", "Dryer Vent", "Cleaned Yearly"], ["gutter", "Gutters", "Spring and Fall"], ["detector", "Smoke and CO", "Tested Each Visit"], ["meter", "Moisture Scan", "Every Plan"], ["bell", "Recall Watch", "Your Equipment"]];
     var tiers = tierKeys();
@@ -389,7 +408,7 @@
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
       row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
-      row("plans", "Plans", tiers.map(function (k) { var t = P.tiers[k]; return card(k === "silver" ? "house" : k === "gold" ? "star" : "shield", t.label, t.tagline + " · " + t.visits + " Visits/Yr", '<span class="hm-price">' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : "") + 'From $99/Mo</span><button class="link mw-hover" type="button" data-hm-open="plan-' + k + '">Details</button>', "hm-plan" + (t.recommended ? " rec" : "")); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>') +
+      row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>') +
       row("addons", "Popular Add-Ons", addons.map(function (a) { return card(ADDON_ICO[a.id] || "wrench", a.label, a.unit === "season" ? "Per Season" : "Per Service", '<span class="hm-price">' + priceRange(a) + '</span>'); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="addons">See All</button>') +
       row("trust", "Why Members Trust Us", trust.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +
       '<section class="hm-accs"><h2>Details</h2>' +
@@ -629,7 +648,7 @@
       '</div>';
     var alacarteCta = '<div class="alacarte-cta card">' +
       '<h3>Not Ready for a Membership?</h3>' +
-      '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Same skilled techs, one-time pricing.</p>' +
+      '<p class="muted" style="margin:0 0 .85rem">Book services one at a time — no subscription. Licensed techs, one-time pricing.</p>' +
       '<button class="btn btn-outline btn-big mw-hover" data-act="alacarte" type="button">Book Services A La Carte</button></div>';
     var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
       var t = P.tiers[k], sel = S.tier === k, pts = t.keyPoints || t.features.slice(0, 3);
@@ -870,6 +889,21 @@
     try { var a = JSON.parse(localStorage.getItem(EVKEY) || "[]"); a.push(ev); if (a.length > 500) a = a.slice(-500); localStorage.setItem(EVKEY, JSON.stringify(a)); } catch (e) {}
     try { console.info("[addon-event]", ev); } catch (e) {}
   }
+  function bindReferralShare() {
+    var txt = document.getElementById("refShareText"), msg = document.getElementById("refCopyMsg"), codeEl = document.getElementById("myRefCode");
+    function say(m) { if (msg) { msg.textContent = m; setTimeout(function () { msg.textContent = ""; }, 2500); } }
+    function copy(v, m) {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(function () { say(m); }, function () { say(v); });
+      else say(v);
+    }
+    var c = app.querySelector("[data-copy-ref]"), sh = app.querySelector("[data-share-ref]");
+    if (c && codeEl) c.addEventListener("click", function () { copy(codeEl.textContent, "Code Copied"); });
+    if (sh && txt) sh.addEventListener("click", function () {
+      var v = txt.textContent;
+      if (navigator.share) { navigator.share({ title: "Smart Upkeep", text: v }).catch(function (e) { if (e && e.name !== "AbortError") copy(v, "Invite Copied"); }); return; }
+      copy(v, "Invite Copied");
+    });
+  }
   /* ---------- Events ---------- */
   function bind() {
     app.querySelectorAll("[data-cert]").forEach(function (b) {
@@ -878,6 +912,12 @@
         card.querySelectorAll("[data-cert]").forEach(function (o) { o.classList.remove("on"); o.setAttribute("aria-expanded", "false"); });
         b.classList.add("on"); b.setAttribute("aria-expanded", "true");
         if (out) out.textContent = b.textContent.replace(/^\W+/, "") + ": " + b.getAttribute("data-explain");
+      });
+    });
+    app.querySelectorAll("[data-verify]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var w = b.closest(".tech-wrap"), r = w && w.querySelector(".verify-result");
+        if (r) { r.hidden = false; b.classList.add("done"); b.lastChild.textContent = "License Verified"; }
       });
     });
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
