@@ -395,8 +395,8 @@
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
     function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong><span class="muted small">' + sub + '</span>' + (extra || "") + '</div>'; }
-    function row(id, title, cards, link) {
-      return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div><div class="hm-scroll">' + cards + '</div></section>';
+    function row(id, title, cards, link, pre) {
+      return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div>' + (pre || "") + '<div class="hm-scroll">' + cards + '</div></section>';
     }
     return '<div class="hm">' +
       '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, Add-Ons, FAQ" aria-label="Search services, add-ons and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
@@ -404,10 +404,10 @@
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video"><img src="assets/poster-16x9.jpg" alt="" loading="eager" width="640" height="360">' + I("play", "hm-play") + '<span class="hm-dur">1:15</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1><p class="hm-sub">One membership. Every season. Licensed techs.</p>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
-        '<button class="hm-deal mw-hover" type="button" data-hm-open="offers">' + I("tag", "xs") + '<span><strong>Welcome Deal:</strong> Prepay 2 Years, Get 6 Months Free</span><span class="draft">Draft</span></button>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
-      row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>') +
+      row("plans", "Plans", tiers.map(function (k) { return planCard(k); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Get Price</button>',
+        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Months Free</span></summary><div class="hm-offer-body small"><p>Prepay 2 Years, Get 6 Months Free. Every Tier.</p><p>Refer a Neighbor: You Both Get a Month Free.</p><p class="muted">Offers Stack. $99/Month Floor Applies. Draft Terms.</p></div></details>') +
       row("services", "What We Take Care Of", svc.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="included">See All</button>') +
       row("addons", "Popular Add-Ons", addons.map(function (a) { return card(ADDON_ICO[a.id] || "wrench", a.label, a.unit === "season" ? "Per Season" : "Per Service", '<span class="hm-price">' + priceRange(a) + '</span>'); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="addons">See All</button>') +
       row("trust", "Why Members Trust Us", trust.map(function (s) { return card(s[0], s[1], s[2]); }).join(""), '<button class="link mw-hover" type="button" data-hm-open="vet">How We Vet</button>') +

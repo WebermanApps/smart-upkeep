@@ -624,3 +624,12 @@ body,body.on-home,.hm-search,body.on-home .topbar{background:#fff}
 .hm-deal{background:#fff!important;border-color:var(--mw-border)!important;box-shadow:none!important}
 .start-at{border-color:#0a0a0a!important;color:#0a0a0a!important}
 .hm-row-h .link,.hm-acc .link{color:#0a0a0a;border-bottom-color:rgba(10,10,10,.35)}
+
+/* Welcome offer tag in plans row */
+.hm-offer-tag{margin:.1rem 0 .55rem}
+.hm-offer-tag summary{display:inline-flex;align-items:center;gap:.35rem;list-style:none;cursor:pointer;border:1px solid var(--mw-terracotta);color:var(--mw-terracotta);background:#fff;border-radius:999px;padding:.18rem .65rem;font:600 .78rem var(--mw-font-body)}
+.hm-offer-tag summary::-webkit-details-marker{display:none}
+.hm-offer-tag summary::after{content:"";width:.4rem;height:.4rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);margin-left:.15rem;transition:transform .2s}
+.hm-offer-tag[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
+.hm-offer-tag .hm-offer-body{margin-top:.4rem;padding:.5rem .7rem;border-left:2px solid var(--mw-terracotta);max-width:30rem}
+.hm-offer-tag .hm-offer-body p{margin:.1rem 0}
