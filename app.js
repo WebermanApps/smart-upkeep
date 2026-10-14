@@ -22,7 +22,7 @@
   ];
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "silver", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
+  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.lastMinute)) o.lastMinute = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -241,8 +241,8 @@
   window.SmartUpkeepPrice = price; // exposed for testing
 
   /* ---------- Navigation ---------- */
-  function go(screen) { if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
-  function back() { var p = S.path.pop(); S.screen = p || "home"; save(); render(); window.scrollTo(0, 0); }
+  function go(screen) { if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
+  function back() { var p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
   function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2.2" stroke-linejoin="round"/></svg></button></span>'; }
 
   function render() {
@@ -377,7 +377,7 @@
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
   var selK = null, HM_SVC = [];
-  var TIER_NOTE = { silver: "Included in Every Plan", gold: "Plus and Up", platinum: "Complete" };
+  var TIER_NOTE = { silver: "Every Plan", gold: "Plus and Up", platinum: "Complete Plan" };
   /* Small tech-at-work illustration: shared tech figure + the service's equipment icon. */
   function techArt(ic) {
     var body = window.SUIconBody ? window.SUIconBody(ic) : "";
@@ -414,6 +414,73 @@
     if (!T.src || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" width="640" height="360">';
     return '<video class="hm-teaser" src="' + esc(T.src) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" width="640" height="360" aria-hidden="true" tabindex="-1"></video>';
   }
+  /* ---------- What We Take Care Of: Direction A (swipeable category carousel), What's Included row, Featured Service ---------- */
+  function wwIco(n, cls) { return '<svg class="su-ico ' + (cls || "") + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (window.SUIconBody ? window.SUIconBody(n) : "") + '</svg>'; }
+  /* [title, [icon, icon], [[service index in HM_SVC, label]...], tint] */
+  var WW_CATS = [
+    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace"], [1, "AC"], [0, "Furnace Filters"]], "t"],
+    ["Water", ["waterheater", "meter"], [[2, "Water Heater"], [5, "Mold and Moisture Scan"], [6, "Gutters"]], "l"],
+    ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO"], [3, "Dryer Vent"], [5, "Moisture Readings"]], "s"],
+    ["Outside", ["gutter", "chimney"], [[6, "Gutters"], [7, "Roof"], [7, "Flashing"]], "t"]];
+  var WW_WI = [
+    ["clock", "Visits", "Seasonal visits on a set schedule", [["2 Seasonal Visits a Year", "Essentials"], ["4 Visits a Year, One Per Quarter", "Plus"], ["12 Visits a Year, Monthly Check-Ins", "Complete"]]],
+    ["furnace", "Heating & Cooling", "Tune-ups before every season", [["Fall Furnace Tune-Up", "Essentials"], ["Spring AC Tune-Up", "Essentials"], ["Furnace Filters Changed During Visits", "Essentials"], ["Standby Generator Service (If You Have One)", "Complete"]]],
+    ["waterheater", "Water", "Less sediment, longer life", [["Water Heater Flush or Tankless Descale", "Essentials"], ["Water Softener Salt Top-Off", "Plus"], ["Fridge Water Filter Changes", "Plus"]]],
+    ["detector", "Air & Safety", "Alarms that work when it counts", [["Dryer Vent Cleaning", "Essentials"], ["Smoke and CO Detector Checks", "Essentials"], ["GFCI and Shut-Off Valve Checks", "Plus"]]],
+    ["meter", "Mold and Moisture Scan", "Every visit, whole home", [["Moisture Meter and Thermal Camera Check", "Essentials"], ["Damp Spots Flagged With Photos", "Essentials"], ["Readings Saved to Your Home Record", "Essentials"]]],
+    ["gutter", "Outside", "Gutters, roof and winter prep", [["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Lube and Weatherproofing", "Plus"], ["Roof and Flashing Inspection", "Complete"], ["Ice Dam Clearing After Storms", "Complete"], ["Pre and Post Storm Checks", "Complete"]]],
+    ["clipboard", "Records", "Proof for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Maintenance Proof Pack", "Essentials"], ["Recall Monitoring", "Essentials"], ["Warranty Check", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
+  function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
+  var FS_ART = {
+    lawn: function (c) { return fsBg(c, "#F4F8EF", '<path d="M14 66h92" stroke="#cfd8c4"/><path d="M22 62l12-28 34 4 16 20-18 8H32z" fill="rgba(11,110,79,.14)" stroke="#0B6E4F" stroke-dasharray="4 3"/><rect x="40" y="45" width="24" height="10" rx="2" fill="#fff" stroke="#05668D"/><path d="M44 50h16" stroke="#05668D" stroke-width="1.4"/><g transform="translate(96 16) rotate(-20)"><rect x="-5" y="-4" width="10" height="8" rx="1.5" fill="#D4A017"/><path d="M-15 -3h9v6h-9zM6 -3h9v6H6z" fill="#05668D"/><path d="M-10 -3v6M10 -3v6M0 4v4"/></g><path d="M92 26L60 40M96 27l-8 31" stroke="#C1502E" stroke-dasharray="2 3"/><circle cx="22" cy="62" r="2.2" fill="#C1502E" stroke="none"/><circle cx="84" cy="58" r="2.2" fill="#C1502E" stroke="none"/>'); },
+    warranty: function (c) { return fsBg(c, "#FAF3EB", '<rect x="18" y="14" width="40" height="52" rx="4" fill="#fff"/><path d="M26 26h24M26 34h24M26 42h16"/><path d="M38 52l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/><rect x="70" y="30" width="30" height="34" rx="3" fill="#fff"/><path d="M70 38h30" stroke="#C1502E"/><path d="M78 26v8M92 26v8"/><circle cx="85" cy="51" r="6" stroke="#05668D"/><path d="M85 48v3l2 2" stroke="#05668D"/>'); },
+    mold: function (c) { return fsBg(c, "#EEF5F8", '<path d="M20 64V30l26-16 26 16v34z" fill="#fff"/><path d="M34 64V46h14v18"/><path d="M60 40c-3 5-3 8 0 9s3-4 0-9z" fill="#05668D" stroke="#05668D"/><rect x="74" y="28" width="22" height="34" rx="4" fill="#fff"/><rect x="78" y="32" width="14" height="10" rx="1.5" fill="#D4A017"/><path d="M80 50h10M80 55h6"/><path d="M85 28v-8" stroke="#C1502E"/>'); },
+    wh: function (c) { return fsBg(c, "#FAF3EB", '<rect x="40" y="12" width="32" height="54" rx="12" fill="#fff"/><path d="M48 30h16M48 38h16"/><circle cx="56" cy="52" r="4" fill="#C1502E"/><path d="M72 58h14v8" stroke="#05668D"/><path d="M86 68c-2 3-2 5 0 6s2-3 0-6z" fill="#05668D" stroke="#05668D"/>'); },
+    storm: function (c) { return fsBg(c, "#F3F1EC", '<path d="M24 34a12 12 0 0 1 22-6 10 10 0 1 1 6 18H28a8 8 0 0 1-4-12z" fill="#fff"/><path d="M44 48l-5 9h7l-5 9" stroke="#D4A017" stroke-width="2.2"/><path d="M70 64V42l14-10 14 10v22z" fill="#fff"/><path d="M80 64v-10h8v10"/><path d="M98 26l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/>'); }
+  };
+  /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Non-lawn entries start the Get Started flow. */
+  var FEATURED = [
+    { id: "lawn", art: "lawn", title: "Learn About Our Custom Grass Cutting", hook: "Measured From Above. No Visit Needed.", popTitle: "Custom Grass Cutting", popText: "We measure your lawn from above and give you a custom mowing price, no visit needed.", cta: "Get My Lawn Quote", href: "lawn/" },
+    { id: "warranty", art: "warranty", title: "Warranty Check", hook: "Coverage Tracked for You.", popTitle: "Warranty Check", popText: "We track the warranty on your equipment and flag coverage before it expires.", cta: "Free Quote in Minutes" },
+    { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
+    { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
+    { id: "storm", art: "storm", title: "Pre and Post Storm Checks", hook: "Ready Before, Checked After.", popTitle: "Pre and Post Storm Checks", popText: "We check your home before a storm hits and again after it passes, so problems get caught fast.", cta: "Free Quote in Minutes" }];
+  function wwCarousel() {
+    return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
+      return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
+        c[2].map(function (s) { return '<li><button type="button" class="ca-svc" data-svc="' + s[0] + '" aria-haspopup="dialog">' + s[1] + '<i aria-hidden="true">&rsaquo;</i></button></li>'; }).join("") + '</ul></div></article>';
+    }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b' + (i ? "" : ' class="on"') + '></b>'; }).join("") + '</div></div>';
+  }
+  function wiRow() {
+    return '<div class="wi-row va" data-ptr-ignore>' + WW_WI.map(function (g, i) { return '<button type="button" class="mw-hover" data-wi="' + i + '" aria-haspopup="dialog"><span class="wt-i">' + wwIco(g[0]) + '</span><strong>' + g[1] + '</strong><small>' + g[3].length + ' Included &rsaquo;</small></button>'; }).join("") + '</div>' +
+      '<p class="small muted wi-note">Every plan: Furnace/AC Tune-Ups, Water Heater Flush, Dryer Vent, Smoke/CO and the Mold and Moisture Scan. Plus and Complete add more each visit.</p>';
+  }
+  function wiPop() {
+    return '<div class="wi-pop va" role="dialog" aria-modal="true" aria-labelledby="wiT" data-ptr-ignore hidden><div class="wi-bg" data-wi-close></div><div class="wi-card"><button type="button" class="hm-pop-x wi-x mw-hover" data-wi-close aria-label="Close">&times;</button><div class="wi-head"></div><ul class="wi-list"></ul><button type="button" class="btn btn-primary mw-hover wi-go" data-act="start">Free Quote in Minutes</button></div></div>';
+  }
+  function featuredAd() {
+    var f = FEATURED[0], art = FS_ART[f.art];
+    var cta = f.href ? '<a class="btn btn-primary mw-hover" href="' + f.href + '">' + f.cta + '</a>' : '<button type="button" class="btn btn-primary mw-hover" data-act="start">' + f.cta + '</button>';
+    return '<button type="button" class="fs-ad mw-hover" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + f.hook + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>' +
+      '<div class="wi-pop fs-pop" role="dialog" aria-modal="true" aria-label="' + esc(f.popTitle) + '" data-ptr-ignore hidden><div class="wi-bg" data-wi-close></div><div class="wi-card"><button type="button" class="hm-pop-x wi-x mw-hover" data-wi-close aria-label="Close">&times;</button>' + art("fs-lg") + '<h3>' + f.popTitle + '</h3><p>' + f.popText + '</p>' + cta + '</div></div>';
+  }
+  function bindWW(root) {
+    var row = root.querySelector(".ca-row"), dots = root.querySelectorAll(".ca-dots b");
+    if (row && dots.length) row.addEventListener("scroll", function () { var cards = row.querySelectorAll(".ca-card"), w = cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : 1, i = Math.round(row.scrollLeft / w); if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) i = dots.length - 1; [].forEach.call(dots, function (d, k) { d.classList.toggle("on", k === i); }); }, { passive: true });
+    var wp = root.querySelector(".wi-pop.va"), fp = root.querySelector(".fs-pop"), last = null;
+    function open(p, from) { last = from; p.hidden = false; document.documentElement.classList.add("hm-pop-open"); var x = p.querySelector(".wi-x"); if (x) x.focus(); }
+    function close() { [wp, fp].forEach(function (p) { if (p && !p.hidden) { p.hidden = true; document.documentElement.classList.remove("hm-pop-open"); if (last) last.focus(); } }); }
+    root.querySelectorAll("[data-wi]").forEach(function (t) { t.addEventListener("click", function () {
+      var g = WW_WI[+t.getAttribute("data-wi")];
+      wp.querySelector(".wi-head").innerHTML = '<span class="wi-hic">' + wwIco(g[0]) + '</span><div><h3 id="wiT">' + g[1] + '</h3><p>' + g[2] + '</p></div>';
+      wp.querySelector(".wi-list").innerHTML = g[3].map(function (x) { return '<li><span>' + x[0] + '</span><em class="pl-' + x[1] + '">' + x[1] + '</em></li>'; }).join("");
+      open(wp, t);
+    }); });
+    var fa = root.querySelector(".fs-ad"); if (fa && fp) fa.addEventListener("click", function () { open(fp, fa); });
+    root.querySelectorAll("[data-wi-close]").forEach(function (c) { c.addEventListener("click", close); });
+    root.querySelectorAll(".wi-pop [data-act]").forEach(function (b) { b.addEventListener("click", function () { document.documentElement.classList.remove("hm-pop-open"); }); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  }
   function home() {
     var svc = [
       ["furnace", "Furnace", "furnace", "Fall tune-up on every furnace, with filter changes during visits.", "silver"],
@@ -440,14 +507,14 @@
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:45</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
-        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
+        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? '<button class="link mw-hover hm-resume" data-act="resume" type="button">' + I("clock", "xs") + 'Pick Up Where You Left Off</button>' : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
-        '<div class="hm-tiles">' + svc.map(function (s, i) { return '<button type="button" class="hm-tile mw-hover t' + (i % 4) + '" data-svc="' + i + '" aria-haspopup="dialog"><span class="hm-tile-ic">' + I(s[0], "xs") + '</span><span>' + s[1] + '</span></button>'; }).join("") + '</div></section>' +
+        wwCarousel() + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">&times;</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
@@ -456,12 +523,11 @@
         '<div class="hm-chips">' + trust.map(function (s, i) { return '<button type="button" class="hm-chip mw-hover t' + (i % 4) + '" aria-expanded="false" data-chip="' + esc(s[2]) + '">' + I(s[0], "xs") + '<span>' + s[1] + '</span></button>'; }).join("") + '</div>' +
         '<p class="hm-chip-detail small" aria-live="polite" hidden></p></section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
-      hmAcc("plans", "house", "What's Included", '' +
-        tiers.map(function (k) { var t = P.tiers[k]; return '<details class="pd-plan" id="acc-plan-' + k + '"' + (k === selK ? " open" : "") + '><summary class="mw-hover">' + I(k === "silver" ? "house" : k === "gold" ? "star" : "shield", "xs") + '<span>' + t.label + ' · ' + t.tagline + '</span></summary>' + planDetail(k) + '</details>'; }).join("")) +
+      hmAcc("plans", "house", "What's Included", wiRow()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li>' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + priceRange(a) + '</b></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
-      '</section>' +
+      '</section>' + featuredAd() + wiPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
         [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
@@ -506,10 +572,9 @@
       c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
     });
     root.querySelectorAll("[data-hm-see]").forEach(function (b) { b.addEventListener("click", function () {
-      var d = document.getElementById("acc-plan-" + b.getAttribute("data-hm-see")), g = document.getElementById("acc-plans"); if (!d || !g) return;
-      [].forEach.call(g.querySelectorAll(".pd-plan"), function (x) { x.open = x === d; });
+      var g = document.getElementById("acc-plans"); if (!g) return;
       if (!g.open) g.querySelector("summary").click();
-      setTimeout(function () { d.scrollIntoView({ behavior: smooth, block: "start" }); }, 340);
+      setTimeout(function () { g.scrollIntoView({ behavior: smooth, block: "start" }); }, 340);
     }); });
     root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { root.querySelector("#row-plans").scrollIntoView({ behavior: smooth, block: "start" }); }); });
   }
@@ -564,7 +629,8 @@
       pop.hidden = false; document.documentElement.classList.add("hm-pop-open");
       pop.querySelector(".hm-pop-x").focus();
     }
-    root.querySelectorAll(".hm-tile").forEach(function (t) { t.addEventListener("click", function () { popOpen(t); }); });
+    root.querySelectorAll("#row-services [data-svc]").forEach(function (t) { t.addEventListener("click", function () { popOpen(t); }); });
+    bindWW(root);
     if (pop) {
       pop.querySelectorAll("[data-pop-close]").forEach(function (c) { c.addEventListener("click", popClose); });
       pop.querySelector(".hm-pop-go").addEventListener("click", function () {
@@ -1159,6 +1225,7 @@
   function act(a) {
     if (a === "back") return back();
     if (a === "home") return go("home");
+    if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : "q0"); }
     if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
     if (a === "watch") return openVideo(true);
     if (a === "q0") return go("q0");
@@ -1168,7 +1235,7 @@
     if (a === "signup") { if ((S.tier === "silver" || S.tier === "gold") && S.plan === "quarterly") S.plan = "annual"; return go("signup"); }
     if (a === "alacarte") return go("alacarte");
     if (a === "photosDone") { var c = photoCards(); S.photosComplete = c.every(function (x) { return (S.photos[x[0]] || 0) > 0; }); return go("quote"); }
-    if (a === "restart") { S = fresh(); photoMem = {}; save(); render(); window.scrollTo(0, 0); }
+    if (a === "restart") { S = fresh(); S.resume = null; photoMem = {}; save(); render(); window.scrollTo(0, 0); }
   }
   function bindQ(i) {
     var q = Q[i], nextB = app.querySelector('[data-act="next"]') || document.createElement("button");

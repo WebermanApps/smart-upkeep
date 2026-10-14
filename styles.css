@@ -934,3 +934,81 @@ body.on-qf main{padding-bottom:0}
 .hm-offer-card h3{margin:0 0 .5rem}.hm-offer-card .hm-offer-body p{margin:.3rem 0}
 .hm-offer-card .hm-pop-x{position:absolute;top:.4rem;right:.4rem;min-width:44px;min-height:44px;border:0;background:none;font-size:1.6rem;cursor:pointer}
 .hm-plan{position:relative}.pc-offer .su-ico,.pc-offer svg{width:12px;height:12px}
+/* Oct 14: resume link on home */
+.hm-resume{display:inline-flex;align-items:center;gap:.35rem;margin-top:.5rem;font-weight:600;color:var(--mw-lagoon,#05668D)}
+.hm-resume .su-ico{width:1rem;height:1rem}
+/* Oct 14: What We Take Care Of, Direction A: swipeable category carousel */
+#row-services .ww{margin:0 -1rem}
+.ca-row{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.15rem 1rem .35rem;scrollbar-width:none;scroll-padding:0 1rem}
+.ca-row::-webkit-scrollbar{display:none}
+.ca-card{flex:0 0 78%;scroll-snap-align:start;display:flex;gap:.6rem;background:#fff;border:1px solid #e5e0d8;border-radius:14px;padding:.55rem .6rem;box-shadow:0 2px 8px rgba(10,10,10,.06);min-height:96px;box-sizing:border-box}
+.ca-art{position:relative;flex:0 0 72px;border-radius:10px;background:#FAF3EB}
+.ca-l .ca-art{background:rgba(5,102,141,.08)}.ca-s .ca-art{background:rgba(212,160,23,.12)}
+.ca-art .su-ico{position:absolute;left:6px;top:8px;width:42px;height:42px}
+.ca-art .ca-b{left:30px;top:38px;width:36px;height:36px}
+.ca-body{min-width:0;flex:1}
+.ca-body h3{margin:0 0 .15rem;font-family:var(--mw-font-heading);font-size:1.08rem;line-height:1}
+.ca-t h3{color:#A8431F}.ca-l h3{color:#05668D}.ca-s h3{color:#8a6510}
+.ca-body ul{list-style:none;margin:0;padding:0}
+.ca-body button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;width:100%;font:500 .82rem/1.3 var(--mw-font-body);border-top:1px solid #f0ebe3;padding:.08rem 0;min-height:22px}
+.ca-body button:focus-visible{outline:2px solid #05668D;outline-offset:1px}
+.ca-body i{font-style:normal;color:#aaa}
+.ca-dots{display:flex;gap:4px;justify-content:center;margin-top:.15rem}
+.ca-dots b{width:5px;height:5px;border-radius:50%;background:#ddd;transition:width .2s}
+.ca-dots b.on{background:#C1502E;width:14px;border-radius:3px}
+@media(min-width:601px){#row-services .ww{margin:0}.ca-row{padding:.15rem .1rem .4rem;scroll-padding:0}.ca-dots{display:none}
+  .ca-row{display:grid;grid-template-columns:repeat(2,1fr);overflow:visible}.ca-card{min-height:110px}.ca-body button{font-size:.9rem;padding:.15rem 0}}
+@media(min-width:1000px){.ca-row{grid-template-columns:repeat(4,1fr)}}
+/* What's Included row + flat popups with plan tags */
+.wi-row{display:flex;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .1rem .5rem;scrollbar-width:none}
+.wi-row::-webkit-scrollbar{display:none}
+.wi-row>*{scroll-snap-align:start;flex:none;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.wi-row.va>*{width:132px;height:92px;box-sizing:border-box;background:#fff;border:1px solid #e5e0d8;border-radius:14px;padding:.5rem .6rem;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(10,10,10,.05)}
+.va .wt-i{width:2rem;height:2rem;border-radius:9px;background:#FAF3EB;display:grid;place-items:center}
+.va .wt-i .su-ico{width:1.4rem;height:1.4rem}
+.wi-row.va strong{font-family:var(--mw-font-heading);font-size:1rem;line-height:1}
+.wi-row.va small{color:#777;font-size:.72rem}
+.wi-note{margin:.3rem 0 .2rem}
+@media(min-width:601px){.wi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));overflow:visible}.wi-row.va>*{width:auto}}
+.wi-pop{position:fixed;inset:0;z-index:210;display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain}
+.wi-pop[hidden]{display:none}
+.wi-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
+.wi-card{position:relative;width:100%;max-width:420px;background:#fff;border-radius:1rem 1rem 0 0;padding:1rem 1rem calc(1.1rem + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(10,10,10,.18);box-sizing:border-box}
+.wi-x{position:absolute;top:.35rem;right:.35rem}
+.wi-head{display:flex;gap:.7rem;align-items:center;margin:0 2.8rem .6rem 0}
+.wi-head h3{margin:0;font-family:var(--mw-font-heading);font-size:1.35rem;line-height:1.05}
+.wi-head p{margin:.1rem 0 0;font-size:.85rem;color:#555}
+.wi-hic{display:grid;place-items:center;width:2.8rem;height:2.8rem;border-radius:10px;background:#FAF3EB;flex:none}
+.wi-hic .su-ico{width:1.7rem;height:1.7rem}
+.wi-list{list-style:none;margin:0 0 .8rem;padding:0}
+.wi-list li{display:flex;justify-content:space-between;gap:.6rem;align-items:center;padding:.45rem 0;border-top:1px solid #eee;font-size:.92rem}
+.wi-list em{font-style:normal;font:600 .66rem var(--mw-font-body);letter-spacing:.06em;text-transform:uppercase;padding:.12rem .45rem;border-radius:999px;white-space:nowrap}
+.pl-Essentials{background:rgba(5,102,141,.12);color:#05668D}.pl-Plus{background:rgba(212,160,23,.18);color:#7a5a0c}.pl-Complete{background:rgba(193,80,46,.13);color:#A8431F}
+.wi-go{width:100%}
+@media(min-width:601px){.wi-pop{align-items:center}.wi-bg{background:rgba(10,10,10,.25)}.wi-card{max-width:400px;border-radius:1rem;box-shadow:0 12px 36px rgba(10,10,10,.2)}}
+/* Featured Service banner (after Details) */
+.fs-ad{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;align-items:center;gap:.65rem;width:100%;margin:.8rem 0;padding:.4rem .9rem .4rem .4rem;border-radius:12px;background:linear-gradient(100deg,#FAF3EB 0%,#fff 70%);border:1px solid #eadfce;overflow:hidden}
+.fs-ad:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#C1502E}
+.fs-ad:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.fs-art{width:66px;height:44px;flex:none;border-radius:8px}
+.fs-tx{min-width:0;flex:1}
+.fs-tag{display:inline-block;font:700 .58rem/1 var(--mw-font-body);letter-spacing:.1em;text-transform:uppercase;color:#05668D;margin-bottom:.15rem}
+.fs-tx b{display:block;font:600 .9rem/1.12 var(--mw-font-body);color:#0a0a0a}
+.fs-tx small{display:block;color:#666;font-size:.72rem;margin-top:.1rem}
+.fs-go{flex:none;width:28px;height:28px;border-radius:50%;background:#C1502E;color:#fff;display:grid;place-items:center;font-size:1rem}
+.fs-lg{width:100%;max-width:300px;height:auto;display:block;margin:.3rem auto .6rem}
+.fs-pop .wi-card{text-align:center}
+.fs-pop h3{font-family:var(--mw-font-heading);font-size:1.35rem;margin:.1rem 0}
+.fs-pop p{margin:0 0 .9rem;font-size:.95rem;color:#333}
+.fs-pop .btn{width:100%;display:block;box-sizing:border-box;text-decoration:none;text-align:center}
+@media(min-width:601px){.fs-ad{padding:.6rem 1.1rem .6rem .6rem}.fs-art{width:96px;height:64px}.fs-tx b{font-size:1.05rem}.fs-tx small{font-size:.85rem}}
+/* Oct 14 responsive polish (phones <=600px untouched) */
+@media (min-width:700px){
+  #row-plans .hm-scroll{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin:0;padding:.2rem 0 .6rem;gap:.7rem}
+  #row-plans .hm-plan{flex:none;min-width:0}
+  #row-plans .pc-dots{display:none}
+}
+@media (min-width:1400px){html{zoom:1.1}}
+@media (min-width:1700px){html{zoom:1.25}}
+@media (min-width:2200px){html{zoom:1.5}}
+@media (min-width:2500px){html{zoom:1.7}}

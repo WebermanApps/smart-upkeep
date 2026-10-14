@@ -88,3 +88,8 @@ details:not([open])>.warn-body{display:none}
 .draft{display:none} /* replaced by lawn-draft summary */
 
 .back-pill{display:inline-flex;align-items:center;gap:.3rem;min-height:44px;min-width:44px;padding:0 .9rem 0 .6rem;margin:.2rem 0 .4rem;border:1px solid #d4d4d4;border-radius:999px;background:#f7f7f7;color:#0a0a0a;font:700 .9rem "Hind",system-ui,sans-serif;letter-spacing:.02em;text-transform:none;text-decoration:none;cursor:pointer}.back-pill:hover{background:#efefef;border-color:#a3a3a3}.bp-wrap{max-width:980px;margin:0 auto;padding:0 1rem;text-align:left}
+/* Oct 14 responsive polish: scale up on large monitors (phones untouched) */
+@media (min-width:1400px){html{font-size:17.5px}main{max-width:74rem}.brand img{height:2.6rem}}
+@media (min-width:1700px){html{font-size:19.5px}}
+@media (min-width:2200px){html{font-size:23px}}
+@media (min-width:2500px){html{font-size:26px}}
