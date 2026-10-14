@@ -15,13 +15,22 @@
     function toggle() { if (v.paused || v.ended) { var r = v.play(); if (r && r.catch) r.catch(function () {}); } else v.pause(); }
     ["play", "pause", "ended", "playing", "loadedmetadata"].forEach(function (e) { v.addEventListener(e, sync); });
     b.addEventListener("click", function (e) { e.stopPropagation(); toggle(); });
-    var before = null;
-    v.addEventListener("pointerdown", function () { before = v.paused; });
+    var down = null, handledAt = 0;
+    function tapToggle(was) { setTimeout(function () { if (v.paused === was) toggle(); }, 60); }
+    v.addEventListener("pointerdown", function (e) { down = { x: e.clientX, y: e.clientY, t: Date.now(), was: v.paused, type: e.pointerType }; });
+    /* touch: native controls on mobile swallow the click, so toggle on a short tap */
+    v.addEventListener("pointerup", function (e) {
+      if (!down || down.type === "mouse") return;
+      var d = down; down = null;
+      if (Math.abs(e.clientX - d.x) > 12 || Math.abs(e.clientY - d.y) > 12 || Date.now() - d.t > 600) return;
+      handledAt = Date.now(); tapToggle(d.was);
+    });
     v.addEventListener("click", function (e) {
       e.stopPropagation();
-      var was = before === null ? v.paused : before; before = null;
+      if (Date.now() - handledAt < 700) return;
+      var was = down ? down.was : v.paused; down = null;
       /* native controls may already toggle on click; only toggle if state didn't change */
-      setTimeout(function () { if (v.paused === was) toggle(); }, 0);
+      tapToggle(was);
     });
     sync();
   }
