@@ -16,6 +16,7 @@
     { id: "furnaces", type: "single", title: "How Many Furnaces Do You Have?", help: "Most homes over 3,500 sq ft have two.", opts: [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4 or More"]] },
     { id: "acs", type: "single", title: "How Many AC Units?", help: "Count the outdoor condensers.", opts: [["0", "None"], ["1", "1"], ["2", "2"], ["3", "3 or More"]] },
     { id: "waterHeaters", type: "wh", title: "How Many Water Heaters?", help: "And what kind. Tankless units mount on the wall.", opts: [["1", "1"], ["2", "2"], ["3", "3 or More"]] },
+    { id: "softener", type: "single", title: "Do You Have a Water Softener?", help: "Usually a tall tank and a salt bin near the water heater.", opts: [["yes", "Yes"], ["no", "No"], ["notsure", "Not Sure"]] },
     { id: "stories", type: "single", title: "How Many Stories Is Your Home?", help: "This sets gutter cleaning and ladder work.", opts: [["1", "1 Story (Ranch)"], ["2", "2 Stories"], ["3", "3 Stories"]] },
     { id: "extras", type: "multi", title: "Do You Have Any of These?", help: "Pick all that apply.",
       opts: Object.keys(P.extras).map(function (k) { return [k, P.extras[k].label]; }) }
@@ -154,6 +155,7 @@
       var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
       linesGold.push({ label: e.label, amt: e.gold, est: uEx });
     });
+    if (a.softener === "yes") linesGold.push({ label: "Water softener salt top-off and service check", amt: 0, est: false, note: "Included" });
     linesGold.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
@@ -667,7 +669,7 @@
 
   function overview() {
     var steps = [
-      [I("pen"), "7 Quick Questions", ""],
+      [I("pen"), "8 Quick Questions", ""],
       [I("camera"), "Photos (Optional)", ""],
       [I("clipboard"), "Pick a Plan", ""],
       [I("doc"), "Sign Up", ""]
@@ -680,10 +682,10 @@
   }
 
   /* ---------- Quote flow (one question per screen) ---------- */
-  var QART = { zip: "house", sqft: "house", furnaces: "furnace", acs: "ac", waterHeaters: "waterheater", stories: "gutter", extras: "star" };
-  var QSHORT = { zip: "Your ZIP or Address", sqft: "Home Size", furnaces: "Furnaces", acs: "AC Units", waterHeaters: "Water Heaters", stories: "Stories", extras: "Extras" };
-  var QTITLE = { zip: "Where's Your Home?", sqft: "How Big Is Your Home?", furnaces: "How Many Furnaces?", acs: "How Many AC Units?", waterHeaters: "How Many Water Heaters?", stories: "How Many Stories?", extras: "Any of These?" };
-  var QHELP = { zip: "ZIP or street address. Metro Detroit.", sqft: "A rough range is fine.", furnaces: "Most homes over 3,500 sq ft have two.", acs: "Count the outdoor units.", waterHeaters: "Then pick the type.", stories: "Sets gutter and ladder work.", extras: "Pick all that apply." };
+  var QART = { zip: "house", sqft: "house", furnaces: "furnace", acs: "ac", waterHeaters: "waterheater", softener: "meter", stories: "gutter", extras: "star" };
+  var QSHORT = { zip: "Your ZIP or Address", sqft: "Home Size", furnaces: "Furnaces", acs: "AC Units", waterHeaters: "Water Heaters", softener: "Water Softener", stories: "Stories", extras: "Extras" };
+  var QTITLE = { zip: "Where's Your Home?", sqft: "How Big Is Your Home?", furnaces: "How Many Furnaces?", acs: "How Many AC Units?", waterHeaters: "How Many Water Heaters?", softener: "Do You Have a Water Softener?", stories: "How Many Stories?", extras: "Any of These?" };
+  var QHELP = { zip: "ZIP or street address. Metro Detroit.", sqft: "A rough range is fine.", furnaces: "Most homes over 3,500 sq ft have two.", acs: "Count the outdoor units.", waterHeaters: "Then pick the type.", softener: "Usually a tall tank and a salt bin near the water heater.", stories: "Sets gutter and ladder work.", extras: "Pick all that apply." };
   var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", pool: "pool", humidifier: "radon" };
   var SQICO = ["house", "house", "house", "house", "house", "house"];
   var PCOL = { silver: 1, gold: 2, platinum: 3 };
@@ -728,12 +730,12 @@
       var cnt = q.id === "furnaces" || q.id === "acs";
       var cls = q.opts.length > 4 ? "two" : (q.opts.length === 3 ? "three" : "two");
       body = '<div class="qt-grid ' + cls + '" data-ptr-ignore>' + q.opts.map(function (o, k) {
-        var ico = cnt ? countIco(QART[q.id], o[0]) : q.id === "stories" ? '<b class="qt-n">' + o[0] + '</b>' : I("house", "sm");
+        var ico = cnt ? countIco(QART[q.id], o[0]) : q.id === "stories" ? '<b class="qt-n">' + o[0] + '</b>' : q.id === "softener" ? I(o[0] === "yes" ? "meter" : o[0] === "no" ? "shield" : "faq", "sm") : I("house", "sm");
         var lab = cnt ? (o[0] === "0" ? "None" : o[1] === o[0] ? (o[0] === "1" ? "One" : o[0] === "2" ? "Two" : o[0] === "3" ? "Three" : o[1]) : o[1]) : o[1].replace(" sq ft", "").replace(" (Ranch)", "");
         var sub = q.id === "sqft" ? '<small>sq ft</small>' : q.id === "stories" && o[0] === "1" ? '<small>Ranch</small>' : "";
         return qTile("single", o[0], lab + sub, ico, k % 4, String(a) === o[0], q.id === "sqft" ? " sz" + k : "");
       }).join("") + '</div>';
-      foot = '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
+      foot = q.id === "softener" ? "" : '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
     }
     return '<section class="qf qf-' + q.id + '">' + qHead(i + 1, Q.length) +
       '<div class="qf-hero">' + qArt(QART[q.id], tint) + '<div><h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div></div>' +
@@ -752,7 +754,7 @@
 
   function choice() {
     return '<section class="qf qf-done">' + '<div class="qf-top">' + backBtn() + planChip() + '</div>' +
-      '<div class="qf-prog"><span class="qf-step">All 7 Done</span><div class="qf-bar full" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:100%"></div></div></div>' +
+      '<div class="qf-prog"><span class="qf-step">All 8 Done</span><div class="qf-bar full" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:100%"></div></div></div>' +
       '<div class="qf-done-art" aria-hidden="true"><span class="t3">' + I("clipboard") + '</span><span class="t0">' + I("furnace") + '</span><span class="t1">' + I("ac") + '</span></div>' +
       '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' +
       '<div class="qf-foot"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
