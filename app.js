@@ -1439,10 +1439,10 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return window.matchMedia("(max-width: 600px), (orientation: portrait) and (max-width: 900px)").matches ? "video/explainer-v34-9x16.mp4?v=v34a" : "video/explainer-v34-16x9.mp4?v=v34a"; } /* rollback: video/explainer-9x16.mp4 / explainer-16x9.mp4 (V.1) */
+  function vSrc() { return window.matchMedia("(max-width: 600px), (orientation: portrait) and (max-width: 900px)").matches ? "video/explainer-v4-9x16.mp4?v=v4a" : "video/explainer-v4-16x9.mp4?v=v4a"; } /* V4 official. Rollback to V3: video/explainer-v34-9x16.mp4 / explainer-v34-16x9.mp4 */
   function openVideo(userAsked) {
     var src = vSrc();
-    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v34-9x16.jpg?v=v34a" : "assets/poster-v34-16x9.jpg?v=v34a"); }
+    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v4-9x16.jpg?v=v4a" : "assets/poster-v4-16x9.jpg?v=v4a"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute";
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     var badge = document.getElementById("videoStartAt");
