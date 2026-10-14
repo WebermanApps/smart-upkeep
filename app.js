@@ -10,7 +10,6 @@
   var photoMem = {}; // cardId -> [objectURL], browser memory only
 
   var Q = [
-    { id: "zip", type: "zip", title: "What's Your Address or ZIP Code?", help: "We serve metro Detroit: Wayne, Oakland, Macomb and nearby." },
     { id: "sqft", type: "single", title: "About How Big Is Your Home?", help: "Finished square footage, a rough range is fine.",
       opts: [["1500", "Under 2,000 sq ft"], ["2500", "2,000 to 3,000 sq ft"], ["3500", "3,000 to 4,000 sq ft"], ["4500", "4,000 to 5,000 sq ft"], ["5500", "5,000 to 6,000 sq ft"], ["6500", "Over 6,000 sq ft"]] },
     { id: "furnaces", type: "single", title: "How Many Furnaces Do You Have?", help: "Most homes over 3,500 sq ft have two.", opts: [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4 or More"]] },
@@ -19,8 +18,25 @@
     { id: "softener", type: "single", title: "Do You Have a Water Softener?", help: "Usually a tall tank and a salt bin near the water heater.", opts: [["yes", "Yes"], ["no", "No"], ["notsure", "Not Sure"]] },
     { id: "stories", type: "single", title: "How Many Stories Is Your Home?", help: "This sets gutter cleaning and ladder work.", opts: [["1", "1 Story (Ranch)"], ["2", "2 Stories"], ["3", "3 Stories"]] },
     { id: "extras", type: "multi", title: "Do You Have Any of These?", help: "Pick all that apply.",
-      opts: Object.keys(P.extras).map(function (k) { return [k, P.extras[k].label]; }) }
+      opts: Object.keys(P.extras).map(function (k) { return [k, P.extras[k].label]; }) },
+    { id: "zip", type: "zip", title: "What's Your Address or ZIP Code?", help: "We serve metro Detroit: Wayne, Oakland, Macomb and nearby." },
   ];
+  /* Info Gather Deck (Oct 14): three chapters shown above a segmented bar, one segment per question. */
+  var CHAPTERS = [["Your Home", ["sqft"]], ["Your Systems", ["furnaces", "acs", "waterHeaters", "softener"]], ["Finishing Up", ["stories", "extras", "zip"]]];
+  function chapterOf(id) { for (var c = 0; c < CHAPTERS.length; c++) if (CHAPTERS[c][1].indexOf(id) > -1) return c; return CHAPTERS.length - 1; }
+  /* Snap-a-photo side path on each system question. */
+  var QPHOTO = { furnaces: "furnace1", acs: "ac1", waterHeaters: "wh1", softener: "softener" };
+  /* Did You Know card: one service teaser per question screen. */
+  var DYK = {
+    sqft: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
+    furnaces: "We change your furnace filters during every visit, at no extra charge.",
+    acs: "A spring AC tune-up can catch a weak capacitor before the first heat wave.",
+    waterHeaters: "A yearly flush cuts sediment and can add years to a tank's life.",
+    softener: "On Plus and up, we top off your softener salt during visits.",
+    stories: "Plus includes gutter and downspout cleaning every spring and fall.",
+    extras: "Selling later? Your Home Record transfers to the buyer.",
+    zip: "Every visit ends with a written report saved to your Home Record."
+  };
 
   var S = load();
   function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
@@ -509,7 +525,7 @@
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:45</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="start-at">Membership Starting at $99/Month</p>' +
-        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? '<button class="link mw-hover hm-resume" data-act="resume" type="button">' + I("clock", "xs") + 'Pick Up Where You Left Off</button>' : '') + '</div>' +
+        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? resumeCard() : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
@@ -667,6 +683,12 @@
   }
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
+  /* Coming back later: Resume Card (Info Gather Deck). */
+  function resumeCard() {
+    var done = Q.filter(function (q) { return S.answers[q.id] !== undefined; }).length;
+    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + Q.length + ' questions answered</small></div>' +
+      '<button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button></div>';
+  }
   function overview() {
     var steps = [
       [I("pen"), "8 Quick Questions", ""],
@@ -693,53 +715,62 @@
     return '<button type="button" class="qt mw-hover t' + tint + (sel ? " sel" : "") + (extra || "") + '" data-' + attr + '="' + val + '" aria-pressed="' + !!sel + '">' +
       '<span class="qt-ic">' + ico + '</span><span class="qt-lab">' + label + '</span>' + (sel ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
   }
+  /* Drawn illustrations on answer tiles (Info Gather Deck): the equipment drawing, stacked for 2+, crossed for none. */
+  function drawnCount(icoName, n) { if (n === "0") return I(icoName, "sm") + '<b class="qt-x" aria-hidden="true"></b>'; var k = Math.min(3, Number(n) || 1), h = ""; for (var j = 0; j < k; j++) h += I(icoName, "sm"); return '<span class="qt-stack n' + k + '">' + h + '</span>'; }
   function countIco(icoName, n) { return n === "0" ? I(icoName, "sm") + '<b class="qt-x" aria-hidden="true"></b>' : '<b class="qt-n">' + esc(n) + '</b>'; }
   function planChip() {
     var t = P.tiers[S.tier] || P.tiers[tierKeys()[0]];
     return '<div class="qf-plan"><button type="button" class="qf-chip mw-hover tc' + (PCOL[S.tier] || 1) + '" data-plan-chip="1" aria-expanded="false" aria-controls="qfPlans">' + '<span class="qf-dot" aria-hidden="true"></span>' + esc(t.label) + ' Plan<span class="qf-chg">Change</span></button>' +
       '<div class="qf-plans" id="qfPlans" hidden>' + tierKeys().map(function (k) { return '<button type="button" class="qf-pick mw-hover tc' + (PCOL[k] || 1) + (S.tier === k ? " sel" : "") + '" data-plan-pick="' + k + '"><span class="qf-dot" aria-hidden="true"></span>' + esc(P.tiers[k].label) + '</button>'; }).join("") + '</div></div>';
   }
-  function qHead(n, total) {
-    var pct = Math.round(n / total * 100);
-    return '<div class="qf-top">' + backBtn() + planChip() + '</div>' +
-      '<div class="qf-prog"><span class="qf-step">Step ' + n + ' of ' + total + '</span><div class="qf-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:' + pct + '%"></div></div></div>';
+  function qHead(i) {
+    var q = Q[i], c = chapterOf(q.id);
+    return '<div class="qf-top">' + planChip() + '</div>' +
+      '<div class="qf-prog"><span class="qf-step">Chapter ' + (c + 1) + ' of ' + CHAPTERS.length + ' &middot; ' + CHAPTERS[c][0] + '</span>' +
+      '<div class="qf-segs" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + Q.length + '" aria-label="Question ' + (i + 1) + ' of ' + Q.length + '">' +
+      Q.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + (k > 0 && chapterOf(x.id) !== chapterOf(Q[k - 1].id) ? " gap" : "") + '"></span>'; }).join("") + '</div></div>';
   }
-  function qArt(name, tint) { return '<div class="qf-art t' + tint + '" aria-hidden="true">' + I(name) + '</div>'; }
+  function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Free Offer in Minutes &middot; Tailored to Your Home &middot; Warranties Checked</p>'; }
+  function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
+  function qArt(name, tint) { return '<div class="qf-art big t' + tint + '" aria-hidden="true">' + I(name) + '</div>'; }
   function question(i) {
     var q = Q[i], a = S.answers[q.id], body = "", tint = i % 4, foot = "";
     if (q.type === "zip") {
       body = '<div class="qf-field"><label class="sr" for="zip">Address or ZIP</label>' + I("search", "sm") +
         '<input id="zip" type="text" inputmode="text" enterkeyhint="next" autocomplete="street-address" placeholder="48322 or 123 Main St, Novi" value="' + esc(a && a !== "unsure" ? a : "") + '"></div>' +
-        '<div class="err" id="zipErr" role="alert"></div>' +
-        '<div class="qf-chips" aria-label="Good to Know"><span class="hm-chip t0">' + I("clock", "xs") + 'Free Offer in Minutes</span><span class="hm-chip t1">' + I("house", "xs") + 'Tailored to Your Home</span><span class="hm-chip t2">' + I("shield", "xs") + 'Warranties Checked</span></div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
+        '<div class="err" id="zipErr" role="alert"></div>';
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>See My Price</button>' +
         '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure? Skip for Now</button>';
     } else if (q.type === "multi") {
       var arr = Array.isArray(a) ? a : [];
       body = '<div class="qt-grid two" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("multi", o[0], o[1].replace("Whole-House ", ""), I(XICO[o[0]] || "wrench", "sm"), k % 4, arr.indexOf(o[0]) > -1, " chkt"); }).join("") +
         qTile("multi", "none", "None of These", I("shield", "sm"), 3, a === "none", " chkt") + '</div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>See My Price</button>' +
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
         '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
     } else if (q.type === "wh") {
       var t = S.answers.whType;
-      body = '<div class="qt-grid three" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("single", o[0], o[1], countIco("waterheater", o[0]), k % 4, String(a) === o[0]); }).join("") + '</div>' +
-        '<p class="qf-sub">Tank or Tankless?</p><div class="qt-grid three" data-ptr-ignore>' + [["tank", "Tank", "waterheater"], ["tankless", "Tankless", "tankless"], ["both", "One of Each", "grid"]].map(function (o, k) { return qTile("wh", o[0], o[1], I(o[2], "sm"), (k + 1) % 4, t === o[0]); }).join("") + '</div>';
+      body = '<div class="qt-grid two cmp" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("single", o[0], o[1] === "1" ? "One" : o[1] === "2" ? "Two" : o[1], drawnCount("waterheater", o[0]), k % 4, String(a) === o[0], " chkt"); }).join("") + '</div>' +
+        '<p class="qf-sub">Tank or Tankless?</p><div class="qt-grid two cmp" data-ptr-ignore>' + [["tank", "Tank", "waterheater"], ["tankless", "Tankless", "tankless"], ["both", "One of Each", "grid"]].map(function (o, k) { return qTile("wh", o[0], o[1], I(o[2], "sm"), (k + 1) % 4, t === o[0], " chkt"); }).join("") + '</div>';
       foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
         '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
     } else {
       var cnt = q.id === "furnaces" || q.id === "acs";
-      var cls = q.opts.length > 4 ? "two" : (q.opts.length === 3 ? "three" : "two");
+      var cls = "two";
       body = '<div class="qt-grid ' + cls + '" data-ptr-ignore>' + q.opts.map(function (o, k) {
-        var ico = cnt ? countIco(QART[q.id], o[0]) : q.id === "stories" ? '<b class="qt-n">' + o[0] + '</b>' : q.id === "softener" ? I(o[0] === "yes" ? "meter" : o[0] === "no" ? "shield" : "faq", "sm") : I("house", "sm");
+        var ico = cnt ? drawnCount(QART[q.id], o[0]) : q.id === "stories" ? drawnCount("house", o[0]) : q.id === "softener" ? I(o[0] === "yes" ? "meter" : o[0] === "no" ? "shield" : "faq", "sm") : I("house", "sm");
         var lab = cnt ? (o[0] === "0" ? "None" : o[1] === o[0] ? (o[0] === "1" ? "One" : o[0] === "2" ? "Two" : o[0] === "3" ? "Three" : o[1]) : o[1]) : o[1].replace(" sq ft", "").replace(" (Ranch)", "");
         var sub = q.id === "sqft" ? '<small>sq ft</small>' : q.id === "stories" && o[0] === "1" ? '<small>Ranch</small>' : "";
         return qTile("single", o[0], lab + sub, ico, k % 4, String(a) === o[0], q.id === "sqft" ? " sz" + k : "");
       }).join("") + '</div>';
-      foot = q.id === "softener" ? "" : '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
+      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' + (q.id === "softener" ? "" : '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>');
     }
-    return '<section class="qf qf-' + q.id + '">' + qHead(i + 1, Q.length) +
-      '<div class="qf-hero">' + qArt(QART[q.id], tint) + '<div><h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div></div>' +
-      '<div class="qf-body">' + body + '</div><div class="qf-foot">' + foot + '</div></section>';
+    var ph = QPHOTO[q.id], phN = ph ? (S.photos[ph] || 0) : 0;
+    var side = ph ? '<label class="qf-snap mw-hover">' + I("camera", "xs") + '<span><b>' + (phN ? phN + " Photo" + (phN > 1 ? "s" : "") + " Added" : "Snap a Photo (Optional)") + '</b><small>Snapping a photo will help improve your maintenance service.</small></span>' +
+      '<input type="file" accept="image/*" capture="environment" data-photo="' + ph + '" hidden></label>' : "";
+    var dyk = DYK[q.id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[q.id] + '</p></div>' : "";
+    return '<section class="qf qf-' + q.id + '">' + qHead(i) +
+      '<div class="qf-hero stack">' + qArt(QART[q.id], tint) + '<h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div>' +
+      '<div class="qf-body">' + body + side + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + '</div></section>';
   }
   function unsureBtn(sel) { return '<button type="button" class="opt unsure mw-hover' + (sel ? " sel" : "") + '" data-unsure="1">Unsure</button>'; }
   function isAnswered(q) {
@@ -752,13 +783,25 @@
   function zipOf(s) { var m = String(s || "").match(/\b(4[89]\d{3})\b/) || String(s || "").match(/\b(\d{5})\b/); return m ? m[1] : null; }
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
 
+  function answerText(q) {
+    var a = S.answers[q.id];
+    if (a === undefined) return "Not Answered"; if (a === "unsure") return "Unsure"; if (a === "none") return "None";
+    if (q.id === "zip") return esc(a);
+    if (q.id === "extras") return (Array.isArray(a) ? a : []).map(function (k) { return esc((P.extras[k] || {}).label || k); }).join(", ");
+    var o = (q.opts || []).filter(function (x) { return x[0] === String(a); })[0], t = o ? o[1] : String(a);
+    if (q.id === "waterHeaters") { var w = S.answers.whType; t += w === "tank" ? ", Tank" : w === "tankless" ? ", Tankless" : w === "both" ? ", One of Each" : ""; }
+    if (q.id === "acs" && a === "0") t = "None";
+    return esc(t);
+  }
+  function answerSummary() {
+    return '<ul class="qf-sum">' + Q.map(function (q, i) { return '<li><span class="qf-sum-ic">' + I(QART[q.id], "xs") + '</span><span class="qf-sum-k">' + QSHORT[q.id] + '</span><b>' + answerText(q) + '</b><button type="button" class="link mw-hover" data-edit="' + i + '">Edit</button></li>'; }).join("") + '</ul>';
+  }
   function choice() {
-    return '<section class="qf qf-done">' + '<div class="qf-top">' + backBtn() + planChip() + '</div>' +
-      '<div class="qf-prog"><span class="qf-step">All 8 Done</span><div class="qf-bar full" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Quote Progress"><div style="width:100%"></div></div></div>' +
-      '<div class="qf-done-art" aria-hidden="true"><span class="t3">' + I("clipboard") + '</span><span class="t0">' + I("furnace") + '</span><span class="t1">' + I("ac") + '</span></div>' +
-      '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' +
+    return '<section class="qf qf-done">' + '<div class="qf-top">' + planChip() + '</div>' +
+      '<div class="qf-prog"><span class="qf-step">All ' + Q.length + ' Done</span><div class="qf-segs all" aria-hidden="true">' + Q.map(function () { return '<span class="done"></span>'; }).join("") + '</div></div>' +
+      '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' + answerSummary() +
       '<div class="qf-foot"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p></div></section>';
+      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p>' + tagLine() + navBar() + '</div></section>';
   }
 
   function photoCards() {
@@ -1156,6 +1199,7 @@
     });
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
     var s = S.screen;
+    app.querySelectorAll("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { go("q" + b.getAttribute("data-edit")); }); });
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
     var pc = app.querySelector("[data-plan-chip]"), pl = app.querySelector("#qfPlans");
     if (pc && pl) {
@@ -1213,7 +1257,7 @@
       });
     }
     if (s === "alacarte") bindAlacarte();
-    if (s === "photos") app.querySelectorAll("[data-photo]").forEach(function (inp) {
+    if (s === "photos" || /^q\d$/.test(s)) app.querySelectorAll("[data-photo]").forEach(function (inp) {
       inp.addEventListener("change", function () {
         var id = inp.getAttribute("data-photo"); photoMem[id] = photoMem[id] || [];
         Array.prototype.forEach.call(inp.files || [], function (f) { if (/^image\//.test(f.type)) photoMem[id].push(URL.createObjectURL(f)); });
@@ -1255,10 +1299,10 @@
     if (zip) zip.addEventListener("input", function () { S.answers.zip = zip.value; S._zipOk = false; document.getElementById("zipErr").textContent = ""; app.querySelector("[data-unsure]").classList.remove("sel"); refresh(); });
     function nextQ() { go(i + 1 < Q.length ? "q" + (i + 1) : "choice"); }
     /* Tap to auto-advance: brief selected flash, then the next step. */
-    function flashGo(b) { b.classList.add("sel", "pop"); app.classList.add("qf-busy"); setTimeout(function () { app.classList.remove("qf-busy"); nextQ(); }, 220); }
+    /* Pick, Then Next (Info Gather Deck): a tap selects; the Next button advances. */
     function whReady() { var c = S.answers.waterHeaters, t = S.answers.whType; return c !== undefined && c !== "unsure" && t && t !== "unsure"; }
-    app.querySelectorAll("[data-single]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers[q.id] = b.getAttribute("data-single"); save(); if (q.type !== "wh" || whReady()) flashGo(b); else render(); }); });
-    app.querySelectorAll("[data-wh]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers.whType = b.getAttribute("data-wh"); if (S.answers.waterHeaters === "unsure") delete S.answers.waterHeaters; save(); if (whReady()) flashGo(b); else render(); }); });
+    app.querySelectorAll("[data-single]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers[q.id] = b.getAttribute("data-single"); save(); render(); }); });
+    app.querySelectorAll("[data-wh]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers.whType = b.getAttribute("data-wh"); if (S.answers.waterHeaters === "unsure") delete S.answers.waterHeaters; save(); render(); }); });
     if (zip) zip.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (!nextB.disabled) nextB.click(); } });
     app.querySelectorAll("[data-multi]").forEach(function (b) { b.addEventListener("click", function () {
       var k = b.getAttribute("data-multi"), cur = Array.isArray(S.answers[q.id]) ? S.answers[q.id] : [];
