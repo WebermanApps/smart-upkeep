@@ -1064,3 +1064,4 @@ body.on-qf main{padding-bottom:0}
   .qf-foot{gap:.4rem;padding-top:.6rem}
   .qf-sum li{padding:.3rem .7rem}.qf-sum .link{min-height:28px}
 }
+@media(max-width:700px){.hm-resume-card{flex-wrap:wrap;gap:.45rem;padding:.55rem}.hm-resume-card .qf-art{display:none}.hm-resume-card b{font-size:.92rem}.hm-resume-card small{font-size:.76rem}.hm-resume-card .btn{width:100%;min-height:40px}}
