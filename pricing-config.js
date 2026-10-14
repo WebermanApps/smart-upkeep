@@ -7,7 +7,7 @@ window.SMART_UPKEEP_PRICING = {
   /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
   prelaunchGate: {
     enabled: true,
-    passwordSha256Labels: { "fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71": "u1", "bcb9dae6ea88dbf28c262998e6661ec60f32a760faa5aef96745b39c38dbf235": "u2", "fb3cf40ba768126dbfbca0e946d98d57237a1ec875ea04e1426ae25db3a5f952": "u3", "4cefa6b13a8f592f55bfd46b3719f879859c3eb348e20fe34ab86bcb5cb2ca27": "u4", "43d26e8db66a76f646f2d559e592493070c7e02048ada7fd8b96fcc0369f5d11": "u5", "6fe8ecbc1deafa51c2ecf088cf364eba1ceba9032ffbe2621e771b90ea93153d": "u6", "668e2b73ac556a2f051304702da290160b29bad3392ddcc72074fefbee80c55a": "u7", "7b8bd6c0abf53d22888beafc48830e1156907dd4ec7e6ea31e55a0dd6dc5a969": "u8" },  /* SHA-256 (lowercased, trimmed) -> label; unlock logged once per session via MWSubmit to upkeep */
+    passwordSha256Labels: { "fe675fe7aaee830b6fed09b64e034f84dcbdaeb429d9cccd4ebb90e15af8dd71": "u1", "bcb9dae6ea88dbf28c262998e6661ec60f32a760faa5aef96745b39c38dbf235": "u2", "fb3cf40ba768126dbfbca0e946d98d57237a1ec875ea04e1426ae25db3a5f952": "u3", "4cefa6b13a8f592f55bfd46b3719f879859c3eb348e20fe34ab86bcb5cb2ca27": "u4", "43d26e8db66a76f646f2d559e592493070c7e02048ada7fd8b96fcc0369f5d11": "u5", "6fe8ecbc1deafa51c2ecf088cf364eba1ceba9032ffbe2621e771b90ea93153d": "u6", "668e2b73ac556a2f051304702da290160b29bad3392ddcc72074fefbee80c55a": "u7", "7b8bd6c0abf53d22888beafc48830e1156907dd4ec7e6ea31e55a0dd6dc5a969": "u8", "e1e025805cd63af3eaf1de7c010a537df1fa24009c5d332f3a068cd382e46ca7": "u9" },  /* SHA-256 (lowercased, trimmed) -> label; unlock logged once per session via MWSubmit to upkeep */
     storageKey: "smartUpkeep.gateUnlocked"
   },
   /* Retention offer (draft): shown on cancel or renewal. 6+ months a member: 1 month free to stay. 1+ year: 2 months free. */
@@ -64,8 +64,8 @@ window.SMART_UPKEEP_PRICING = {
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),
-     1 tank water heater, 1 story, no extras. Annual totals: Silver 890 -> floored to 1188, Gold 1970,
-     Platinum 3740 (roundTo 10). Recompute if any pricing input above changes. */
+     1 tank water heater, 1 story, no extras. Annual totals: Essentials 890 -> floored to 1188, Plus 1970,
+     Complete 3740 (roundTo 10). Recompute if any pricing input above changes. */
   tiers: {
     silver: { fromMonthly: 99, label: "Essentials", tagline: "Seasonal Care", visits: 2,
       keyPoints: ["Furnace/AC Tune-Up", "Water Heater Flush", "Dryer Vent Cleaning", "Mold and Moisture Scan", "And More"],
