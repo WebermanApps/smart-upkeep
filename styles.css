@@ -921,3 +921,16 @@ body.on-qf main{padding-bottom:0}
 }
 @media(max-height:700px){.qt{min-height:84px}.qf-sqft .qt{min-height:64px}.qt.chkt{min-height:56px}.qt-grid.three .qt,.qf-waterHeaters .qt{min-height:76px}.qf-art{width:3.6rem;height:3.6rem}.qf-art .su-ico{width:2.2rem;height:2.2rem}.qf-hero{margin:.5rem 0}}
 .qf-zip .qf-body,.qf-extras .qf-body,.qf-waterHeaters .qf-body{justify-content:flex-start;padding-top:.4rem}
+/* Home v2 (Max, Oct 14): bigger logo, bigger hero thumb, Welcome Offer pill on selected plan */
+.topbar .brand img{height:50px}
+@media (min-width:900px){.topbar .brand img{height:58px}}
+@media (max-width:600px){.hm-hero{grid-template-columns:50% 1fr}}
+@media (min-width:601px){.hm-hero{grid-template-columns:1.22fr 1fr}}
+.pc-offer{display:none;position:absolute;top:.55rem;right:.55rem;z-index:2;align-items:center;gap:.25rem;margin:0;min-height:28px;padding:.1rem .55rem;border:1px solid var(--mw-terracotta,#C1502E);border-radius:999px;background:#fff7f2;color:#C1502E;font-family:inherit;font-weight:700;font-size:.62rem;line-height:1;letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;cursor:pointer}
+.hm-plan.sel .pc-offer{display:inline-flex}
+.hm-offer-pop{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}.hm-offer-pop[hidden]{display:none}
+.hm-offer-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
+.hm-offer-card{position:relative;background:#fff;border:1px solid var(--mw-border);padding:1.2rem 1.1rem;width:min(420px,100%)}
+.hm-offer-card h3{margin:0 0 .5rem}.hm-offer-card .hm-offer-body p{margin:.3rem 0}
+.hm-offer-card .hm-pop-x{position:absolute;top:.4rem;right:.4rem;min-width:44px;min-height:44px;border:0;background:none;font-size:1.6rem;cursor:pointer}
+.hm-plan{position:relative}.pc-offer .su-ico,.pc-offer svg{width:12px;height:12px}

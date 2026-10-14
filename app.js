@@ -401,6 +401,7 @@
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
+      '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 99) + '</span><span class="pc-per">/Mo</span></div>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
       '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hm-see="' + k + '">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
@@ -441,9 +442,10 @@
         '<p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button></div>' +
       '</section>' +
-      '<div class="hm-search" role="search">' + I("search", "xs") + '<input type="search" placeholder="Search Services, À La Carte, FAQ" aria-label="Search services, à la carte and FAQ" autocomplete="off"><ul class="hm-results" hidden></ul></div>' +
+      /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
-        '<details class="hm-offer-tag"><summary class="mw-hover">' + I("tag", "xs") + '<span>Welcome Offer: 6 Extra Months Free, Once You Complete Your Term</span></summary><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></details>').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+      '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
         '<div class="hm-tiles">' + svc.map(function (s, i) { return '<button type="button" class="hm-tile mw-hover t' + (i % 4) + '" data-svc="' + i + '" aria-haspopup="dialog"><span class="hm-tile-ic">' + I(s[0], "xs") + '</span><span>' + s[1] + '</span></button>'; }).join("") + '</div></section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
@@ -481,7 +483,8 @@
     }
     function start() {
       if (!mq.matches) return;
-      sc.scrollLeft = 0;
+      var c = sc.querySelector(".hm-plan.sel") || sc.querySelector(".hm-plan.rec");
+      if (c) { var cr = c.getBoundingClientRect(), sr = sc.getBoundingClientRect(); sc.scrollLeft += (cr.left + cr.width / 2) - (sr.left + sr.width / 2); } else sc.scrollLeft = 0;
       sync();
     }
     var raf = 0;
@@ -510,9 +513,17 @@
     }); });
     root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { root.querySelector("#row-plans").scrollIntoView({ behavior: smooth, block: "start" }); }); });
   }
+  function bindOffer(root) {
+    var pop = root.querySelector(".hm-offer-pop"); if (!pop) return;
+    root.addEventListener("click", function (e) {
+      if (e.target.closest("[data-offer]")) { e.preventDefault(); e.stopPropagation(); pop.hidden = false; var x = pop.querySelector(".hm-pop-x"); if (x) x.focus(); return; }
+      if (e.target.closest("[data-offer-close]")) { pop.hidden = true; }
+    }, true);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") pop.hidden = true; });
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
-    bindPlanSwipe(root);
+    bindPlanSwipe(root); bindOffer(root);
     bindPlanSelect(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -576,6 +587,7 @@
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
     P.addons.forEach(function (a) { idx.push({ t: a.label + " · " + priceRange(a), k: (a.label + " " + a.desc).toLowerCase(), acc: document.getElementById("acc-addons") }); });
     var inp = root.querySelector(".hm-search input"), res = root.querySelector(".hm-results");
+    if (!inp || !res) return; /* search lives in future My Home area */
     inp.addEventListener("input", function () {
       var q = inp.value.trim().toLowerCase();
       if (q.length < 2) { res.hidden = true; res.innerHTML = ""; return; }
