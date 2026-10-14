@@ -709,7 +709,7 @@
       body = '<div class="qf-field"><label class="sr" for="zip">Address or ZIP</label>' + I("search", "sm") +
         '<input id="zip" type="text" inputmode="text" enterkeyhint="next" autocomplete="street-address" placeholder="48322 or 123 Main St, Novi" value="' + esc(a && a !== "unsure" ? a : "") + '"></div>' +
         '<div class="err" id="zipErr" role="alert"></div>' +
-        '<div class="qf-chips" aria-label="Good to Know"><span class="hm-chip t0">' + I("tag", "xs") + 'Free</span><span class="hm-chip t1">' + I("shield", "xs") + 'No Card Needed</span><span class="hm-chip t2">' + I("clock", "xs") + 'About 2 Minutes</span></div>';
+        '<div class="qf-chips" aria-label="Good to Know"><span class="hm-chip t0">' + I("clock", "xs") + 'Free Offer in Minutes</span><span class="hm-chip t1">' + I("house", "xs") + 'Tailored to Your Home</span><span class="hm-chip t2">' + I("shield", "xs") + 'Warranties Checked</span></div>';
       foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
         '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure? Skip for Now</button>';
     } else if (q.type === "multi") {
