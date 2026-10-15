@@ -1154,10 +1154,11 @@
       '<form id="suF" novalidate class="stack">' +
       '<div class="card su-sum-top"><h3>Your Plan</h3>' +
       '<div class="summary-price">' + priceBlock(t.year, t.billKind) + '</div>' +
+      '<p class="small su-start">Membership Starts At Your First Visit</p>' +
       '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
       (t.plan === "biennial" ? '<div><span>Term</span><span>24 Paid Months + 6 Free Months at the End (Once You Complete It)</span></div>' : "") +
-      (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>No Charge</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
-      ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears, added at the end of your term once you complete it</span></div>' : "") +
+      (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>' + money(6 * monthlyOf(t.membershipAnnual)) + ' Value</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
+      ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · +1 Free Month</span></div>' : "") +
       addonSummary + lmSummary +
       '<div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div>' +
       '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label>' +
@@ -1183,6 +1184,7 @@
 
   /* Order Form Details Deck 17 (Max 19:33 ICT Oct 15): payment is its own secure step after the form. DEMO ONLY: card fields are disabled,
      never read and nothing is charged. Demo labels hidden for testers (06). */
+  /* Order Form Details Deck 05, 10, 12, 14, 15, 16 (Max 19:33 ICT Oct 15): short command errors; 2-year free months shown as dollar value (6 x plan monthly, annual / 12); "Membership Starts At Your First Visit" note; offer terms stay fold-out; no phone example; referral line "+1 Free Month". */
   function payStep() {
     var t = (S.signup && S.signup.totals) || totals();
     return backBtn() + stepRail(4) + '<h1>Secure Payment</h1>' +
@@ -1450,9 +1452,9 @@
       e.preventDefault(); keep();
       var b = S.alacarteBooking || {}, err = "";
       if (!(S.alacarte && S.alacarte.length)) err = "Pick at least one service.";
-      else if (!b.name) err = "Enter your full name.";
-      else if (!/\d{3}.*\d{3}.*\d{4}/.test(b.phone || "")) err = "Enter a valid phone number.";
-      else if (!/^\S+@\S+\.\S+$/.test(b.email || "")) err = "Enter a valid email.";
+      else if (!b.name) err = "Enter full name.";
+      else if (!/\d{3}.*\d{3}.*\d{4}/.test(b.phone || "")) err = "Enter phone number.";
+      else if (!/^\S+@\S+\.\S+$/.test(b.email || "")) err = "Enter email.";
       else if (!(b.dates && b.dates.length > 2)) err = "Share your preferred dates.";
       if (err) { document.getElementById("acErr").textContent = err; return; }
       b.services = (S.alacarte || []).slice();
@@ -1468,7 +1470,7 @@
     document.getElementById("visitF").addEventListener("submit", function (e) {
       e.preventDefault();
       v.date = val("vDate"); v.name = val("vName"); v.phone = val("vPhone"); v.email = val("vEmail");
-      var err = !v.date ? "Pick a preferred date." : !v.windows.length ? "Pick at least one time window." : !v.name ? "Enter your name." : !/\d{3}.*\d{3}.*\d{4}/.test(v.phone) ? "Enter a valid phone number." : !/^\S+@\S+\.\S+$/.test(v.email) ? "Enter a valid email." : "";
+      var err = !v.date ? "Pick a preferred date." : !v.windows.length ? "Pick at least one time window." : !v.name ? "Enter your name." : !/\d{3}.*\d{3}.*\d{4}/.test(v.phone) ? "Enter phone number." : !/^\S+@\S+\.\S+$/.test(v.email) ? "Enter email." : "";
       if (err) { document.getElementById("vErr").textContent = err; return; }
       v.requestedAt = new Date().toISOString(); v.completed = false; S.visit = v; go("quote");
     });
@@ -1504,12 +1506,12 @@
     document.getElementById("suF").addEventListener("submit", function (e) {
       e.preventDefault(); keepFields();
       var s = S.signup, errs = [
-        ["sName", !s.name ? "Enter your full name." : ""],
-        ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter a valid phone number." : ""],
-        ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter a valid email." : ""],
-        ["sAddr", s.address.length < 5 ? "Enter your service address." : ""],
-        ["agree", !document.getElementById("agree").checked ? "Check the box to agree to the Agreement and Waiver." : ""],
-        ["agreeSig", !sigs.agreeSig.valid() ? "Please sign once to sign both." : ""]];
+        ["sName", !s.name ? "Enter full name." : ""],
+        ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter phone number." : ""],
+        ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter email." : ""],
+        ["sAddr", s.address.length < 5 ? "Enter service address." : ""],
+        ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
+        ["agreeSig", !sigs.agreeSig.valid() ? "Sign once to sign both." : ""]];
       var first = null;
       errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
       if (first) { first.scrollIntoView({ block: "center" }); return; }
