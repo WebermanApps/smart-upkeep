@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Technician App (Prototype) · Smart Upkeep</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=1">
+<script src="../pricing-config.js?v=c28"></script><script src="../gate.js?v=gate8"></script><script src="../icons.js?v=m1"></script>
+<noscript><style>body>*{display:none!important}</style></noscript>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAF3EB">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--saffron:#D4A017;--saffron-d:#8a6510;--lagoon:#05668D;--terra:#C1502E;--cream:#FAF3EB;--ink:#0a0a0a;--mute:#525252;--line:#e5e0d8;--jungle:#0B6E4F}
+*{box-sizing:border-box}html,body{overflow-x:hidden}
+body{margin:0;background:#efe7dc;color:var(--ink);font-family:"Hind",system-ui,sans-serif;font-size:16px;line-height:1.45}
+h1,h2,h3{font-family:"Khand",sans-serif;font-weight:700;line-height:1.1;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+.su-ico{width:2.2rem;height:2.2rem;flex:none;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;color:#1f1b17;overflow:visible}
+.su-ico .f-t{fill:var(--terra);stroke:#1f1b17}.su-ico .f-l{fill:var(--lagoon);stroke:#1f1b17}.su-ico .f-s{fill:var(--saffron);stroke:#1f1b17}.su-ico .f-j{stroke:var(--jungle)}
+.su-ico.sm{width:1.5rem;height:1.5rem;stroke-width:2.5}
+.phone{max-width:480px;margin:0 auto;min-height:100vh;background:var(--cream);position:relative;display:flex;flex-direction:column}
+@media(min-width:700px){body{padding:24px 0}.phone{min-height:calc(100vh - 48px);border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden}}
+.tag{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:50;background:#fff;border:1px solid var(--saffron);color:var(--saffron-d);font-size:.72rem;font-weight:600;padding:2px 10px;border-radius:999px;letter-spacing:.03em;white-space:nowrap}
+.scr{display:none;flex:1;flex-direction:column}.scr.on{display:flex}
+.top{display:flex;align-items:center;justify-content:space-between;padding:40px 18px 8px}
+.top img{height:30px}
+.share{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid #d4d4d4;border-radius:999px;background:#fff;font-weight:600;font-size:.88rem}
+.body{flex:1;padding:6px 18px 110px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.plan{background:var(--saffron);border-color:var(--saffron);color:#1f1b17}
+.plan h2{font-size:1.9rem}.plan .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:.92rem}
+.lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--mute)}
+.plan .lbl{color:#3b2e05}
+.hello{font-size:2rem;margin-top:4px}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qa button{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:.85rem;min-height:92px}
+.hint{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:.92rem}
+.plan-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border-left:4px solid var(--saffron)}.plan-line b{font-family:"Khand",sans-serif;font-size:1.25rem}.plan-line .note{flex-basis:100%}
+.chev{margin-left:auto;font-size:1.3rem;color:var(--lagoon)}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block;vertical-align:middle}.dot.ok{background:var(--jungle)}.dot.warn{background:var(--saffron)}.dot.blue{background:var(--lagoon)}
+.dot-key{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 2px}.dot-key .dot{width:10px;height:10px;margin-left:6px}
+.card:has(>.see-all[open])>ul.chk{display:none}
+.see-all summary{list-style:none;padding:6px 0}.see-all summary::-webkit-details-marker{display:none}.see-all[open] summary{display:none}
+.add-btn{flex:none;margin-left:8px;min-height:36px;padding:0 14px;border:2px solid var(--saffron);background:var(--saffron);border-radius:999px;font-weight:600;font-size:.85rem}
+.hint b{color:var(--lagoon)}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.li:first-of-type{border-top:0}
+.li .t{flex:1;min-width:0}.li .t b{display:block}.li .t small{color:var(--mute)}
+button.li{width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;padding:12px 0}
+.pill{font-size:.75rem;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.ok{background:#e3f1ea;color:var(--jungle)}.warn{background:#fbf0d3;color:var(--saffron-d)}.blue{background:#e6f0f4;color:var(--lagoon)}
+.btn{display:flex;width:100%;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:12px;border:2px solid var(--saffron);background:var(--saffron);color:#1f1b17;font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:.9rem}
+.btn.o{background:#fff;border-color:var(--lagoon);color:var(--lagoon)}
+.link{background:none;border:0;color:var(--lagoon);font-weight:600;padding:8px;text-decoration:underline}
+h3{font-size:1.35rem;margin-bottom:4px}
+.sec{font-size:1.6rem;margin:10px 0 0}
+ul.chk{list-style:none;padding:0;margin:6px 0}ul.chk li{padding:6px 0 6px 28px;position:relative;border-top:1px solid var(--line);font-size:.93rem}ul.chk li:before{content:"";position:absolute;left:4px;top:11px;width:12px;height:7px;border-left:2.5px solid var(--jungle);border-bottom:2.5px solid var(--jungle);transform:rotate(-45deg)}
+.ph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ph div{aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(45deg,#f1ebe2,#f1ebe2 8px,#e9e1d5 8px,#e9e1d5 16px);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--mute);text-align:center;padding:4px}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40}
+@media(min-width:700px){.tabs{bottom:24px;border-radius:0 0 28px 28px}}
+.tabs button{flex:1;min-width:0;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.68rem;font-weight:600;color:var(--mute);min-height:52px;padding:4px 0}
+.tabs button .su-ico{width:1.5rem;height:1.5rem;stroke-width:2.5;color:var(--mute)}
+.tabs button.on{color:var(--terra)}.tabs button.on .su-ico{color:var(--terra)}
+.login{padding:70px 24px 30px;flex:1;display:flex;flex-direction:column}
+.login img{height:64px;margin:0 auto 10px;display:block}
+.login h1{text-align:center;font-size:2rem;margin-bottom:18px}
+.fld{display:block;margin-bottom:12px}.fld span{display:block;font-weight:600;font-size:.88rem;margin-bottom:4px}
+.fld input{width:100%;min-height:50px;border:1px solid #cfc6b8;border-radius:12px;padding:0 14px;font:inherit;background:#fff}
+.fld input:focus{outline:2px solid var(--lagoon);border-color:var(--lagoon)}
+.or{text-align:center;color:var(--mute);font-size:.85rem;margin:12px 0}
+.back{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px;border:1px solid #d4d4d4;border-radius:999px;background:#fff;font-weight:600}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1f1b17;color:#fff;padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:60;display:none;max-width:90vw;text-align:center}
+footer{text-align:center;padding:14px;font-size:.85rem}footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,31,.4)}
+.toggle{width:46px;height:28px;border-radius:999px;background:#d4d4d4;border:0;position:relative;flex:none}.toggle:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}.toggle.on{background:var(--lagoon)}.toggle.on:after{left:21px}
+.ref{font-family:monospace;background:#f6f1ea;border:1px dashed #cfc6b8;border-radius:10px;padding:10px;word-break:break-all;font-size:.9rem;margin:8px 0}
+.pills{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none}.pills::-webkit-scrollbar{display:none}
+.pl{flex:none;border:1.5px solid var(--saffron);background:#fff;color:#1f1b17;border-radius:999px;padding:8px 14px;font-weight:600;font-size:.88rem;min-height:40px}.pl.on{background:var(--saffron)}
+.fold{padding:0}.fold summary{list-style:none;cursor:pointer;padding:12px 14px;border:0}.fold summary::-webkit-details-marker{display:none}
+.fold .pic{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;flex:none}
+.fold .chev{margin-left:auto;font-size:1.3rem;color:var(--lagoon);transition:transform .15s}.fold[open] .chev{transform:rotate(90deg)}
+.fold-b{padding:0 14px 12px 70px;font-size:.9rem;display:grid;gap:4px}
+.warr-banner{display:flex;gap:10px;align-items:flex-start;background:var(--lagoon);color:#fff;border-radius:12px;padding:12px 14px;margin:14px 0}.warr-banner .su-ico{color:#fff;flex:none}
+.big{font-family:"Khand",sans-serif;font-size:2.4rem;font-weight:700;color:var(--lagoon);line-height:1}
+.note{font-size:.82rem;color:var(--mute)}
+/* Polish pass (Max 20:04 ICT Oct 15): one spacing/radius scale, clearer type steps, 44px+ tap targets, even icon sizes,
+   no overflow at 360px, tabs sit below content (sticky, never covering it), soft fade between tabs, crisp desktop frame. Colors, fonts and header unchanged. */
+:root{--r:16px;--r-sm:12px;--gap:12px;--pad:16px}
+.body{padding:4px 16px 24px}
+.top{padding:40px 16px 8px}
+.card{border-radius:var(--r);padding:var(--pad);margin:0 0 var(--gap)}
+.hello{font-size:clamp(1.75rem,7vw,2.1rem);margin:6px 0 var(--gap)}
+.sec{font-size:1.75rem;margin:8px 0 var(--gap)}
+h3{font-size:1.3rem;margin:0 0 6px}
+.lbl{font-size:.74rem;margin-bottom:4px;overflow-wrap:anywhere}
+.note{font-size:.84rem;line-height:1.45}
+.li{min-height:52px}.li .t{overflow-wrap:anywhere}.li .t small{display:block;line-height:1.35;margin-top:1px}
+.li>.su-ico.sm,.li .pic .su-ico{width:1.5rem;height:1.5rem}
+.qa{gap:var(--gap);margin:0 0 var(--gap)}.qa button{border-radius:var(--r);min-height:96px;padding:12px 6px;text-align:center;line-height:1.2}.qa .su-ico{width:2rem;height:2rem}
+.hint{border-radius:var(--r);margin:0 0 var(--gap)!important}.hint .su-ico{margin-top:2px}
+.share,.back{min-height:44px}
+.back{margin:4px 0 8px}
+.link{min-height:44px;display:inline-flex;align-items:center}
+.pl{min-height:44px}.pills{margin:0 0 var(--gap);padding:2px 0}
+.add-btn{min-height:44px;min-width:64px}
+.toggle{width:52px;height:32px}.toggle:after{top:4px;left:4px;width:24px;height:24px}.toggle.on:after{left:24px}
+.btn{min-height:52px;border-radius:var(--r-sm)}
+.warr-banner{border-radius:var(--r);margin:0 0 var(--gap)}
+.fold{margin:0 0 10px}
+.ref{border-radius:var(--r-sm)}
+.ph div{border-radius:var(--r-sm)}
+.tabs{position:sticky;bottom:0;left:auto;transform:none;max-width:none;margin-top:auto;z-index:40}
+@media(min-width:700px){.tabs{bottom:0;border-radius:0}}
+.tabs button{min-height:56px;font-size:.7rem;gap:3px}
+#s-app footer{padding:14px 14px 18px!important}
+.toast{bottom:96px}
+#view.fade{animation:vf .18s ease-out}@keyframes vf{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#view.fade{animation:none}}
+@media(min-width:700px){body{padding:40px 0}.phone{min-height:calc(100vh - 80px);border-radius:32px;border:1px solid #ddd3c4;box-shadow:0 1px 2px rgba(31,27,23,.06),0 18px 40px rgba(31,27,23,.10);overflow:clip}.tag{top:12px}}
+@media(max-width:380px){.body{padding-left:14px;padding-right:14px}.qa button{font-size:.8rem}.hello{font-size:1.7rem}.add-btn{min-width:56px;padding:0 10px}}
+/* Member Profile And Plan Deck: house band uses Niko's homeowner-app hero treatment (cream gradient over the photo, center 40%/cover). Plain cream until the photo file exists. */
+.house-band{margin:0 -16px var(--gap);padding:26px 16px 30px;background:linear-gradient(180deg,rgba(251,248,242,.80) 0%,rgba(251,248,242,.84) 55%,rgba(251,248,242,.96) 100%),url(../assets/member-house-2573.jpg) center 40%/cover no-repeat,#FBF8F2;border-bottom:1px solid #e5e5e5}
+.house-band h2{font-size:1.9rem}.house-band p{margin:2px 0 0;color:var(--mute)}.house-band .link{padding-left:0}
+.chip{display:inline-block;background:#fff;color:#1f1b17;border-radius:999px;padding:3px 12px;font-weight:600;font-size:.8rem}
+.plan-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.ring-card{display:flex;gap:14px;align-items:center}
+h4.season{font-family:"Khand",sans-serif;font-size:1.15rem;margin:10px 0 0}
+
+/* Tech app additions (same tokens as member app) */
+.tech-head{display:flex;gap:14px;align-items:center}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--saffron);display:grid;place-items:center;font-family:"Khand",sans-serif;font-weight:700;font-size:1.6rem;flex:none}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.badge{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--jungle);color:var(--jungle);background:#fff;border-radius:999px;padding:4px 10px;font-weight:600;font-size:.78rem;min-height:30px}
+.badge:before{content:"✓";font-weight:700}
+.visit .time{display:inline-block;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-weight:600;font-size:.8rem}
+.visit h3{margin-top:8px}
+.tasks{margin:8px 0 12px;padding-left:18px;font-size:.9rem}.tasks li{margin:2px 0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld select,.fld textarea{width:100%;min-height:50px;border:1px solid #cfc6b8;border-radius:12px;padding:10px 14px;font:inherit;background:#fff}
+.fld textarea{min-height:96px}
+.chkf label{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);min-height:44px;font-size:.93rem}.chkf label:first-child{border-top:0}
+.chkf input{width:22px;height:22px;flex:none;accent-color:var(--jungle);margin-top:1px}
+.scanrow{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;align-items:end;margin-bottom:8px}
+.seg2{display:flex;border:1.5px solid var(--saffron);border-radius:12px;overflow:hidden;min-height:44px}.seg2 button{flex:1;border:0;background:#fff;font-weight:600;font-size:.82rem}.seg2 button.on{background:var(--saffron)}
+.qty{font-family:"Khand",sans-serif;font-size:1.4rem;font-weight:700;min-width:36px;text-align:center}
+.inv-btns{display:flex;gap:6px}.inv-btns button{min-height:44px;padding:0 12px;border-radius:999px;border:1.5px solid var(--lagoon);background:#fff;color:var(--lagoon);font-weight:600;font-size:.8rem}
+.inv-btns button.r{border-color:var(--saffron);background:var(--saffron);color:#1f1b17}
+.inv .li{flex-wrap:wrap}.inv .li .t{flex:1 1 160px}
+@media(max-width:380px){.scanrow{grid-template-columns:1fr 1fr}.scanrow .fld:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="tag">Prototype, sample data</div>
+<div class="phone">
+<section class="scr on" id="s-login"><div class="login">
+<img src="../assets/A-roof-chevron-transparent.svg?v=t1" alt="Smart Upkeep">
+<h1>Technician Sign In</h1>
+<form id="lf" autocomplete="off">
+<label class="fld"><span>Email</span><input type="email" name="e" placeholder="you@example.com" autocomplete="off"></label>
+<label class="fld"><span>Password</span><input type="password" name="p" placeholder="Password" autocomplete="off"></label>
+<button class="btn" type="submit">Sign In</button>
+</form>
+<div style="text-align:center"><button class="link" data-toast="Prototype: a reset link would be emailed to you.">Forgot password?</button></div>
+<div class="or">or</div>
+<button class="btn o" id="faceid" type="button"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M9 9v1.5M15 9v1.5M12 9v4h-1M9 16c1.8 1.3 4.2 1.3 6 0"/></svg>Sign In with Face ID</button>
+<p class="note" style="text-align:center;margin-top:18px">Prototype: any input signs in. Nothing is checked or stored.</p>
+<div style="flex:1"></div>
+<footer>Built by <a href="https://maxweberman.com" target="_blank" rel="noopener">Max Weberman</a></footer>
+</div></section>
+<section class="scr" id="s-app">
+<div class="top"><img src="../assets/A-roof-chevron-transparent.svg?v=t1" alt="Smart Upkeep"><button class="share" id="share"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>Share</button></div>
+<div class="body" id="view"></div>
+<footer>Built by <a href="https://maxweberman.com" target="_blank" rel="noopener">Max Weberman</a></footer>
+<nav class="tabs" id="tabs"></nav>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+/* Technician app prototype (Max 20:22 ICT Oct 15). ALL DATA IS SAMPLE: tech, members, addresses, schedule, readings and stock counts are made up.
+   Certifications come from the site's tech certification list (app.js CERTS_REQ). Visit tasks come from each plan's features in pricing-config.js.
+   Inventory items are the Day One items in ops/van/tool-list.md; "target" is that list's quantity, on-hand counts are sample. No prices, pay or policies. */
+var P=window.SMART_UPKEEP_PRICING,I=window.SUIcon;
+var $=function(s){return document.querySelector(s)};
+function toast(m){var t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(function(){t.style.display="none"},2600)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var TECH={first:"Alex",last:"Sample",initials:"AS",since:"Sample",certs:["EPA Section 608","EPA Lead-Safe RRP","OSHA 10","CPR and First Aid"]};
+function fallTasks(tier){return P.tiers[tier].features.filter(function(f){return!/^Everything|Spring|Selling|Transfers|Recall|Proof Pack|visits a year|check-ins|^\d+ /.test(f)}).map(function(f){return f.split(":")[0]})}
+var VISITS=[
+ {id:"a",time:"Sample block A",addr:"100 Sample St, Royal Oak, MI",member:"Member A. (sample)",tier:"gold",type:"Fall Visit"},
+ {id:"b",time:"Sample block B",addr:"200 Example Ave, Troy, MI",member:"Member B. (sample)",tier:"silver",type:"Fall Visit"},
+ {id:"c",time:"Sample block C",addr:"300 Demo Ct, Birmingham, MI",member:"Member C. (sample)",tier:"platinum",type:"Monthly Check-In"}];
+var PAST=[{d:"Sample · last week",a:"400 Sample Rd, Ferndale, MI",t:"Plus · Fall Visit",s:"Submitted"},{d:"Sample · last week",a:"500 Example Ln, Berkley, MI",t:"Essentials · Fall Visit",s:"Submitted"},{d:"Sample · 2 weeks ago",a:"600 Demo Dr, Clawson, MI",t:"Complete · Monthly Check-In",s:"Submitted"}];
+var TOOLS=[["Safety and PPE", "3M Clear Safety Glasses (Case of 20)", 1], ["Safety and PPE", "Grease Monkey 4 Mil Nitrile Gloves (100)", 2], ["Safety and PPE", "G&F Disposable Shoe Covers (100)", 2], ["Safety and PPE", "Cut-resistant work gloves, N95 masks, ear plugs", 1], ["Ladders and Access", "Little Giant Velocity 17 (Model 15417-002)", 1], ["Ladders and Access", "Werner 6 ft Fiberglass Step Ladder NXT1A06", 1], ["Ladders and Access", "28 ft fiberglass extension ladder + standoff", 1], ["HVAC Checks", "Nu-Calgon Nu-Brite Coil Cleaner (1 gal)", 1], ["HVAC Checks", "Condensate drain wet-vac adapter kit", 1], ["HVAC Checks", "Pump sprayer, fin comb, garden hose + nozzle", 1], ["Water Heater Flush", "Superior Pump 91660 Tankless Descaler Pump Kit", 1], ["Water Heater Flush", "Tank drain hose, hose-thread cap, white vinegar", 1], ["Dryer Vent Cleaning", "Gardus LintEater Rotary System RLE202", 1], ["Dryer Vent Cleaning", "LintEater 12 ft Extension Kit R3203612", 1], ["Dryer Vent Cleaning", "Milwaukee M18 2 Gal Wet/Dry Vacuum 0880-20 (tool only)", 1], ["Gutters", "The Wedge 15 in Gutter Scoop P-216", 2], ["Gutters", "Ray Padula Gutter Blast Telescoping Wand", 1], ["Gutters", "Contractor bags, ladder bucket and hook", 1], ["Windows and Screens", "Ettore Professional Window Cleaning Kit 04991", 1], ["Windows and Screens", "Ettore 16 in Original Squeegee 11116", 1], ["Windows and Screens", "Soft brush, screen tub, microfiber cloths", 1], ["Pressure Washing", "RYOBI 40V Whisper 1500 PSI Pressure Washer Kit RY40PW15 (2x 6Ah + charger)", 1], ["Caulk and Sealing", "Manual dripless caulk gun, caulk remover tool, painter's tape", 1], ["Hanging and Assembly", "Milwaukee M18 FUEL Hammer Drill + Impact Combo 3697-22 (2x 5Ah)", 1], ["Hanging and Assembly", "Milwaukee M18 High Output 6.0Ah Battery (2-Pack)", 1], ["Hanging and Assembly", "Franklin ProSensor M210 Stud Finder", 1], ["Hanging and Assembly", "Milwaukee 48 in Magnetic I-Beam Level", 1], ["Hanging and Assembly", "Milwaukee PACKOUT 22 in Rolling Box + 3-Drawer", 1], ["Hanging and Assembly", "Hand tools: multi-bit drivers, hex keys, tape, utility knife, anchors", 1], ["Electrical Basics", "Klein RT250 GFCI Tester + NCVT-3P Kit RT250KIT", 1], ["Electrical Basics", "Bulb changer pole + LED bulb stock (A19, BR30, candelabra)", 1], ["Plumbing Basics", "Channel locks, adjustable wrench, PTFE tape, flashlight-plunger kit, bucket", 1], ["Inspection and Documentation", "Klein ET140 Pinless Moisture Meter", 1], ["Inspection and Documentation", "Pin-type moisture meter (Klein ET150 or pin/pinless combo)", 1], ["Inspection and Documentation", "FLIR Edge Pro Thermal Camera (160x120, wireless)", 1], ["Inspection and Documentation", "Samsung Galaxy Tab Active5 8 in (Wi-Fi)", 1], ["Inspection and Documentation", "Milwaukee M12 ROVER Flood Light", 1], ["Cleaning", "Drop cloths, microfiber, all-purpose cleaner, trash bags", 1], ["Consumables Restock", "Filtrete 16x25x1 MPR 1000 (6-Pack)", 2], ["Consumables Restock", "Other filter sizes (16x20x1, 20x25x1, 4 in media)", 1], ["Consumables Restock", "Duracell Coppertop 9V (8-Pack)", 2], ["Consumables Restock", "Energizer 123 Lithium (6-Pack)", 2], ["Consumables Restock", "AA / AAA bulk packs", 1], ["Consumables Restock", "GE Advanced Silicone 2, White 10.1 oz", 6], ["Consumables Restock", "DAP Kwik Seal White 10.1 oz", 6], ["Consumables Restock", "Scott Shop Towels", 1]];
+var stock=TOOLS.map(function(t,i){return i%7===2?0:t[2]});
+var tabs=[["today","clock","Today"],["report","clipboard","Reports"],["inv","wrench","Inventory"],["more","grid","More"]];
+$("#tabs").innerHTML=tabs.map(function(t){return '<button data-tab="'+t[0]+'">'+I(t[1],"sm")+'<span>'+t[2]+'</span></button>'}).join("");
+var V={},cur="today",rv="a",scanRows=[["Under kitchen sink","",""]];
+function greet(){var h=new Date().getHours();return h<12?"Good Morning":h<18?"Good Afternoon":"Good Evening"}
+V.today=function(){return '<h1 class="hello">'+greet()+', '+TECH.first+'</h1>'+
+ '<div class="card"><div class="tech-head"><div class="avatar" aria-hidden="true">'+TECH.initials+'</div><div><div class="lbl">Technician · sample</div><h3 style="margin:0">'+TECH.first+' '+TECH.last+'</h3><div class="note">Smart Upkeep Technician</div></div></div>'+
+ '<div class="badges">'+TECH.certs.map(function(c){return '<span class="badge">'+c+'</span>'}).join("")+'</div></div>'+
+ '<h2 class="sec">Today\u2019s Visits</h2><p class="note" style="margin:-6px 0 10px">Sample schedule · '+VISITS.length+' visits</p>'+
+ VISITS.map(function(v){var t=P.tiers[v.tier],tk=fallTasks(v.tier);return '<div class="card visit"><span class="time">'+v.time+'</span><h3>'+v.type+' · '+t.label+'</h3>'+
+ '<div class="li" style="border:0;padding:4px 0">'+I("house","sm")+'<div class="t"><b>'+esc(v.addr)+'</b><small>'+v.member+' · '+t.label+' plan</small></div></div>'+
+ '<div class="lbl" style="margin-top:6px">Tasks · from the '+t.label+' plan</div><ul class="tasks">'+tk.slice(0,5).map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>'+
+ '<div class="row2"><button class="btn o" data-toast="Prototype: maps would open with directions.">Navigate</button><button class="btn" data-start="'+v.id+'">Start</button></div></div>'}).join("")};
+function visitById(id){return VISITS.filter(function(v){return v.id===id})[0]||VISITS[0]}
+V.report=function(){var v=visitById(rv),t=P.tiers[v.tier],tk=fallTasks(v.tier);
+ return '<h2 class="sec">Visit Report</h2>'+
+ '<div class="card"><label class="fld"><span>Visit</span><select id="rvSel">'+VISITS.map(function(x){return '<option value="'+x.id+'"'+(x.id===rv?' selected':'')+'>'+esc(x.addr)+' · '+P.tiers[x.tier].label+'</option>'}).join("")+'</select></label>'+
+ '<div class="note">'+v.type+' · '+t.label+' plan · sample visit</div></div>'+
+ '<form id="rf"><div class="card"><div class="lbl">Checklist · '+t.label+' plan</div><div class="chkf">'+tk.map(function(x,i){return '<label><input type="checkbox" name="c'+i+'"><span>'+esc(x)+'</span></label>'}).join("")+'</div></div>'+
+ '<div class="card"><div class="lbl">Whole-Home Mold and Moisture Scan</div><p class="note" style="margin:0 0 10px">Pinless moisture meter and thermal camera. Not a lab mold test.</p>'+
+ scanRows.map(function(r,i){return '<div class="scanrow"><label class="fld" style="margin:0"><span>Area</span><input value="'+esc(r[0])+'" data-sa="'+i+'"></label><label class="fld" style="margin:0"><span>Reading</span><input inputmode="decimal" placeholder="Meter" value="'+esc(r[1])+'" data-sr="'+i+'"></label><div><span class="fld" style="margin:0"><span>Result</span></span><div class="seg2"><button type="button" class="'+(r[2]==="n"?"on":"")+'" data-ss="'+i+':n">Normal</button><button type="button" class="'+(r[2]==="r"?"on":"")+'" data-ss="'+i+':r">Recheck</button></div></div></div>'}).join("")+
+ '<button type="button" class="link" data-addscan="1">+ Add Area</button></div>'+
+ '<div class="card"><div class="lbl">Photos</div><div class="ph" style="margin-top:8px"><div>Add photo</div><div>Add photo</div><div>Add photo</div><div>Add photo</div><div>Add photo</div><div>Add photo</div></div></div>'+
+ '<div class="card"><label class="fld" style="margin:0"><span>Notes for the Member</span><textarea id="notes" placeholder="What you did and anything to watch"></textarea></label></div>'+
+ '<button class="btn" type="submit">Submit Report</button></form>'+
+ '<h2 class="sec" style="margin-top:20px">Past Reports</h2><div class="card">'+PAST.map(function(r){return '<div class="li">'+I("doc","sm")+'<div class="t"><b>'+esc(r.a)+'</b><small>'+r.t+' · '+r.d+'</small></div><span class="dot ok" role="img" aria-label="'+r.s+'" title="'+r.s+'"></span></div>'}).join("")+'</div>'};
+var invCat="All";
+V.inv=function(){var cats=["All"];TOOLS.forEach(function(t){if(cats.indexOf(t[0])<0)cats.push(t[0])});var low=stock.filter(function(s,i){return s<TOOLS[i][2]}).length;
+ return '<h2 class="sec">Van Inventory</h2><p class="note" style="margin:-6px 0 10px">Day One tools and stock from the Smart Upkeep tool list. Counts are sample data.</p>'+
+ '<div class="card"><div class="li" style="border:0;padding:0">'+I("van","sm")+'<div class="t"><b>'+TOOLS.length+' items · '+low+' low</b><small>Target = quantity on the tool list</small></div></div></div>'+
+ '<div class="pills" role="tablist">'+cats.map(function(c){return '<button class="pl'+(c===invCat?' on':'')+'" data-cat="'+esc(c)+'">'+esc(c)+'</button>'}).join("")+'</div>'+
+ '<div class="card inv">'+TOOLS.map(function(t,i){if(invCat!=="All"&&t[0]!==invCat)return "";var lo=stock[i]<t[2];return '<div class="li"><div class="t"><b>'+esc(t[1])+'</b><small>'+esc(t[0])+' · target '+t[2]+'</small></div>'+(lo?'<span class="pill warn">Low</span>':'')+'<span class="qty">'+stock[i]+'</span><div class="inv-btns"><button data-use="'+i+'">Log Use</button><button class="r" data-restock="'+i+'">Restock</button></div></div>'}).join("")+'</div>'};
+var notif={a:true,b:true};
+V.more=function(){function tg(k,l){return '<div class="li"><div class="t"><b>'+l+'</b></div><button class="toggle'+(notif[k]?' on':'')+'" data-tg="'+k+'" aria-label="'+l+'" aria-pressed="'+notif[k]+'"></button></div>'}
+ return '<h2 class="sec">Profile</h2><div class="card"><div class="tech-head"><div class="avatar" aria-hidden="true">'+TECH.initials+'</div><div><div class="lbl">Sample technician</div><h3 style="margin:0">'+TECH.first+' '+TECH.last+'</h3><div class="note">tech.sample@example.com</div></div></div></div>'+
+ '<div class="card"><div class="lbl">Certifications</div>'+TECH.certs.map(function(c){return '<div class="li">'+I("shield","sm")+'<div class="t"><b>'+c+'</b><small>Sample record</small></div><button class="link" data-toast="Prototype: certificate upload.">Upload</button></div>'}).join("")+'</div>'+
+ '<h2 class="sec">Settings</h2><div class="card"><div class="lbl">Notifications</div>'+tg("a","Schedule changes")+tg("b","Restock reminders")+'</div>'+
+ '<div class="card"><button class="li" data-toast="Prototype: help for technicians.">'+I("faq","sm")+'<div class="t"><b>Help</b></div><span class="chev">›</span></button></div>'+
+ '<button class="btn o" id="signout">Sign Out</button>'};
+function show(tab){cur=tab;var vw=$("#view");vw.innerHTML=V[tab]();vw.classList.remove("fade");void vw.offsetWidth;vw.classList.add("fade");
+ [].forEach.call(document.querySelectorAll("#tabs button"),function(b){b.classList.toggle("on",b.dataset.tab===tab)});
+ var f=$("#rf");if(f)f.addEventListener("submit",function(e){e.preventDefault();toast("Prototype: report would be sent to the member. Nothing was sent.")});
+ var sel=$("#rvSel");if(sel)sel.addEventListener("change",function(){rv=sel.value;show("report")});
+ [].forEach.call(document.querySelectorAll("[data-sa],[data-sr]"),function(x){x.addEventListener("input",function(){var i=+(x.dataset.sa||x.dataset.sr);scanRows[i][x.dataset.sa!=null?0:1]=x.value})})}
+function go(s){[].forEach.call(document.querySelectorAll(".scr"),function(x){x.classList.toggle("on",x.id===s)});window.scrollTo(0,0)}
+function signin(){go("s-app");show("today");location.hash="today"}
+$("#lf").addEventListener("submit",function(e){e.preventDefault();this.reset();signin()});
+$("#faceid").addEventListener("click",function(){toast("Face ID (simulated)");setTimeout(signin,500)});
+document.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var y=scrollY;
+ if(b.dataset.toast){toast(b.dataset.toast);return}
+ if(b.dataset.tab){show(b.dataset.tab);location.hash=b.dataset.tab;scrollTo(0,0);return}
+ if(b.dataset.start){rv=b.dataset.start;show("report");location.hash="report";scrollTo(0,0);toast("Visit started (prototype)");return}
+ if(b.dataset.ss){var p=b.dataset.ss.split(":");scanRows[+p[0]][2]=p[1];show("report");scrollTo(0,y);return}
+ if(b.dataset.addscan){scanRows.push(["","",""]);show("report");scrollTo(0,y);return}
+ if(b.dataset.cat){invCat=b.dataset.cat;show("inv");scrollTo(0,y);return}
+ if(b.dataset.use){var i=+b.dataset.use;if(stock[i]>0)stock[i]--;show("inv");scrollTo(0,y);toast("Use logged (sample)");return}
+ if(b.dataset.restock){var j=+b.dataset.restock;stock[j]=Math.max(stock[j],TOOLS[j][2]);show("inv");scrollTo(0,y);toast("Restocked to target (sample)");return}
+ if(b.dataset.tg){notif[b.dataset.tg]=!notif[b.dataset.tg];show("more");scrollTo(0,y);return}
+ if(b.id==="signout"){location.hash="";go("s-login");return}
+ if(b.id==="share"){var d={title:"Smart Upkeep Technician App (Prototype)",url:location.origin+location.pathname};if(navigator.share)navigator.share(d).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(d.url).then(function(){toast("Link copied")},function(){toast(d.url)});else toast(d.url)}
+});
+var h=location.hash.slice(1);if(V[h]){go("s-app");show(h)}
+})();
+</script>
+</body>
+</html>
