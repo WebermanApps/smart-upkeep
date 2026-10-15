@@ -522,7 +522,7 @@
     }
     return '<div class="hm">' +
       '<section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:45</span></button>' +
+        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:48</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="hm-lead">Catch small problems before they&rsquo;re big ones.</p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? resumeCard() : '') + '</div>' +
@@ -1505,7 +1505,7 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return "video/explainer-v4-16x9.mp4?v=v4a"; } /* Video Deck (Oct 14): 16:9 in a card on phones too, page stays visible */ /* V4 official. Rollback to V3: video/explainer-v34-9x16.mp4 / explainer-v34-16x9.mp4 */
+  function vSrc() { return "video/explainer-v5-16x9.mp4?v=v5a"; } /* Video Deck (Oct 14): 16:9 in a card on phones too, page stays visible */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
   /* Browsers block unmuted autoplay, so the video starts muted with a big Tap for Sound button (Funnel Deck note, Oct 14). */
   var tfs = document.createElement("button"); tfs.type = "button"; tfs.id = "tapSound"; tfs.className = "tap-sound mw-hover"; tfs.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="#171717"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a8.5 8.5 0 0 1 0 13" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round"/></svg><span>Tap for Sound</span>';
   vid.parentNode.appendChild(tfs);
@@ -1514,7 +1514,7 @@
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
   function openVideo(userAsked) {
     var src = vSrc();
-    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v4-9x16.jpg?v=v4a" : "assets/poster-v4-16x9.jpg?v=v4a"); }
+    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v5-9x16.jpg?v=v5a" : "assets/poster-v5-16x9.jpg?v=v5a"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs();
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     var badge = document.getElementById("videoStartAt");

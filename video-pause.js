@@ -1,4 +1,4 @@
-/* Tap-to-pause + visible pause/play button for main V4 video (#explainer, #v). */
+/* Tap-to-pause + visible pause/play button for main V5 video (#explainer, #v). */
 (function () {
   var PAUSE = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" fill="#171717"/><rect x="14" y="5" width="4" height="14" rx="1" fill="#171717"/></svg>';
   var PLAY = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#171717"/></svg>';
