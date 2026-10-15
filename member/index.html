@@ -37,7 +37,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hello{font-size:2rem;margin-top:4px}
 .qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .qa button{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:.85rem;min-height:92px}
-.hint{display:flex;gap:10px;align-items:flex-start;background:#e6f0f4;border:1px solid #b9d5e0;border-radius:14px;padding:12px;font-size:.92rem}
+.hint{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:.92rem}
+.plan-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border-left:4px solid var(--saffron)}.plan-line b{font-family:"Khand",sans-serif;font-size:1.25rem}.plan-line .note{flex-basis:100%}
+.chev{margin-left:auto;font-size:1.3rem;color:var(--lagoon)}
 .hint b{color:var(--lagoon)}
 .li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.li:first-of-type{border-top:0}
 .li .t{flex:1;min-width:0}.li .t b{display:block}.li .t small{color:var(--mute)}
@@ -121,14 +123,22 @@ var past=[
  {id:"v1",date:"Jun 20, 2026",season:"Summer Visit",items:["Smoke and CO detector checks","Furnace filter changed","Water softener salt topped off","Fridge water filter changed","Dryer vent cleaning","Whole-Home Mold and Moisture Scan"],note:"No issues found. Dryer vent airflow improved after cleaning."},
  {id:"v0",date:"Apr 15, 2026",season:"Spring Visit",items:["Spring AC tune-up","Water heater flush","Gutter and downspout cleaning","Irrigation start-up","Smoke and CO detector checks","Whole-Home Mold and Moisture Scan"],note:"First visit. Baseline readings and equipment photos saved to your Home Record."}];
 var eq=[["furnace","Gas Furnace","Installed 2014 · 12 yrs","ok","Tuned Sep 2026"],["ac","Central AC","Installed 2014 · 12 yrs","ok","Tuned Apr 2026"],["waterheater","Tank Water Heater, 50 gal","Installed 2019 · 7 yrs","ok","Flushed Apr 2026"],["meter","Water Softener","Installed 2021 · 5 yrs","ok","Salt topped off Sep 2026"],["detector","Smoke and CO Detectors (6)","Replaced 2022 · 4 yrs","ok","Checked Sep 2026"],["dryer","Dryer Vent","","ok","Cleaned Jun 2026"]];
-var tabs=[["home","house","Home"],["visits","clipboard","Visits"],["record","doc","Record"],["plan","tag","Plan"],["refer","gift","Refer"],["profile","user","Profile"]];
+/* Member Home Deck (Max, 19:44 ICT Oct 15): four tabs plus More (18); Refer and Profile live under More. */
+var tabs=[["home","house","Home"],["visits","clipboard","Visits"],["record","doc","Record"],["plan","tag","Plan"],["more","grid","More"]],MORE=["more","refer","profile"];
 $("#tabs").innerHTML=tabs.map(function(t){return '<button data-tab="'+t[0]+'">'+I(t[1],"sm")+'<span>'+t[2]+'</span></button>'}).join("");
 var V={};
-V.home=function(){return '<div class="lbl">Good evening</div><h1 class="hello">Hi, '+M.first+'</h1>'+
- '<div class="card plan"><div class="lbl">Your Plan</div><h2>'+T.label+' · '+T.tagline+'</h2><div>'+T.visits+' seasonal visits a year</div><div class="row"><span><b>Member since</b><br>'+M.since+'</span><span><b>Next renewal</b><br>'+M.renew+'</span></div></div>'+
- '<div class="card"><div class="lbl">Next Visit</div><h3>Winter Visit</h3><div style="display:flex;gap:12px;align-items:center">'+I("clock")+'<div><b>Dec 8 to Dec 12, 2026</b><br><small class="note">We confirm the exact day and arrival window ahead of time. A licensed Smart Upkeep tech will visit.</small></div></div></div>'+
+/* Member Home Deck picks (Max 19:44 ICT Oct 15): greeting is time of day plus name, from the member's own device local time (12);
+   plan card first (17) as a slim line (02), no badge (15); next visit shows the date window (06) with no tech line (04);
+   three icon tiles, Request a Visit first (09, 11, 16, 19); Did You Know stays on Home (14) as a general tip (08) in a plain white card (20); Share kept (13). */
+function greet(){var h=new Date().getHours();return h<12?"Good Morning":h<18?"Good Afternoon":"Good Evening"}
+/* General tips reuse wording already on the site (app.js Did You Know); one per local day. */
+var TIPS=["A spring AC tune-up can catch a weak capacitor before the first heat wave.","A yearly flush cuts sediment and can help extend a tank's life.","Every visit ends with a written report saved to your Home Record."];
+V.home=function(){var d=new Date(),tip=TIPS[(d.getFullYear()*372+d.getMonth()*31+d.getDate())%TIPS.length];return '<h1 class="hello" id="greet">'+greet()+', '+M.first+'</h1>'+
+ '<div class="card plan-line"><span class="lbl">Your Plan</span><b>'+T.label+' · '+T.tagline+'</b><span class="note">'+T.visits+' visits a year · renews '+M.renew+'</span></div>'+
+ '<div class="card"><div class="lbl">Next Visit</div><h3>Winter Visit</h3><div style="display:flex;gap:12px;align-items:center">'+I("clock")+'<div><b>Dec 8 to Dec 12, 2026</b><br><small class="note">We confirm the exact day and arrival window ahead of time.</small></div></div></div>'+
  '<div class="qa"><button data-toast="Prototype: request a visit form would open here.">'+I("van")+'Request a Visit</button><button data-toast="Prototype: chat with the Smart Upkeep team would open here.">'+I("bell")+'Message Us</button><button data-toast="Prototype: camera would open to add a photo to your Home Record.">'+I("camera")+'Add a Photo</button></div>'+
- '<div class="card hint" style="margin-top:14px">'+I("meter","sm")+'<div><b>Did you know?</b> Your Fall Mold and Moisture Scan flagged one spot under the hall bath sink. We will recheck it on your Winter Visit.</div></div>'};
+ '<div class="card hint" style="margin-top:14px">'+I("bell","sm")+'<div><b>Did You Know?</b> '+esc(tip)+'</div></div>'};
+V.more=function(){return '<h2 class="sec">More</h2><div class="card"><button class="li" data-tab="refer">'+I("gift","sm")+'<div class="t"><b>Refer a Neighbor</b></div><span class="chev">›</span></button><button class="li" data-tab="profile">'+I("user","sm")+'<div class="t"><b>Profile</b></div><span class="chev">›</span></button></div>'};
 V.visits=function(){return '<h2 class="sec">Visits</h2><div class="card"><div class="lbl">Upcoming</div>'+
  '<div class="li">'+I("clock","sm")+'<div class="t"><b>Winter Visit</b><small>Dec 8 to Dec 12, 2026</small></div><span class="pill blue">Scheduled</span></div>'+
  '<div class="li">'+I("clock","sm")+'<div class="t"><b>Spring Visit</b><small>Window set in February</small></div><span class="pill warn">Planned</span></div></div>'+
@@ -167,7 +177,7 @@ V.profile=function(){function tg(k,l){return '<div class="li"><div class="t"><b>
  '<button class="btn o" id="signout">Sign Out</button>'};
 var cur="home";
 function show(tab,visit){cur=tab;$("#view").innerHTML=visit?report(visit):V[tab]();
- [].forEach.call(document.querySelectorAll("#tabs button"),function(b){b.classList.toggle("on",b.dataset.tab===tab)});window.scrollTo(0,0)}
+ [].forEach.call(document.querySelectorAll("#tabs button"),function(b){b.classList.toggle("on",b.dataset.tab===tab||(b.dataset.tab==="more"&&MORE.indexOf(tab)>-1))});window.scrollTo(0,0)}
 function go(s){[].forEach.call(document.querySelectorAll(".scr"),function(x){x.classList.toggle("on",x.id===s)});window.scrollTo(0,0)}
 function signin(){go("s-app");show("home");location.hash="home"}
 $("#lf").addEventListener("submit",function(e){e.preventDefault();this.reset();signin()});
