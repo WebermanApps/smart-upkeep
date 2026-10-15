@@ -61,7 +61,7 @@ window.SMART_UPKEEP_PRICING = {
      Built with ffmpeg from video/explainer-16x9.mp4 (V.1): 7.9s, 640x360 H.264, no audio, faststart.
      To swap to V.2 later, change these two paths only. */
   /* V5 (official, Oct 15): first 8s of the 48s cut, 640x360, no audio. Rollback to V4: video/teaser-v4-16x9.mp4 + assets/teaser-v4-poster.jpg */
-  teaser: { src: "video/teaser-v5-16x9.mp4?v=v5a", poster: "assets/teaser-v5-poster.jpg?v=v5a" },
+  teaser: { src: "video/teaser-v5-16x9.mp4?v=v5a", poster: "assets/teaser-v5-poster.jpg?v=v5a", srcV: "video/teaser-v5-9x16.mp4?v=v5b", posterV: "assets/teaser-v5-9x16-poster.jpg?v=v5b" }, /* Oct 15: 9:16 teaser on phones/portrait (<=768px or portrait), 16:9 on big screens */
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),

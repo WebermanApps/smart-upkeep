@@ -425,12 +425,14 @@
       '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hm-see="' + k + '">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
       '<button class="btn btn-primary mw-hover pc-see" type="button" data-hm-see="' + k + '">See What\'s Included</button></div>';
   }
+  /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
+  function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
-    var T = P.teaser || {}, poster = T.poster || "assets/poster-16x9.jpg";
+    var T = P.teaser || {}, port = suPortrait() && T.srcV, poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!T.src || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" width="640" height="360">';
-    return '<video class="hm-teaser" src="' + esc(T.src) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" width="640" height="360" aria-hidden="true" tabindex="-1"></video>';
+    if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
+    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1"></video>';
   }
   /* ---------- What We Take Care Of: Direction A (swipeable category carousel), What's Included row, Featured Service ---------- */
   function wwIco(n, cls) { return '<svg class="su-ico ' + (cls || "") + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (window.SUIconBody ? window.SUIconBody(n) : "") + '</svg>'; }
@@ -522,7 +524,7 @@
     }
     return '<div class="hm">' +
       '<section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:48</span></button>' +
+        '<button class="hm-thumb mw-hover' + (suPortrait() && (P.teaser || {}).srcV ? ' portrait' : '') + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:48</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="hm-lead">Catch small problems before they&rsquo;re big ones.</p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? resumeCard() : '') + '</div>' +
@@ -1505,12 +1507,9 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return "video/explainer-v5-9x16.mp4?v=v5b"; } /* Max Oct 15: main video back to vertical 9:16 (centred frame on desktop, like V4). 16:9 file kept: video/explainer-v5-16x9.mp4 */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
-  /* Browsers block unmuted autoplay, so the video starts muted with a big Tap for Sound button (Funnel Deck note, Oct 14). */
-  var tfs = document.createElement("button"); tfs.type = "button"; tfs.id = "tapSound"; tfs.className = "tap-sound mw-hover"; tfs.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="#171717"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a8.5 8.5 0 0 1 0 13" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round"/></svg><span>Tap for Sound</span>';
-  vid.parentNode.appendChild(tfs);
-  function syncTfs() { tfs.hidden = !vid.muted; }
-  tfs.addEventListener("click", function (e) { e.stopPropagation(); vid.muted = false; unmute.textContent = "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
+  function vSrc() { return suPortrait() ? "video/explainer-v5-9x16.mp4?v=v5b" : "video/explainer-v5-16x9.mp4?v=v5b"; } /* Max Oct 15 19:03: 9:16 on phones/narrow/portrait, 16:9 on big screens; player shaped by .portrait */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
+  /* Browsers block unmuted autoplay, so the video starts muted (speaker button + Sound arrow in video-pause.js). */
+  function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + saffron arrow live in video-pause.js */
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
   function openVideo(userAsked) {
     var src = vSrc();

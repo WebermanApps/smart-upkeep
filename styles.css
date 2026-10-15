@@ -399,6 +399,7 @@ body.on-home .foot{padding-bottom:8.5rem}
 .hm-results button:hover{background:var(--mw-cream)}
 .hm-hero{display:grid;gap:1rem;background:#fff;border:1px solid var(--mw-border);padding:1rem;margin-top:.4rem}
 .hm-thumb{position:relative;display:block;padding:0;border:0;background:#f5f0ea;cursor:pointer;aspect-ratio:16/9;overflow:hidden}
+.hm-thumb.portrait{aspect-ratio:9/16}
 .hm-thumb img,.hm-thumb video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
 .hm-expand{position:absolute;left:.5rem;bottom:.5rem;width:1.9rem;height:1.9rem;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.92);border-radius:50%}
 .hm-expand svg{width:.9rem;height:.9rem}
@@ -1069,7 +1070,7 @@ body.on-qf main{padding-bottom:0}
 /* Oct 15 deck picks */
 .modal-inner{position:relative}
 .tap-sound{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:6;display:flex;align-items:center;gap:.5rem;min-height:56px;padding:0 1.3rem;border-radius:999px;border:0;background:#D4A017;color:#171717;font:600 1.1rem Hind,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer}
-.tap-sound[hidden]{display:none}
+.tap-sound,.tap-sound[hidden]{display:none}
 .hm-lead{margin:.2rem 0 .3rem;font-weight:600}
 .mh-pic{border-radius:12px;overflow:hidden;aspect-ratio:2/1;background:#EEF2E8}
 @media(min-width:760px){.tiers.n3{grid-template-columns:repeat(3,1fr)}}
