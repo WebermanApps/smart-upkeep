@@ -40,6 +40,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hint{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:.92rem}
 .plan-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:10px 14px;border-left:4px solid var(--saffron)}.plan-line b{font-family:"Khand",sans-serif;font-size:1.25rem}.plan-line .note{flex-basis:100%}
 .chev{margin-left:auto;font-size:1.3rem;color:var(--lagoon)}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;display:inline-block;vertical-align:middle}.dot.ok{background:var(--jungle)}.dot.warn{background:var(--saffron)}.dot.blue{background:var(--lagoon)}
+.dot-key{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 2px}.dot-key .dot{width:10px;height:10px;margin-left:6px}
+.card:has(>.see-all[open])>ul.chk{display:none}
+.see-all summary{list-style:none;padding:6px 0}.see-all summary::-webkit-details-marker{display:none}.see-all[open] summary{display:none}
+.add-btn{flex:none;margin-left:8px;min-height:36px;padding:0 14px;border:2px solid var(--saffron);background:var(--saffron);border-radius:999px;font-weight:600;font-size:.85rem}
 .hint b{color:var(--lagoon)}
 .li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.li:first-of-type{border-top:0}
 .li .t{flex:1;min-width:0}.li .t b{display:block}.li .t small{color:var(--mute)}
@@ -138,11 +143,15 @@ V.home=function(){var d=new Date(),tip=TIPS[(d.getFullYear()*372+d.getMonth()*31
  '<div class="card"><div class="lbl">Next Visit</div><h3>Winter Visit</h3><div style="display:flex;gap:12px;align-items:center">'+I("clock")+'<div><b>Dec 8 to Dec 12, 2026</b><br><small class="note">We confirm the exact day and arrival window ahead of time.</small></div></div></div>'+
  '<div class="qa"><button data-toast="Prototype: request a visit form would open here.">'+I("van")+'Request a Visit</button><button data-toast="Prototype: chat with the Smart Upkeep team would open here.">'+I("bell")+'Message Us</button><button data-toast="Prototype: camera would open to add a photo to your Home Record.">'+I("camera")+'Add a Photo</button></div>'+
  '<div class="card hint" style="margin-top:14px">'+I("bell","sm")+'<div><b>Did You Know?</b> '+esc(tip)+'</div></div>'};
-V.more=function(){return '<h2 class="sec">More</h2><div class="card"><button class="li" data-tab="refer">'+I("gift","sm")+'<div class="t"><b>Refer a Neighbor</b></div><span class="chev">›</span></button><button class="li" data-tab="profile">'+I("user","sm")+'<div class="t"><b>Profile</b></div><span class="chev">›</span></button></div>'};
+V.more=function(){return '<h2 class="sec">More</h2><div class="card"><button class="li" data-tab="profile">'+I("user","sm")+'<div class="t"><b>Profile</b><small>Contact, notifications and Refer a Neighbor</small></div><span class="chev">›</span></button></div>'};
+/* Member Tools Deck (Max 19:53 ICT Oct 15): two cards, upcoming and past (18); upcoming note shown (06); status as coloured dots with a key (08). */
+function dot(c,l){return '<span class="dot '+c+'" role="img" aria-label="'+l+'" title="'+l+'"></span>'}
 V.visits=function(){return '<h2 class="sec">Visits</h2><div class="card"><div class="lbl">Upcoming</div>'+
- '<div class="li">'+I("clock","sm")+'<div class="t"><b>Winter Visit</b><small>Dec 8 to Dec 12, 2026</small></div><span class="pill blue">Scheduled</span></div>'+
- '<div class="li">'+I("clock","sm")+'<div class="t"><b>Spring Visit</b><small>Window set in February</small></div><span class="pill warn">Planned</span></div></div>'+
- '<div class="card"><div class="lbl">Past Visits · tap for report</div>'+past.map(function(v){return '<button class="li" data-visit="'+v.id+'">'+I("clipboard","sm")+'<div class="t"><b>'+v.season+'</b><small>'+v.date+' · Written report</small></div><span class="pill ok">Done</span></button>'}).join("")+'</div>'};
+ '<div class="li">'+I("clock","sm")+'<div class="t"><b>Winter Visit</b><small>Dec 8 to Dec 12, 2026</small></div>'+dot("blue","Scheduled")+'</div>'+
+ '<div class="li">'+I("clock","sm")+'<div class="t"><b>Spring Visit</b><small>Window set in February</small></div>'+dot("warn","Planned")+'</div>'+
+ '<p class="note" style="margin:8px 0 0">We confirm your visit day and arrival window ahead of time.</p></div>'+
+ '<div class="card"><div class="lbl">Past Visits · tap for report</div>'+past.map(function(v){return '<button class="li" data-visit="'+v.id+'">'+I("clipboard","sm")+'<div class="t"><b>'+v.season+'</b><small>'+v.date+' · Written report</small></div>'+dot("ok","Done")+'</button>'}).join("")+'</div>'+
+ '<div class="dot-key note">'+dot("blue","Scheduled")+' Scheduled '+dot("warn","Planned")+' Planned '+dot("ok","Done")+' Done</div>'};
 function report(id){var v=past.filter(function(x){return x.id===id})[0];return '<button class="back" data-tab="visits">‹ Visits</button><h2 class="sec">'+v.season+' Report</h2><div class="note">'+v.date+' · Licensed Smart Upkeep tech</div>'+
  '<div class="card"><div class="lbl">Checklist</div><ul class="chk">'+v.items.map(function(i){return '<li>'+esc(i)+'</li>'}).join("")+'</ul></div>'+
  '<div class="card"><div class="lbl">Tech Notes</div><p style="margin:6px 0 0">'+esc(v.note)+'</p></div>'+
@@ -153,27 +162,32 @@ V.record=function(){var pills=[["eq","Appliances"],["scan","Moisture Scan"],["re
  var sec={eq:'<div class="rec-list">'+eq.map(function(e){return '<details class="card fold"><summary class="li">'+'<span class="pic">'+I(e[0],"sm")+'</span><div class="t"><b>'+e[1]+'</b><small>'+e[4]+'</small></div><span class="chev" aria-hidden="true">›</span></summary><div class="fold-b">'+(e[2]?'<div><b>Installed</b> '+e[2]+'</div>':'')+'<div><b>Last Service</b> '+e[4]+'</div></div></details>'}).join("")+'</div>'+
   '<div class="warr-banner" role="note">'+I("shield","sm")+'<div><b>Warranty Claims</b><br>Your Maintenance Proof Pack is a downloadable, dated visit record for warranty claims.</div></div>',
  scan:'<div class="card"><div class="lbl">Mold and Moisture Scan · Sep 18, 2026</div>'+
- [["Ceilings under bathrooms","Normal","ok"],["Windows","Normal","ok"],["Basement walls","Normal","ok"],["Under kitchen sink","Normal","ok"],["Under hall bath sink","Slightly damp, recheck","warn"]].map(function(r){return '<div class="li"><div class="t"><b>'+r[0]+'</b></div><span class="pill '+r[2]+'">'+r[1]+'</span></div>'}).join("")+
+ '<div class="li"><div class="t"><b>5 areas checked · 4 normal · 1 to recheck</b><small>Under hall bath sink: slightly damp, recheck next visit</small></div><span class="pill warn">Recheck</span></div>'+
  '<p class="note">Pinless moisture meter and thermal camera readings, with photos. Flags damp spots where mold can grow. Not a lab mold test.</p></div>',
  recall:'<div class="card"><div class="lbl">Recall Monitoring</div><div class="li">'+I("shield","sm")+'<div class="t"><b>6 items monitored</b><small>No open recalls · last checked Oct 14, 2026</small></div><span class="pill ok">Clear</span></div></div>',
- proof:'<div class="card"><h3>Maintenance Proof Pack</h3><p class="note" style="margin:0 0 10px">Downloadable visit record for warranty claims. Your Home Record transfers when you sell.</p><button class="btn" data-toast="Prototype: the Proof Pack PDF would download here.">'+I("doc","sm")+'Download Proof Pack</button></div>'};
+ proof:'<div class="card"><h3>Maintenance Proof Pack</h3><p class="note" style="margin:0 0 10px">Downloadable visit record for warranty claims. Your Home Record transfers when you sell.</p><button class="btn" data-toast="Prototype: the Proof Pack PDF would download here.">'+I("doc","sm")+'Download Proof Pack</button><button class="btn o" style="margin-top:8px" data-sharelink="proof">Share Link</button></div>'};
  return '<div class="lbl" style="margin-top:10px">Home Record · '+M.addr+'</div><h2 class="sec" style="margin-top:2px">Your Appliances</h2>'+
  '<div class="pills" role="tablist">'+pills.map(function(x){return '<button role="tab" aria-selected="'+(recTab===x[0])+'" class="pl'+(recTab===x[0]?' on':'')+'" data-rec="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'+sec[recTab]};
-V.plan=function(){var ad=P.addons.filter(function(a){return["windows","chimney","radon","ducts"].indexOf(a.id)>=0});
+/* Member Tools Deck: What's Included as top items plus See All with the full checklist (01); what Complete adds (03, from pricing-config keyPoints, no price shown); add-ons price plus Add button (16). Payment card row left as is (05 skipped). */
+V.plan=function(){var ad=P.addons.filter(function(a){return["windows","chimney","radon","ducts"].indexOf(a.id)>=0}),C=P.tiers.platinum,cAdds=C.keyPoints.filter(function(k){return!/^Everything|^And More/.test(k)});
  var w=W.twoYear;return '<h2 class="sec">Plan &amp; Billing</h2><div class="card plan"><div class="lbl">Current Plan</div><h2>'+T.label+'</h2><div>'+T.tagline+' · '+M.term+'</div></div>'+
- '<div class="card"><div class="lbl">What\u2019s Included</div><ul class="chk">'+T.features.map(function(f){return '<li>'+esc(f)+'</li>'}).join("")+'</ul></div>'+
+ '<div class="card"><div class="lbl">What\u2019s Included</div><ul class="chk">'+T.features.slice(0,4).map(function(f){return '<li>'+esc(f)+'</li>'}).join("")+'</ul>'+
+ '<details class="see-all"><summary class="link">See All ('+T.features.length+')</summary><ul class="chk">'+T.features.map(function(f){return '<li>'+esc(f)+'</li>'}).join("")+'</ul></details></div>'+
+ '<div class="card"><div class="lbl">Upgrade</div><h3>What '+C.label+' Adds</h3><ul class="chk">'+cAdds.map(function(k){return '<li>'+esc(k)+'</li>'}).join("")+'<li>'+C.visits+' visits a year</li></ul><button class="btn o" data-toast="Prototype: we would reach out about moving to '+C.label+'.">Ask About '+C.label+'</button></div>'+
  '<div class="card"><div class="lbl">Welcome Offer</div><h3>'+w.freeMonths+' Free Months</h3><p class="note" style="margin:0">'+esc(w.label)+'. Your '+w.freeMonths+' free months are added after your '+w.payMonths+' paid months.</p></div>'+
- '<div class="card"><div class="lbl">Add-Ons</div>'+ad.map(function(a){return '<div class="li"><div class="t"><b>'+esc(a.label)+'</b><small>'+esc(a.desc)+'</small></div><b style="color:var(--lagoon);white-space:nowrap">+$'+Math.round(a.annual/12)+'/month</b></div>'}).join("")+'</div>'+
+ '<div class="card"><div class="lbl">Add-Ons</div>'+ad.map(function(a){return '<div class="li"><div class="t"><b>'+esc(a.label)+'</b><small>'+esc(a.desc)+'</small></div><b style="color:var(--lagoon);white-space:nowrap">+$'+Math.round(a.annual/12)+'/month</b><button class="add-btn" data-toast="Prototype: '+esc(a.label)+' would be added to your plan.">Add</button></div>'}).join("")+'</div>'+
  '<div class="card"><div class="lbl">Payment Method</div><div class="li"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#1f1b17" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><div class="t"><b>Card ending 0000</b><small>Sample card · exp 00/00</small></div><button class="link" data-toast="Prototype: update payment method.">Edit</button></div></div>'};
-V.refer=function(){return '<h2 class="sec">Refer a Neighbor</h2><div class="card"><h3>'+esc(R.label)+'</h3><p class="note" style="margin:0">No limit on referrals. Free months are credited after your neighbor\u2019s first payment clears.</p><div class="ref">smartupkeep.ai/r/SAMPLE-JORDAN</div><button class="btn" data-copy="1">Copy Share Link</button></div>'+
- '<div class="card"><div class="lbl">Credits Earned</div><div style="display:flex;gap:16px;align-items:center;margin-top:6px"><div class="big">1</div><div>free month credited</div></div>'+
+/* Member Tools Deck: Refer a Neighbor is a card inside Profile (12), shares with the phone share sheet (07), keeps big count and neighbor list (04). */
+function referCard(){return '<div class="card" id="referCard"><div class="lbl">Refer a Neighbor</div><h3>'+esc(R.label)+'</h3><p class="note" style="margin:0">No limit on referrals. Free months are credited after your neighbor\u2019s first payment clears.</p><div class="ref">smartupkeep.ai/r/SAMPLE-JORDAN</div><button class="btn" data-sharelink="refer">Share Link</button>'+
+ '<div class="lbl" style="margin-top:14px">Credits Earned</div><div style="display:flex;gap:16px;align-items:center;margin-top:6px"><div class="big">1</div><div>free month credited</div></div>'+
  '<div class="li" style="margin-top:8px"><div class="t"><b>Neighbor A.</b><small>First payment cleared · Sep 2026</small></div><span class="pill ok">+1 month</span></div>'+
- '<div class="li"><div class="t"><b>Neighbor B.</b><small>Signed up · waiting on first payment</small></div><span class="pill warn">Pending</span></div></div>'};
+ '<div class="li"><div class="t"><b>Neighbor B.</b><small>Signed up · waiting on first payment</small></div><span class="pill warn">Pending</span></div></div>'}
+V.refer=function(){return '<h2 class="sec">Refer a Neighbor</h2>'+referCard()};
 var notif={a:true,b:true,c:false};
 V.profile=function(){function tg(k,l){return '<div class="li"><div class="t"><b>'+l+'</b></div><button class="toggle'+(notif[k]?' on':'')+'" data-tg="'+k+'" aria-label="'+l+'" aria-pressed="'+notif[k]+'"></button></div>'}
  return '<h2 class="sec">Profile</h2><div class="card"><div class="lbl">Home Address</div><p style="margin:4px 0 0">'+M.addr+'</p></div>'+
  '<div class="card"><div class="lbl">Contact</div><div class="li"><div class="t"><b>'+M.first+' '+M.last+'</b><small>'+M.email+'<br>'+M.phone+'</small></div><button class="link" data-toast="Prototype: edit contact info.">Edit</button></div></div>'+
- '<div class="card"><div class="lbl">Notifications</div>'+tg("a","Visit reminders")+tg("b","Visit reports ready")+tg("c","Tips and Did You Know")+'</div>'+
+ '<div class="card"><div class="lbl">Notifications</div>'+tg("a","Visit reminders")+tg("b","Visit reports ready")+tg("c","Tips and Did You Know")+'</div>'+referCard()+
  '<button class="btn o" id="signout">Sign Out</button>'};
 var cur="home";
 function show(tab,visit){cur=tab;$("#view").innerHTML=visit?report(visit):V[tab]();
@@ -188,6 +202,7 @@ document.addEventListener("click",function(e){var b=e.target.closest("button");i
  if(b.dataset.tab){show(b.dataset.tab);location.hash=b.dataset.tab;return}
  if(b.dataset.visit){show("visits",b.dataset.visit);return}
  if(b.dataset.tg){notif[b.dataset.tg]=!notif[b.dataset.tg];show("profile");return}
+ if(b.dataset.sharelink){var u=b.dataset.sharelink==="refer"?"https://smartupkeep.ai/r/SAMPLE-JORDAN":"https://smartupkeep.ai/proof/SAMPLE-JORDAN",d={title:"Smart Upkeep",url:u};if(navigator.share)navigator.share(d).catch(function(){});else(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Sample link copied")},function(){toast("Sample link: "+u)});return}
  if(b.dataset.copy){var u="https://smartupkeep.ai/r/SAMPLE-JORDAN";(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Sample link copied")},function(){toast("Sample link: "+u)});return}
  if(b.id==="signout"){location.hash="";go("s-login");return}
  if(b.id==="share"){var d={title:"Smart Upkeep Member App (Prototype)",url:location.origin+location.pathname};if(navigator.share)navigator.share(d).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(d.url).then(function(){toast("Link copied")},function(){toast(d.url)});else toast(d.url)}
