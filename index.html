@@ -1,57 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=1"><link rel="manifest" href="/manifest.webmanifest?v=1"><meta name="apple-mobile-web-app-title" content="Upkeep"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#FFFFFF">
-<meta charset="utf-8">
-<!-- HTTPS live (cert approved Oct 13 2026) -->
-<title>Smart Upkeep</title>
-<meta property="og:title" content="Smart Upkeep">
-<meta property="og:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta property="og:url" content="https://smartupkeep.ai/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Smart Upkeep">
-<meta property="og:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Smart Upkeep: Your Home, Taken Care Of. Starting at $99/Month.">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Smart Upkeep">
-<meta name="twitter:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta name="twitter:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
-<script src="pricing-config.js?v=c30"></script><script src="gate.js?v=gate8"></script>
-<noscript><style>body>*{display:none!important}</style></noscript>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light only">
-<meta name="robots" content="noindex,nofollow">
-<meta name="description" content="Smart Upkeep - Private Beta">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/brand-tokens.css?v=v2b">
-<link rel="stylesheet" href="styles.css?v=h15">
-</head>
-<body>
-<header class="topbar"><span class="dash-back" aria-hidden="true"></span>
-  <a href="#" class="brand mw-hover" id="logoHome" aria-label="Smart Upkeep home"><img src="assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep"></a>
-  <span class="top-share"><span id="shareMsg" class="share-msg" role="status"></span><button id="shareBtn" class="btn btn-outline btn-share mw-hover" type="button">Share</button></span>
-</header>
-<main id="app" tabindex="-1"></main>
-<footer class="foot">
-</footer>
-
-<div id="videoModal" class="modal" role="dialog" aria-modal="true" aria-label="Smart Upkeep explainer video" hidden>
-  <div class="modal-inner">
-    <button id="videoClose" class="modal-x mw-hover" type="button" aria-label="Close video">&times;</button>
-    <video id="explainer" playsinline muted preload="metadata"></video>
-    <p id="videoStartAt" class="start-at video-start-at">Membership Starting at $99/Month</p>
-    <div class="modal-actions">
-      <button id="unmuteBtn" class="btn btn-outline mw-hover" type="button">Unmute</button>
-      <button id="skipBtn" class="btn btn-primary mw-hover" type="button">Skip Video</button>
-    </div>
-  </div>
-</div>
-<script src="icons.js?v=c7"></script>
-<script src="app.js?v=h20"></script>
-<script src="video-pause.js?v=vp4"></script>
-<script src="ptr.js" defer></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#FAF6EE">
+<title>Smart Upkeep</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="favicon.ico" sizes="any"><link rel="manifest" href="manifest.webmanifest">
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#FAF6EE;color:#1a1a1a;font-family:Hind,-apple-system,system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px}
+.card{width:100%;max-width:360px;background:#fff;border:1px solid #e6dfd1;padding:28px 22px}h1{font-size:28px;margin:0 0 4px;font-weight:700}p{margin:0 0 20px;color:#5c5c5c;font-size:15px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}input[type=password]{width:100%;font-size:16px;min-height:48px;padding:10px 12px;border:1px solid #cfc6b4;background:#fffdf8;border-radius:0}
+.rm{display:flex;align-items:center;gap:10px;margin:14px 0 18px;font-size:15px;min-height:44px}.rm input{width:20px;height:20px}
+button{width:100%;min-height:48px;font-size:16px;font-weight:600;background:#1a1a1a;color:#fff;border:0;border-radius:0;cursor:pointer}
+#err{color:#a12a1b;font-size:14px;min-height:20px;margin:10px 0 0}footer{text-align:center;font-size:13px;color:#737373;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}</style></head>
+<body><main><form class="card" id="f" hidden><h1>Smart Upkeep</h1><p>Enter the password to open.</p>
+<label for="p">Password</label><input id="p" type="password" autocomplete="current-password" required autofocus enterkeyhint="go">
+<label class="rm"><input type="checkbox" id="r" checked> Remember this device</label><button type="submit">Open</button><div id="err" role="alert"></div></form></main>
+<footer>Built by Max Weberman</footer>
+<script>(()=>{const D={"s": "h1YeWA5S7tHNNgfrOtWNBw==", "i": "RHijkvAgenP6uX0Y", "c": "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", "n": 600000},K='mwPagesKey',u=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),f=document.getElementById('f');
+async function dec(raw){const k=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u(D.i)},k,u(D.c)))}
+function show(t){document.open();document.write(t);document.close()}
+addEventListener('DOMContentLoaded',async()=>{const s=localStorage.getItem(K);if(s){try{show(await dec(u(s)));return}catch(e){localStorage.removeItem(K)}}f.hidden=false;document.getElementById('p').focus()});
+f.onsubmit=async e=>{e.preventDefault();const er=document.getElementById('err');er.textContent='';try{const b=await crypto.subtle.importKey('raw',new TextEncoder().encode(document.getElementById('p').value),'PBKDF2',false,['deriveBits']);
+const raw=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:u(D.s),iterations:D.n,hash:'SHA-256'},b,256));const t=await dec(raw);
+if(document.getElementById('r').checked)localStorage.setItem(K,btoa(String.fromCharCode(...raw)));show(t)}catch(x){er.textContent='Wrong password. Try again.'}}})()</script></body></html>

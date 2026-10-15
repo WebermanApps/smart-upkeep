@@ -1,94 +1,20 @@
-<!doctype html>
-<html lang="en">
-<head>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=1"><link rel="manifest" href="/manifest.webmanifest?v=1"><meta name="apple-mobile-web-app-title" content="Upkeep"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#FFFFFF">
-<meta charset="utf-8">
-<!-- HTTPS live (cert approved Oct 13 2026) -->
-<title>Lawn Mowing Quote · Smart Upkeep</title>
-<meta property="og:title" content="Smart Upkeep">
-<meta property="og:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta property="og:url" content="https://smartupkeep.ai/lawn/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Smart Upkeep">
-<meta property="og:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Smart Upkeep: Your Home, Taken Care Of. Starting at $99/Month.">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Smart Upkeep">
-<meta name="twitter:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
-<meta name="twitter:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
-<script src="../pricing-config.js?v=c30"></script><script src="../gate.js?v=gate8"></script>
-<noscript><style>body>*{display:none!important}</style></noscript>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light only">
-<meta name="robots" content="noindex,nofollow">
-<meta name="description" content="Measure Your Lawn From Above And Get An Instant Mowing Quote">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css">
-<link rel="stylesheet" href="lawn.css?v=3">
-</head>
-<body>
-<div style="display:flex;justify-content:flex-start"><span style="flex:1"></span><a class="home-pill mw-hover" href="../#home" aria-label="Home" style="margin:8px 8px 0 0;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;min-width:44px;padding:0 12px;border:1px solid #d9d9d9;border-radius:999px;background:#fff;color:#171717;text-decoration:none;font:600 14px/1 sans-serif;white-space:nowrap;flex:none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2.2" stroke-linejoin="round"/></svg><span>Home</span></a></div><header class="top">
-  <a href="../" class="brand mw-hover" aria-label="Smart Upkeep home"><img src="../assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep"></a>
-</header>
-<main>
-  <section class="hero">
-    <svg class="illo" viewBox="0 0 120 60" aria-hidden="true"><path d="M2 56h116" stroke="#0B6E4F" stroke-width="2"/><g stroke="#0B6E4F" stroke-width="2" fill="none" stroke-linecap="round"><path d="M8 56l-2-9M12 56l1-11M16 56l-3-8M100 56l-2-10M105 56l1-8M110 56l3-11M114 56l-1-7"/></g><g fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M34 40h40l6-10H40z" fill="#C1502E"/><path d="M80 30l14-22"/><path d="M90 8h8"/><circle cx="42" cy="46" r="6" fill="#FAF3EB"/><circle cx="72" cy="46" r="6" fill="#FAF3EB"/><path d="M48 30v-5h14v5"/></g></svg>
-    <h1>Lawn Mowing Quote</h1>
-    <form id="addrForm" class="addr" autocomplete="off">
-      <label class="sr" for="addr">Home Address</label>
-      <input id="addr" name="addr" type="text" inputmode="text" placeholder="Enter Your Home Address" required>
-      <button class="btn btn-primary mw-hover" type="submit">Find My Lawn</button>
-    </form>
-    <p id="addrMsg" class="msg" role="status"></p>
-  </section>
-
-  <section id="measure" class="measure" hidden>
-    <div class="steps"><span>1. Fit</span><span>2. Skip</span><span>3. Schedule</span></div>
-    <div class="mapwrap">
-      <div id="map" aria-label="Satellite view of your property"></div>
-      <div class="maptag" id="mapTag">Adjust To Fit Your Lawn</div>
-    </div>
-    <div class="tools" role="toolbar" aria-label="Lawn drawing tools">
-      <button class="tool mw-hover" data-add="lawn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M6 21l-1-6M9 21l1-8M13 21l-1-5M17 21l1-7M20 21l-1-4" stroke="#0B6E4F" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Add Lawn</button>
-      <button class="tool mw-hover" data-add="drive" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3L4 21M16 3l4 18M12 5v3M12 11v3M12 17v3" stroke="#05668D" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Driveway</button>
-      <button class="tool mw-hover" data-add="house" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7M5 10v10h14V10" stroke="#C1502E" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>Skip Area</button>
-      <button class="tool mw-hover" id="resetBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" stroke="#0a0a0a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>Start Over</button>
-    </div>
-    <p class="hint" id="hint">Drag Corners To Fit</p>
-    <ul id="areas" class="areas"></ul>
-
-    <div class="quote">
-      <div class="sqft"><span class="lbl">Mowable Lawn</span><strong id="sqft">0</strong><span class="unit">Sq Ft</span></div>
-      <div class="freq" role="radiogroup" aria-label="Schedule">
-        <button class="seg mw-hover on" data-f="weekly" role="radio" aria-checked="true" type="button">Weekly <small>Apr–Oct</small></button>
-        <button class="seg mw-hover" data-f="biweekly" role="radio" aria-checked="false" type="button">Every 2 Weeks <small>Apr–Oct</small></button>
-        <button class="seg mw-hover" data-f="once" role="radio" aria-checked="false" type="button">One-Time <small>Single Cut</small></button>
-      </div>
-      <div class="price">
-        <div><span id="perCut" class="big">$0</span><span class="per">/ Cut</span></div>
-        <p id="priceNote" class="pnote"></p>
-        <details class="warn-drop lawn-draft"><summary class="draft-sum">1 Warning · Draft Pricing</summary><div class="warn-body">Prices are draft and pending approval. Same rate for members and non-members.</div></details>
-        <span class="same">Same Price For Members</span>
-      </div>
-      <p class="incl">Mow, Trim, Blow</p>
-      <button id="addPlan" class="btn btn-primary wide mw-hover" type="button">Add To My Plan</button>
-      <p id="planMsg" class="msg" role="status"></p>
-    </div>
-  </section>
-</main>
-<footer class="foot">
-</footer>
-<div class="sharebar"><button id="shareBtn" class="btn btn-outline mw-hover" type="button">Share</button><span id="shareMsg" class="msg" role="status"></span></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.1.0/turf.min.js"></script>
-<script src="lawn-pricing.js?v=2"></script>
-<script src="lawn.js?v=2"></script>
-<script src="../ptr.js" defer></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#FAF6EE">
+<title>Lawn Mowing Quote · Smart Upkeep</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="favicon.ico" sizes="any"><link rel="manifest" href="manifest.webmanifest">
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#FAF6EE;color:#1a1a1a;font-family:Hind,-apple-system,system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px}
+.card{width:100%;max-width:360px;background:#fff;border:1px solid #e6dfd1;padding:28px 22px}h1{font-size:28px;margin:0 0 4px;font-weight:700}p{margin:0 0 20px;color:#5c5c5c;font-size:15px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}input[type=password]{width:100%;font-size:16px;min-height:48px;padding:10px 12px;border:1px solid #cfc6b4;background:#fffdf8;border-radius:0}
+.rm{display:flex;align-items:center;gap:10px;margin:14px 0 18px;font-size:15px;min-height:44px}.rm input{width:20px;height:20px}
+button{width:100%;min-height:48px;font-size:16px;font-weight:600;background:#1a1a1a;color:#fff;border:0;border-radius:0;cursor:pointer}
+#err{color:#a12a1b;font-size:14px;min-height:20px;margin:10px 0 0}footer{text-align:center;font-size:13px;color:#737373;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}</style></head>
+<body><main><form class="card" id="f" hidden><h1>Lawn Mowing Quote · Smart Upkeep</h1><p>Enter the password to open.</p>
+<label for="p">Password</label><input id="p" type="password" autocomplete="current-password" required autofocus enterkeyhint="go">
+<label class="rm"><input type="checkbox" id="r" checked> Remember this device</label><button type="submit">Open</button><div id="err" role="alert"></div></form></main>
+<footer>Built by Max Weberman</footer>
+<script>(()=>{const D={"s": "h1YeWA5S7tHNNgfrOtWNBw==", "i": "9+9mNW1TmL3Lsczt", "c": "pzyJS0tzlgYDzpYg8UdKjZzZzM3Mbjwea/ORtyiL3iW7LE1rA58zaHXyztxsvuYcMXkMnUdF6byTwQfIC6rjEZLmItKXd0gJ0YzKn6KSZrHipdnoD6REtc55UuX8zvMeheAP1Fylc7idgM2hmuCaCQMGlxaEKsiEywhRBMXlgNVr9MVLpvERQXEnbNxPOiA/02oHmsqrSOIiAUCtrYw4B03S8fxJSgeUM+TNrrG84bsYDiusqZNm6b7b1USCz8gIUVsRM36iFDDJHcTyxLIcXMXF1liWXNSpyD63CNPUB21USGe37PFW7IlUMSwUC8kbuYunxKH2kz52bN7Lw8Er8ZFcnjW1MvwVf3sudV8l+ijt/2mhLxmsLafFb740VeXb99u7i5t+pj5CwzbSbjS5oPMfjPtmeko8kC34OcYIYW1NQCY0wMG40XgZxlE8/7BbtS48ljWBghSAkXtkVxLk3pY4f6v6yGvh+fAi7eobTBhw/iFIJzky73tkufzxphWK07MIquF9tBcAph65n50ihiN1i67sWjqWlmoaersqoPkbCblvolYHXvg8bswZaflTiUvjXcYczhYrYfzz1i3LdqJQA9AxHpOGDZUYXNBB9+o4BxCacr/RACyq3BgWrhtgRdjvCfXPKYcUuHdZs5s3xA+GSMe4g+Y5d6tOrFVFf+H7oXNAz7/t/SoUdUkwnH/3HuHKTnib3iwsxqtvchLE+5Z84XDIgbZw9PRJ/ino4mNlb2Ks76FNciowC+3YOvAWW6KdMi6M01JHaJ0eAbzp3zNRgB0BTax/eFIVsvGU1SosiGlVvfAVnLbjKfk9XH6U4u4R7IMHsAy4YDFXwZAdjoXg7xzWq6MIC5te4r3rVTCkMPMKzZ9ROeOoDT61APhG7FRONfmsh8c9kPxAkKr2+eLSt7wu3ukGKmVwPX+FPZ2HBRQ5JXdFdpiJp455AJqba0E7/JkiKxhSTfpItedGwZylboI2lbIj7tFQ+E5wsSZbMMjYesGPZGTqjS6QxINmxSUJEDC6eyn9MsojrXmnoS7Xem9XZVHdiWvLft4w9aKkEp3w/uY2MFMcsvTs0NWKWviHvruwQ41wyzFLRznMHdzkcicmcdvVq3ZRmaCmqqlZaBXz3ghsX+bsm3QmEpMPqqDx5M/f/fcWB3o0IW66t4u0soQjGCOBcjlm4QkHbndoNNc5viFF53EbPZaGdIRgwSCFXru0xQKL+/uYm83G2FRy+Ih1Ae2Ls0qi+LQl3HMcmNZXSzhUHo8qKdyIwECiWFfWm632rZob++4hEj2qMqMohAFuTaP2XVtsqVZIGrm9Zku0NMy5sbxFvO40qZJyDgkP3ykDDJBxhh3wN8D0P7HR1v2LKEOfyvcNI49ihF9IAbdRJBfl/JHpZIyYtlORPz0fQG/vlunKui3S50GYNKqSZuYGXsOPqAAhk5TZ/hbVEfnJqfSM6X7thXojtXCTYK21cgGp3Z4ovqhCoRGIS5LWedVulRXbQGNzvBqGC5OfgRuAzEaC3ch2Mhh2AT7vQ3uSidRAluw9RbhPUBBfzUYrC7+GVli3i/Wtl1mLECMKnhxrxbjTxyoswSbppQQb/zm8sdAKDQm9FIPxbdOo7QTKPZB+3+VlVADwXibLXuZlY8+yz/hOX8awz4+xKLjvz3ikq2x5aUeVHMnYXeogpgS55kWdmmlfF1yMzLUmyyTcx7o9rrDqHaUpE1SNLfZX5j8venxWzuzY8lJTqcv73d1QrzS7AMnUMBWIBxJx0eDnmqWEVPUYMpPtLHL4nTVXpjzhgmiczxQ/DoDNO8enMKz46MzOrpxiMqjbC5sW9/iKAF3FaV+t96tNXHErKoAeHcpf1/FrQWmdreTuWvsEXJjsOsJ9PpENGIczo6pBcK5copeqi/xFVxR/1DP30khQCNQnvmMZpNLffxpf8jlp/uVP9f3M8aNFeOC2gEZt4hYzlqgzJsyTaUfol4SF5vAzPmlo2IndHsIqF9W5mMv81nWLQh65FIeimMwwIeVXmtst3Kjc+429oYHDd9/U+iifVT2Jb+c9/X8LPVLP7GUNspKFR52VrFdFED6WDpgeyhWLfghF6oWeMDEkEXcJ+xn47pl4KOOGuVGNmwX9aNtmkd3p5F0VRIiYQ4TtXdDBHkxWHyEcmKiulWVPcGKsp+CNNSArEuQEqXTc5rXfQXYzWvQ7Hf1c0hIPtQ9HPdOjxUh4A9WQ3gocYC8Ecfm1J8KA2b8cNzhp6pQyPyiRB/hNURk+F08KUfQSVnyMoQHV3az3JOyW0cF2d8JTeeE6FV0xY+1qPCLnDMHaaoZp5uLu5ZhwVauBsUzrtYd+8roT8daqUB5Pue2UEMGxP+vGoYwjeMW4658M7o49d9FSPzar/yZOn9R795LpigplKBOTO8i0tItSfG3ARWn/yLh+seIsPZqU/dqQTWt5A13P50CCQ5C+E1iOm2Xte3qj+91VFS92zZyaoF1t11MtE3QVZxuZk1qycJZwybllNIeKVFhQ9u3wOUgMo3O68JgyZR3il9NdeYnWublkXXdwx8XqClmxNKzm3QacO36iBitEvgV4MRMJAZ/+z73LkXX5r28215s3Nlv3RdScAPfW1K/8r6JtsaPVxaBC02VLTjGKWX7DujFI/qP89anXwsopsJdVOhoNmZmUuG1HZHe2wWBVeq+F+mQZ+hOHQgSUsXm10E2MgpXhSyTyZacZ8ChoRpAfjJRkbIUGvRwKmnHIJXnkoDjToyE32nyCOTM4F2icVPxejh5m8py0oCeuKJjZP6soW4JUitznmYeibu3E83mlN2hmmmbOfHQpFH1n0/Tcom2bssXSg++6Sqb9R2yG4AxzxUxMhCMSBs0hrWzpOjqz9MpzHiv4XUylyy1Ztfq5vdG+iH9VQ5ouo9KjVz6H2dYND+3/HvuS55C5kfeJIUiFinMkyuNOIioL0eFTcgLTH19PmxwhS7z5Qd9hHsxRJlTP0TZquugzkUna908m1tJ27SXkETqXhawzmj2MACmegT0Ccnb83ywEeoWphNIkGCobz8iFNnwYWhp9PYUV+xq+0RPdHshQ5b0JVI08YzUbp3B7D8lgP5wUnyVJjPdCkKMb5psCv08rUfxfDeBpVDVBORHFf7CBHm2Ob242Z+YafoLuizjMp5t8LB4xoSTiI30WiifTbzDLcPZBks+v2Fljz5TUH4Iu5W+3AQQdZbKHqEzvrG/fhWI3ChhVF7OMSDjj6h3zFnVm1gKRf9erf5bkhQTwMRKdKWugs6UvysW+s2x9CJlhDqBYQgYtvV5CWmdqwuUVlF/VzzozldG+rf+a5E95tNE9KGNOK/gs3TLUjOQ638p2dkvzzz6zNm7JBh6UrbpN+Hxz00dT0S0acvbzCFAINpil+WgkeZpXEXMIwQIkZ/Sm2LlxOZ8a1nb1rWvIodbVArvUGCdMzxiN8UqYDFC7CCL1V2W9rbTaI3aYXFDL/mypumK/YQtjOXAKNHDS0jb59ymAnvKuk+EDnucStk8D+BYQK46IszfjTp7255rlXxF1uCQVGht3bAO5gPfUlKP8QxVOXUrjkgQh2xO0Ytb4Bxv88xnP5SSnE0EupLc8inEPMQUP6O3MSE6pjHmw51wns242ZrJM50EliUrA5Bin8y/jL6UabnmNaA2hqeBWm6d8PJM0/c+1bKUN05TDS/DrsWAUX5wnew9D3pY7FKWddJ07xStyUOvD7vtiyQMOzfnkB6ongvfI7XlI9ul+NTv597KTnY1TaALf/0mtsPtTlEhE5cTJsvkTViGYVS5Fqn0QDZFk96Fpdblzd1qC+6sXyN1DMo+bnVV1caIdnheURPCRpkmQcxXAh00uq/cfm0XkQSKF12cfbGjZhkMPT9Q8o9+7Lk8rah2xqSNK0pRTSywN1YNEotep7h4j/oAxDRrtYWDYbUrcjf69wHk0IB4A+b7Nj5URQYxZs+yZNaTSp3fuNGjM5sFOi06QbtwypeeaYXsr9CaiX0aEQoPGwpjJhjUDFP6uRkQk5bf0Eme1IWxDR6nup/zSat5N8eWHEGFTAG2FD/mE27EqQcDbuxZA2y/ZSPfXiw40RUoOrlbWFD9cC6SRkgpdTUkElhcf05ZuYwMoCePqym5bNYL8ihwUQFB+Oiq8cuYq8h5TViKfNRHoBvBxnyC0snZaCgqMZG4KQxwngQri8v6ocZSpWGJXj3iXTH7R52n1djPQ0+om/rd1k1NzZhHQ7nw6i64oBrCOisJgFFlENV7WipHSeH+HLTd6AiV0gQu7aUKfcWdWBbaz+dwvcWWBfLPgtHXrESKMQlT6p78ei718F4v/9PhYZbCX1J+MKZ55qgZu5s6/FAUk9Q4DTreG4CHC/unSTNy+IioJkr6LYxcGvx5buq6W08SxBIF3+gSnCF5XLuDpO+GKoqZoHRD4AI6jYX/6BJtQKIKRZqa5Ek4H9UvAnpPzlBuVVQXzsMQNjurNfWP5vx8EB8oRXLRAQZe9oXATVu/yrIjt5XanlLUWlcaxJwayA6dOXqzLOI2+wPZEPYKeUcuu5UxOmTR2iln4IsP74fht2GHg/nr+SdQ+iTEcj0wgvs9Dd3H1TXoqww50p2Pkx25tiE77QmjcSlsg61vEoO+1YSOM/6jvMsT/LonMFKWc1zePz+pxrdh8S1/nrIE2fKN0OQ7otzjvUIUU/MY5jEQ5eBq8gAcR/qPYswUB5+p38TQPNTIpM1P1ccaMpgrNrEyr9mVT9MDq3GPgu+LObqCg3WG5bpgxc9xWDzdeow66rx5eVLlNll+6dE2Ahy2GT+t4OaRTwG2b0MCswh52wuj5eCpXJ5QCWgfkOaiLvdgkIsXSckm4+g3JmUPYJtyoTkKALsoe/Dv7G5WLHOABUNC8ZOyca7PEydI2IvXDwvGchD4oUw48et9HUPZ4G0hbSEW2FO7I33Xgo3AZaXXeJEZgZkZ/yDU/28LFLIC3kizqiV9pBSLwzr+cq5Fx8o15HulPzivsXsmu+tBV8IbJidLoYx7oUI0PhJYHf3TPq1DNeuxmcLqhmVAxXhVFNZ+AOXbmX4/TsXH2CiZXc48ozZTcwY/bubeUii/lrhs8rRWjopqMaCExwBeBQpPebxZ/051BrPBKORt4a0jHYHOCzsk4pmKht5VVsQLa8yg8BUktgrmfbuV0R1UDx9DknmAHs+hwkGv/yFQraz+8orHunEh0h9ztrmp8NxaqMQIZUc2nAqnxChcZrwiqqKfQf25V97GTGWhtFdie4tbjNRJIsj0tZ91gyn19MnilaV4NyFWWXJTJDy3NucGJjArlMUhgtZSUWDbQO9PTcaN2TUct6TymUVwCajUXIM3abEEh8Ali/uQxr/oZIm+CErtIRUAQZ/KLqjbNdUo1hNsLZwnVC53kyPkTnV7uI4KTE2SfaNO4bfdbAnEcXUZu8HP+36C8WeChp/3xzgmPiBfqnmdFS42of6WWewVwEAdADw775FDyf5Aep1MUqCVASIOJXA1z2V61fxxoEaVxPLvGO07YiiTrNDytyxjv4NSQAD0U83vTEReRBlIZ3zHQs5XI2xYxVf8NhG6mOO2TLL+UOitsTIm6uSmaTSf2hH9UwA2N6tm0pllmo2VWxJRqcNNnyalt5e1xna/ySG3nSWemwU4rh0XYN4S0orxP4bFBGHepLztxcGxHreJOTXJa9ZSfjkstiWykjv8yYqyy8dXGyRadmOzQnbFcjfnZnnjZlYniSdyYs8TId/RZTuvFCldIXPaqE0DIrkOuLTfL7yzXCFsw86WO7dreug8jwPfKHoE4JmCLvFUuR3P8St/k5HCe/iXL1QUqGN1Swazjqw/J+j+p90GJfp9wZTAk4fQYnDMLx3LmPxCS7ntH5oUrGkXtmLPFtCtxGaZi2thcC6IsPM/nEOUM1tWg2+IRKsItZT60pU1uTXUJUOMbvlQgH+S+J3YexW25cEW9dlO/tOJ5nlabLYyrs7mNLYJhTQ596MnHyuGTlXdUVe+DIAtj3QVZ3T7+zv+ZIQ8kbygGCbiIYIQbC4yJjeN1wE9nWQNkseScvjc+aezUFQQKZjoYvFUH5O7EFLjiyn9oSabORpwDRcse7cajhsbHdcuS50I6LoSW7flccy3roAm7nks+RhpHFrCERxvxpCwshWxXq7yRPi3lK5aKcMwhHNEOdtV6vEYwLVCMrkjI4nY66FX2vWN2dkttOrgI8oKQcmEyh7wTfBUz6O7ca9+cLWUdnUBLd+TVh7SuV+N7a2VKblZhzg+PC7rj/PU+GdXCokWVCoFBc2yz/xv4hknxS20gbk5pbOh8enFg9+TXlECT6z8vFwsPRgvaxCVtmg3f3lg6SnkTe5bmhfIXKCso55v2OnONiJXLZNpusfvgVMKGwGZhFr+ROO0ZK37gVlg0Pg3vq1G8zUJPeUuOJSExdyUh+6INAZiBsBYBvDopvcgTXwEWUsxEnrihaMjeve4xTtY/wRgcYySf1G4R1E8Hf9BII666oMnX2bT19LE3XD61ZXRanhIRKbf/pO4sSXGtHHlr6cWiphWPUEJ0iSe1nZ0wNILxGZDtF6mP98pBzeMQBUocoXMsJoHjcY8yzeTOdVuNZnjW5bVtmY6fbC29UkFow4EbtHtVmlaLg2Ne7p7QtAB/iS3M/J65tBB/b5Bp4V96WH+5uZG0MDhpTuF/+aSq14XlaMnEQPwvYpNb4/KQJ7e3jGL9wn7bXlIb8ODtbidsZ/0Rq7S+EpvPz3QeU1rhn3yOAXy82epQ3eC8zjLj0wESKoYQmfxtW0aLFjXDLaZ9l2o8CvtZse/Oy1hnwM2/nQJmUnVm/TlJ2dERJJO81c1FdZZnuL+XsWhA0boN38xcdcA4pF5Pf8Mw4DyZaFZ+6e0fgsCla9aNEVVT7ucJpBz0Uqcooz/xADDX/yccxoQ6mijJTV7M5BsNeImvW9KzdP8xJxNZJEi/FMPIAjdY6tn/PwFwP+LnIrAGd2G2DVgjA5wenrTiOKGmVZLhZNXgTqwAs14phzbx22aEttuJCeYOslH2oq/mtUpKXq3aXNmlb2YXPj739fa++L+LF1wHexIACwW3KfRHEYXM3r0yKhggXT07dovybna/imGykLtASlepUOr3sMMpyMwu3kID/IyJPH6/hckK+VGLnrymLnuj44zybUQtiqJdNh9ZTvhtLHlwV2xvzhWTaix3m+tNCnfBT+gQWk8uJ2b7hZX/FDlmqWklKCdWPq8tcEvC5S2EGHwhOh74ljq5sbAYHWNkoXMjWnLsaBAPXflqyZYeYJwS97Aps9kIqUSPNEUnz9iJ/hK5NSDGZiX7ezujD2CzE3hBCZsxY1p+xS3WGHbcSYyOfqjdvYanu/dkboCwKNzxjvR5YguGTDEwKgg8vxSqsljrUSpT2QfOMNLShO7ju+JUKGcbsklGznmAxG2YZ9GEMlX/mwGOafJuY0q8VPqzm9pZSJWWViQAvgcOtXmmhl5as2SDQH22BwL5K1eY4qbIHxUWud1hi+Aq+/6VuPH/fFSptTUETZ66RtcLkMUmE1F2lGlKobk+NTRtE/pCqDT9CWH6DUohD/QITHYrLXvJsZQAGmYX+NBsz4b5OtWWpXjA5BqoUBWBOU5tCYICYvCha34KXJh4NC3nYE6FmdlGJMBPTQa4aiLaffaa5t0D7A0r/v+epKGMfDbaz/Z23cBD2DPea9yScLRe0Tb82qVWv1qQ6CLwUaEY2bw64p/jr9U4AOIhluEIPN1S+SxCim2nLokCSDqxLCrHHdUSTe4JrIBl6ASIZDqZdBwGkgUUFQSIo81FySK4LqjwdAIurGqsf++OOJMUT3QkGJ575Wu2G+K533cnv/o4o+ThBKqxCErG/4ijvI/u64wbbpL6OtvLXaNqIFtvSEWNFPXJVpOTqffuVU88IcXZe7p9wqdqm2E9vQdKANVYW/TZk98GZT0phGIL0INzJtHreKgZ135gqPP6idGUniCTA2QbNL9VmMB4Otc8WFnkUD5WilZqyDcXGwtRQNORJS59X5yikdsh9I0DM0Y8ZmPI2ogV75fKc+2VHnki4Pb35zS74SkZxBWvQwXkenHuCmbYUAQ3PGuGWymegHCNHCnuGo2zr2sDMn0BqCDOB15vgnMa4JVy2VxEgaYYjUCKnfVlylyxkCXeRCPqGYjFWQr14bVCLKEeo6wmni3jK37Xq2fDyiNW9XPChuQXJJoQdQo+mWt4raElISYr8VO5CWJDDx9AI4HQu2RP6DxjbjoTINLSjddYdN49wkYyd8eXM3JihpziRCMyuV89JCnWtgiy8zpkHPJEhZ9nPD4kBgXrAgHFI3AACaRns8dkdN6c4Wn+ACO8+idmIiB8/VAQoRQLF1ZwxpJF1HmISNf2GKQavwp7QTFAbYQJgxbs+f+dGKAWdcxItEtOSGnUa+FVaEzMQ3KTsJ3W3eY9UB8foOsKfYKXn/7BJzXzLG9q6N2ONEvXZ2HeJIrX/N3xQ4B5xl8r1UlohwIKgN+3/cF3MHrGr34YcCDfDDh4Uyd/gGG6IrO9BEe/OisfuIRNCaHlRG923/d0PLlXp1m+f1EZSjsMhyHZSmKPrjKKqoPUkoW9t9IATZumiRrK+WfzDRKYFNv4o2SPpngvlunxROuVLky68B9wHrcAp7O22Dr4uReoeB5nm26vtYD+I1STjLQ2MPmV7OaLXhaHGjF1bq8P9knGrhPrzdbEhPYlPv6R3HjDgOtq277l1dMuwMLcRacLGBHcniKD5258ZPtKy18vKemOmUlTMK2yRlapp7ZQxY4ntB5hSOKLO2vpaKc8OJuYn1wE/NpRXr918msAuaPOLkKwwQ7Gh8uMbDhOk6TIVjiWFHLB49zM/YS8xVZ7fj5ZeShr1HscyD0nMn1GdWM3DsBrSNkCJAyp3hkSI0ffUh1RB2MATJxSvtXJFHz+0MPm2Pf3Cyf5eJGkROrvtfFXLYwQBWuIGJ4EjHwlAzRsKVP18TDhPw6sGMljqasBhaj3dNg2gP0q+UdedqdlYiqftQM8jXaj9xAavjCnZ+qgLU2xz4PJmXFvwgw1ofC8j0DbeDHj0j2Nen1BmwsTe+/ZzjomEPDQRRBA/SrrJks/H8g07h9XnH5FbEHbpaj7RXKkSOXixkC1pXgkFeSzLY/hiKrG5apDC7NzYQ694gT3VLuqxE9boYAydZxnKmKsjA8TZeNOhhDTnOlUjL+WTMoWSm/K1ye1BRdOUR02n8afS/krj9Nld6X7vsiZu1Taum139FV2N08Id2+Kh3QWHA0693MpjXy76gMKxcwzjx6zmYlC419OTRLVEpkQfO1W4UweGPWiNDjgTLJr2k6ZsNfw8HugOyeSixtPPG0nXiMALWyxIvwt9ashadmB2CumltGgWdlhoab47T7+mgkyjDhrbHoeKKQjWwy4lWEApKm8uLGMSNl7kkSlsPW9PaFpMbtrtxIHigdYd/G0a8rKlIBzhPxs9lG6W9l6+q9ZUzOfujl0w93oX42wwuQ1WrG1LNZ/JZDQhHhdY05rHiL4Cwy3tYOUMSV9XcgTnkCoRld231SuPtczMiLwjPrUb78uTpTh387JBJW0K9UdtZNsHCZt/bhJ0gAh142eOIvuR+cbKI5+FRpdAo1/3UDMdtTcxtB1wA0LjSCEz5cXpL7dxOsUcziRfTzfHWtf9zvezBfwMirn6GSDXfxt5vez6Ri2r7QREtSqf52pnqcc512RnXImwzItAt1zVn231UpCmdQtzMmbq9UJkm7EmycOr/dzeWr0JZujGjAtGRg8cI43H4Mu5B78Bl05MzvGNaJX+UANfs9wJmOFMBWp8CWVDJHMdgw1GL1nQOwJKpOjVEgN0oIl/NK9yU7aYwkDhmQbPH3eBUKWBU3V0Mr9uOSR+1/65dw53Z0k8KTygYV7kGJZa0C1SiWwTKJckRVuT0MZTN/6oAlp5Wg+4WfatcRVqTmPpe11dd4qixeaWX7jZhCC/S0Mx2beb/Ff+lEHJb5sfCjIbvgV+axT4M5vIERfMZn+WvctusUpGjxFOA/mse9tMUBdtsHZ6BdrwT3EvXurOd8xO/R1gB+3lKY2GldmBaMADkUNyYu9bue5Jlg2tLgKn6eD3HWb8+42hu+GZb5pIr+0CSdcsE6mwN3vdNphANLfHdZnid5IjlgNZ6Ru2huDiw411vH45T2Jb2qIvodit+6M81A1YczvLr5XTLl7OfjjpeiKE7pqcLfb5GbK5sjg2VX+4cFyfNQW1aWZfRTo4XRbpb1v9rS9gyaP6AjSHkOv/Yyz4sG9j9UmeJoWzxOSjHkB5k1JfSA+HcSCmTQiuduv+4NNA43uUUgKWuA2k7k+0IV0d9iBlRZPRTitkOCWzNDXOs0cP99o2LiC9kX5iMgvmPdTlxkuPZqzDlNAc1JKAKMqo1r3/H+fKvRg+Yqg4egf1+RNBjOqBWOdK7AhcVll4N4AOwnJ0H4ypfDi5ObpLsUYwzQHNsr9ZvhUm72U4PGqp/vcXfGyEFTG4YuzG+S2/qeSqipfQNqXBK+1AgH29Y/V2cafkUGaYn4U9qpHXGXa6asdx9Uxx56191OfPs3v8xCruCsC34BNOLs/prRG9W4sH7Hl8NJr8AyLy0NIrGcr0dkhwULOLgyxyr7Zef2yk+sQz4OPSHjnbeDXAwg=", "n": 600000},K='mwPagesKey',u=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),f=document.getElementById('f');
+async function dec(raw){const k=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:u(D.i)},k,u(D.c)))}
+function show(t){document.open();document.write(t);document.close()}
+addEventListener('DOMContentLoaded',async()=>{const s=localStorage.getItem(K);if(s){try{show(await dec(u(s)));return}catch(e){localStorage.removeItem(K)}}f.hidden=false;document.getElementById('p').focus()});
+f.onsubmit=async e=>{e.preventDefault();const er=document.getElementById('err');er.textContent='';try{const b=await crypto.subtle.importKey('raw',new TextEncoder().encode(document.getElementById('p').value),'PBKDF2',false,['deriveBits']);
+const raw=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:u(D.s),iterations:D.n,hash:'SHA-256'},b,256));const t=await dec(raw);
+if(document.getElementById('r').checked)localStorage.setItem(K,btoa(String.fromCharCode(...raw)));show(t)}catch(x){er.textContent='Wrong password. Try again.'}}})()</script></body></html>
