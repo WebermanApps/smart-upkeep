@@ -275,6 +275,7 @@
     else if (s === "alacarte") html = alacarte();
     else if (s === "alacarteConfirm") html = alacarteConfirm();
     else if (s === "signup") html = signup();
+    else if (s === "pay") html = payStep();
     else if (s === "confirm") html = confirm();
     else { S.screen = "home"; html = home(); }
     app.innerHTML = html;
@@ -1008,16 +1009,17 @@
     if (S.plan === "biennial") {
       var mem2 = amt * 2, add2 = add * 2, prepaid = mem2 + add2;
       var save6 = Math.round(amt / 2);
-      return { plan: "biennial", label: "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (Draft)", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, save: save6, freeMonths: 6, referralCodeIn: refIn,
+      return { plan: "biennial", label: "Pay 2 Years Get 30 Months", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, save: save6, freeMonths: 6, referralCodeIn: refIn,
         note: money(Math.round(mem2 / 24)) + "/Month, prepaid " + money(prepaid) + " for 2 years. 6 extra months free at the end of your term, once you complete it (draft)." };
     }
     if (S.tier === "silver" || S.tier === "gold") {
-      return { plan: "annual", label: "Paid in Full Annually, Up Front", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
+      return { plan: "annual", label: "Pay Yearly", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
         note: (S.tier === "silver" ? "Essentials" : "Plus") + " is paid in full for the year, up front." };
     }
-    if (S.plan === "quarterly") return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "quarterly", termMonths: 12, referralCodeIn: refIn, note: "4 payments of " + money((amt + add) / 4) + "." };
+    /* Order Form Details Deck 13 (Max 19:33 ICT Oct 15): prepay only, no quarterly or monthly card option. */
+    if (false) return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "quarterly", termMonths: 12, referralCodeIn: refIn, note: "4 payments of " + money((amt + add) / 4) + "." };
     var disc = Math.max(round(amt * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1188);
-    return { plan: "annual", label: "Paid Annually, Up Front (10% Off, Draft)", today: disc + add, year: disc + add, membership: disc, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annualDiscount", termMonths: 12, save: amt - disc, referralCodeIn: refIn, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
+    return { plan: "annual", label: "Pay Yearly, Save 10%", today: disc + add, year: disc + add, membership: disc, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annualDiscount", termMonths: 12, save: amt - disc, referralCodeIn: refIn, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
   }
 
   function cancelExample(tier) {
@@ -1055,7 +1057,7 @@
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships may be paid in 4 quarterly payments, annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships are paid annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
   }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
@@ -1124,17 +1126,15 @@
     var listed = p[S.tier];
     var twoPrepaid = listed * 2 + add * 2;
     var planOpts = [];
-    if (S.tier === "platinum") {
-      planOpts.push(["quarterly", "4 Quarterly Payments", p.platinum + add, "quarterly"]);
-      planOpts.push(["annual", "Pay Annually, Up Front, Save 10% (Draft)", platDisc + add, "annualDiscount"]);
-    } else {
-      planOpts.push(["annual", P.tiers[S.tier].label + ": Paid in Full Annually, Up Front", listed + add, "annual"]);
-    }
-    planOpts.push(["biennial", "Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (Draft)", twoPrepaid, "biennial"]);
+    /* Order Form Details Deck (Max 19:33 ICT Oct 15): Save 10% option first, named "Pay Yearly" (04, 09); prepay only, no quarterly/monthly card (13);
+       big price stays per month (02); 2-year option named "Pay 2 Years Get 30 Months" (20). */
+    if (S.tier === "platinum") planOpts.push(["annual", "Pay Yearly", platDisc + add, "annualDiscount", "Save 10%"]);
+    else planOpts.push(["annual", "Pay Yearly", listed + add, "annual"]);
+    planOpts.push(["biennial", "Pay 2 Years Get 30 Months", twoPrepaid, "biennial"]);
     var planHtml = '<div class="opts">' + planOpts.map(function (o) {
       var s = S.plan === o[0];
-      var extra = "";
-      return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + '</strong>' + priceBlock(o[2], o[3]) + extra + '</span></button>';
+      var extra = o[4] ? ' <span class="pay-save">' + o[4] + '</span>' : "";
+      return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + extra + '</strong>' + priceBlock(o[2], o[3]) + '</span></button>';
     }).join("") + '</div>' + offerTermsShort();
     var addonSummary = selectedAddons().length
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + addMo(x) + '</span></div>'; }).join("")
@@ -1159,7 +1159,7 @@
       (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>No Charge</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
       ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · free month after your payment clears, added at the end of your term once you complete it</span></div>' : "") +
       addonSummary + lmSummary +
-      '<div><span>Due at Sign Up (Estimated)</span><span>' + money(t.today) + '</span></div></div>' +
+      '<div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div>' +
       '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label>' +
       '<div class="su-recap small"><strong>Your Home:</strong> ' + recap + ' <button type="button" class="link mw-hover" data-edit="0">Edit Home Details</button></div></div>' +
       '<div class="card"><h3>Your Details</h3>' +
@@ -1169,6 +1169,7 @@
       '<label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' + fe("sAddr") +
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have a Code?</button></p>' +
       '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Referral Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"></div></div>' +
+      extrasRow() +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement and Liability Waiver</h3>' +
       '<div class="legal open-box" tabindex="0" aria-label="Membership Agreement">' + agreementHtml() + '</div>' +
@@ -1176,11 +1177,41 @@
       miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement and accept the Liability Waiver.</span></label>' + fe("agree") +
       '<p class="fl">Signature (Signs Both)</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
       '<div class="card"><h3>Payment Plan</h3>' + planHtml + '</div>' +
-      '<div class="card paybox"><h3>Payment</h3><div class="demo">Demo: No Card Charged</div>' +
-      '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
+      '<p class="small muted su-paynext">' + I("shield", "xs") + ' Next: Secure Payment</p>' +
       '<button class="btn btn-primary btn-big mw-hover" type="submit">Join ' + P.tiers[S.tier].label + '</button><p class="su-cancel-line small">Cancel Anytime, No Fee</p></form>';
   }
 
+  /* Order Form Details Deck 17 (Max 19:33 ICT Oct 15): payment is its own secure step after the form. DEMO ONLY: card fields are disabled,
+     never read and nothing is charged. Demo labels hidden for testers (06). */
+  function payStep() {
+    var t = (S.signup && S.signup.totals) || totals();
+    return backBtn() + stepRail(4) + '<h1>Secure Payment</h1>' +
+      '<div class="card su-sum-top"><h3>' + P.tiers[S.tier].label + ' · ' + esc(t.label) + '</h3>' +
+      '<div class="summary-price">' + priceBlock(t.year, t.billKind) + '</div>' +
+      '<div class="summary"><div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div></div>' +
+      '<form id="payF" class="card paybox" novalidate><h3>' + I("shield", "xs") + ' Card Details</h3>' +
+      '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit" style="margin-top:.8rem">Pay Securely</button><p class="su-cancel-line small">Cancel Anytime, No Fee</p></form>';
+  }
+  function bindPay() {
+    var f = document.getElementById("payF"); if (!f) return;
+    f.addEventListener("submit", function (e) { e.preventDefault(); /* demo: no card data read or sent */ S.signup = Object.assign({}, S.signup, { paidDemoAt: new Date().toISOString() }); go("confirm"); });
+  }
+  /* Order Form Details Deck 01, 03, 07 + Max's note on 11 (19:33 ICT Oct 15): no last-extra pop-up; a small "Add Extras" row on the form.
+     Shows the add-ons members are likeliest to add first (P.likelyAddons), each with Skip / Add To My Plan. Monthly = annual / 12. */
+  var XR = { skipped: [], all: false };
+  function extrasRow() {
+    var have = (S.addons || []);
+    var ids = XR.all ? (P.addons || []).map(function (a) { return a.id; }) : (P.likelyAddons || []);
+    var list = ids.map(function (id) { return (P.addons || []).filter(function (a) { return a.id === id; })[0]; }).filter(function (a) { return a && XR.skipped.indexOf(a.id) < 0; });
+    return '<div class="card xr"><h3>Add Extras</h3><div class="xr-list">' + (list.length ? list.map(function (a) {
+      var on = have.indexOf(a.id) > -1;
+      return '<div class="xr-item' + (on ? ' sel' : '') + '">' + I(XT_ICO[a.id] || "wrench", "sm") + '<span class="xr-t"><strong>' + esc(a.label) + '</strong><small>' + addMo(a) + '</small></span>' +
+        (on ? '<span class="xr-added">&#10003; Added</span><button type="button" class="link mw-hover" data-xr-remove="' + a.id + '">Remove</button>'
+            : '<span class="xr-btns"><button type="button" class="btn btn-outline mw-hover" data-xr-skip="' + a.id + '">Skip</button><button type="button" class="btn btn-primary mw-hover" data-xr-add="' + a.id + '">Add To My Plan</button></span>') + '</div>';
+    }).join("") : '<p class="small muted" style="margin:0">No more extras to show.</p>') + '</div>' +
+      (XR.all ? '' : '<button type="button" class="link mw-hover" data-xr-all="1">See All Extras</button>') + '</div>';
+  }
   function confirm() {
     var su = S.signup || {}, t = su.totals || totals();
     var next = S.visit ? "We Confirm Your Tech Visit" : S.photosComplete ? "We Review Your Photos" : "We Confirm Your Final Price";
@@ -1197,7 +1228,7 @@
         if (lm.length) html += lm.map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("");
         return html;
       })() +
-      '<div><span>Due at Sign Up (Demo, Not Charged)</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
+      '<div><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next</h3><ol class="feat"><li>' + next + '</li><li>We Book Visit One</li></ol></div>' +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
@@ -1345,6 +1376,7 @@
     });
     if (s === "visit") bindVisit();
     if (s === "signup") bindSignup();
+    if (s === "pay") bindPay();
     if (s === "confirm") bindReferralShare();
   }
   function act(a) {
@@ -1357,7 +1389,7 @@
     if (a === "photos") return go("photos");
     if (a === "visit") return go("visit");
     if (a === "toQuote") return go("quote");
-    if (a === "signup") { if ((S.tier === "silver" || S.tier === "gold") && S.plan === "quarterly") S.plan = "annual"; return go("signup"); }
+    if (a === "signup") { if (S.plan !== "biennial") S.plan = "annual"; return go("signup"); }
     if (a === "alacarte") return go("alacarte");
     if (a === "photosDone") { var c = photoCards(); S.photosComplete = c.every(function (x) { return (S.photos[x[0]] || 0) > 0; }); return go("quote"); }
     if (a === "restart") { S = fresh(); S.resume = null; photoMem = {}; save(); render(); window.scrollTo(0, 0); }
@@ -1482,11 +1514,20 @@
       errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
       if (first) { first.scrollIntoView({ block: "center" }); return; }
       var form = this;
-      if (!form._offered) { form._offered = true; var off = pickFinalOffer(); if (off) { showFinalOffer(off, function () { form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit", { cancelable: true })); }); return; } }
       s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = s.agreementSignature; s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals(); s.referralCodeIn = S.referralCodeIn || s.referralCodeIn || ""; logAddon("purchase", (S.addons || []).concat(S.lastMinute || []), "signup:" + S.tier);
       if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
-      go("confirm");
+      go("pay");
     });
+    app.querySelectorAll("[data-xr-add],[data-xr-skip],[data-xr-remove],[data-xr-all]").forEach(function (b) { b.addEventListener("click", function () {
+      keepFields(); save();
+      var add = b.getAttribute("data-xr-add"), skip = b.getAttribute("data-xr-skip"), rm = b.getAttribute("data-xr-remove");
+      S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
+      if (add) { if (S.addons.indexOf(add) < 0) S.addons.push(add); logAddon("offer_accepted", add, "extras-row"); }
+      else if (skip) { XR.skipped.push(skip); logAddon("offer_declined", skip, "extras-row"); }
+      else if (rm) S.addons = S.addons.filter(function (x) { return x !== rm; });
+      else XR.all = true;
+      save(); var y = window.scrollY; render(); window.scrollTo(0, y);
+    }); });
   }
 
   /* ---------- Detailed pricing modal ---------- */

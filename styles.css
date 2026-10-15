@@ -1137,3 +1137,17 @@ body.on-qf main{padding-bottom:0}
 .su-havecode{margin:.6rem 0 0}
 .su-cancel-line{text-align:center;font-weight:600;margin:.5rem 0 0;color:var(--mw-lagoon)}
 .legal.open-box{max-height:220px}
+
+/* Order Form Details Deck (Oct 15): Add Extras row, Save 10% tag, pay-step note */
+.xr-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem}
+.xr-item{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.55rem .6rem;border:1px solid var(--mw-border);background:#fff;border-radius:.5rem}
+.xr-item.sel{border-color:var(--mw-lagoon)}
+.xr-t{flex:1 1 140px;display:flex;flex-direction:column}
+.xr-t small{color:var(--mw-muted-text)}
+.xr-item .btn{min-height:44px;padding:.4rem .8rem;font-size:.9rem}
+.xr-added{color:var(--mw-lagoon);font-weight:600}
+.pay-save{display:inline-block;margin-left:.4rem;font-size:.75rem;padding:.1rem .45rem;border-radius:999px;background:var(--mw-lagoon);color:#fff;vertical-align:middle}
+.su-due{font-weight:700}
+.su-paynext{text-align:center;margin:.2rem 0 .4rem}
+.xr-btns{display:flex;gap:.5rem;flex:1 1 260px;justify-content:flex-end}
+@media(max-width:600px){.xr-btns .btn{flex:1}}

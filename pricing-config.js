@@ -55,7 +55,7 @@ window.SMART_UPKEEP_PRICING = {
   /* Plans shown, in order. Remove a key (e.g. "platinum") to show 2 tiers; layouts adapt. */
   /* Final pop-up offer shown once, right before sign-up Submit (beta test).
      strategy: "roundRobin" (index kept in localStorage) or "random". Items already in the cart are skipped. */
-  finalOffer: { enabled: true, strategy: "roundRobin", storageKey: "smartUpkeep.finalOfferIdx",
+  finalOffer: { enabled: false, /* Order Form Details Deck 03/07 (Max 19:33 ICT Oct 15): pop-up dropped for an Add Extras row */ strategy: "roundRobin", storageKey: "smartUpkeep.finalOfferIdx",
     candidates: ["windows", "chimney", "radon", "guttersExtra", "pressure", "ducts"] },
   /* Home hero teaser loop (muted, autoplay, loop, inline). Tap opens the full explainer with sound.
      Built with ffmpeg from video/explainer-16x9.mp4 (V.1): 7.9s, 640x360 H.264, no audio, faststart.
@@ -82,6 +82,9 @@ window.SMART_UPKEEP_PRICING = {
       features: ["Everything in Plus", "12 visits a year (monthly check-ins)", "Yearly roof and flashing inspection", "Standby generator service (if you have one)", "Winter vent clearing and ice dam clearing after storms", "Pre-storm, post-storm and pre-travel home checks", "Fridge coil cleaning and small fixes during visits", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] }
   },
   /* A la carte add-ons / one-off services. Midpoints from pricing-48322. Draft. */
+  /* Add Extras row on the sign-up form shows these first (Max's note, deck card 11: offer the ones members are likeliest to add).
+     Picks: yearly seasonal jobs most homes can use that pair with visits. Tune from the add-on event log once real data exists. */
+  likelyAddons: ["guttersExtra", "windows", "pressure", "pest"],
   addons: [
     { id: "windows", label: "Exterior Window Washing", desc: "Outside glass, typically once or twice a year.", low: 150, high: 302, unit: "service", annual: 225 },
     { id: "carpet", label: "Carpet Cleaning", desc: "Whole-home carpet clean, once a year.", low: 400, high: 1800, unit: "service", annual: 600 },
