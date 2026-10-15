@@ -118,7 +118,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--mw-primary);outl
 .check-big{width:72px;height:72px;border-radius:50%;border:3px solid var(--mw-jungle);color:var(--mw-jungle);display:grid;place-items:center;font-size:2.2rem;margin:.5rem 0 1rem}
 .hide{display:none!important}
 .modal-inner.portrait{width:min(460px,100%,calc(68vh * .5625 + 26px))}
-.modal-inner.portrait video{max-height:68vh}
+.modal-inner.portrait video{max-height:68vh;aspect-ratio:9/16;width:100%;object-fit:contain}
+@media(max-width:600px){.modal-inner.portrait{width:min(100%,calc(76svh * .5625 + 26px))}.modal-inner.portrait video{max-height:76svh}}
 
 /* ===== Micro-dose color skin (Oct 12 2026): cream base, terracotta / lagoon / jungle accents ===== */
 :root{

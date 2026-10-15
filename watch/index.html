@@ -18,7 +18,7 @@
 <meta name="twitter:title" content="Smart Upkeep">
 <meta name="twitter:description" content="Home maintenance memberships for Metro Detroit. Starting at $99/Month.">
 <meta name="twitter:image" content="https://smartupkeep.ai/assets/og-image-1200x630.png?v=1">
-<script src="../pricing-config.js?v=c26"></script><script src="../gate.js?v=gate8"></script>
+<script src="../pricing-config.js?v=c27"></script><script src="../gate.js?v=gate8"></script>
 <noscript><style>body>*{display:none!important}</style></noscript>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
@@ -34,7 +34,7 @@ header img{height:44px;width:auto}
 main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:0 1rem 1.5rem;text-align:center}
 .vw{margin:0 auto;background:#fff;border:1px solid #e5e0d8}
 video{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;background:#f5f0ea}
-.portrait .vw{max-width:420px}
+.portrait .vw{max-width:min(420px,calc(72vh * .5625 + 2px))}
 h1{font-family:"Khand",sans-serif;font-weight:700;font-size:clamp(1.6rem,4.5vw,2.4rem);margin:1.1rem 0 .9rem;line-height:1.1}
 h1 span{display:block;width:48px;height:3px;background:#C1502E;margin:.5rem auto 0}
 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;min-width:180px;padding:.8rem 1.6rem;font:600 .9rem "Hind",sans-serif;text-transform:uppercase;letter-spacing:.1em;background:#C1502E;color:#fff;border:2px solid #C1502E;cursor:pointer}
@@ -55,7 +55,7 @@ footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,
 <body>
 <div style="display:flex;justify-content:flex-start"><span style="flex:1"></span><a class="home-pill mw-hover" href="../#home" aria-label="Home" style="margin:8px 8px 0 0;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:44px;min-width:44px;padding:0 12px;border:1px solid #d9d9d9;border-radius:999px;background:#fff;color:#171717;text-decoration:none;font:600 14px/1 sans-serif;white-space:nowrap;flex:none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2.2" stroke-linejoin="round"/></svg><span>Home</span></a></div><header><img src="../assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep"></header>
 <main id="m">
-  <div class="vw"><video id="v" controls playsinline preload="metadata" poster="../assets/poster-v5-16x9.jpg?v=v5a"></video></div>
+  <div class="vw"><video id="v" controls playsinline preload="metadata" poster="../assets/poster-v5-9x16.jpg?v=v5b"></video></div>
   <h1>Coming Soon to Metro Detroit<span aria-hidden="true"></span></h1>
   <p class="start">Membership Starting at $99/Month</p>
   <div class="acts"><a class="btn mw-hover" href="../">Get Started</a><button id="share" class="btn btn-o mw-hover" type="button">Share</button></div>
@@ -64,9 +64,9 @@ footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,
 <script>
 (function(){
   var v=document.getElementById("v"),m=document.getElementById("m");
-  var port=false; /* upkeep-7 pick 39: wide 16:9 player with title on every screen */
-  v.poster="../assets/poster-v5-"+(port?"9x16":"16x9")+".jpg?v=v5a";
-  v.src="../video/explainer-v5-"+(port?"9x16":"16x9")+".mp4?v=v5a";
+  var port=true; /* Max Oct 15: vertical 9:16 player (centred frame on desktop) */
+  v.poster="../assets/poster-v5-"+(port?"9x16":"16x9")+".jpg?v=v5b";
+  v.src="../video/explainer-v5-"+(port?"9x16":"16x9")+".mp4?v=v5b";
   if(port)m.classList.add("portrait");
   var url="https://smartupkeep.ai/watch/",msg=document.getElementById("msg");
   document.getElementById("share").addEventListener("click",function(){
