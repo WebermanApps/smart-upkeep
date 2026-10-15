@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Member App (Prototype) · Smart Upkeep</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"><link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=1">
+<script src="../pricing-config.js?v=c28"></script><script src="../gate.js?v=gate8"></script><script src="../icons.js?v=m1"></script>
+<noscript><style>body>*{display:none!important}</style></noscript>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAF3EB">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Khand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--saffron:#D4A017;--saffron-d:#8a6510;--lagoon:#05668D;--terra:#C1502E;--cream:#FAF3EB;--ink:#0a0a0a;--mute:#525252;--line:#e5e0d8;--jungle:#0B6E4F}
+*{box-sizing:border-box}html,body{overflow-x:hidden}
+body{margin:0;background:#efe7dc;color:var(--ink);font-family:"Hind",system-ui,sans-serif;font-size:16px;line-height:1.45}
+h1,h2,h3{font-family:"Khand",sans-serif;font-weight:700;line-height:1.1;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+.su-ico{width:2.2rem;height:2.2rem;flex:none;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;color:#1f1b17;overflow:visible}
+.su-ico .f-t{fill:var(--terra);stroke:#1f1b17}.su-ico .f-l{fill:var(--lagoon);stroke:#1f1b17}.su-ico .f-s{fill:var(--saffron);stroke:#1f1b17}.su-ico .f-j{stroke:var(--jungle)}
+.su-ico.sm{width:1.5rem;height:1.5rem;stroke-width:2.5}
+.phone{max-width:480px;margin:0 auto;min-height:100vh;background:var(--cream);position:relative;display:flex;flex-direction:column}
+@media(min-width:700px){body{padding:24px 0}.phone{min-height:calc(100vh - 48px);border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.15);overflow:hidden}}
+.tag{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:50;background:#fff;border:1px solid var(--saffron);color:var(--saffron-d);font-size:.72rem;font-weight:600;padding:2px 10px;border-radius:999px;letter-spacing:.03em;white-space:nowrap}
+.scr{display:none;flex:1;flex-direction:column}.scr.on{display:flex}
+.top{display:flex;align-items:center;justify-content:space-between;padding:40px 18px 8px}
+.top img{height:30px}
+.share{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:1px solid #d4d4d4;border-radius:999px;background:#fff;font-weight:600;font-size:.88rem}
+.body{flex:1;padding:6px 18px 110px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.plan{background:var(--saffron);border-color:var(--saffron);color:#1f1b17}
+.plan h2{font-size:1.9rem}.plan .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:.92rem}
+.lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--mute)}
+.plan .lbl{color:#3b2e05}
+.hello{font-size:2rem;margin-top:4px}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qa button{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:.85rem;min-height:92px}
+.hint{display:flex;gap:10px;align-items:flex-start;background:#e6f0f4;border:1px solid #b9d5e0;border-radius:14px;padding:12px;font-size:.92rem}
+.hint b{color:var(--lagoon)}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.li:first-of-type{border-top:0}
+.li .t{flex:1;min-width:0}.li .t b{display:block}.li .t small{color:var(--mute)}
+button.li{width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;padding:12px 0}
+.pill{font-size:.75rem;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.ok{background:#e3f1ea;color:var(--jungle)}.warn{background:#fbf0d3;color:var(--saffron-d)}.blue{background:#e6f0f4;color:var(--lagoon)}
+.btn{display:flex;width:100%;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:12px;border:2px solid var(--saffron);background:var(--saffron);color:#1f1b17;font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:.9rem}
+.btn.o{background:#fff;border-color:var(--lagoon);color:var(--lagoon)}
+.link{background:none;border:0;color:var(--lagoon);font-weight:600;padding:8px;text-decoration:underline}
+h3{font-size:1.35rem;margin-bottom:4px}
+.sec{font-size:1.6rem;margin:10px 0 0}
+ul.chk{list-style:none;padding:0;margin:6px 0}ul.chk li{padding:6px 0 6px 28px;position:relative;border-top:1px solid var(--line);font-size:.93rem}ul.chk li:before{content:"";position:absolute;left:4px;top:11px;width:12px;height:7px;border-left:2.5px solid var(--jungle);border-bottom:2.5px solid var(--jungle);transform:rotate(-45deg)}
+.ph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ph div{aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(45deg,#f1ebe2,#f1ebe2 8px,#e9e1d5 8px,#e9e1d5 16px);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--mute);text-align:center;padding:4px}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:40}
+@media(min-width:700px){.tabs{bottom:24px;border-radius:0 0 28px 28px}}
+.tabs button{flex:1;min-width:0;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:.68rem;font-weight:600;color:var(--mute);min-height:52px;padding:4px 0}
+.tabs button .su-ico{width:1.5rem;height:1.5rem;stroke-width:2.5;color:var(--mute)}
+.tabs button.on{color:var(--terra)}.tabs button.on .su-ico{color:var(--terra)}
+.login{padding:70px 24px 30px;flex:1;display:flex;flex-direction:column}
+.login img{height:64px;margin:0 auto 10px;display:block}
+.login h1{text-align:center;font-size:2rem;margin-bottom:18px}
+.fld{display:block;margin-bottom:12px}.fld span{display:block;font-weight:600;font-size:.88rem;margin-bottom:4px}
+.fld input{width:100%;min-height:50px;border:1px solid #cfc6b8;border-radius:12px;padding:0 14px;font:inherit;background:#fff}
+.fld input:focus{outline:2px solid var(--lagoon);border-color:var(--lagoon)}
+.or{text-align:center;color:var(--mute);font-size:.85rem;margin:12px 0}
+.back{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px;border:1px solid #d4d4d4;border-radius:999px;background:#fff;font-weight:600}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1f1b17;color:#fff;padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:60;display:none;max-width:90vw;text-align:center}
+footer{text-align:center;padding:14px;font-size:.85rem}footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,31,.4)}
+.toggle{width:46px;height:28px;border-radius:999px;background:#d4d4d4;border:0;position:relative;flex:none}.toggle:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}.toggle.on{background:var(--lagoon)}.toggle.on:after{left:21px}
+.ref{font-family:monospace;background:#f6f1ea;border:1px dashed #cfc6b8;border-radius:10px;padding:10px;word-break:break-all;font-size:.9rem;margin:8px 0}
+.big{font-family:"Khand",sans-serif;font-size:2.4rem;font-weight:700;color:var(--lagoon);line-height:1}
+.note{font-size:.82rem;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="tag">Prototype, sample data</div>
+<div class="phone">
+<!-- LOGIN -->
+<section class="scr on" id="s-login"><div class="login">
+<img src="../assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep">
+<h1>Member Sign In</h1>
+<form id="lf" autocomplete="off">
+<label class="fld"><span>Email</span><input type="email" name="e" placeholder="you@example.com" autocomplete="off"></label>
+<label class="fld"><span>Password</span><input type="password" name="p" placeholder="Password" autocomplete="off"></label>
+<button class="btn" type="submit">Sign In</button>
+</form>
+<div style="text-align:center"><button class="link" data-toast="Prototype: a reset link would be emailed to you.">Forgot password?</button></div>
+<div class="or">or</div>
+<button class="btn o" id="faceid" type="button"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M9 9v1.5M15 9v1.5M12 9v4h-1M9 16c1.8 1.3 4.2 1.3 6 0"/></svg>Sign In with Face ID</button>
+<p class="note" style="text-align:center;margin-top:18px">Prototype: any input signs in. Nothing is checked or stored.</p>
+<div style="flex:1"></div>
+<footer>Built by <a href="https://maxweberman.com" target="_blank" rel="noopener">Max Weberman</a></footer>
+</div></section>
+
+<!-- APP -->
+<section class="scr" id="s-app">
+<div class="top"><img src="../assets/A-roof-chevron.svg?v=c6" alt="Smart Upkeep"><button class="share" id="share"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 14v6h14v-6"/></svg>Share</button></div>
+<div class="body" id="view"></div>
+<footer style="padding-bottom:90px">Built by <a href="https://maxweberman.com" target="_blank" rel="noopener">Max Weberman</a></footer>
+<nav class="tabs" id="tabs"></nav>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+var P=window.SMART_UPKEEP_PRICING,T=P.tiers.gold,I=window.SUIcon,W=P.welcomeOffers,R=W.referral;
+var $=function(s){return document.querySelector(s)};
+function toast(m){var t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(function(){t.style.display="none"},2600)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+/* SAMPLE member data (all fake) */
+var M={first:"Jordan",last:"Sample",email:"jordan.sample@example.com",phone:"(313) 555-0142",addr:"1234 Sample Lane, Royal Oak, MI 48067",since:"April 2026",renew:"April 12, 2028",term:"2-year term"};
+var past=[
+ {id:"v2",date:"Sep 18, 2026",season:"Fall Visit",items:["Fall furnace tune-up","Furnace filter changed","Gutter and downspout cleaning","Water softener salt topped off","Fridge water filter changed","Smoke, CO, GFCI and shut-off valve checks","Garage door lube and pre-winter weatherproofing","Irrigation blowout","Whole-Home Mold and Moisture Scan"],note:"All systems normal. One slightly elevated moisture reading under the hall bath sink, flagged for a recheck next visit."},
+ {id:"v1",date:"Jun 20, 2026",season:"Summer Visit",items:["Smoke and CO detector checks","Furnace filter changed","Water softener salt topped off","Fridge water filter changed","Dryer vent cleaning","Whole-Home Mold and Moisture Scan"],note:"No issues found. Dryer vent airflow improved after cleaning."},
+ {id:"v0",date:"Apr 15, 2026",season:"Spring Visit",items:["Spring AC tune-up","Water heater flush","Gutter and downspout cleaning","Irrigation start-up","Smoke and CO detector checks","Whole-Home Mold and Moisture Scan"],note:"First visit. Baseline readings and equipment photos saved to your Home Record."}];
+var eq=[["furnace","Gas Furnace","Installed 2014 · 12 yrs","ok","Tuned Sep 2026"],["ac","Central AC","Installed 2014 · 12 yrs","ok","Tuned Apr 2026"],["waterheater","Tank Water Heater, 50 gal","Installed 2019 · 7 yrs","ok","Flushed Apr 2026"],["meter","Water Softener","Installed 2021 · 5 yrs","ok","Salt topped off Sep 2026"],["detector","Smoke and CO Detectors (6)","Replaced 2022 · 4 yrs","ok","Checked Sep 2026"],["dryer","Dryer Vent","","ok","Cleaned Jun 2026"]];
+var tabs=[["home","house","Home"],["visits","clipboard","Visits"],["record","doc","Record"],["plan","tag","Plan"],["refer","gift","Refer"],["profile","user","Profile"]];
+$("#tabs").innerHTML=tabs.map(function(t){return '<button data-tab="'+t[0]+'">'+I(t[1],"sm")+'<span>'+t[2]+'</span></button>'}).join("");
+var V={};
+V.home=function(){return '<div class="lbl">Good evening</div><h1 class="hello">Hi, '+M.first+'</h1>'+
+ '<div class="card plan"><div class="lbl">Your Plan</div><h2>'+T.label+' · '+T.tagline+'</h2><div>'+T.visits+' seasonal visits a year</div><div class="row"><span><b>Member since</b><br>'+M.since+'</span><span><b>Next renewal</b><br>'+M.renew+'</span></div></div>'+
+ '<div class="card"><div class="lbl">Next Visit</div><h3>Winter Visit</h3><div style="display:flex;gap:12px;align-items:center">'+I("clock")+'<div><b>Dec 8 to Dec 12, 2026</b><br><small class="note">We confirm the exact day and arrival window 48 hours ahead. A licensed Smart Upkeep tech will visit.</small></div></div></div>'+
+ '<div class="qa"><button data-toast="Prototype: request a visit form would open here.">'+I("van")+'Request a Visit</button><button data-toast="Prototype: chat with the Smart Upkeep team would open here.">'+I("bell")+'Message Us</button><button data-toast="Prototype: camera would open to add a photo to your Home Record.">'+I("camera")+'Add a Photo</button></div>'+
+ '<div class="card hint" style="margin-top:14px">'+I("meter","sm")+'<div><b>Did you know?</b> Your Fall Mold and Moisture Scan flagged one spot under the hall bath sink. We will recheck it on your Winter Visit.</div></div>'};
+V.visits=function(){return '<h2 class="sec">Visits</h2><div class="card"><div class="lbl">Upcoming</div>'+
+ '<div class="li">'+I("clock","sm")+'<div class="t"><b>Winter Visit</b><small>Dec 8 to Dec 12, 2026</small></div><span class="pill blue">Scheduled</span></div>'+
+ '<div class="li">'+I("clock","sm")+'<div class="t"><b>Spring Visit</b><small>Window set in February</small></div><span class="pill warn">Planned</span></div></div>'+
+ '<div class="card"><div class="lbl">Past Visits · tap for report</div>'+past.map(function(v){return '<button class="li" data-visit="'+v.id+'">'+I("clipboard","sm")+'<div class="t"><b>'+v.season+'</b><small>'+v.date+' · Written report</small></div><span class="pill ok">Done</span></button>'}).join("")+'</div>'};
+function report(id){var v=past.filter(function(x){return x.id===id})[0];return '<button class="back" data-tab="visits">‹ Visits</button><h2 class="sec">'+v.season+' Report</h2><div class="note">'+v.date+' · Licensed Smart Upkeep tech</div>'+
+ '<div class="card"><div class="lbl">Checklist</div><ul class="chk">'+v.items.map(function(i){return '<li>'+esc(i)+'</li>'}).join("")+'</ul></div>'+
+ '<div class="card"><div class="lbl">Tech Notes</div><p style="margin:6px 0 0">'+esc(v.note)+'</p></div>'+
+ '<div class="card"><div class="lbl">Photos</div><div class="ph" style="margin-top:8px"><div>Photo placeholder</div><div>Photo placeholder</div><div>Photo placeholder</div></div></div>'};
+V.record=function(){return '<h2 class="sec">Home Record</h2><div class="note">'+M.addr+'</div>'+
+ '<div class="card"><div class="lbl">Equipment</div>'+eq.map(function(e){return '<div class="li">'+I(e[0],"sm")+'<div class="t"><b>'+e[1]+'</b><small>'+(e[2]?e[2]+' · ':'')+e[4]+'</small></div></div>'}).join("")+'</div>'+
+ '<div class="card"><div class="lbl">Mold and Moisture Scan · Sep 18, 2026</div>'+
+ [["Ceilings under bathrooms","Normal","ok"],["Windows","Normal","ok"],["Basement walls","Normal","ok"],["Under kitchen sink","Normal","ok"],["Under hall bath sink","Slightly damp, recheck","warn"]].map(function(r){return '<div class="li"><div class="t"><b>'+r[0]+'</b></div><span class="pill '+r[2]+'">'+r[1]+'</span></div>'}).join("")+
+ '<p class="note">Pinless moisture meter and thermal camera readings, with photos. Flags damp spots where mold can grow. Not a lab mold test.</p></div>'+
+ '<div class="card"><div class="lbl">Recall Monitoring</div><div class="li">'+I("shield","sm")+'<div class="t"><b>6 items monitored</b><small>No open recalls · last checked Oct 14, 2026</small></div><span class="pill ok">Clear</span></div></div>'+
+ '<div class="card"><h3>Maintenance Proof Pack</h3><p class="note" style="margin:0 0 10px">Downloadable visit record for warranty claims. Your Home Record transfers when you sell.</p><button class="btn" data-toast="Prototype: the Proof Pack PDF would download here.">'+I("doc","sm")+'Download Proof Pack</button></div>'};
+V.plan=function(){var ad=P.addons.filter(function(a){return["windows","chimney","radon","ducts"].indexOf(a.id)>=0});
+ var w=W.twoYear;return '<h2 class="sec">Plan &amp; Billing</h2><div class="card plan"><div class="lbl">Current Plan</div><h2>'+T.label+'</h2><div>'+T.tagline+' · '+M.term+'</div></div>'+
+ '<div class="card"><div class="lbl">What\u2019s Included</div><ul class="chk">'+T.features.map(function(f){return '<li>'+esc(f)+'</li>'}).join("")+'</ul></div>'+
+ '<div class="card"><div class="lbl">Welcome Offer</div><h3>'+w.freeMonths+' Free Months</h3><p class="note" style="margin:0">'+esc(w.label)+'. Your '+w.freeMonths+' free months are added after your '+w.payMonths+' paid months.</p></div>'+
+ '<div class="card"><div class="lbl">Add-Ons</div>'+ad.map(function(a){return '<div class="li"><div class="t"><b>'+esc(a.label)+'</b><small>'+esc(a.desc)+'</small></div><b style="color:var(--lagoon);white-space:nowrap">+$'+Math.round(a.annual/12)+'/month</b></div>'}).join("")+'</div>'+
+ '<div class="card"><div class="lbl">Payment Method</div><div class="li"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#1f1b17" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><div class="t"><b>Card ending 0000</b><small>Sample card · exp 00/00</small></div><button class="link" data-toast="Prototype: update payment method.">Edit</button></div></div>'};
+V.refer=function(){return '<h2 class="sec">Refer a Neighbor</h2><div class="card"><h3>'+esc(R.label)+'</h3><p class="note" style="margin:0">No limit on referrals. Free months are credited after your neighbor\u2019s first payment clears.</p><div class="ref">smartupkeep.ai/r/SAMPLE-JORDAN</div><button class="btn" data-copy="1">Copy Share Link</button></div>'+
+ '<div class="card"><div class="lbl">Credits Earned</div><div style="display:flex;gap:16px;align-items:center;margin-top:6px"><div class="big">1</div><div>free month credited</div></div>'+
+ '<div class="li" style="margin-top:8px"><div class="t"><b>Neighbor A.</b><small>First payment cleared · Sep 2026</small></div><span class="pill ok">+1 month</span></div>'+
+ '<div class="li"><div class="t"><b>Neighbor B.</b><small>Signed up · waiting on first payment</small></div><span class="pill warn">Pending</span></div></div>'};
+var notif={a:true,b:true,c:false};
+V.profile=function(){function tg(k,l){return '<div class="li"><div class="t"><b>'+l+'</b></div><button class="toggle'+(notif[k]?' on':'')+'" data-tg="'+k+'" aria-label="'+l+'" aria-pressed="'+notif[k]+'"></button></div>'}
+ return '<h2 class="sec">Profile</h2><div class="card"><div class="lbl">Home Address</div><p style="margin:4px 0 0">'+M.addr+'</p></div>'+
+ '<div class="card"><div class="lbl">Contact</div><div class="li"><div class="t"><b>'+M.first+' '+M.last+'</b><small>'+M.email+'<br>'+M.phone+'</small></div><button class="link" data-toast="Prototype: edit contact info.">Edit</button></div></div>'+
+ '<div class="card"><div class="lbl">Notifications</div>'+tg("a","Visit reminders")+tg("b","Visit reports ready")+tg("c","Tips and Did You Know")+'</div>'+
+ '<button class="btn o" id="signout">Sign Out</button>'};
+var cur="home";
+function show(tab,visit){cur=tab;$("#view").innerHTML=visit?report(visit):V[tab]();
+ [].forEach.call(document.querySelectorAll("#tabs button"),function(b){b.classList.toggle("on",b.dataset.tab===tab)});window.scrollTo(0,0)}
+function go(s){[].forEach.call(document.querySelectorAll(".scr"),function(x){x.classList.toggle("on",x.id===s)});window.scrollTo(0,0)}
+function signin(){go("s-app");show("home");location.hash="home"}
+$("#lf").addEventListener("submit",function(e){e.preventDefault();this.reset();signin()});
+$("#faceid").addEventListener("click",function(){toast("Face ID (simulated)");setTimeout(signin,500)});
+document.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+ if(b.dataset.toast){toast(b.dataset.toast);return}
+ if(b.dataset.tab){show(b.dataset.tab);location.hash=b.dataset.tab;return}
+ if(b.dataset.visit){show("visits",b.dataset.visit);return}
+ if(b.dataset.tg){notif[b.dataset.tg]=!notif[b.dataset.tg];show("profile");return}
+ if(b.dataset.copy){var u="https://smartupkeep.ai/r/SAMPLE-JORDAN";(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Sample link copied")},function(){toast("Sample link: "+u)});return}
+ if(b.id==="signout"){location.hash="";go("s-login");return}
+ if(b.id==="share"){var d={title:"Smart Upkeep Member App (Prototype)",url:location.origin+location.pathname};if(navigator.share)navigator.share(d).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(d.url).then(function(){toast("Link copied")},function(){toast(d.url)});else toast(d.url)}
+});
+var h=location.hash.slice(1);if(V[h]){go("s-app");show(h)}
+})();
+</script>
+</body>
+</html>
