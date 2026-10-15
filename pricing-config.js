@@ -60,8 +60,9 @@ window.SMART_UPKEEP_PRICING = {
   /* Home hero teaser loop (muted, autoplay, loop, inline). Tap opens the full explainer with sound.
      Built with ffmpeg from video/explainer-16x9.mp4 (V.1): 7.9s, 640x360 H.264, no audio, faststart.
      To swap to V.2 later, change these two paths only. */
+  /* V6 (official, Max OK 20:30 ICT Oct 15): first 8s of the 48s V6 cut, 640x360 (9:16 teaser 720x1280), no audio. Rollback to V5: swap v6 -> v5 in the four paths below (V5 files kept). */
   /* V5 (official, Oct 15): first 8s of the 48s cut, 640x360, no audio. Rollback to V4: video/teaser-v4-16x9.mp4 + assets/teaser-v4-poster.jpg */
-  teaser: { src: "video/teaser-v5-16x9.mp4?v=v5a", poster: "assets/teaser-v5-poster.jpg?v=v5a", srcV: "video/teaser-v5-9x16.mp4?v=v5b", posterV: "assets/teaser-v5-9x16-poster.jpg?v=v5b" }, /* Oct 15: 9:16 teaser on phones/portrait (<=768px or portrait), 16:9 on big screens */
+  teaser: { src: "video/teaser-v6-16x9.mp4?v=v6a", poster: "assets/teaser-v6-poster.jpg?v=v6a", srcV: "video/teaser-v6-9x16.mp4?v=v6a", posterV: "assets/teaser-v6-9x16-poster.jpg?v=v6a" }, /* Oct 15: 9:16 teaser on phones/portrait (<=768px or portrait), 16:9 on big screens */
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),

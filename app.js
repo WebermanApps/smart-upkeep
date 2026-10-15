@@ -1613,13 +1613,14 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return suPortrait() ? "video/explainer-v5-9x16.mp4?v=v5b" : "video/explainer-v5-16x9.mp4?v=v5b"; } /* Max Oct 15 19:03: 9:16 on phones/narrow/portrait, 16:9 on big screens; player shaped by .portrait */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
+  /* V6 official (Max OK 20:30 ICT Oct 15). Rollback: v6 -> v5 here and in the poster line below (V5 files kept). */
+  function vSrc() { return suPortrait() ? "video/explainer-v6-9x16.mp4?v=v6a" : "video/explainer-v6-16x9.mp4?v=v6a"; } /* Max Oct 15 19:03: 9:16 on phones/narrow/portrait, 16:9 on big screens; player shaped by .portrait */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
   /* Browsers block unmuted autoplay, so the video starts muted (speaker button + Sound arrow in video-pause.js). */
   function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + saffron arrow live in video-pause.js */
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
   function openVideo(userAsked) {
     var src = vSrc();
-    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v5-9x16.jpg?v=v5b" : "assets/poster-v5-16x9.jpg?v=v5b"); }
+    if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v6-9x16.jpg?v=v6a" : "assets/poster-v6-16x9.jpg?v=v6a"); }
     vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs();
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     var badge = document.getElementById("videoStartAt");
