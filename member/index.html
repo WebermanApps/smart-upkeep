@@ -68,6 +68,13 @@ ul.chk{list-style:none;padding:0;margin:6px 0}ul.chk li{padding:6px 0 6px 28px;p
 footer{text-align:center;padding:14px;font-size:.85rem}footer a{color:#A8431F;text-decoration:none;border-bottom:1px solid rgba(168,67,31,.4)}
 .toggle{width:46px;height:28px;border-radius:999px;background:#d4d4d4;border:0;position:relative;flex:none}.toggle:after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .15s}.toggle.on{background:var(--lagoon)}.toggle.on:after{left:21px}
 .ref{font-family:monospace;background:#f6f1ea;border:1px dashed #cfc6b8;border-radius:10px;padding:10px;word-break:break-all;font-size:.9rem;margin:8px 0}
+.pills{display:flex;gap:8px;overflow-x:auto;margin:12px 0;scrollbar-width:none}.pills::-webkit-scrollbar{display:none}
+.pl{flex:none;border:1.5px solid var(--saffron);background:#fff;color:#1f1b17;border-radius:999px;padding:8px 14px;font-weight:600;font-size:.88rem;min-height:40px}.pl.on{background:var(--saffron)}
+.fold{padding:0}.fold summary{list-style:none;cursor:pointer;padding:12px 14px;border:0}.fold summary::-webkit-details-marker{display:none}
+.fold .pic{width:44px;height:44px;border-radius:10px;background:var(--cream);display:grid;place-items:center;flex:none}
+.fold .chev{margin-left:auto;font-size:1.3rem;color:var(--lagoon);transition:transform .15s}.fold[open] .chev{transform:rotate(90deg)}
+.fold-b{padding:0 14px 12px 70px;font-size:.9rem;display:grid;gap:4px}
+.warr-banner{display:flex;gap:10px;align-items:flex-start;background:var(--lagoon);color:#fff;border-radius:12px;padding:12px 14px;margin:14px 0}.warr-banner .su-ico{color:#fff;flex:none}
 .big{font-family:"Khand",sans-serif;font-size:2.4rem;font-weight:700;color:var(--lagoon);line-height:1}
 .note{font-size:.82rem;color:var(--mute)}
 </style>
@@ -130,13 +137,18 @@ function report(id){var v=past.filter(function(x){return x.id===id})[0];return '
  '<div class="card"><div class="lbl">Checklist</div><ul class="chk">'+v.items.map(function(i){return '<li>'+esc(i)+'</li>'}).join("")+'</ul></div>'+
  '<div class="card"><div class="lbl">Tech Notes</div><p style="margin:6px 0 0">'+esc(v.note)+'</p></div>'+
  '<div class="card"><div class="lbl">Photos</div><div class="ph" style="margin-top:8px"><div>Photo placeholder</div><div>Photo placeholder</div><div>Photo placeholder</div></div></div>'};
-V.record=function(){return '<h2 class="sec">Home Record</h2><div class="note">'+M.addr+'</div>'+
- '<div class="card"><div class="lbl">Equipment</div>'+eq.map(function(e){return '<div class="li">'+I(e[0],"sm")+'<div class="t"><b>'+e[1]+'</b><small>'+(e[2]?e[2]+' · ':'')+e[4]+'</small></div></div>'}).join("")+'</div>'+
- '<div class="card"><div class="lbl">Mold and Moisture Scan · Sep 18, 2026</div>'+
+/* App Design Deck (Max, 17:43 ICT Oct 15): Appliances First with Label Plus Headline (02), Top Pill Tabs in Saffron (13, 03); Warranty List rows with picture beside (07, 15) as fold-out sections (16, 19); warranty note at the bottom as a solid banner (10, Max note); toasts stay at the bottom (04). */
+var recTab="eq";
+V.record=function(){var pills=[["eq","Appliances"],["scan","Moisture Scan"],["recall","Recalls"],["proof","Proof Pack"]];
+ var sec={eq:'<div class="rec-list">'+eq.map(function(e){return '<details class="card fold"><summary class="li">'+'<span class="pic">'+I(e[0],"sm")+'</span><div class="t"><b>'+e[1]+'</b><small>'+e[4]+'</small></div><span class="chev" aria-hidden="true">›</span></summary><div class="fold-b">'+(e[2]?'<div><b>Installed</b> '+e[2]+'</div>':'')+'<div><b>Last Service</b> '+e[4]+'</div></div></details>'}).join("")+'</div>'+
+  '<div class="warr-banner" role="note">'+I("shield","sm")+'<div><b>Warranty Claims</b><br>Your Maintenance Proof Pack is a downloadable, dated visit record for warranty claims.</div></div>',
+ scan:'<div class="card"><div class="lbl">Mold and Moisture Scan · Sep 18, 2026</div>'+
  [["Ceilings under bathrooms","Normal","ok"],["Windows","Normal","ok"],["Basement walls","Normal","ok"],["Under kitchen sink","Normal","ok"],["Under hall bath sink","Slightly damp, recheck","warn"]].map(function(r){return '<div class="li"><div class="t"><b>'+r[0]+'</b></div><span class="pill '+r[2]+'">'+r[1]+'</span></div>'}).join("")+
- '<p class="note">Pinless moisture meter and thermal camera readings, with photos. Flags damp spots where mold can grow. Not a lab mold test.</p></div>'+
- '<div class="card"><div class="lbl">Recall Monitoring</div><div class="li">'+I("shield","sm")+'<div class="t"><b>6 items monitored</b><small>No open recalls · last checked Oct 14, 2026</small></div><span class="pill ok">Clear</span></div></div>'+
- '<div class="card"><h3>Maintenance Proof Pack</h3><p class="note" style="margin:0 0 10px">Downloadable visit record for warranty claims. Your Home Record transfers when you sell.</p><button class="btn" data-toast="Prototype: the Proof Pack PDF would download here.">'+I("doc","sm")+'Download Proof Pack</button></div>'};
+ '<p class="note">Pinless moisture meter and thermal camera readings, with photos. Flags damp spots where mold can grow. Not a lab mold test.</p></div>',
+ recall:'<div class="card"><div class="lbl">Recall Monitoring</div><div class="li">'+I("shield","sm")+'<div class="t"><b>6 items monitored</b><small>No open recalls · last checked Oct 14, 2026</small></div><span class="pill ok">Clear</span></div></div>',
+ proof:'<div class="card"><h3>Maintenance Proof Pack</h3><p class="note" style="margin:0 0 10px">Downloadable visit record for warranty claims. Your Home Record transfers when you sell.</p><button class="btn" data-toast="Prototype: the Proof Pack PDF would download here.">'+I("doc","sm")+'Download Proof Pack</button></div>'};
+ return '<div class="lbl" style="margin-top:10px">Home Record · '+M.addr+'</div><h2 class="sec" style="margin-top:2px">Your Appliances</h2>'+
+ '<div class="pills" role="tablist">'+pills.map(function(x){return '<button role="tab" aria-selected="'+(recTab===x[0])+'" class="pl'+(recTab===x[0]?' on':'')+'" data-rec="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'+sec[recTab]};
 V.plan=function(){var ad=P.addons.filter(function(a){return["windows","chimney","radon","ducts"].indexOf(a.id)>=0});
  var w=W.twoYear;return '<h2 class="sec">Plan &amp; Billing</h2><div class="card plan"><div class="lbl">Current Plan</div><h2>'+T.label+'</h2><div>'+T.tagline+' · '+M.term+'</div></div>'+
  '<div class="card"><div class="lbl">What\u2019s Included</div><ul class="chk">'+T.features.map(function(f){return '<li>'+esc(f)+'</li>'}).join("")+'</ul></div>'+
@@ -161,6 +173,7 @@ function signin(){go("s-app");show("home");location.hash="home"}
 $("#lf").addEventListener("submit",function(e){e.preventDefault();this.reset();signin()});
 $("#faceid").addEventListener("click",function(){toast("Face ID (simulated)");setTimeout(signin,500)});
 document.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+ if(b.dataset.rec){recTab=b.dataset.rec;show("record");return}
  if(b.dataset.toast){toast(b.dataset.toast);return}
  if(b.dataset.tab){show(b.dataset.tab);location.hash=b.dataset.tab;return}
  if(b.dataset.visit){show("visits",b.dataset.visit);return}

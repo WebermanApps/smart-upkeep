@@ -1075,3 +1075,65 @@ body.on-qf main{padding-bottom:0}
 .mh-pic{border-radius:12px;overflow:hidden;aspect-ratio:2/1;background:#EEF2E8}
 @media(min-width:760px){.tiers.n3{grid-template-columns:repeat(3,1fr)}}
 .hm{overflow-x:clip}
+
+/* Oct 15: What's Included plan carousel + full-list sheet */
+.ic{margin-top:1rem}
+.ic-h{font-family:var(--mw-font-heading);font-size:1.15rem;margin:0 0 .4rem}
+.ic-wrap{position:relative}
+.ic-row{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:.15rem .1rem .4rem;overscroll-behavior-x:contain}
+.ic-row::-webkit-scrollbar{display:none}
+.ic-card{flex:0 0 82%;scroll-snap-align:start;text-align:left;display:flex;flex-direction:column;gap:.2rem;background:#fff;border:1px solid var(--mw-border);border-top:4px solid var(--mw-lagoon);border-radius:14px;padding:.75rem .8rem;box-shadow:0 2px 8px rgba(10,10,10,.06);font:inherit;color:inherit;cursor:pointer;box-sizing:border-box}
+.ic-card.rec{border-top-color:var(--mw-lagoon);box-shadow:0 4px 14px rgba(10,10,10,.1)}
+.ic-card strong{font-family:var(--mw-font-heading);font-size:1.3rem}
+.ic-card ul{list-style:none;margin:.35rem 0;padding:0;font-size:.92rem}
+.ic-card li{padding:.18rem 0 .18rem 1.1rem;position:relative}
+.ic-card li:before{content:"";position:absolute;left:.1rem;top:.55rem;width:.45rem;height:.25rem;border-left:2px solid var(--mw-lagoon);border-bottom:2px solid var(--mw-lagoon);transform:rotate(-45deg)}
+.ic-card li.ic-lead{padding-left:0;font-weight:700;color:var(--mw-lagoon)}.ic-card li.ic-lead:before{display:none}
+.ic-see{margin-top:auto;font-weight:700;color:var(--mw-lagoon);font-size:.9rem}
+.ic-dots{display:flex;gap:4px;justify-content:center;margin-top:.2rem}
+.ic-dots b{width:6px;height:6px;border-radius:50%;background:#ddd;transition:width .2s}
+.ic-dots b.on{background:var(--mw-saffron);width:16px;border-radius:3px}
+.ic-arr{display:none}
+@media(min-width:769px){.ic-card{flex-basis:calc((100% - 1.2rem)/2.2)}
+  .ic-arr{display:grid;place-items:center;position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--mw-border);background:#fff;color:var(--mw-lagoon);font-size:1.5rem;cursor:pointer;box-shadow:0 2px 8px rgba(10,10,10,.12)}
+  .ic-prev{left:-.6rem}.ic-next{right:-.6rem}}
+.ic-pop{position:fixed;inset:0;z-index:215;display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain}
+.ic-pop[hidden]{display:none}
+.ic-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
+.ic-sheet{position:relative;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;background:var(--mw-background,#fff);border-radius:1rem 1rem 0 0;padding:.6rem 1rem calc(1.1rem + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(10,10,10,.18);box-sizing:border-box;transition:transform .2s}
+.ic-grab{display:block;width:40px;height:4px;border-radius:2px;background:#ccc;margin:0 auto .5rem}
+.ic-x{position:absolute;top:.35rem;right:.35rem}
+.ic-sheet h3{font-family:var(--mw-font-heading);font-size:1.35rem;margin:.2rem 2.8rem .3rem 0}
+.ic-lead2{font-weight:700;color:var(--mw-lagoon);margin:0 0 .3rem}
+.ic-list{list-style:none;margin:0 0 .8rem;padding:0}
+.ic-list li{display:flex;gap:.5rem;align-items:flex-start;padding:.45rem 0;border-top:1px solid #eee;font-size:.92rem}
+.ic-go{width:100%}
+@media(min-width:769px){.ic-pop{align-items:center}.ic-sheet{border-radius:1rem;box-shadow:0 12px 36px rgba(10,10,10,.2)}.ic-grab{display:none}}
+.hm-prices .ac-item{display:flex;align-items:center;gap:.5rem;width:100%;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer;min-height:40px}
+.hm-prices .ac-item span{flex:1}
+.hm-prices .ac-item b:after{content:" \203A";color:var(--mw-lagoon)}
+
+
+/* Oct 15 Plans And Pricing Follow-Up Deck: plan card accent Lagoon (05), roomy spacing (07), swipe cards on phone (06), $99 minimum note hidden (08), ticks per card (10), pill buttons (14) */
+.hm-plan.pc{border-top-color:var(--mw-lagoon)!important}
+.hm-plan.pc.sel{border-color:var(--mw-lagoon)!important;box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.hm-plan.pc .pc-more-link{color:var(--mw-lagoon)!important}
+.tier{border-top:4px solid var(--mw-lagoon)!important;padding:1.25rem 1.1rem!important}
+.tier.sel{border-color:var(--mw-lagoon)!important;box-shadow:0 0 0 2px var(--mw-lagoon)!important}
+.hm-plan.pc{padding:1rem 1rem!important}
+.floor-note{display:none!important}
+.tier .tier-feats ul{list-style:none;padding-left:0}
+.tier .tier-feats li{position:relative;padding-left:1.4rem}
+.tier .tier-feats li:before{content:"";position:absolute;left:.15rem;top:.4rem;width:.5rem;height:.28rem;border-left:2px solid var(--mw-lagoon);border-bottom:2px solid var(--mw-lagoon);transform:rotate(-45deg)}
+.tier .btn,.hm-plan .pc-see{border-radius:999px}
+@media(max-width:759px){.tiers{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;gap:.8rem!important;padding:.9rem .1rem .5rem;scrollbar-width:none;overscroll-behavior-x:contain}
+  .tiers::-webkit-scrollbar{display:none}.tiers .tier{flex:0 0 86%;scroll-snap-align:center;box-sizing:border-box}}
+/* Order Form Deck (Oct 15) */
+.su-sum-top .summary{margin-top:.5rem}
+.su-recap{margin:.4rem 0 0}
+.su-recap .qf-sum{margin:.3rem 0}
+.ferr{color:#B42318;font-size:.85rem;font-weight:600;margin:.25rem 0 0;min-height:0}
+.ferr:empty{display:none}
+.su-havecode{margin:.6rem 0 0}
+.su-cancel-line{text-align:center;font-weight:600;margin:.5rem 0 0;color:var(--mw-lagoon)}
+.legal.open-box{max-height:220px}
