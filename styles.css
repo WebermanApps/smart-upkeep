@@ -656,8 +656,8 @@ details.est-note summary{font-size:1rem}
 /* Phone plans swipe row (<=600px): recommended plan centered, neighbors peek, dots follow the swipe */
 .pc-dots{display:none}
 @media(max-width:600px){
-  #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0 .85rem;gap:.6rem}
-  #row-plans .hm-plan{flex:0 0 80%;min-width:0;scroll-snap-align:start}
+  #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0;gap:.6rem}
+  #row-plans .hm-plan{flex:0 0 88%;min-width:0;scroll-snap-align:center}
   .pc-dots{display:flex;justify-content:center;gap:.45rem;margin:.1rem 0 .2rem}
   .pc-dot{width:7px;height:7px;border-radius:50%;background:#d4d4d4;transition:background .2s,transform .2s}
   .pc-dot.on{background:#0a0a0a;transform:scale(1.2)}
@@ -1152,3 +1152,10 @@ body.on-qf main{padding-bottom:0}
 .su-paynext{text-align:center;margin:.2rem 0 .4rem}
 .xr-btns{display:flex;gap:.5rem;flex:1 1 260px;justify-content:flex-end}
 @media(max-width:600px){.xr-btns .btn{flex:1}}
+
+/* Start Over + dismissable resume card (Max 20:33 ICT Oct 15) */
+.hm-resume-card{position:relative;flex-wrap:wrap;padding-right:2.8rem}
+.hm-resume-x{position:absolute;top:.25rem;right:.25rem;width:44px;height:44px;border:0;background:none;font-size:1.6rem;line-height:1;color:var(--mw-muted-text);cursor:pointer}
+.hm-resume-btns{display:flex;gap:.5rem;flex-basis:100%}.hm-resume-btns .btn{flex:1}
+.qf-startover{display:block;margin:.6rem auto 0;min-height:44px;padding:0 1rem;background:none;border:0;color:var(--mw-terracotta,#C1502E);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.hm-resume-card{grid-column:1/-1;width:100%;box-sizing:border-box}.hm-resume-btns .btn{white-space:nowrap}

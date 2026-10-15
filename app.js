@@ -428,7 +428,7 @@
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
-    var T = P.teaser || {}, port = suPortrait() && T.srcV, poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
+    var T = P.teaser || {}, port = false, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted autoplay loop playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1"></video>';
@@ -571,10 +571,10 @@
     }
     return '<div class="hm">' +
       '<section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover' + (suPortrait() && (P.teaser || {}).srcV ? ' portrait' : '') + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:48</span></button>' +
+        '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:48</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
         '<p class="hm-lead">Catch small problems before they&rsquo;re big ones.</p><p class="start-at">Membership Starting at $99/Month</p>' +
-        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? resumeCard() : '') + '</div>' +
+        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
@@ -607,23 +607,26 @@
     var dots = [].slice.call(root.querySelectorAll("#row-plans .pc-dot"));
     var mq = window.matchMedia("(max-width:600px)");
     function cards() { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
-    function center(el) { return el.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft); }
+    /* Max 20:36 ICT Oct 15: cards ~82% wide, snap to center, Plus centered on load with Essentials/Complete peeking; positioned before first paint (no jump). */
+    function mid(el) { var cr = el.getBoundingClientRect(), sr = sc.getBoundingClientRect(); return (cr.left + cr.width / 2) - (sr.left + sr.width / 2); }
     function sync() {
       if (!mq.matches) return;
       var best = null, d = 1e9;
-      cards().forEach(function (c) { var x = Math.abs(center(c) - sc.scrollLeft); if (x < d) { d = x; best = c; } });
+      cards().forEach(function (c) { var x = Math.abs(mid(c)); if (x < d) { d = x; best = c; } });
       dots.forEach(function (o) { o.classList.toggle("on", !!best && o.getAttribute("data-dot") === best.getAttribute("data-tier")); });
     }
     function start() {
       if (!mq.matches) return;
-      var c = sc.querySelector(".hm-plan.sel") || sc.querySelector(".hm-plan.rec");
-      if (c) { var cr = c.getBoundingClientRect(), sr = sc.getBoundingClientRect(); sc.scrollLeft += (cr.left + cr.width / 2) - (sr.left + sr.width / 2); } else sc.scrollLeft = 0;
+      var c = sc.querySelector(".hm-plan.rec") || sc.querySelector(".hm-plan.sel");
+      var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
+      if (c) sc.scrollLeft += mid(c); else sc.scrollLeft = 0;
+      sc.style.scrollBehavior = sb;
       sync();
     }
     var raf = 0;
     sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
     if (mq.addEventListener) mq.addEventListener("change", start);
-    requestAnimationFrame(start);
+    start(); requestAnimationFrame(start);
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
   function bindPlanSelect(root) {
@@ -733,10 +736,14 @@
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
   /* Coming back later: Resume Card (Info Gather Deck). */
+  /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
+  function hasResume() { return !!S.resume && /^(q\d+|choice|photos|visit|quote|signup|pay)$/.test(S.resume); }
+  function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function resumeCard() {
     var done = Q.filter(function (q) { return S.answers[q.id] !== undefined; }).length;
     return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + Q.length + ' questions answered</small></div>' +
-      '<button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button></div>';
+      '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">&times;</button>' +
+      '<span class="hm-resume-btns"><button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button><button class="btn btn-outline mw-hover" data-act="startOver" type="button">Start Over</button></span></div>';
   }
   function overview() {
     var steps = [
@@ -819,7 +826,7 @@
     var dyk = DYK[q.id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[q.id] + '</p></div>' : "";
     return '<section class="qf qf-' + q.id + '">' + qHead(i) +
       '<div class="qf-hero stack">' + qArt(QART[q.id], tint) + '<h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div>' +
-      '<div class="qf-body">' + body + side + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + '</div></section>';
+      '<div class="qf-body">' + body + side + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + startOverBtn() + '</div></section>';
   }
   function unsureBtn(sel) { return '<button type="button" class="opt unsure mw-hover' + (sel ? " sel" : "") + '" data-unsure="1">Unsure</button>'; }
   function isAnswered(q) {
@@ -850,7 +857,7 @@
       '<div class="qf-prog"><span class="qf-step">All ' + Q.length + ' Done</span><div class="qf-segs all" aria-hidden="true">' + Q.map(function () { return '<span class="done"></span>'; }).join("") + '</div></div>' +
       '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' + answerSummary() +
       '<div class="qf-foot"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p>' + tagLine() + navBar() + '</div></section>';
+      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p>' + tagLine() + navBar() + startOverBtn() + '</div></section>';
   }
 
   function photoCards() {
@@ -1384,6 +1391,8 @@
   function act(a) {
     if (a === "back") return back();
     if (a === "home") return go("home");
+    if (a === "dismissResume") { S = fresh(); photoMem = {}; save(); render(); return; }
+    if (a === "startOver") { S = fresh(); photoMem = {}; save(); return go("q0"); }
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : "q0"); }
     if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
     if (a === "watch") return openVideo(true);
