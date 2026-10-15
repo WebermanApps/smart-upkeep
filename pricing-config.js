@@ -84,7 +84,7 @@ window.SMART_UPKEEP_PRICING = {
   /* A la carte add-ons / one-off services. Midpoints from pricing-48322. Draft. */
   /* Add Extras row on the sign-up form shows these first (Max's note, deck card 11: offer the ones members are likeliest to add).
      Picks: yearly seasonal jobs most homes can use that pair with visits. Tune from the add-on event log once real data exists. */
-  likelyAddons: ["guttersExtra", "windows", "pressure", "pest"],
+  likelyAddons: ["guttersExtra", "windows", "pressure", "pest", "lights"],
   addons: [
     { id: "windows", label: "Exterior Window Washing", desc: "Outside glass, typically once or twice a year.", low: 150, high: 302, unit: "service", annual: 225 },
     { id: "carpet", label: "Carpet Cleaning", desc: "Whole-home carpet clean, once a year.", low: 400, high: 1800, unit: "service", annual: 600 },
@@ -94,7 +94,7 @@ window.SMART_UPKEEP_PRICING = {
     { id: "deck", label: "Deck Sealing or Staining", desc: "Protect and refresh your deck every few years.", low: 550, high: 1250, unit: "service", annual: 900 },
     { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 129, high: 381, unit: "service", annual: 255 },
     { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years.", low: 271, high: 509, unit: "service", annual: 390 },
-    { id: "lights", label: "Holiday Lights", desc: "Install in fall and take down after the holidays.", low: 220, high: 684, unit: "season", annual: 450 },
+    { id: "lights", label: "Christmas Lights Up and Down", desc: "Seasonal extra: we put your Christmas lights up and take them down after the holidays.", low: 220, high: 684, unit: "season", annual: 450 },
     { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
     { id: "handyman", label: "Extra Handyman Hours", desc: "8 hours of extra handyman time during the year.", low: 600, high: 1000, unit: "service", annual: 800, note: "$75–$125/hr" },
     { id: "pest", label: "Pest Control (Quarterly)", desc: "Four quarterly visits through a coordinated partner.", low: 400, high: 1200, unit: "service", annual: 800 },
