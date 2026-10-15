@@ -1065,3 +1065,11 @@ body.on-qf main{padding-bottom:0}
   .qf-sum li{padding:.3rem .7rem}.qf-sum .link{min-height:28px}
 }
 @media(max-width:700px){.hm-resume-card{flex-wrap:wrap;gap:.45rem;padding:.55rem}.hm-resume-card .qf-art{display:none}.hm-resume-card b{font-size:.92rem}.hm-resume-card small{font-size:.76rem}.hm-resume-card .btn{width:100%;min-height:40px}}
+/* Oct 15 deck picks */
+.modal-inner{position:relative}
+.tap-sound{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:6;display:flex;align-items:center;gap:.5rem;min-height:56px;padding:0 1.3rem;border-radius:999px;border:0;background:#D4A017;color:#171717;font:600 1.1rem Hind,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer}
+.tap-sound[hidden]{display:none}
+.hm-lead{margin:.2rem 0 .3rem;font-weight:600}
+.mh-pic{border-radius:12px;overflow:hidden;aspect-ratio:2/1;background:#EEF2E8}
+@media(min-width:760px){.tiers.n3{grid-template-columns:repeat(3,1fr)}}
+.hm{overflow-x:clip}

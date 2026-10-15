@@ -46,7 +46,8 @@ window.SMART_UPKEEP_PRICING = {
     fireplace:   { label: "Gas Fireplace", gold: 150 },
     generator:   { label: "Standby Generator", platinumOnly: 450 },
     pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits; opening and closing quoted separately" },
-    humidifier:  { label: "Whole-House Humidifier or Water Softener", gold: 60 }
+    humidifier:  { label: "Whole-House Humidifier", gold: 60 },
+    softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
   platinumRoofInspection: 250,
   platinumAnnualDiscount: 0.10, // DRAFT

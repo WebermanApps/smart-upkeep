@@ -15,14 +15,14 @@
     { id: "furnaces", type: "single", title: "How Many Furnaces Do You Have?", help: "Most homes over 3,500 sq ft have two.", opts: [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4 or More"]] },
     { id: "acs", type: "single", title: "How Many AC Units?", help: "Count the outdoor condensers.", opts: [["0", "None"], ["1", "1"], ["2", "2"], ["3", "3 or More"]] },
     { id: "waterHeaters", type: "wh", title: "How Many Water Heaters?", help: "And what kind. Tankless units mount on the wall.", opts: [["1", "1"], ["2", "2"], ["3", "3 or More"]] },
-    { id: "softener", type: "single", title: "Do You Have a Water Softener?", help: "Usually a tall tank and a salt bin near the water heater.", opts: [["yes", "Yes"], ["no", "No"], ["notsure", "Not Sure"]] },
+    /* Funnel Deck (Max, Oct 14): no "When was your home built?" question. We look up home age from the address later. Water softener moved into Extras. */
     { id: "stories", type: "single", title: "How Many Stories Is Your Home?", help: "This sets gutter cleaning and ladder work.", opts: [["1", "1 Story (Ranch)"], ["2", "2 Stories"], ["3", "3 Stories"]] },
     { id: "extras", type: "multi", title: "Do You Have Any of These?", help: "Pick all that apply.",
       opts: Object.keys(P.extras).map(function (k) { return [k, P.extras[k].label]; }) },
     { id: "zip", type: "zip", title: "What's Your Address or ZIP Code?", help: "We serve metro Detroit: Wayne, Oakland, Macomb and nearby." },
   ];
   /* Info Gather Deck (Oct 14): three chapters shown above a segmented bar, one segment per question. */
-  var CHAPTERS = [["Your Home", ["sqft"]], ["Your Systems", ["furnaces", "acs", "waterHeaters", "softener"]], ["Finishing Up", ["stories", "extras", "zip"]]];
+  var CHAPTERS = [["Your Home", ["sqft"]], ["Your Systems", ["furnaces", "acs", "waterHeaters"]], ["Finishing Up", ["stories", "extras", "zip"]]];
   function chapterOf(id) { for (var c = 0; c < CHAPTERS.length; c++) if (CHAPTERS[c][1].indexOf(id) > -1) return c; return CHAPTERS.length - 1; }
   /* Snap-a-photo side path on each system question. */
   var QPHOTO = { furnaces: "furnace1", acs: "ac1", waterHeaters: "wh1", softener: "softener" };
@@ -171,7 +171,7 @@
       var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
       linesGold.push({ label: e.label, amt: e.gold, est: uEx });
     });
-    if (a.softener === "yes") linesGold.push({ label: "Water softener salt top-off and service check", amt: 0, est: false, note: "Included" });
+    if (a.softener === "yes" || extras.indexOf("softener") > -1) linesGold.push({ label: "Water softener salt top-off and service check", amt: 0, est: false, note: "Included" });
     linesGold.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
@@ -524,7 +524,7 @@
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:45</span></button>' +
         '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
-        '<p class="start-at">Membership Starting at $99/Month</p>' +
+        '<p class="hm-lead">Catch small problems before they&rsquo;re big ones.</p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (S.resume && S.resume !== "home" ? resumeCard() : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -905,7 +905,7 @@
       return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="eyebrow" style="margin-top:.4rem">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' + priceBlock(amt, "annual") + floorNote +
         '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button>' +
-        '<details class="tier-feats"><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
+        '<details class="tier-feats" open><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
     var lmSum = lastMinuteTotal();
@@ -1155,8 +1155,28 @@
           '<p class="small muted" style="margin:.6rem 0 0" id="refCopyMsg"></p>' +
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
+      myHomeCard(su) + firstVisitCard() +
       '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
+  /* Plans & Pricing Deck note (Oct 14): a picture of the member's house after sign-up. Placeholder drawing for now; real street or satellite photo from the address is a follow-up. */
+  function myHomeCard(su) {
+    return '<div class="card my-home-card" style="margin-top:1rem"><h3>Your Home</h3>' +
+      '<div class="mh-pic" role="img" aria-label="Your home picture (placeholder)"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#D4A017" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#D4A017"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
+      '<p style="margin:.6rem 0 0"><strong>' + esc(su.address || "Your Address") + '</strong></p><p class="small muted" style="margin:.2rem 0 0">A photo of your home from street view appears here soon.</p></div>';
+  }
+  /* Funnel Deck (Oct 14): after sign-up, book the first visit on a calendar right away. Saved on this device until booking goes live. */
+  function firstVisitCard() {
+    var fv = S.firstVisit || "", min = new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10);
+    return '<div class="card first-visit" style="margin-top:1rem"><h3>Book Your First Visit</h3>' +
+      '<label class="fl" for="fvDate">Pick a Day</label><input id="fvDate" type="date" min="' + min + '" value="' + esc(fv) + '" style="width:100%;min-height:48px;font-size:16px">' +
+      '<button class="btn btn-primary btn-big mw-hover" type="button" data-fv="1" style="margin-top:.6rem">' + (fv ? "Change Day" : "Book This Day") + '</button>' +
+      '<p class="small muted" id="fvMsg" style="margin:.5rem 0 0">' + (fv ? "Requested: " + esc(fv) + ". We confirm by text." : "We confirm the time by text.") + '</p></div>';
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-fv]"); if (!b) return;
+    var d = document.getElementById("fvDate"), m = document.getElementById("fvMsg"); if (!d || !d.value) { if (m) m.textContent = "Pick a day first."; return; }
+    S.firstVisit = d.value; save(); if (m) m.textContent = "Requested: " + d.value + ". We confirm by text."; b.textContent = "Change Day";
+  });
 
   /* Add-on event log: placeholder until real analytics. Local only, capped at 500 events. */
   var EVKEY = "smartUpkeep.addonEvents";
@@ -1485,11 +1505,17 @@
 
   /* ---------- Video modal ---------- */
   var modal = document.getElementById("videoModal"), vid = document.getElementById("explainer"), unmute = document.getElementById("unmuteBtn");
-  function vSrc() { return window.matchMedia("(max-width: 600px), (orientation: portrait) and (max-width: 900px)").matches ? "video/explainer-v4-9x16.mp4?v=v4a" : "video/explainer-v4-16x9.mp4?v=v4a"; } /* V4 official. Rollback to V3: video/explainer-v34-9x16.mp4 / explainer-v34-16x9.mp4 */
+  function vSrc() { return "video/explainer-v4-16x9.mp4?v=v4a"; } /* Video Deck (Oct 14): 16:9 in a card on phones too, page stays visible */ /* V4 official. Rollback to V3: video/explainer-v34-9x16.mp4 / explainer-v34-16x9.mp4 */
+  /* Browsers block unmuted autoplay, so the video starts muted with a big Tap for Sound button (Funnel Deck note, Oct 14). */
+  var tfs = document.createElement("button"); tfs.type = "button"; tfs.id = "tapSound"; tfs.className = "tap-sound mw-hover"; tfs.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="#171717"/><path d="M16 8a5 5 0 0 1 0 8M18.5 5.5a8.5 8.5 0 0 1 0 13" fill="none" stroke="#171717" stroke-width="2" stroke-linecap="round"/></svg><span>Tap for Sound</span>';
+  vid.parentNode.appendChild(tfs);
+  function syncTfs() { tfs.hidden = !vid.muted; }
+  tfs.addEventListener("click", function (e) { e.stopPropagation(); vid.muted = false; unmute.textContent = "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
+  vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
   function openVideo(userAsked) {
     var src = vSrc();
     if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v4-9x16.jpg?v=v4a" : "assets/poster-v4-16x9.jpg?v=v4a"); }
-    vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute";
+    vid.muted = !userAsked; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs();
     modal.querySelector(".modal-inner").classList.toggle("portrait", src.indexOf("9x16") > -1);
     var badge = document.getElementById("videoStartAt");
     if (!badge) {
@@ -1502,14 +1528,14 @@
     }
     modal.hidden = false; document.body.style.overflow = "hidden";
     try { vid.currentTime = 0; } catch (e) {}
-    var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; vid.play().catch(function () {}); });
+    var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; syncTfs(); vid.play().catch(function () {}); });
     document.getElementById("skipBtn").focus({ preventScroll: true });
   }
   function closeVideo() { vid.pause(); modal.hidden = true; document.body.style.overflow = ""; try { sessionStorage.setItem(VKEY, "1"); } catch (e) {} }
   document.getElementById("videoClose").addEventListener("click", closeVideo);
   document.getElementById("skipBtn").addEventListener("click", closeVideo);
-  unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; if (vid.paused) vid.play().catch(function () {}); });
-  vid.addEventListener("ended", closeVideo);
+  unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
+  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("row-plans"); if (pl) setTimeout(function () { pl.scrollIntoView({ behavior: "smooth", block: "start" }); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
   modal.addEventListener("click", function (e) { if (e.target === modal) closeVideo(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
 
