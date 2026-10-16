@@ -12,7 +12,11 @@
 
   function ok() { window.__SU_GATE_OK = true; }
   function unlocked() {
-    try { var s = sessionStorage.getItem(KEY); return !!s && HASHES.indexOf(s) > -1; } catch (e) { return false; }
+    try {
+      /* Outer page-lock gate already passed this session (share or main password): skip pre-launch gate. */
+      if (sessionStorage.getItem("mwPagelockOk")) return true;
+      var s = sessionStorage.getItem(KEY); return !!s && HASHES.indexOf(s) > -1;
+    } catch (e) { return false; }
   }
   /* Base URL of this script, so the gate logo resolves from any subfolder. */
   var BASE = (function () {
