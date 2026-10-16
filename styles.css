@@ -1220,3 +1220,5 @@ body.on-home .hdr-van.leave .arm{animation:techWave .32s ease-in-out infinite al
 @media (min-width:900px){.topbar .brand img{height:65px}}
 body.on-home .hm > .hm-row,body.on-home .hm > .hm-accs{padding-top:8px}
 body.on-home .hm > .fs-ad{margin-top:calc(.8rem + 8px)}
+/* Oct 16 2026 (f): static wheels, no spin */
+.hdr-van .vw,body.on-home .hdr-van.moving .vw{animation:none!important;transform:none!important}
