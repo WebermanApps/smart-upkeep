@@ -1181,3 +1181,4 @@ body.on-home .topbar{min-height:72px;padding-bottom:.6rem}
 @media (min-width:900px){body.on-home .topbar{min-height:80px}}
 .hdr-van{bottom:3px;transform:translateX(-100px)}
 @keyframes vanDrive{0%{opacity:0;transform:translateX(-100px)}6%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateX(calc(100vw + 10px))}}
+@media (max-width:600px){.hdr-van svg{width:72px;height:40px}}
