@@ -1681,9 +1681,10 @@
   else bootApp();
 })();
 
-/* Oct 16 2026: header van parks centered on scroll down, drives off right at top (repeatable); reduced motion = parked, no motion */
+/* Oct 16 2026: header van parks centered after first scroll >80px, drives off right once at top after >=300px; once per load; reduced motion = parked, no motion */
 (function () {
   var v = document.querySelector(".hdr-van"); if (!v) return;
+  var maxY = 0, used = false;
   var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var state = "out"; // out | park | leave
   function place() {
@@ -1698,16 +1699,17 @@
   v.addEventListener("transitionend", function (e) {
     if (e.target !== v) return;
     v.classList.remove("moving");
-    if (state === "leave") { v.classList.remove("leave"); state = "out"; check(); }
+    if (state === "leave") { state = "gone"; }
   });
   function check() {
     var y = window.scrollY || document.documentElement.scrollTop;
     document.body.classList.toggle("scrolled", y > 4);
     if (!document.body.classList.contains("on-home")) return;
-    if (y > 6 && state === "out") { place(); void v.offsetWidth; state = "park"; moving(); v.classList.add("park"); }
-    else if (y <= 2 && state === "park") {
+    if (y > maxY) maxY = y;
+    if (y > 80 && state === "out" && !used) { used = true; place(); void v.offsetWidth; state = "park"; moving(); v.classList.add("park"); }
+    else if (y <= 10 && state === "park" && maxY >= 300) {
       state = "leave"; v.classList.remove("park");
-      if (rm) { state = "out"; return; }
+      if (rm) { state = "gone"; v.style.visibility = "hidden"; return; }
       moving(); v.classList.add("leave");
     }
   }
