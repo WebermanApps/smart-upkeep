@@ -430,6 +430,7 @@
   function heroMedia() {
     var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (port) { /* Oct 17: phone hero uses a word-free square cut (V7 26.9-30.6s: furnace + moisture scan) */ tsrc = "video/teaser-v7-phone-1x1.mp4?v=p1"; poster = "assets/teaser-v7-phone-1x1-poster.jpg?v=p1"; wh = 'width="720" height="720"'; }
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted autoplay playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
@@ -600,7 +601,7 @@
         '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
-        '<div class="hm-hchips" aria-label="Why Trust Us">' + HERO_CHIPS.map(function (c) { return '<span class="hm-hchip">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hchips" aria-label="Why Trust Us">' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
@@ -620,7 +621,7 @@
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
-      '</section>' + featuredAd() + wiPop() + icSheet() +
+      '</section>' + featuredAd() + '<div class="hm-share"><button type="button" class="hm-share-btn mw-hover" data-share aria-label="Share Smart Upkeep"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2"/></svg><span>Share</span></button><span class="hm-share-msg small" role="status"></span></div>' + wiPop() + icSheet() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
         [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
@@ -1681,8 +1682,10 @@
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
 
   /* ---------- Share ---------- */
-  document.getElementById("shareBtn").addEventListener("click", function () {
-    var url = location.origin + location.pathname, p = price(), msg = document.getElementById("shareMsg");
+  document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
+  document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
+  function doShare(mEl) {
+    var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
     if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
@@ -1693,7 +1696,7 @@
     if (navigator.share) { navigator.share({ title: "Smart Upkeep", text: text, url: url }).catch(function (e) { if (e && e.name !== "AbortError") copy(); }); return; }
     if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { location.href = "sms:?&body=" + encodeURIComponent(text + " " + url); setTimeout(copy, 600); return; }
     copy();
-  });
+  }
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (S.screen !== "q0") go("q0"); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); });
@@ -1707,15 +1710,39 @@
   else bootApp();
 })();
 
-/* Oct 16 2026: header van drives right-to-left once per load on first scroll >80px; reduced motion skips */
+/* Oct 17 2026: header van. First scroll >80px: speeds in from the right (~700ms) and parks in the larger free gap
+   beside the centered logo (never over logo/Share). Stays parked until the visitor scrolls back to the top after 300px+,
+   then the tech waves and it drives off left (~1.2s). Once per session; reduced motion skips. */
 (function () {
-  var v = document.querySelector(".hdr-van"); if (!v) return;
-  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, used = false;
+  var v = document.querySelector(".hdr-van"), rd = document.querySelector(".hdr-road"); if (!v) return;
+  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var done = false; try { done = sessionStorage.getItem("suVanDone") === "1"; } catch (e) {}
+  var state = "out", maxY = 0;
+  function place() {
+    var bar = document.querySelector(".topbar"), b = bar && bar.querySelector(".brand"), sh = bar && bar.querySelector(".top-share");
+    if (!b || !sh) return false;
+    var r = bar.getBoundingClientRect(), br = b.getBoundingClientRect(), sr = sh.getBoundingClientRect(), sL = (sh.offsetParent && sr.width) ? sr.left - r.left - 10 : r.width - 12;
+    var gaps = [[12, br.left - r.left - 10], [br.right - r.left + 10, sL]];
+    gaps.sort(function (x, y) { return (y[1] - y[0]) - (x[1] - x[0]); });
+    var g = gaps[0], room = g[1] - g[0]; if (room < 44) return false;
+    var svg = v.querySelector("svg"), w = Math.min(84, room);
+    svg.setAttribute("width", Math.round(w)); svg.setAttribute("height", Math.round(w * 36 / 64));
+    v.style.setProperty("--park", Math.round(g[0] + (room - w) / 2) + "px");
+    return true;
+  }
   function check() {
     var y = window.scrollY || document.documentElement.scrollTop;
     document.body.classList.toggle("scrolled", y > 4);
-    if (used || rm || y <= 80 || !document.body.classList.contains("on-home")) return;
-    used = true; v.classList.add("go"); var rd = document.querySelector(".hdr-road"); if (rd) rd.classList.add("go");
+    if (done || rm || !document.body.classList.contains("on-home")) return;
+    if (y > maxY) maxY = y;
+    if (state === "out" && y > 80) {
+      if (!place()) return;
+      state = "park"; void v.offsetWidth; v.classList.add("vpark"); if (rd) rd.classList.add("vpark");
+    } else if (state === "park" && y <= 10 && maxY >= 300) {
+      state = "gone"; done = true; try { sessionStorage.setItem("suVanDone", "1"); } catch (e) {}
+      v.classList.add("vleave"); if (rd) rd.classList.add("vleave");
+    }
   }
   window.addEventListener("scroll", check, { passive: true });
+  window.addEventListener("resize", function () { if (state === "park") place(); });
 })();

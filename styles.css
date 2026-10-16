@@ -1278,3 +1278,29 @@ body.on-home .hdr-road.go{animation:roadIn 4.2s ease-out forwards}
 @keyframes roadIn{0%{opacity:.9;clip-path:inset(0 0 0 100%)}38%{opacity:.9;clip-path:inset(0 0 0 0)}70%{opacity:.75;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.hdr-road{display:none!important}}
 @media (max-width:480px){body.on-home main{padding-left:0!important;padding-right:0!important}body.on-home .hm{padding-left:.85rem;padding-right:.85rem}}
+/* ===== Oct 17 2026 (b): chip tints, Share moved out of home header, logo shrink via transform, van park/leave ===== */
+.hm-hchip.t0{background:rgba(193,80,46,.11);border-color:rgba(193,80,46,.22);color:var(--mw-terracotta-deep,#A8431F)}
+.hm-hchip.t1{background:rgba(5,102,141,.10);border-color:rgba(5,102,141,.2);color:var(--mw-lagoon,#05668D)}
+.hm-hchip.t2{background:rgba(212,160,23,.15);border-color:rgba(212,160,23,.3);color:#7a5a0e}
+.hm-hchip.t3{background:rgba(11,110,79,.10);border-color:rgba(11,110,79,.2);color:var(--mw-jungle,#0B6E4F)}
+.hm-hchip.t0 svg,.hm-hchip.t1 svg,.hm-hchip.t2 svg,.hm-hchip.t3 svg{color:currentColor}
+body.on-home .topbar .top-share{display:none!important}
+.hm-share{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:1.6rem 0 .4rem}
+.hm-share-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .8rem;border:1px solid var(--mw-border,#e5e5e5);border-radius:999px;background:transparent;color:#3d3d3d;font:500 .82rem Hind,sans-serif;cursor:pointer}
+/* logo: bigger at page open, shrinks on scroll by transform only (header height fixed => no layout shift) */
+body.on-home .topbar .brand img{transform:scale(1.14);transform-origin:center;transition:transform .25s ease}
+body.on-home.scrolled .topbar .brand img{transform:scale(1)}
+@media (prefers-reduced-motion:reduce){body.on-home .topbar .brand img{transition:none}}
+/* van: park + leave (replaces the single drive-through) */
+body.on-home .hdr-van.go,body.on-home .hdr-van.go svg,body.on-home .hdr-van.go .tech,body.on-home .hdr-road.go{animation:none}
+body.on-home .hdr-van.vpark{transform:translateX(var(--park,60vw));transition:transform .7s cubic-bezier(.15,.75,.3,1)}
+body.on-home .hdr-van.vpark svg{animation:vanBrake .9s ease-out forwards}
+@keyframes vanBrake{0%,60%{transform:scaleX(-1)}75%{transform:scaleX(-1) scale(1.05,.92)}88%{transform:scaleX(-1) scale(.99,1.02)}100%{transform:scaleX(-1)}}
+body.on-home .hdr-van.vleave{transform:translateX(-120px);transition:transform 1.2s cubic-bezier(.55,0,.85,.4) .35s}
+body.on-home .hdr-van.vleave svg{animation:vanTilt 1.55s ease-in-out forwards}
+@keyframes vanTilt{0%,22%{transform:scaleX(-1)}32%{transform:scaleX(-1) rotate(-4deg)}48%,100%{transform:scaleX(-1)}}
+body.on-home .hdr-van .tech{opacity:0;transition:opacity .2s}
+body.on-home .hdr-van.vleave .tech{opacity:1}
+body.on-home .hdr-van.vleave .arm{animation:techWave .3s ease-in-out infinite alternate}
+body.on-home .hdr-road.vpark{opacity:.9;clip-path:inset(0 0 0 0);transition:clip-path .7s cubic-bezier(.15,.75,.3,1)}
+body.on-home .hdr-road.vleave{opacity:0;transition:clip-path .7s,opacity 1.4s ease .2s}
