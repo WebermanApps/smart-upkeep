@@ -1209,3 +1209,14 @@ body.on-home .hdr-van.moving .vb{animation:vanBob .3s ease-in-out infinite alter
 .hm-hero .hm-thumb{background:#FBF6EE url(assets/teaser-v7-poster.jpg?v=v7a) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
 .hm-hero .hm-teaser{filter:saturate(1.15) contrast(1.06) sepia(.06);background:transparent}
 .hm-hero .start-at{border-color:#C1502E!important}
+/* Oct 16 2026 (e): waving tech on drive-off, bigger logo, more space between home sections */
+.hdr-van .tech{opacity:0;transition:opacity .25s}
+body.on-home .hdr-van.leave .tech{opacity:1}
+.hdr-van .arm{transform-origin:48.6px 10.8px;transform-box:view-box}
+body.on-home .hdr-van.leave .arm{animation:techWave .32s ease-in-out infinite alternate}
+@keyframes techWave{from{transform:rotate(-28deg)}to{transform:rotate(22deg)}}
+@media (prefers-reduced-motion:reduce){.hdr-van .arm{animation:none!important}}
+.topbar .brand img{height:56px}
+@media (min-width:900px){.topbar .brand img{height:65px}}
+body.on-home .hm > .hm-row,body.on-home .hm > .hm-accs{padding-top:8px}
+body.on-home .hm > .fs-ad{margin-top:calc(.8rem + 8px)}
