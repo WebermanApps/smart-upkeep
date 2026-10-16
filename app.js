@@ -1736,8 +1736,7 @@
     if (!b || !sh) return false;
     var r = bar.getBoundingClientRect(), br = b.getBoundingClientRect(), sr = sh.getBoundingClientRect(), sL = (sh.offsetParent && sr.width) ? sr.left - r.left - 10 : r.width - 12;
     var gaps = [[12, br.left - r.left - 10], [br.right - r.left + 10, sL]];
-    gaps.sort(function (x, y) { return (y[1] - y[0]) - (x[1] - x[0]); });
-    var g = gaps[0], room = g[1] - g[0]; if (room < 44) return false;
+    var g = gaps[0] /* left of the logo: pull-up spot */, room = g[1] - g[0]; if (room < 44) return false;
     var svg = v.querySelector("svg"), w = Math.min(84, room);
     svg.setAttribute("width", Math.round(w)); svg.setAttribute("height", Math.round(w * 36 / 64));
     v.style.setProperty("--park", Math.round(g[0] + (room - w) / 2) + "px");
