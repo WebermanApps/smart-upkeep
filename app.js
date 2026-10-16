@@ -1744,7 +1744,9 @@
   }
   function check() {
     var y = window.scrollY || document.documentElement.scrollTop;
-    document.body.classList.toggle("scrolled", y > 4);
+    var bd = document.body; /* logo size: hysteresis (shrink past 24px, grow back under 4px) so it never flickers near the threshold */
+    if (y > 24 && !bd.classList.contains("scrolled")) bd.classList.add("scrolled");
+    else if (y < 4 && bd.classList.contains("scrolled")) bd.classList.remove("scrolled");
     if (done || rm || !document.body.classList.contains("on-home")) return;
     if (y > maxY) maxY = y;
     if (state === "out" && ready) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
@@ -1753,7 +1755,7 @@
       void v.offsetWidth; v.classList.add("vcross"); if (rd) rd.classList.add("vcross");
     }
   }
-  window.addEventListener("scroll", check, { passive: true });
+  var rafQ = false; window.addEventListener("scroll", function () { if (rafQ) return; rafQ = true; requestAnimationFrame(function () { rafQ = false; check(); }); }, { passive: true });
   /* Oct 17 01:13: start ~0.3s after the page is visible and the gate is passed, even with the video pop-up open (header sits above its backdrop) */
   var ready = false;
   (function waitReady() {
