@@ -1182,3 +1182,30 @@ body.on-home .hdr-van.moving .vw{animation:vanWheel .36s linear infinite}
 body.on-home .hdr-van.moving .vb{animation:vanBob .3s ease-in-out infinite alternate}
 @keyframes vanBob{to{transform:translateY(-.6px)}}
 @media (prefers-reduced-motion:reduce){.hdr-van,body.on-home .hdr-van.park,body.on-home .hdr-van.leave{transition:none!important}.hdr-van .vw,.hdr-van .vb{animation:none!important}}
+
+/* Hero C (shipped Oct 16): polish layout + warm tones */
+.hm-hero{display:grid!important;grid-template-columns:1fr!important;gap:0!important;
+  max-width:1120px;margin:1rem auto 0!important;padding:1.5rem 1rem!important;
+  background:#fff;border:1px solid var(--mw-border,#e5e0d8);border-top:3px solid var(--mw-terracotta,#C1502E);border-radius:4px}
+.hm-hero .hm-hero-txt{display:contents}
+.hm-hero h1{order:1;margin:0;font-family:Khand,var(--mw-font-heading),sans-serif;font-weight:700;font-size:clamp(2.1rem,7.5vw,3.6rem);line-height:1.02;letter-spacing:-.01em;color:#1a1a1a;max-width:14ch}
+.hm-hero .hm-lead{order:2;margin:.5rem 0 0!important;font-family:Hind,sans-serif;font-weight:500;font-size:1.1rem;line-height:1.45;color:#3d3d3d;max-width:34ch}
+.hm-hero .hm-thumb{order:3;margin:1.5rem 0 0;width:100%;aspect-ratio:16/9;border-radius:4px;box-shadow:0 6px 18px rgba(10,10,10,.08)}
+.hm-hero .start-at{order:4;margin:1.5rem 0 0!important;text-align:left;justify-self:start;color:var(--mw-jungle,#0B6E4F)}
+.hm-hero .hm-cta-inline{order:5;margin:1rem 0 0!important;width:100%;border-radius:4px!important}
+.hm-hero .hm-resume-card{order:6;margin-top:1rem}
+.hm-hero>.hm-thumb,.hm-hero h1,.hm-hero .hm-lead,.hm-hero .start-at,.hm-hero .hm-cta-inline,.hm-hero .hm-resume-card{grid-column:1/-1!important;grid-row:auto!important}
+.hm-hero .start-at{font-size:.8rem!important;padding:.4rem .6rem!important}
+@media(min-width:900px){
+  .hm-hero{grid-template-columns:minmax(0,5fr) minmax(0,6fr)!important;grid-template-rows:auto auto auto 1fr;column-gap:3rem!important;align-items:start;padding:3rem!important;margin-top:1.5rem!important}
+  .hm-hero h1,.hm-hero .hm-lead,.hm-hero .start-at,.hm-hero .hm-cta-inline,.hm-hero .hm-resume-card{grid-column:1!important}
+  .hm-hero h1{grid-row:1!important}
+  .hm-hero .hm-lead{grid-row:2!important;margin-top:1rem!important;font-size:1.2rem}
+  .hm-hero .start-at{grid-row:3!important;margin-top:2rem!important}
+  .hm-hero .hm-cta-inline{grid-row:4!important;width:auto;min-width:15rem;justify-self:start}
+  .hm-hero .hm-thumb{grid-column:2!important;grid-row:1/span 4!important;margin:0;align-self:center}
+}
+.hm-hero{background:#FBF6EE!important;border-color:#EADFCF!important;border-top-color:#C1502E!important}
+.hm-hero .hm-thumb{background:#FBF6EE url(assets/teaser-v7-poster.jpg?v=v7a) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+.hm-hero .hm-teaser{filter:saturate(1.15) contrast(1.06) sepia(.06);background:transparent}
+.hm-hero .start-at{border-color:#C1502E!important}
