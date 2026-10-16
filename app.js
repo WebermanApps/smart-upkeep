@@ -1754,12 +1754,11 @@
     }
   }
   window.addEventListener("scroll", check, { passive: true });
-  /* Oct 17 01:08: start ~0.3s after the page is visible and unlocked (gate passed, video pop-up closed); no interaction needed */
+  /* Oct 17 01:13: start ~0.3s after the page is visible and the gate is passed, even with the video pop-up open (header sits above its backdrop) */
   var ready = false;
   (function waitReady() {
     if (done || rm) return;
-    var m = document.getElementById("videoModal");
-    if (document.hidden || document.body.classList.contains("gate-locked") || !document.body.classList.contains("on-home") || (m && !m.hidden)) { setTimeout(waitReady, 200); return; }
+    if (document.hidden || document.body.classList.contains("gate-locked") || !document.body.classList.contains("on-home")) { setTimeout(waitReady, 200); return; }
     setTimeout(function () { ready = true; check(); }, 300);
   })();
   window.addEventListener("resize", function () { if (state === "park") place(); });
