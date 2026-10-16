@@ -428,11 +428,29 @@
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
-    var T = P.teaser || {}, port = false, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
+    var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted autoplay playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
+  /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
+  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Honest Refund"], ["clipboard", "Report Every Visit"], ["house", "Metro Detroit"], ["shield", "Insured Techs"], ["shield", "Background-Checked Yearly"], ["refund", "Cancel Anytime, No Fee"], ["clipboard", "Photo Report Every Visit"], ["house", "Home Record Kept"], ["clock", "Seasonal Visits"], ["meter", "Moisture Scan Every Visit"]];
+  /* gentle auto-scroll for phone hero chips; pauses on touch, skipped for reduced motion */
+  (function heroChips() {
+    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (rm) return;
+    var hold = 0, acc = 0;
+    function tick() {
+      var el = document.querySelector(".hm-hchips");
+      if (el && el.offsetParent && Date.now() > hold && el.scrollWidth > el.clientWidth + 4) {
+        acc += 0.35; if (acc >= 1) { var n = Math.floor(acc); acc -= n; el.scrollLeft += n; }
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) { hold = Date.now() + 1800; setTimeout(function () { el.scrollTo({ left: 0, behavior: "smooth" }); }, 1500); }
+      }
+      requestAnimationFrame(tick);
+    }
+    function pause(e) { if (e.target.closest && e.target.closest(".hm-hchips")) hold = Date.now() + 4000; }
+    ["touchstart", "pointerdown", "wheel"].forEach(function (t) { document.addEventListener(t, pause, { passive: true, capture: true }); });
+    requestAnimationFrame(tick);
+  })();
   /* Hero C: start teaser at 0.6s (skip white fade-in) and loop from there */
   (function heroSeek() {
     var S = 0.6;
@@ -579,9 +597,10 @@
     return '<div class="hm">' +
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
-        '<div class="hm-hero-txt"><h1>Your Home, Taken Care Of.</h1>' +
-        '<p class="hm-lead">Catch small problems before they&rsquo;re big ones.</p><p class="start-at">Membership Starting at $99/Month</p>' +
-        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button">Get Started</button>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
+        '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $99/Month</p>' +
+        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
+        '<div class="hm-hchips" aria-label="Why Trust Us">' + HERO_CHIPS.map(function (c) { return '<span class="hm-hchip">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
@@ -1696,7 +1715,7 @@
     var y = window.scrollY || document.documentElement.scrollTop;
     document.body.classList.toggle("scrolled", y > 4);
     if (used || rm || y <= 80 || !document.body.classList.contains("on-home")) return;
-    used = true; v.classList.add("go");
+    used = true; v.classList.add("go"); var rd = document.querySelector(".hdr-road"); if (rd) rd.classList.add("go");
   }
   window.addEventListener("scroll", check, { passive: true });
 })();

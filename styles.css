@@ -1242,3 +1242,39 @@ body.on-home .hdr-van.go .arm{animation:techWave .32s ease-in-out 2.1s infinite 
 body.on-home .hdr-van.go .vb{animation:vanBob .3s ease-in-out infinite alternate}
 body.on-home .hdr-van.leave .tech{opacity:0}
 @media (prefers-reduced-motion:reduce){.hdr-van{display:none!important}}
+/* ===== Oct 17 2026: phone home top section (<=480px). Desktop/tablet keep Hero C. ===== */
+.hm-lead-s,.hm-cta-s,.hm-hchips{display:none}
+.hm-br{display:none}
+@media (max-width:480px){
+  .hm-br{display:inline}
+  .hm-hero{position:relative;display:block!important;width:100vw;margin:0 0 0 calc(50% - 50vw)!important;padding:0!important;border:0!important;border-radius:0!important;background:#FBF6EE!important;box-shadow:none!important}
+  .hm-hero .hm-thumb{display:block;width:100%;aspect-ratio:1/1!important;margin:0!important;border-radius:0!important;box-shadow:none!important}
+  .hm-hero .hm-thumb img,.hm-hero .hm-thumb video{object-fit:cover;object-position:center}
+  .hm-hero .hm-dur{display:none}
+  .hm-hero .hm-expand{top:.7rem;right:.7rem;bottom:auto}
+  .hm-hero .hm-hero-txt{display:block!important;position:relative;z-index:2;margin-top:-170px;padding:70px 1.1rem .9rem;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(251,246,238,0) 0,rgba(251,246,238,.82) 52px,rgba(251,246,238,.97) 96px,#FBF6EE 130px)}
+  .hm-hero .hm-hero-txt>*{pointer-events:auto}
+  .hm-hero h1{font-size:44px!important;line-height:.98!important;margin:0!important;max-width:none!important;color:#2a1d15!important}
+  .hm-hero .hm-lead{margin:.4rem 0 0!important;font-size:1.02rem!important;white-space:nowrap;color:#5a4636!important}
+  .hm-lead-l,.hm-cta-l,.hm-hero .start-at{display:none!important}
+  .hm-lead-s,.hm-cta-s{display:inline}
+  .hm-hero .hm-cta-inline{display:inline-flex!important;width:auto!important;min-width:0;margin:.8rem 0 0!important;padding:.65rem 1.4rem!important;min-height:46px}
+  .hm-hchips{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;margin:.85rem -1.1rem 0;padding:0 1.1rem .1rem;-webkit-overflow-scrolling:touch}
+  .hm-hchips::-webkit-scrollbar{display:none}
+  .hm-hchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .65rem;border:1px solid #EADFCF;border-radius:999px;background:#fff;font-size:.78rem;font-weight:500;color:#3d3d3d;white-space:nowrap}
+  .hm-hchip svg{width:14px;height:14px;color:#C1502E}
+  #row-trust{display:none}
+  .hm-hero .hm-resume-card{margin:.8rem 0 0}
+}
+/* ===== Oct 17 2026: van polish (cream body, stripe, ground shadow, brake squash, pull-off tilt, road line). No dust. ===== */
+.hdr-van svg{transform-origin:50% 90%}
+body.on-home .hdr-van.go svg{animation:vanSquash 4.2s linear forwards}
+@keyframes vanSquash{0%,30%{transform:scaleX(-1)}38%{transform:scaleX(-1) scale(1.04,.93)}44%{transform:scaleX(-1) scale(.99,1.02)}50%{transform:scaleX(-1)}54%{transform:scaleX(-1) rotate(-4deg)}62%{transform:scaleX(-1) rotate(-1deg)}68%,100%{transform:scaleX(-1)}}
+body.on-home .hdr-van.go .vb{animation:none}
+.hdr-road{position:absolute;left:0;right:0;bottom:0;height:2px;pointer-events:none;opacity:0;z-index:0;
+  background:repeating-linear-gradient(90deg,#C1502E 0 10px,transparent 10px 18px);clip-path:inset(0 0 0 100%)}
+body.on-home .hdr-road.go{animation:roadIn 4.2s ease-out forwards}
+@keyframes roadIn{0%{opacity:.9;clip-path:inset(0 0 0 100%)}38%{opacity:.9;clip-path:inset(0 0 0 0)}70%{opacity:.75;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.hdr-road{display:none!important}}
+@media (max-width:480px){body.on-home main{padding-left:0!important;padding-right:0!important}body.on-home .hm{padding-left:.85rem;padding-right:.85rem}}
