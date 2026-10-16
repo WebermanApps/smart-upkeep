@@ -1681,17 +1681,36 @@
   else bootApp();
 })();
 
-/* Oct 16 2026: one-shot header van on first scroll (home only), skipped for reduced motion */
+/* Oct 16 2026: header van parks centered on scroll down, drives off right at top (repeatable); reduced motion = parked, no motion */
 (function () {
-  var done = false;
-  function onScroll() {
+  var v = document.querySelector(".hdr-van"); if (!v) return;
+  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var state = "out"; // out | park | leave
+  function place() {
+    var bar = document.querySelector(".topbar"), b = document.querySelector(".topbar .brand"), sh = document.querySelector(".topbar .top-share");
+    if (!bar || !b || !sh) return;
+    var r = bar.getBoundingClientRect(), L = b.getBoundingClientRect().right - r.left, R = sh.getBoundingClientRect().left - r.left;
+    var svg = v.querySelector("svg"), gap = R - L - 16, w = Math.max(40, Math.min(84, gap));
+    svg.setAttribute("width", Math.round(w)); svg.setAttribute("height", Math.round(w * 36 / 64));
+    v.style.setProperty("--px", Math.round((L + R) / 2) + "px");
+  }
+  function moving() { if (!rm) v.classList.add("moving"); }
+  v.addEventListener("transitionend", function (e) {
+    if (e.target !== v) return;
+    v.classList.remove("moving");
+    if (state === "leave") { v.classList.remove("leave"); state = "out"; check(); }
+  });
+  function check() {
     var y = window.scrollY || document.documentElement.scrollTop;
     document.body.classList.toggle("scrolled", y > 4);
-    if (done || y < 6 || !document.body.classList.contains("on-home")) return;
-    done = true;
-    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var v = document.querySelector(".hdr-van");
-    if (v) v.classList.add("go");
+    if (!document.body.classList.contains("on-home")) return;
+    if (y > 6 && state === "out") { place(); void v.offsetWidth; state = "park"; moving(); v.classList.add("park"); }
+    else if (y <= 2 && state === "park") {
+      state = "leave"; v.classList.remove("park");
+      if (rm) { state = "out"; return; }
+      moving(); v.classList.add("leave");
+    }
   }
-  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", check, { passive: true });
+  window.addEventListener("resize", function () { if (state === "park") place(); });
 })();
