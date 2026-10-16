@@ -1680,3 +1680,18 @@
   if (typeof window.SmartUpkeepAwaitGate === "function") window.SmartUpkeepAwaitGate(bootApp);
   else bootApp();
 })();
+
+/* Oct 16 2026: one-shot header van on first scroll (home only), skipped for reduced motion */
+(function () {
+  var done = false;
+  function onScroll() {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    document.body.classList.toggle("scrolled", y > 4);
+    if (done || y < 6 || !document.body.classList.contains("on-home")) return;
+    done = true;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var v = document.querySelector(".hdr-van");
+    if (v) v.classList.add("go");
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+})();
