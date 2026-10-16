@@ -1747,13 +1747,20 @@
     document.body.classList.toggle("scrolled", y > 4);
     if (done || rm || !document.body.classList.contains("on-home")) return;
     if (y > maxY) maxY = y;
-    if (state === "out" && window.__suFirst) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
+    if (state === "out" && ready) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
       if (!place()) return;
       state = "gone"; done = true; try { sessionStorage.setItem("suVanDone", "1"); } catch (e) {}
       void v.offsetWidth; v.classList.add("vcross"); if (rd) rd.classList.add("vcross");
     }
   }
   window.addEventListener("scroll", check, { passive: true });
-  window.addEventListener("su:first", check);
+  /* Oct 17 01:08: start ~0.3s after the page is visible and unlocked (gate passed, video pop-up closed); no interaction needed */
+  var ready = false;
+  (function waitReady() {
+    if (done || rm) return;
+    var m = document.getElementById("videoModal");
+    if (document.hidden || document.body.classList.contains("gate-locked") || !document.body.classList.contains("on-home") || (m && !m.hidden)) { setTimeout(waitReady, 200); return; }
+    setTimeout(function () { ready = true; check(); }, 300);
+  })();
   window.addEventListener("resize", function () { if (state === "park") place(); });
 })();
