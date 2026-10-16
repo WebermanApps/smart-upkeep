@@ -1304,3 +1304,5 @@ body.on-home .hdr-van.vleave .tech{opacity:1}
 body.on-home .hdr-van.vleave .arm{animation:techWave .3s ease-in-out infinite alternate}
 body.on-home .hdr-road.vpark{opacity:.9;clip-path:inset(0 0 0 0);transition:clip-path .7s cubic-bezier(.15,.75,.3,1)}
 body.on-home .hdr-road.vleave{opacity:0;transition:clip-path .7s,opacity 1.4s ease .2s}
+/* Oct 17 2026 (c): white van with real logo on the side; keep logo readable when the van is flipped */
+.hdr-van image{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}
