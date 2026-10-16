@@ -1222,3 +1222,23 @@ body.on-home .hm > .hm-row,body.on-home .hm > .hm-accs{padding-top:8px}
 body.on-home .hm > .fs-ad{margin-top:calc(.8rem + 8px)}
 /* Oct 16 2026 (f): static wheels, no spin */
 .hdr-van .vw,body.on-home .hdr-van.moving .vw{animation:none!important;transform:none!important}
+/* Oct 16 2026 (g): centered logo; van drives right-to-left once, pulls up briefly, tech waves on exit; transparent logo/Share so van passes behind cleanly */
+body.on-home .topbar .brand{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:1;background:transparent}
+body.on-home .topbar .brand img{background:transparent;display:block}
+body.on-home .topbar .btn-share{background:transparent;box-shadow:none}
+body.on-home .topbar .top-share,body.on-home .topbar .share-msg{background:transparent}
+body.on-home .hdr-van,body.on-home .hdr-van.park,body.on-home .hdr-van.leave{left:0;transform:translateX(calc(100vw + 10px));transition:none}
+.hdr-van svg{transform:scaleX(-1)}
+.hdr-van text{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}
+body.on-home .hdr-van.go{animation:vanRTL 4.2s linear forwards}
+@keyframes vanRTL{
+ 0%{transform:translateX(calc(100vw + 10px));animation-timing-function:cubic-bezier(.2,.5,.35,1)}
+ 38%{transform:translateX(calc(60vw - 40px));animation-timing-function:linear}
+ 52%{transform:translateX(calc(57vw - 40px));animation-timing-function:cubic-bezier(.5,0,.85,.5)}
+ 100%{transform:translateX(-110px)}}
+body.on-home .hdr-van.go .tech{animation:techShow 4.2s linear forwards}
+@keyframes techShow{0%,46%{opacity:0}52%,100%{opacity:1}}
+body.on-home .hdr-van.go .arm{animation:techWave .32s ease-in-out 2.1s infinite alternate}
+body.on-home .hdr-van.go .vb{animation:vanBob .3s ease-in-out infinite alternate}
+body.on-home .hdr-van.leave .tech{opacity:0}
+@media (prefers-reduced-motion:reduce){.hdr-van{display:none!important}}

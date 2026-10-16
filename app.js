@@ -1688,38 +1688,15 @@
   else bootApp();
 })();
 
-/* Oct 16 2026: header van parks centered after first scroll >80px, drives off right once at top after >=300px; once per load; reduced motion = parked, no motion */
+/* Oct 16 2026: header van drives right-to-left once per load on first scroll >80px; reduced motion skips */
 (function () {
   var v = document.querySelector(".hdr-van"); if (!v) return;
-  var maxY = 0, used = false;
-  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var state = "out"; // out | park | leave
-  function place() {
-    var bar = document.querySelector(".topbar"), b = document.querySelector(".topbar .brand"), sh = document.querySelector(".topbar .top-share");
-    if (!bar || !b || !sh) return;
-    var r = bar.getBoundingClientRect(), L = b.getBoundingClientRect().right - r.left, R = sh.getBoundingClientRect().left - r.left;
-    var svg = v.querySelector("svg"), gap = R - L - 16, w = Math.max(40, Math.min(84, gap));
-    svg.setAttribute("width", Math.round(w)); svg.setAttribute("height", Math.round(w * 36 / 64));
-    v.style.setProperty("--px", Math.round((L + R) / 2) + "px");
-  }
-  function moving() { if (!rm) v.classList.add("moving"); }
-  v.addEventListener("transitionend", function (e) {
-    if (e.target !== v) return;
-    v.classList.remove("moving");
-    if (state === "leave") { state = "gone"; }
-  });
+  var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, used = false;
   function check() {
     var y = window.scrollY || document.documentElement.scrollTop;
     document.body.classList.toggle("scrolled", y > 4);
-    if (!document.body.classList.contains("on-home")) return;
-    if (y > maxY) maxY = y;
-    if (y > 80 && state === "out" && !used) { used = true; place(); void v.offsetWidth; state = "park"; moving(); v.classList.add("park"); }
-    else if (y <= 10 && state === "park" && maxY >= 300) {
-      state = "leave"; v.classList.remove("park");
-      if (rm) { state = "gone"; v.style.visibility = "hidden"; return; }
-      moving(); v.classList.add("leave");
-    }
+    if (used || rm || y <= 80 || !document.body.classList.contains("on-home")) return;
+    used = true; v.classList.add("go");
   }
   window.addEventListener("scroll", check, { passive: true });
-  window.addEventListener("resize", function () { if (state === "park") place(); });
 })();
