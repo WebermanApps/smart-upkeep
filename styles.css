@@ -1341,3 +1341,12 @@ body.on-home #videoModal{padding-top:calc(72px + .75rem)}
 /* Oct 17 2026 (g): trim double bottom space on home. The empty footer reserved ~8rem on top of main's padding for the fixed bars. */
 body.on-home .foot{display:none}
 @media (max-width:899px){body.on-home main{padding-bottom:calc(9.5rem + env(safe-area-inset-bottom))!important}}
+/* Oct 17 2026 (h): smooth logo glide: one transform transition only; the brand link's hover/active transforms are disabled in the header */
+body.on-home .topbar .brand,body.on-home .topbar .brand:hover,body.on-home .topbar .brand:focus-visible,body.on-home .topbar .brand:active{transform:translate(-50%,-50%)!important;box-shadow:none!important;transition:none!important}
+body.on-home .topbar .brand img{transform:scale(1.14);transform-origin:50% 50%;transition:transform .35s cubic-bezier(.2,.8,.2,1)!important;will-change:transform}
+body.on-home.scrolled .topbar .brand img{transform:scale(1)}
+/* icon-only Share in the header's top right (absolute, so the centered logo never moves); van passes behind it, no box */
+body.on-home .topbar .top-share{display:flex!important;position:absolute;right:.4rem;top:50%;transform:translateY(-50%);z-index:2;margin:0;background:transparent}
+body.on-home .topbar .btn-share{width:44px;height:44px;min-height:44px;min-width:44px;padding:0;border:0!important;border-radius:50%;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233d3d3d' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3.5M7.5 7.5 12 3l4.5 4.5'/%3E%3Cpath d='M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2'/%3E%3C/svg%3E") center/22px 22px no-repeat!important;font-size:0!important;color:transparent!important;box-shadow:none!important;transform:none!important}
+body.on-home .topbar .btn-share:focus-visible{outline:2px solid #C1502E;outline-offset:1px}
+body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.75rem;background:transparent}
