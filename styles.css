@@ -1350,3 +1350,18 @@ body.on-home .topbar .top-share{display:flex!important;position:absolute;right:.
 body.on-home .topbar .btn-share{width:44px;height:44px;min-height:44px;min-width:44px;padding:0;border:0!important;border-radius:50%;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233d3d3d' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3.5M7.5 7.5 12 3l4.5 4.5'/%3E%3Cpath d='M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2'/%3E%3C/svg%3E") center/22px 22px no-repeat!important;font-size:0!important;color:transparent!important;box-shadow:none!important;transform:none!important}
 body.on-home .topbar .btn-share:focus-visible{outline:2px solid #C1502E;outline-offset:1px}
 body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.75rem;background:transparent}
+/* Oct 17 2026 (i): phone video pop-up fits below the header: ~86vw card, video <= ~56-60vh, close X in the control strip (44px), backdrop visible */
+@media (max-width:600px){
+  #videoModal{align-items:flex-start;padding:calc(72px + 12px) 0 12px}
+  #videoModal .modal-inner{width:86vw;max-width:86vw;max-height:calc(100dvh - 72px - 24px);overflow:auto;border-radius:14px;padding:.55rem .6rem .7rem;margin:0 auto}
+  #videoModal .modal-x{position:absolute!important;top:.55rem;right:.6rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;padding:0}
+  #videoModal .vp-wrap{padding-top:50px}
+  #videoModal video{max-height:min(56vh,calc(100dvh - 300px))!important;width:100%;border-radius:10px!important;object-fit:contain}
+  #videoModal .video-start-at{margin:.45rem 0 0!important;font-size:.72rem!important;padding:.3rem .5rem!important}
+  #videoModal .modal-actions{margin-top:.5rem!important;gap:.5rem}
+  #videoModal .modal-actions .btn{min-height:44px;padding:.5rem .6rem;font-size:.78rem}
+}
+@media (min-width:601px){#videoModal .modal-inner{border-radius:14px;max-height:calc(100vh - 110px)}#videoModal video{max-height:min(60vh,calc(100vh - 300px))!important;border-radius:10px!important}}
+@media (max-width:600px){#videoModal .vp-btn{width:44px;height:44px}}
+@media (min-width:601px){#videoModal .modal-x{position:absolute!important;top:.6rem;right:.7rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}#videoModal .vp-wrap{padding-top:52px}}
+#videoModal video{background:#fff!important}
