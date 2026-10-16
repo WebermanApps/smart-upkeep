@@ -1176,3 +1176,8 @@ body.on-home .hdr-van.go .vb{animation:vanBob .3s ease-in-out 8 alternate}
 @keyframes vanWheel{to{transform:rotate(360deg)}}
 @keyframes vanBob{to{transform:translateY(-.6px)}}
 @media (prefers-reduced-motion:reduce){.hdr-van{display:none!important}}
+/* Oct 16 2026 (b): slightly taller home header for a bigger branded van */
+body.on-home .topbar{min-height:72px;padding-bottom:.6rem}
+@media (min-width:900px){body.on-home .topbar{min-height:80px}}
+.hdr-van{bottom:3px;transform:translateX(-100px)}
+@keyframes vanDrive{0%{opacity:0;transform:translateX(-100px)}6%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateX(calc(100vw + 10px))}}
