@@ -1338,3 +1338,6 @@ body.on-home .hdr-road.vcross{animation:roadCross2 4.3s ease-out forwards}
 body.on-home:has(#videoModal:not([hidden])) .topbar{z-index:101}
 body.on-home #videoModal{padding-top:calc(72px + .75rem)}
 @media (min-width:900px){body.on-home #videoModal{padding-top:calc(80px + .75rem)}}
+/* Oct 17 2026 (g): trim double bottom space on home. The empty footer reserved ~8rem on top of main's padding for the fixed bars. */
+body.on-home .foot{display:none}
+@media (max-width:899px){body.on-home main{padding-bottom:calc(9.5rem + env(safe-area-inset-bottom))!important}}
