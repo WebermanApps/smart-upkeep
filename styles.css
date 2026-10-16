@@ -1306,3 +1306,17 @@ body.on-home .hdr-road.vpark{opacity:.9;clip-path:inset(0 0 0 0);transition:clip
 body.on-home .hdr-road.vleave{opacity:0;transition:clip-path .7s,opacity 1.4s ease .2s}
 /* Oct 17 2026 (c): white van with real logo on the side; keep logo readable when the van is flipped */
 .hdr-van image{transform-box:fill-box;transform-origin:center;transform:scaleX(-1)}
+/* Oct 17 2026 (d): van crosses the whole header once (2.5s), pulls up near the left with a 0.6s wave, then drives off left. */
+body.on-home .hdr-van.vcross{animation:vanCross 3.8s linear forwards}
+@keyframes vanCross{
+ 0%{transform:translateX(calc(100vw + 10px));animation-timing-function:cubic-bezier(.35,.1,.25,1)}
+ 65.8%{transform:translateX(var(--park,20px));animation-timing-function:linear}
+ 81.6%{transform:translateX(var(--park,20px));animation-timing-function:cubic-bezier(.55,0,.85,.4)}
+ 100%{transform:translateX(-120px)}}
+body.on-home .hdr-van.vcross svg{animation:vanCrossBody 3.8s linear forwards}
+@keyframes vanCrossBody{0%,58%{transform:scaleX(-1)}64%{transform:scaleX(-1) scale(1.05,.93)}70%{transform:scaleX(-1) scale(.99,1.02)}74%,82%{transform:scaleX(-1)}86%{transform:scaleX(-1) rotate(-4deg)}92%,100%{transform:scaleX(-1)}}
+body.on-home .hdr-van.vcross .tech{animation:techCross 3.8s linear forwards;transition:none}
+@keyframes techCross{0%,64%{opacity:0}68%,100%{opacity:1}}
+body.on-home .hdr-van.vcross .arm{animation:techWave .3s ease-in-out 2.55s infinite alternate}
+body.on-home .hdr-road.vcross{animation:roadCross 3.8s ease-out forwards}
+@keyframes roadCross{0%{opacity:.9;clip-path:inset(0 0 0 100%)}65.8%{opacity:.9;clip-path:inset(0 0 0 0)}82%{opacity:.8;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}

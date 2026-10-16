@@ -1748,12 +1748,10 @@
     document.body.classList.toggle("scrolled", y > 4);
     if (done || rm || !document.body.classList.contains("on-home")) return;
     if (y > maxY) maxY = y;
-    if (state === "out" && window.__suFirst) {
+    if (state === "out" && window.__suFirst) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
       if (!place()) return;
-      state = "park"; void v.offsetWidth; v.classList.add("vpark"); if (rd) rd.classList.add("vpark");
-    } else if (state === "park" && y <= 10 && maxY >= 300) {
       state = "gone"; done = true; try { sessionStorage.setItem("suVanDone", "1"); } catch (e) {}
-      v.classList.add("vleave"); if (rd) rd.classList.add("vleave");
+      void v.offsetWidth; v.classList.add("vcross"); if (rd) rd.classList.add("vcross");
     }
   }
   window.addEventListener("scroll", check, { passive: true });
