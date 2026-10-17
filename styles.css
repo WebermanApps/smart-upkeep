@@ -1444,3 +1444,26 @@ details.cp-link .acc-body{margin-top:.6rem;border-left:3px solid var(--mw-terrac
 .su-due2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.7rem}
 .su-due2>div{border:1.5px solid var(--mw-terracotta,#C1502E);border-radius:12px;padding:.6rem .7rem;background:#fff;display:grid;gap:.1rem}
 .su-due2>div:first-child{background:#FBF1EC}.su-due2 span{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5a524b}.su-due2 b{font:700 1.6rem/1.1 var(--mw-font-head,"Khand"),sans-serif}.su-due2 small{color:#5a524b;font-size:.78rem}
+
+/* Hero trust tags: hand-movable (Max 21:08 ICT Oct 17). Phone + desktop; arrows only with a fine pointer. */
+.hm-hcw{position:relative}
+.hm-hchips{cursor:grab;-webkit-user-select:none;user-select:none;touch-action:pan-y}
+.hm-hchips.dragging{cursor:grabbing}
+.hm-hchips .hm-hchip{pointer-events:none}
+.hm-hc-arr{display:none}
+@media (min-width:481px){
+  .hm-hchips{display:block;overflow:hidden;margin:.9rem 0 0;padding:0 0 .1rem;max-width:520px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 1.6rem,#000 calc(100% - 1.6rem),transparent);mask-image:linear-gradient(90deg,transparent,#000 1.6rem,#000 calc(100% - 1.6rem),transparent)}
+  .hm-hc-track{display:flex;width:max-content;animation:hcMq 40s linear infinite;will-change:transform}
+  .hm-hc-set{display:flex;flex:none}
+  .hm-hc-set .hm-hchip{margin-right:.4rem}
+  .hm-hchip{flex:0 0 auto;display:inline-flex;align-items:center;padding:.32rem .7rem;border:1px solid #EADFCF;border-radius:999px;background:#fff;font-size:.8rem;font-weight:500;color:#3d3d3d;white-space:nowrap}
+  .hm-hcw{width:100%;max-width:520px;align-self:stretch}
+}
+@media (hover:hover) and (pointer:fine) and (min-width:481px){
+  .hm-hcw{padding:0 26px}
+  .hm-hc-arr{display:grid;place-items:center;position:absolute;top:50%;transform:translateY(-50%);width:22px;height:22px;padding:0;border-radius:50%;border:1px solid #E3D8C8;background:rgba(255,255,255,.9);color:#7a6a5c;font:600 15px/1 Arial,sans-serif;cursor:pointer;opacity:.7;transition:opacity .15s,color .15s;z-index:2}
+  .hm-hc-arr:hover,.hm-hc-arr:focus-visible{opacity:1;color:var(--mw-terracotta-deep,#A8431F)}
+  .hm-hc-arr.l{left:0}.hm-hc-arr.r{right:0}
+  .hm-hcw .hm-hchips{margin-top:0}.hm-hcw{margin-top:.9rem}
+}
+@media (prefers-reduced-motion:reduce){.hm-hc-arr{display:none!important}.hm-hchips{cursor:auto}}

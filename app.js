@@ -472,15 +472,49 @@
   var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
   /* Trust Tags Theme deck 09 (Max note "Random order"): same 6 badges, shuffled once per page load; hero chips and Why Trust Us row share the order. */
   (function () { for (var i = HERO_CHIPS.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = HERO_CHIPS[i]; HERO_CHIPS[i] = HERO_CHIPS[j]; HERO_CHIPS[j] = t; } })();
-  /* Hero trust chips marquee (Max, Oct 17): the 6 chips (per-load random order) are rendered twice and the track slides left by exactly one set, forever, at a calm steady speed. No stop, no rewind, no seam. Pauses while touched or hovered. Reduced motion: static wrapped row (CSS). */
+  /* Hero trust chips marquee (Max, Oct 17): the 6 chips (per-load random order) are rendered twice and the track slides left by exactly one set, forever, at a calm steady speed. No stop, no rewind, no seam.
+     Max 21:08 ICT Oct 17: also movable by hand. Touch swipe, mouse drag, trackpad/shift-wheel sideways scroll, and small arrows on desktop.
+     Auto-scroll pauses while you interact and resumes 3 s after. Position wraps modulo one set width, so there is never a jump.
+     Vertical page scroll stays native (touch-action: pan-y); the row is data-ptr-ignore so pull-to-refresh never fires from it.
+     Reduced motion: static wrapped row (CSS), no JS motion. If this script fails, the CSS animation still runs. */
   (function heroChips() {
     var SPEED = 28; /* px per second */
     function setup() {
-      var el = document.querySelector(".hm-hchips"), tr = el && el.querySelector(".hm-hc-track"); if (!tr || tr.__mq) return; tr.__mq = 1;
-      var set = tr.querySelector(".hm-hc-set"); var w = set ? set.getBoundingClientRect().width : 0;
-      if (w) tr.style.animationDuration = (w / SPEED).toFixed(2) + "s";
-      var t; function hold() { clearTimeout(t); el.classList.add("hold"); } function go() { clearTimeout(t); t = setTimeout(function () { el.classList.remove("hold"); }, 1200); }
-      el.addEventListener("touchstart", hold, { passive: true }); el.addEventListener("touchend", go, { passive: true }); el.addEventListener("touchcancel", go, { passive: true });
+      var el = document.querySelector(".hm-hchips"), tr = el && el.querySelector(".hm-hc-track"); if (!tr || tr.__mq) return;
+      var set = tr.querySelector(".hm-hc-set"), w = set ? set.getBoundingClientRect().width : 0; if (!w) return; tr.__mq = 1;
+      if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      tr.style.animation = "none";
+      var x = 0, last = 0, paused = false, hover = false, drag = null, vel = 0, glide = null, t = 0;
+      function wrap() { w = set.getBoundingClientRect().width || w; x = ((x % w) + w) % w; x = x ? x - w : 0; } /* x in (-w, 0] */
+      function paint() { wrap(); tr.style.transform = "translate3d(" + x.toFixed(2) + "px,0,0)"; }
+      function hold() { paused = true; clearTimeout(t); }
+      function resume(ms) { clearTimeout(t); t = setTimeout(function () { if (!drag && !hover) paused = false; }, ms == null ? 3000 : ms); }
+      function frame(now) {
+        var dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
+        if (glide) { var k = Math.min(1, (now - glide.t0) / glide.d), e = 1 - Math.pow(1 - k, 3); x = glide.x0 + glide.dx * e; if (k >= 1) glide = null; }
+        else if (!drag && Math.abs(vel) > 5) { x += vel * dt; vel *= Math.pow(0.04, dt); } /* light fling */
+        else if (!paused && !drag) x -= SPEED * dt;
+        paint(); requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+      el.style.touchAction = "pan-y"; el.setAttribute("data-ptr-ignore", "");
+      el.addEventListener("pointerdown", function (e) { if (e.button && e.button !== 0) return; hold(); glide = null; vel = 0; drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, sx: x, lx: e.clientX, lt: e.timeStamp, on: false }; });
+      el.addEventListener("pointermove", function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+        if (!drag.on) { if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) { if (Math.abs(dy) > 10 && e.pointerType === "touch") drag = null, resume(); return; } drag.on = true; el.classList.add("dragging"); try { el.setPointerCapture(e.pointerId); } catch (_) {} }
+        var dt = Math.max(1, e.timeStamp - drag.lt); vel = (e.clientX - drag.lx) / dt * 1000; drag.lx = e.clientX; drag.lt = e.timeStamp;
+        x = drag.sx + dx; paint();
+      });
+      function up(e) { if (!drag || (e && e.pointerId !== drag.id)) return; if (!drag.on) vel = 0; drag = null; el.classList.remove("dragging"); vel = Math.max(-1500, Math.min(1500, vel)); resume(); }
+      el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("lostpointercapture", up);
+      el.addEventListener("click", function (e) { if (Math.abs(vel) > 30) { e.preventDefault(); e.stopPropagation(); } }, true);
+      el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+      el.addEventListener("wheel", function (e) { var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0); if (!d) return; e.preventDefault(); hold(); glide = null; vel = 0; x -= d; paint(); resume(); }, { passive: false });
+      el.addEventListener("mouseenter", function () { hover = true; hold(); }); el.addEventListener("mouseleave", function () { hover = false; resume(); });
+      var wr = el.parentNode;
+      wr.querySelectorAll("[data-hc]").forEach(function (b) { b.addEventListener("click", function () { hold(); vel = 0; var step = Math.max(120, Math.min(260, el.clientWidth * 0.45)); glide = { x0: x, dx: (b.getAttribute("data-hc") === "l" ? 1 : -1) * step, t0: performance.now(), d: 380 }; resume(); }); });
+      addEventListener("resize", function () { w = set.getBoundingClientRect().width || w; }, { passive: true });
     }
     new MutationObserver(setup).observe(document.documentElement, { childList: true, subtree: true });
     document.addEventListener("DOMContentLoaded", setup);
@@ -647,7 +681,7 @@
         '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
-        '<div class="hm-hchips" aria-label="Why Trust Us"><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       '<button type="button" class="hm-plans-cue mw-hover" data-plans-cue aria-label="Scroll to Plans"><span>Plans</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
