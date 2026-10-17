@@ -962,6 +962,15 @@ body.on-qf main{padding-bottom:0}
 @media(min-width:601px){#row-services .ww{margin:0}.ca-row{padding:.15rem .1rem .4rem;scroll-padding:0}.ca-dots{display:none}
   .ca-row{display:grid;grid-template-columns:repeat(2,1fr);overflow:visible}.ca-card{min-height:110px}.ca-body button{font-size:.9rem;padding:.15rem 0}}
 @media(min-width:1000px){.ca-row{grid-template-columns:repeat(4,1fr)}}
+/* Oct 17: What We Take Care Of Compact Polish picks (Max 21:32 ICT): more row room, 14.5px regular names, 52px icon box, plain list, See All under the cards */
+.ca-art{flex:0 0 52px;min-height:52px;align-self:flex-start;height:56px}
+.ca-art .su-ico{left:3px;top:3px;width:30px;height:30px}
+.ca-art .ca-b{left:22px;top:24px;width:28px;height:28px}
+.ca-body li{font:400 14.5px/1.35 var(--mw-font-body);border-top:1px solid #f0ebe3;padding:.3rem 0}
+.ca-body li:first-child{border-top:0}
+.ca-body h3{margin-bottom:.3rem}
+.ww-all{display:flex;justify-content:center;margin-top:.35rem}
+@media(min-width:601px){.ca-body li{font-size:14.5px;padding:.32rem 0}}
 /* What's Included row + flat popups with plan tags */
 .wi-row{display:flex;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .1rem .5rem;scrollbar-width:none}
 .wi-row::-webkit-scrollbar{display:none}
