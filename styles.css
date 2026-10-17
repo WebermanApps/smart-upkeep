@@ -1405,3 +1405,9 @@ input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="tr
 .ref-check{margin:.35rem 0 0;min-height:1.1em}.ref-check.ok{color:#0B6E4F}
 .su-due-mo{margin:.2rem 0 0;text-align:right}
 .legal.open-box{max-height:15rem}
+
+/* Pause Plan And Lawn Add-On deck 03 (Max): waitlist card on the home page near Plans. */
+.hm-wait-card{padding:1rem 1.1rem}.hm-wait-card h3{margin:0 0 .3rem}
+.hm-wait-f{display:grid;grid-template-columns:1fr 2fr;gap:.5rem;margin-top:.6rem}.hm-wait-f .btn{grid-column:1/-1}
+.hm-wait-f input{min-height:46px}
+@media(min-width:900px){.hm-wait-f{grid-template-columns:8rem 1fr auto}.hm-wait-f .btn{grid-column:auto}}

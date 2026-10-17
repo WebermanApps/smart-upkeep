@@ -284,6 +284,7 @@
     bind();
     document.body.classList.toggle("on-home", s === "home");
     if (s === "home") bindHome();
+    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
   }
 
   /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
@@ -624,6 +625,7 @@
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+      '<section class="hm-row hm-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Outside Our Area?</h3><p class="small muted">We serve Metro Detroit: Wayne, Oakland, Macomb. Join the waitlist and we will tell you when we reach your ZIP.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>' +
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
         wwCarousel() + '</section>' +
@@ -1018,7 +1020,7 @@
       return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="eyebrow" style="margin-top:.4rem">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' + priceBlock(amt, "annual") + floorNote +
         '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button>' +
-        '<details class="tier-feats" open><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
+        '<details class="tier-feats"><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
         '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
     }).join("") + '</div>';
     var lmSum = lastMinuteTotal();
