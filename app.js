@@ -437,6 +437,8 @@
   }
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
   var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
+  /* Trust Tags Theme deck 09 (Max note "Random order"): same 6 badges, shuffled once per page load; hero chips and Why Trust Us row share the order. */
+  (function () { for (var i = HERO_CHIPS.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = HERO_CHIPS[i]; HERO_CHIPS[i] = HERO_CHIPS[j]; HERO_CHIPS[j] = t; } })();
   /* gentle auto-scroll for phone hero chips; pauses on touch, skipped for reduced motion */
   (function heroChips() {
     var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (rm) return;
@@ -602,6 +604,7 @@
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
     var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Refund = prepaid minus work done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
+    trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
     function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong>' + (sub ? '<span class="muted small">' + sub + '</span>' : '') + (extra || "") + '</div>'; }
