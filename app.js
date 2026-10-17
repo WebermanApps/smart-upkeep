@@ -541,7 +541,7 @@
   /* ---------- What We Take Care Of: Direction A (swipeable category carousel), What's Included row, Featured Service ---------- */
   function wwIco(n, cls) { return '<svg class="su-ico ' + (cls || "") + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (window.SUIconBody ? window.SUIconBody(n) : "") + '</svg>'; }
   /* [title, [icon, icon], [[service index in HM_SVC, label]...], tint] */
-  /* Compact Polish picks (Max 21:32 ICT Oct 17): Water first, short name 'Moisture Scan', plain list (no tap), two icons, 52px icon box, See All under the cards. */
+  /* Compact Polish picks (Max 21:32 ICT Oct 17): Water first, short name 'Moisture Scan', plain list (no tap, Max 22:09), rows tighter, two icons, 52px icon box, See All under the cards. */
   var WW_CATS = [
     ["Water", ["waterheater", "meter"], [[2, "Water Heater"], [5, "Moisture Scan"], [6, "Gutters"]], "l"],
     ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace"], [1, "AC"], [0, "Furnace Filters"]], "t"],
