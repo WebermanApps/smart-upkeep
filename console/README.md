@@ -33,3 +33,15 @@ Always show the member's real house, using the best available photo (a clear, we
 
 ## Still placeholder
 Payments (failed cards and prepaid balance), Ask Anything safety escalations, the route map (it's a drawn sketch, not real geo), arrival/report photos, and NPS/reviews. They need real systems behind them.
+
+## Test Data (Demo Mode)
+- **What it is:** 100 fake members (made-up names, `@example.com` emails, `555-01xx` phones), 3 fake techs and a year of plans, visits, routes and van stock, all flagged `test: true`. Every member sits at a real, public residential address (from OpenStreetMap) so maps and routes behave like the real thing. These are not customers. Do not contact anyone at these addresses.
+- **Turn it on:** in the console, tap **Load Test Data**. A **TEST DATA** banner appears, and the dashboards, Members list (search, county/plan/status filters, A to Z sort), member profile drawer, Routes view (pick a day or tap Busiest Day; stops in drive order, grouped by area, with a drawn map from real coordinates and a Materials Needed vs On Van check) and job cards all read the test set. Sample data is hidden while test data is on. Live events still show.
+- **Turn it off:** tap **Remove Test Data** in the banner or the toolbar. This deletes only the test keys.
+- **Storage:** `events.js` (`SUEvents.test`) keeps test data in its own localStorage keys, `su.test.v1` and `su.events.test.v1`. It never writes to `su.events.v1`, so real events are never overwritten or pushed out by the 500-event cap.
+- **Build-out pages:**
+  - Client 1, 2 and 3: `/member/?client=1`, `/member/?client=2` and `/member/?client=3`. These work without loading anything.
+  - Any loaded test member: `/member/?test=T001` through `T100`.
+  - Tech Dash 1, 2 and 3: `/tech/?dash=1`, `/tech/?dash=2` and `/tech/?dash=3` (Oakland, Macomb and Wayne routes). Add `&day=YYYY-MM-DD` to open a specific route day.
+- **Where the data lives:** inline in these page-locked HTML files only. No separate data file ships. The master JSON/CSV, data sources and the generator are in the private ops repo (`smartupkeep-ops/test-data/`).
+- **House photos:** test homes have no photo yet, so they show the drawn house. Set `home.photo` and `home.photoSource` in the master dataset to add one.

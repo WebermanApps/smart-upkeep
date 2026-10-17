@@ -22,5 +22,20 @@
     window.addEventListener("su:event", function (e) { fn(e.detail); });
   }
   function clear() { save([]); try { if (bc) bc.postMessage(null); } catch (e) {} }
-  window.SUEvents = { emit: emit, all: load, on: on, clear: clear, KEY: KEY };
+  /* TEST DATA partition (Oct 17 2026): the console's Load Test Data button writes a fake dataset here, in its OWN keys,
+     so it never touches or evicts real events in su.events.v1. Remove Test Data deletes only these two keys. */
+  var TKEY = "su.test.v1", TEKEY = "su.events.test.v1";
+  function tget(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+  function tping() { try { if (bc) bc.postMessage(null); } catch (e) {} try { window.dispatchEvent(new CustomEvent("su:event", { detail: null })); } catch (e) {} }
+  var test = {
+    on: function () { try { return !!localStorage.getItem(TKEY); } catch (e) { return false; } },
+    data: function () { return tget(TKEY); },
+    events: function () { var a = tget(TEKEY); return Array.isArray(a) ? a : []; },
+    load: function (ds) { var d = Object.assign({}, ds), ev = d.events || []; delete d.events; d.loadedAt = new Date().toISOString();
+      try { localStorage.setItem(TKEY, JSON.stringify(d)); localStorage.setItem(TEKEY, JSON.stringify(ev)); } catch (e) { try { localStorage.removeItem(TKEY); localStorage.removeItem(TEKEY); } catch (x) {} return false; }
+      tping(); return true; },
+    clear: function () { try { localStorage.removeItem(TKEY); localStorage.removeItem(TEKEY); } catch (e) {} tping(); },
+    KEY: TKEY, EVENTS_KEY: TEKEY };
+  window.addEventListener("storage", function (e) { if (e.key === TKEY) try { window.dispatchEvent(new CustomEvent("su:event", { detail: null })); } catch (x) {} });
+  window.SUEvents = { emit: emit, all: load, on: on, clear: clear, KEY: KEY, test: test };
 })();
