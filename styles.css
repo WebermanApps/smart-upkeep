@@ -1260,7 +1260,11 @@ body.on-home .hdr-van.leave .tech{opacity:0}
   .hm-lead-l,.hm-cta-l,.hm-hero .start-at{display:none!important}
   .hm-lead-s,.hm-cta-s{display:inline}
   .hm-hero .hm-cta-inline{display:inline-flex!important;width:auto!important;min-width:0;margin:.8rem 0 0!important;padding:.65rem 1.4rem!important;min-height:46px}
-  .hm-hchips{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;margin:.85rem -1.1rem 0;padding:0 1.1rem .1rem;-webkit-overflow-scrolling:touch}
+  .hm-hchips{display:block;overflow:hidden;margin:.85rem -1.1rem 0;padding:0 0 .1rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 1.1rem,#000 calc(100% - 1.1rem),transparent);mask-image:linear-gradient(90deg,transparent,#000 1.1rem,#000 calc(100% - 1.1rem),transparent)}
+  .hm-hc-track{display:flex;width:max-content;animation:hcMq 40s linear infinite;will-change:transform}
+  .hm-hc-set{display:flex;flex:none}
+  .hm-hc-set .hm-hchip{margin-right:.4rem}
+  .hm-hchips:hover .hm-hc-track,.hm-hchips.hold .hm-hc-track{animation-play-state:paused}
   .hm-hchips::-webkit-scrollbar{display:none}
   .hm-hchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .65rem;border:1px solid #EADFCF;border-radius:999px;background:#fff;font-size:.78rem;font-weight:500;color:#3d3d3d;white-space:nowrap}
   .hm-hchip svg{width:14px;height:14px;color:#C1502E}
@@ -1421,3 +1425,6 @@ input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="tr
 .ac-pop .addon.sel .acp-add{background:#0a0a0a;color:#fff}
 .ac-pop .acp-foot{position:sticky;bottom:0;background:#fff;padding:.6rem 0 calc(.8rem + env(safe-area-inset-bottom));margin-top:.6rem;border-top:1px solid var(--mw-border)}
 .ac-pop .acp-foot .btn{width:100%}
+/* Hero chips marquee (Oct 17): track = 2 identical sets; slide exactly one set width (-50%) for a seamless loop */
+@keyframes hcMq{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media (prefers-reduced-motion:reduce){.hm-hchips{-webkit-mask-image:none!important;mask-image:none!important;margin-left:0!important;margin-right:0!important}.hm-hc-track{animation:none!important;width:auto!important}.hm-hc-set{flex-wrap:wrap;row-gap:.4rem}.hm-hc-set[aria-hidden]{display:none!important}}

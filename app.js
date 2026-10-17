@@ -441,21 +441,18 @@
   var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
   /* Trust Tags Theme deck 09 (Max note "Random order"): same 6 badges, shuffled once per page load; hero chips and Why Trust Us row share the order. */
   (function () { for (var i = HERO_CHIPS.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = HERO_CHIPS[i]; HERO_CHIPS[i] = HERO_CHIPS[j]; HERO_CHIPS[j] = t; } })();
-  /* gentle auto-scroll for phone hero chips; pauses on touch, skipped for reduced motion */
+  /* Hero trust chips marquee (Max, Oct 17): the 6 chips (per-load random order) are rendered twice and the track slides left by exactly one set, forever, at a calm steady speed. No stop, no rewind, no seam. Pauses while touched or hovered. Reduced motion: static wrapped row (CSS). */
   (function heroChips() {
-    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (rm) return;
-    var hold = 0, acc = 0;
-    function tick() {
-      var el = document.querySelector(".hm-hchips");
-      if (el && el.offsetParent && Date.now() > hold && el.scrollWidth > el.clientWidth + 4) {
-        acc += 0.35; if (acc >= 1) { var n = Math.floor(acc); acc -= n; el.scrollLeft += n; }
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) { hold = Date.now() + 1800; setTimeout(function () { el.scrollTo({ left: 0, behavior: "smooth" }); }, 1500); }
-      }
-      requestAnimationFrame(tick);
+    var SPEED = 28; /* px per second */
+    function setup() {
+      var el = document.querySelector(".hm-hchips"), tr = el && el.querySelector(".hm-hc-track"); if (!tr || tr.__mq) return; tr.__mq = 1;
+      var set = tr.querySelector(".hm-hc-set"); var w = set ? set.getBoundingClientRect().width : 0;
+      if (w) tr.style.animationDuration = (w / SPEED).toFixed(2) + "s";
+      var t; function hold() { clearTimeout(t); el.classList.add("hold"); } function go() { clearTimeout(t); t = setTimeout(function () { el.classList.remove("hold"); }, 1200); }
+      el.addEventListener("touchstart", hold, { passive: true }); el.addEventListener("touchend", go, { passive: true }); el.addEventListener("touchcancel", go, { passive: true });
     }
-    function pause(e) { if (e.target.closest && e.target.closest(".hm-hchips")) hold = Date.now() + 4000; }
-    ["touchstart", "pointerdown", "wheel"].forEach(function (t) { document.addEventListener(t, pause, { passive: true, capture: true }); });
-    requestAnimationFrame(tick);
+    new MutationObserver(setup).observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener("DOMContentLoaded", setup);
   })();
   /* Hero C: start teaser at 0.6s (skip white fade-in) and loop from there */
   (function heroSeek() {
@@ -619,7 +616,7 @@
         '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
-        '<div class="hm-hchips" aria-label="Why Trust Us">' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hchips" aria-label="Why Trust Us"><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       '<button type="button" class="hm-plans-cue mw-hover" data-plans-cue aria-label="Scroll to Plans"><span>Plans</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -641,7 +638,7 @@
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
-      '</section>' + featuredAd() + '<div class="hm-share"><button type="button" class="hm-share-btn mw-hover" data-share aria-label="Share Smart Upkeep"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2"/></svg><span>Share</span></button><span class="hm-share-msg small" role="status"></span></div>' + wiPop() + icSheet() + acPop() +
+      '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
         [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
