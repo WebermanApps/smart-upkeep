@@ -278,12 +278,14 @@
     else if (s === "signup") html = signup();
     else if (s === "pay") html = payStep();
     else if (s === "confirm") html = confirm();
+    else if (s === "cancel") html = cancelPage();
     else { S.screen = "home"; html = home(); }
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
     document.body.classList.toggle("on-home", s === "home");
     if (s === "home") bindHome();
+    if (s === "cancel") bindCancel();
     var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
   }
 
@@ -379,10 +381,34 @@
   function trustBlock() {
     return '<h3 class="grp">Trust and Licensing</h3>' + sampleVisitCard() + sampleTechCard() + vettingSection();
   }
+  /* Legal (Max 20:10 ICT Oct 17): the 3-day Home Solicitation notice is for OFFLINE sign-ups only (home/door, event, outbound phone).
+     It is NOT shown on the online form. Offline wording lives in forms/in-person/ (printable) and the ops phone script. */
   function miCancelNotice() {
     return '<div class="mi-cancel notice" role="note">' +
       '<p><strong>Michigan Home Solicitation Sales Notice (MCL 445.113).</strong> You, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.</p>' +
       '<details class="warn-drop mi-draft"><summary class="mw-hover">1 Warning · Draft Wording</summary><div class="warn-body small muted">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</div></details></div>';
+  }
+
+  /* ROSCA (Legal, Max 20:10 ICT Oct 17): clear auto-renewal terms before billing info, express consent box, simple online cancel. Draft wording. */
+  function renewTerms() {
+    var t = totals(), yrs = t.plan === "biennial" ? "24 paid months (plus 6 free months at the end)" : "12 months";
+    return '<div class="renew-terms notice" role="note"><span class="draft">DRAFT, pending legal review</span><p><strong>Auto-Renewal Terms</strong></p><ul class="feat small">' +
+      '<li>Today you pay <strong>' + money(t.today) + '</strong> for ' + yrs + ' of ' + esc(P.tiers[S.tier].label) + '.</li>' +
+      '<li>Your membership <strong>renews automatically</strong> at the end of the term for another 12 months, charged to the card you add at the payment step, unless you cancel before the renewal date.</li>' +
+      '<li>The renewal price is your plan price at that time. We email you the renewal date and price at least 30 days before any renewal charge.</li>' +
+      '<li><strong>Cancel anytime, no fee, online in one step:</strong> <a href="#cancel" class="link mw-hover">Cancel Membership</a>. Refund = prepaid minus completed services.</li></ul></div>';
+  }
+  function cancelPage() {
+    return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Your refund is what you prepaid minus the itemized price of services already done.</p>' +
+      '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit">Cancel My Membership</button></form><p class="small muted" id="cxDone" aria-live="polite"></p>' +
+      '<p class="small muted">Prototype: nothing is sent and no account is changed.</p></div>';
+  }
+  function bindCancel() {
+    var f = document.getElementById("cxF"); if (!f) return;
+    f.addEventListener("submit", function (e) { e.preventDefault(); var v = document.getElementById("cxEmail").value.trim(), er = document.getElementById("e-cxEmail");
+      if (!/^\S+@\S+\.\S+$/.test(v)) { er.textContent = "Enter email."; return; } er.textContent = ""; f.hidden = true;
+      document.getElementById("cxDone").textContent = "Cancellation received. You will get a confirmation email with your refund amount. (Prototype: nothing was sent.)"; });
   }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
@@ -1150,11 +1176,12 @@
       '<p class="retention">' + I("gift", "xs") + '<span><strong>Stay Offer:</strong> Thinking of canceling or renewing? Members of 6+ months get 1 month free to stay. Members of 1+ year get 2 months free. Optional, never required to cancel.</span></p>' +
       '<p><strong>Welcome offers (draft):</strong> Free months from the 2-year prepay or from referrals carry <strong>no refund value</strong>. Only prepaid dollars (what you paid) are refundable after deducting completed services. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p>' +
       ex.html +
+      '<p><a href="#cancel" class="link mw-hover">Cancel Membership online</a> in one step.</p>' +
       '<p class="small muted" style="margin:0">Final terms pending legal review.</p></div></details>';
   }
   function agreementHtml() {
     var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Renewal terms are to be determined.</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships are paid annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
+    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Unless you cancel, the membership renews automatically at the end of the term for another 12 months at the plan price at that time, charged to your payment method on file. We email the renewal date and price at least 30 days before any renewal charge. You can cancel online at any time with no fee (Cancel Membership).</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships are paid annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $99/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
   }
   var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
@@ -1271,11 +1298,12 @@
       '<div class="card"><h3>Membership Agreement and Liability Waiver</h3>' +
       '<div class="legal open-box" tabindex="0" aria-label="Membership Agreement">' + agreementHtml() + '</div>' +
       '<div class="legal open-box" tabindex="0" aria-label="Liability Waiver" style="margin-top:.7rem">' + WAIVER + '</div>' +
-      miCancelNotice() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement and accept the Liability Waiver.</span></label>' + fe("agree") +
+      renewTerms() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement and accept the Liability Waiver.</span></label>' + fe("agree") +
+      '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>I agree Smart Upkeep may charge me <strong>' + money(t.today) + '</strong> at the secure payment step, and that my membership <strong>renews automatically</strong> as described above until I cancel.</span></label>' + fe("chargeOk") +
       '<p class="fl">Signature (Signs Both)</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
       '<div class="card"><h3>Payment Plan</h3>' + planHtml + '</div>' +
       '<p class="small muted su-paynext">' + I("shield", "xs") + ' Next: Secure Payment</p>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit">Join ' + P.tiers[S.tier].label + '</button><p class="su-cancel-line small">Cancel Anytime, No Fee</p></form>';
+      '<button class="btn btn-primary btn-big mw-hover" type="submit">Join ' + P.tiers[S.tier].label + '</button><p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
   }
 
   /* Order Form Details Deck 17 (Max 19:33 ICT Oct 15): payment is its own secure step after the form. DEMO ONLY: card fields are disabled,
@@ -1289,7 +1317,7 @@
       '<div class="summary"><div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div></div>' +
       '<form id="payF" class="card paybox" novalidate><h3>' + I("shield", "xs") + ' Card Details</h3>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit" style="margin-top:.8rem">Pay Securely</button><p class="su-cancel-line small">Cancel Anytime, No Fee</p></form>';
+      '<button class="btn btn-primary btn-big mw-hover" type="submit" style="margin-top:.8rem">Pay Securely</button><p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
   }
   function bindPay() {
     var f = document.getElementById("payF"); if (!f) return;
@@ -1615,6 +1643,7 @@
         ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter email." : ""],
         ["sAddr", s.address.length < 5 ? "Enter service address." : ""],
         ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
+        ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
         ["agreeSig", !sigs.agreeSig.valid() ? "Sign once to sign both." : ""]];
       var first = null;
       errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
@@ -1766,6 +1795,8 @@
     copy();
   }
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
+  if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); }
+  window.addEventListener("hashchange", function () { if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); } });
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (S.screen !== "q0") go("q0"); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 

@@ -1428,3 +1428,6 @@ input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="tr
 /* Hero chips marquee (Oct 17): track = 2 identical sets; slide exactly one set width (-50%) for a seamless loop */
 @keyframes hcMq{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @media (prefers-reduced-motion:reduce){.hm-hchips{-webkit-mask-image:none!important;mask-image:none!important;margin-left:0!important;margin-right:0!important}.hm-hc-track{animation:none!important;width:auto!important}.hm-hc-set{flex-wrap:wrap;row-gap:.4rem}.hm-hc-set[aria-hidden]{display:none!important}}
+
+/* ROSCA auto-renewal box (Legal Oct 17) */
+.renew-terms{margin:1rem 0;border-left:4px solid var(--mw-terracotta,#C1502E);background:#FBF1EC;padding:.7rem .9rem;border-radius:10px}.renew-terms ul{margin:.3rem 0 0;padding-left:1.1rem}.renew-terms li{margin:.25rem 0}
