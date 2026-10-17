@@ -542,11 +542,12 @@
   function wwIco(n, cls) { return '<svg class="su-ico ' + (cls || "") + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (window.SUIconBody ? window.SUIconBody(n) : "") + '</svg>'; }
   /* [title, [icon, icon], [[service index in HM_SVC, label]...], tint] */
   /* Compact Polish picks (Max 21:32 ICT Oct 17): Water first, short name 'Moisture Scan', plain list (no tap, Max 22:09), rows tighter, two icons, 52px icon box, See All under the cards. */
+  /* Fresh Look picks (Max 21:58 ICT Oct 17; 02-05 dropped, no click for more info per Max 22:09): 06 card face held (unchanged); 07 plan chips = lowest plan that covers the item, from pricing-config.js tier features; 08 fade-up + See All arrow nudge (off with reduced motion). */
   var WW_CATS = [
-    ["Water", ["waterheater", "meter"], [[2, "Water Heater"], [5, "Moisture Scan"], [6, "Gutters"]], "l"],
-    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace"], [1, "AC"], [0, "Furnace Filters"]], "t"],
-    ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO"], [3, "Dryer Vent"], [5, "Moisture Readings"]], "s"],
-    ["Outside", ["gutter", "chimney"], [[6, "Gutters"], [7, "Roof"], [7, "Flashing"]], "t"]];
+    ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"]], "l"],
+    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filters", "Essentials"]], "t"],
+    ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"]], "s"],
+    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof", "Complete"], [7, "Flashing", "Complete"]], "t"]];
   var WW_WI = [
     ["clock", "Visits", "Seasonal visits on a set schedule", [["2 Seasonal Visits a Year", "Essentials"], ["4 Visits a Year, One Per Quarter", "Plus"], ["12 Visits a Year, Monthly Check-Ins", "Complete"]]],
     ["furnace", "Heating & Cooling", "Tune-ups before every season", [["Fall Furnace Tune-Up", "Essentials"], ["Spring AC Tune-Up", "Essentials"], ["Furnace Filters Changed During Visits", "Essentials"], ["Standby Generator Service (If You Have One)", "Complete"]]],
@@ -573,7 +574,7 @@
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
-        c[2].map(function (s) { return '<li>' + s[1] + '</li>'; }).join("") + '</ul></div></article>';
+        c[2].map(function (s) { return '<li><span>' + s[1] + '</span><em class="ca-pl pl-' + s[2] + '" title="Included from ' + s[2] + ' up">' + s[2] + '</em></li>'; }).join("") + '</ul></div></article>';
     }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b' + (i ? "" : ' class="on"') + '></b>'; }).join("") + '</div></div>';
   }
   function wiRow() {
@@ -590,6 +591,11 @@
       '<div class="wi-pop fs-pop" role="dialog" aria-modal="true" aria-label="' + esc(f.popTitle) + '" data-ptr-ignore hidden><div class="wi-bg" data-wi-close></div><div class="wi-card"><button type="button" class="hm-pop-x wi-x mw-hover" data-wi-close aria-label="Close">&times;</button>' + art("fs-lg") + '<h3>' + f.popTitle + '</h3><p>' + f.popText + '</p>' + cta + '</div></div>';
   }
   function bindWW(root) {
+    (function () { var ww = root.querySelector(".ww"), sec = ww && ww.parentNode;
+      if (!ww || !("IntersectionObserver" in window) || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+      ww.classList.add("ww-fx"); [].forEach.call(ww.querySelectorAll(".ca-card"), function (c, k) { c.style.transitionDelay = (k * 70) + "ms"; });
+      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { ww.classList.add("ww-in"); var al = sec.querySelector(".ww-all"); if (al) al.classList.add("ww-in"); io.disconnect(); } }); }, { threshold: .2 });
+      io.observe(ww); setTimeout(function () { ww.classList.add("ww-in"); }, 4000); })();
     var row = root.querySelector(".ca-row"), dots = root.querySelectorAll(".ca-dots b");
     if (row && dots.length) row.addEventListener("scroll", function () { var cards = row.querySelectorAll(".ca-card"), w = cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : 1, i = Math.round(row.scrollLeft / w); if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) i = dots.length - 1; [].forEach.call(dots, function (d, k) { d.classList.toggle("on", k === i); }); }, { passive: true });
     var wp = root.querySelector(".wi-pop.va"), fp = root.querySelector(".fs-pop"), last = null;
@@ -691,7 +697,7 @@
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
-        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div></section>' +
+        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">&times;</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +

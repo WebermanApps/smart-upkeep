@@ -972,6 +972,16 @@ body.on-qf main{padding-bottom:0}
 .ca-body li:first-child{border-top:0}
 .ww-all{display:flex;justify-content:center;margin-top:.35rem}
 @media(min-width:601px){.ca-card{min-height:0}.ca-body li{font-size:14.5px;padding:.1rem 0}}
+/* Oct 17: What We Take Care Of Fresh Look (Max 21:58 ICT): 07 plan chips, 08 fade-up and See All nudge; 06 card face held (card face unchanged) */
+.ca-body li{justify-content:space-between;gap:.4rem}
+.ca-pl{font-style:normal;font:600 10.5px/1 var(--mw-font-body);letter-spacing:.04em;text-transform:uppercase;padding:.2rem .45rem;border-radius:999px;white-space:nowrap;flex:none}
+.ww-fx .ca-card{opacity:0;transform:translateY(14px);transition:opacity .45s ease,transform .45s ease}
+.ww-fx.ww-in .ca-card{opacity:1;transform:none}
+.ww-arr{display:inline-block;margin-left:.15rem}
+.ww-all.ww-in .ww-arr{animation:wwNudge 1.2s ease .6s 2}
+.ww-all button:hover .ww-arr{animation:wwNudge .9s ease infinite}
+@keyframes wwNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@media(prefers-reduced-motion:reduce){.ww-fx .ca-card{opacity:1;transform:none;transition:none}.ww-arr,.ww-all button:hover .ww-arr{animation:none}}
 /* What's Included row + flat popups with plan tags */
 .wi-row{display:flex;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .1rem .5rem;scrollbar-width:none}
 .wi-row::-webkit-scrollbar{display:none}
