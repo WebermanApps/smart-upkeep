@@ -530,6 +530,46 @@
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
     { id: "storm", art: "storm", title: "Pre and Post Storm Checks", hook: "Ready Before, Checked After.", popTitle: "Pre and Post Storm Checks", popText: "We check your home before a storm hits and again after it passes, so problems get caught fast.", cta: "Free Quote in Minutes" }];
+  /* What We Take Care Of (decks 12:01 + Grid And Home Map 17:03, Max Oct 17): heading + subhead; Certified Techs and Licensed & Insured pinned up top;
+     8 core services (no 16-item list) grouped by home system with 'Every Visit' first; line icons, no photos or drawings; grid with a season strip under it;
+     house map with numbered pins on top (pins jump to the item) plus its own House Map tab; open in place, one at a time; Records tile with
+     Recall Monitoring + Warranty Check corner tags; Moisture Scan Every Visit pinned to its tile; lawn as one banner with the site's lawn line + Add-On tag.
+     Desktop layout (07) skipped: no change. */
+  var WW_GROUPS = [["Every Visit", [5]], ["Heating & Cooling", [0, 1]], ["Water", [2]], ["Air & Safety", [4, 3]], ["Outside", [6, 7]]];
+  var WW_PINS = [[0, 30, 84], [2, 46, 84], [3, 66, 60], [4, 50, 40], [5, 34, 60], [1, 92, 84], [6, 80, 26], [7, 50, 14]];
+  function wwPlan(t) { return t === "silver" ? "Every Plan" : t === "gold" ? "Plus and Complete" : "Complete"; }
+  function wwMap(big) {
+    return '<div class="ww-map' + (big ? ' big' : '') + '" role="group" aria-label="House map: tap a number to jump to that item"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false" fill="none" stroke="#1f1b17" stroke-width="1.4" stroke-linejoin="round"><path d="M12 46 50 12l38 34"/><path d="M18 41v53h64V41"/><path d="M18 72h64M50 41v31" stroke-dasharray="2 2" stroke="#999"/><rect x="86" y="80" width="12" height="12" rx="1.5"/><path d="M88 28h4v18" stroke="#999"/></svg>' +
+      WW_PINS.map(function (p, i) { return '<button type="button" class="ww-pin" style="left:' + p[1] + '%;top:' + p[2] + '%" data-wwpin="' + p[0] + '" aria-label="' + (i + 1) + ': ' + HM_SVC[p[0]][1] + '">' + (i + 1) + '</button>'; }).join("") +
+      '</div>' + (big ? '<ol class="ww-key small">' + WW_PINS.map(function (p) { return '<li><button type="button" class="link mw-hover" data-wwpin="' + p[0] + '">' + HM_SVC[p[0]][1] + '</button></li>'; }).join("") + '</ol>' : '') +
+      '<p class="small muted ww-mapnote">On your first visit, your tech pins where each item is in your home, so every visit after is faster.</p>';
+  }
+  function wwTile(i) {
+    var d = HM_SVC[i];
+    return '<details class="ww-t" name="ww" id="ww-' + i + '"><summary class="mw-hover">' + wwIco(d[2]) + '<b>' + d[1] + '</b>' + (i === 5 ? '<span class="ww-tag">Moisture Scan Every Visit</span>' : '') + '</summary><div class="ww-d"><p>' + d[3] + '</p><span class="ww-plan small">' + wwPlan(d[4]) + '</span></div></details>';
+  }
+  function wwSection() {
+    return '<div class="ww2"><p class="ww-sub">Eight core services, grouped the way a tech works through your house.</p>' +
+      '<div class="ww-pinned"><span class="ww-badge">Certified Techs</span><span class="ww-badge">Licensed &amp; Insured</span></div>' +
+      '<div class="ww-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-wwtab="grid">Services</button><button type="button" role="tab" aria-selected="false" data-wwtab="map">House Map</button></div>' +
+      '<div class="ww-pane" data-wwpane="grid">' + wwMap(false) +
+        WW_GROUPS.map(function (g) { return '<div class="ww-g"><h3>' + g[0] + '</h3><div class="ww-grid">' + g[1].map(wwTile).join("") + '</div></div>'; }).join("") +
+        '<div class="ww-g"><h3>Records</h3><div class="ww-grid"><details class="ww-t ww-rec" name="ww" id="ww-rec"><summary class="mw-hover">' + wwIco("clipboard") + '<b>Records</b><span class="ww-tags"><span class="ww-tag">Recall Monitoring</span><span class="ww-tag">Warranty Check</span></span></summary><div class="ww-d"><p>Written report after every visit, a maintenance proof pack, recall monitoring and warranty checks. Your Home Record transfers when you sell.</p><span class="ww-plan small">Every Plan</span></div></details></div></div>' +
+        '<div class="ww-seasons" aria-label="By season"><span><b>Spring</b>AC Tune-Up · Gutters</span><span><b>Summer</b>Moisture Scan · Plus and Complete checks</span><span><b>Fall</b>Furnace Tune-Up · Gutters</span><span><b>Winter</b>Moisture Scan · Complete storm checks</span></div>' +
+        '<a class="ww-lawn mw-hover" href="lawn/"><span class="ww-tag">Add-On</span><b>Learn About Our Custom Grass Cutting</b><small>Measured From Above. No Visit Needed.</small><i aria-hidden="true">&rsaquo;</i></a>' +
+      '</div><div class="ww-pane" data-wwpane="map" hidden>' + wwMap(true) + '</div></div>';
+  }
+  function bindWW2(root) {
+    var w = root.querySelector(".ww2"); if (!w) return;
+    w.addEventListener("click", function (e) {
+      var t = e.target.closest("[data-wwtab]"), p = e.target.closest("[data-wwpin]");
+      if (t) { var k = t.getAttribute("data-wwtab"); w.querySelectorAll("[data-wwtab]").forEach(function (b) { b.setAttribute("aria-selected", b === t ? "true" : "false"); }); w.querySelectorAll("[data-wwpane]").forEach(function (x) { x.hidden = x.getAttribute("data-wwpane") !== k; }); return; }
+      if (p) { var id = p.getAttribute("data-wwpin"); w.querySelectorAll("[data-wwtab]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-wwtab") === "grid" ? "true" : "false"); }); w.querySelectorAll("[data-wwpane]").forEach(function (x) { x.hidden = x.getAttribute("data-wwpane") !== "grid"; });
+        var el = document.getElementById("ww-" + id); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("ww-hi"); setTimeout(function () { el.classList.remove("ww-hi"); }, 1400); } }
+    });
+    /* one open at a time (also where <details name> is not supported) */
+    w.querySelectorAll("details.ww-t").forEach(function (d) { d.addEventListener("toggle", function () { if (d.open) w.querySelectorAll("details.ww-t[open]").forEach(function (o) { if (o !== d) o.open = false; }); }); });
+  }
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
@@ -642,7 +682,7 @@
         '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $99/Month</p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
-        '<div class="hm-hchips" aria-label="Why Trust Us"><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hchips" aria-label="Why Trust Us"><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
       '<button type="button" class="hm-plans-cue mw-hover" data-plans-cue aria-label="Scroll to Plans"><span>Plans</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -651,14 +691,14 @@
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
-        wwCarousel() + '</section>' +
+        wwSection() + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">&times;</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
       '<section class="hm-row" id="row-trust"><div class="hm-row-h"><h2 class="hm-trust-h">Why Trust Us</h2><button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button></div>' +
-        '<div class="hm-chips">' + trust.map(function (s, i) { return '<button type="button" class="hm-chip mw-hover t' + (i % 4) + '" aria-expanded="false" data-chip="' + esc(s[2]) + '">' + I(s[0], "xs") + '<span>' + s[1] + '</span></button>'; }).join("") + '</div>' +
-        '<p class="hm-chip-detail small" aria-live="polite" hidden></p></section>' +
+        '<div class="hm-chips">' + trust.map(function (s, i) { return '<span class="hm-chip t' + (i % 4) + '"><span>' + s[1] + '</span></span>'; }).join("") + '</div>' +
+        '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
@@ -799,7 +839,7 @@
       pop.querySelector(".hm-pop-x").focus();
     }
     root.querySelectorAll("#row-services [data-svc]").forEach(function (t) { t.addEventListener("click", function () { popOpen(t); }); });
-    bindWW(root);
+    bindWW(root); bindWW2(root);
     if (pop) {
       pop.querySelectorAll("[data-pop-close]").forEach(function (c) { c.addEventListener("click", popClose); });
       pop.querySelector(".hm-pop-go").addEventListener("click", function () {
@@ -809,14 +849,7 @@
       });
       document.addEventListener("keydown", function (e) { if (e.key === "Escape") popClose(); });
     }
-    /* trust chips: tap for a one-line detail */
-    var chipD = root.querySelector(".hm-chip-detail");
-    root.querySelectorAll(".hm-chip").forEach(function (c) { c.addEventListener("click", function () {
-      var on = c.getAttribute("aria-expanded") !== "true";
-      root.querySelectorAll(".hm-chip").forEach(function (o) { o.setAttribute("aria-expanded", "false"); });
-      c.setAttribute("aria-expanded", on ? "true" : "false");
-      chipD.hidden = !on; chipD.textContent = on ? c.getAttribute("data-chip") : "";
-    }); });
+    /* trust chips: nothing happens on tap (Trust Tags deck 07, Max Oct 17) */
     /* search */
     var idx = [];
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
@@ -1170,7 +1203,7 @@
   }
   function cancelPolicyCard(tier) {
     var ex = cancelExample(tier);
-    return '<details class="card cancel-policy acc" id="cancelPolicy"><summary class="mw-hover">' + I("refund", "xs") + ' Cancel Anytime, No Fee. Fair Refunds.</summary><div class="acc-body">' +
+    return '<details class="cancel-policy cp-link" id="cancelPolicy"><summary class="mw-hover">Cancel Policy: Cancel Anytime, No Fee. Fair Refunds.</summary><div class="acc-body">' +
       '<span class="draft">DRAFT, pending legal review</span>' +
       '<p>You may cancel at any time. <strong>There is no cancellation fee.</strong> Your refund equals the prepaid amount minus the itemized price of services already completed — the same lines shown in Detailed Pricing. Unused visits and unfinished line items are refunded. This is not a time-based proration.</p>' +
       '<p class="retention">' + I("gift", "xs") + '<span><strong>Stay Offer:</strong> Thinking of canceling or renewing? Members of 6+ months get 1 month free to stay. Members of 1+ year get 2 months free. Optional, never required to cancel.</span></p>' +
@@ -1264,7 +1297,7 @@
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + addMo(x) + '</span></div>'; }).join("")
       : '<div><span>Add-ons</span><span>None selected</span></div>';
     var lmSummary = selectedLastMinute().length
-      ? selectedLastMinute().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.price) + ' one-time, with next visit</span></div>'; }).join("")
+      ? selectedLastMinute().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + ' <span class="tag-1x">One-Time</span></span><span>' + money(x.price) + ', with next visit</span></div>'; }).join("")
       : '';
     /* Order Form Deck (Max, 19:28 ICT Oct 15): summary at top (08) with each extra on its own line (13), running total only here (15), yard sign near the total (14);
        short recap of home details (17) with an edit link back to the questions (02); full name first (03), name and phone stacked (16); referral behind "Have a Code?" (11);
@@ -1283,21 +1316,21 @@
       (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>' + money(6 * monthlyOf(t.membershipAnnual)) + ' Value</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
       ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · +1 Free Month</span></div>' : "") +
       addonSummary + lmSummary +
-      '<div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div>' + '<p class="small muted su-due-mo">That works out to about ' + money(t.today / (t.plan === "biennial" ? 24 : 12)) + '/month over ' + (t.plan === "biennial" ? "24 paid months" : "12 months") + '</p></div>' +
+      '<div class="su-due2"><div><span>Due Today</span><b>' + money(t.today) + '</b></div><div><span>Per Month</span><b>' + money(t.today / (t.plan === "biennial" ? 24 : 12)) + '</b><small>over ' + (t.plan === "biennial" ? "24 paid months" : "12 months") + '</small></div></div></div>' +
       '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label>' +
       '<div class="su-recap small"><strong>Your Home:</strong> ' + recap + ' <button type="button" class="link mw-hover" data-edit="0">Edit Home Details</button></div></div>' +
       '<div class="card"><h3>Your Details</h3>' +
-      '<label class="fl" for="sName">Full Name</label><input id="sName" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '">' + fe("sName") +
-      '<label class="fl" for="sPhone">Phone</label><input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '">' + fe("sPhone") +
-      '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' + fe("sEmail") +
-      '<label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' + fe("sAddr") +
+      '<label class="fl sr-only" for="sName">Full Name</label>' + fe("sName") + '<input id="sName" placeholder="Full name" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '">' +
+      '<label class="fl sr-only" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" placeholder="Phone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '">' +
+      '<label class="fl sr-only" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" placeholder="Email" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' +
+      '<label class="fl sr-only" for="sAddr">Service Address</label>' + fe("sAddr") + '<input id="sAddr" placeholder="Service address" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have a Code?</button></p>' +
       '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Referral Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
       extrasRow() +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement and Liability Waiver</h3>' +
-      '<div class="legal open-box" tabindex="0" aria-label="Membership Agreement">' + agreementHtml() + '</div>' +
-      '<div class="legal open-box" tabindex="0" aria-label="Liability Waiver" style="margin-top:.7rem">' + WAIVER + '</div>' +
+      '<div class="legal open-box" tabindex="0" aria-label="Membership Agreement">' + agreementHtml() + '</div><div class="rd-bar" aria-hidden="true"><i></i></div>' +
+      '<div class="legal open-box" tabindex="0" aria-label="Liability Waiver" style="margin-top:.7rem">' + WAIVER + '</div><div class="rd-bar" aria-hidden="true"><i></i></div>' +
       renewTerms() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement and accept the Liability Waiver.</span></label>' + fe("agree") +
       '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>I agree Smart Upkeep may charge me <strong>' + money(t.today) + '</strong> at the secure payment step, and that my membership <strong>renews automatically</strong> as described above until I cancel.</span></label>' + fe("chargeOk") +
       '<p class="fl">Signature (Signs Both)</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
@@ -1631,6 +1664,8 @@
       S.referralCodeIn = ref;
       S.signup = Object.assign({}, S.signup, { address: val("sAddr"), name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, yardSignOk: !!(document.getElementById("sYardSign") || {}).checked });
     }
+    /* Sign-Up Form deck 04 (Max 17:10 ICT Oct 17): thin bar shows how far you have read each agreement box */
+    app.querySelectorAll(".legal.open-box").forEach(function (b) { var bar = b.nextElementSibling; if (!bar || !bar.classList.contains("rd-bar")) return; var f = bar.firstChild; function up() { var m = b.scrollHeight - b.clientHeight; f.style.width = (m > 0 ? Math.min(100, Math.round(b.scrollTop / m * 100)) : 100) + "%"; } b.addEventListener("scroll", up, { passive: true }); up(); });
     var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); var w = document.getElementById("refWrap"); w.hidden = false; document.getElementById("sRef").focus(); });
     /* Sign Up Policies deck 03: check the referral code right away (format only; the real check happens on our side). */
     (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right. +1 free month once your first payment clears." : "Codes look like SU-HOME-1234."; o.className = "small ref-check " + (ok ? "ok" : "bad"); r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();

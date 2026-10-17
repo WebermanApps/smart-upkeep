@@ -44,4 +44,27 @@ Payments (failed cards and prepaid balance), Ask Anything safety escalations, th
   - Any loaded test member: `/member/?test=T001` through `T100`.
   - Tech Dash 1, 2 and 3: `/tech/?dash=1`, `/tech/?dash=2` and `/tech/?dash=3` (Oakland, Macomb and Wayne routes). Add `&day=YYYY-MM-DD` to open a specific route day.
 - **Where the data lives:** inline in these page-locked HTML files only. No separate data file ships. The master JSON/CSV, data sources and the generator are in the private ops repo (`smartupkeep-ops/test-data/`).
-- **House photos:** test homes have no photo yet, so they show the drawn house. Set `home.photo` and `home.photoSource` in the master dataset to add one.
+- **House photos (Client 1-3):** chosen by the photo rule: gather every listing photo AND the Street View view, then pick the clearest, best-lit, unobstructed front exterior. Photos are embedded as data URIs inside the locked pages (addresses are sensitive), never as public files.
+  - Client 1 (5439 Deerfield Village Dr): listing photo, Realcomp MLS 61025956 via Redfin, photo 50 of 65. Daylight, straight-on, whole brick front with entry and garage, nothing in the way. The twilight hero shot is darker, the other exterior angles are partly hidden by trees, and Street View has a front-yard tree across the house.
+  - Client 2 (3153 Belinda Dr): listing photo, Realcomp MLS 21612924 via Redfin (the only listing photo). Sunny, sharp, whole front in view. Street View is late winter with bare trees and flat light.
+  - Client 3 (493 Buckingham Rd): Google Street View **embed** (keyless iframe, cropped to hide controls, captioned "Street View © Google"; no static copy saved, per Google's terms). The only front listing photo is snowy, overcast and 512 px; Street View is summer and sunny.
+  - Shown on the member header (Client 1-3), the tech job card and the Driving To view, and the console member drawer. Other test homes show the drawn house.
+  - The three client addresses were re-pointed from interpolated OSM house numbers to the nearest real parcels (verified on Redfin). The other 97 homes are not re-checked.
+- **Tech headshots:** wired to `assets/tech-dana-whitmore.jpg`, `assets/tech-luis-ferreira.jpg`, `assets/tech-keon-atwater.jpg` (400x400) in Tech Dash 1-3 (avatar and top bar) and the console Techs list, with initials until the files are added.
+
+## Accent Colours (Max, Oct 17)
+Light mode only, exact brand hexes from `assets/brand-tokens.css`:
+- Tech pages (tech app, Tech Dash 1-3): lagoon `#05668D`.
+- Member pages (member app, Client 1-3): terracotta `#C1502E`, deep `#A8431F`.
+- Console: a 3 px lagoon-to-terracotta gradient line under the header and test banner; tech rows and route cards get a lagoon edge, member rows a terracotta edge; Techs/Routes headings lagoon, Members heading terracotta-deep.
+
+## Back Buttons (Brand Rule R104)
+Every Back button returns to wherever the user came from: `history.back()` when there is same-site history, then a same-origin `document.referrer` or a trusted same-origin `from=` param, then the fixed fallback. FAQ's Back pill uses this (`data-back`). Member "‹ Visits" / "‹ Profile", tech stepper controls and the main site's Back pill (in-app screen stack) are in-app navigation and stay as they are. The console "‹" is a route-day control, not a Back button.
+
+## Pull To Refresh
+Every page includes the one shared `ptr.js` (the main page's code): home and quote flow, member app (Client 1-3), tech app (Tech Dash 1-3), console, FAQ, lawn, watch and the in-person form. Pulls that start on cards, inputs, swipe rows or dialogs are ignored by design.
+
+## Offline Sign-Up Forms (Legal, Oct 17)
+- `forms/in-person/`: printable in-person / door / event form with the bold 3-day cancel statement next to the signature and two Notice of Cancellation copies. Locked, `noindex`, not linked from any page. Draft, pending Michigan attorney review.
+- The outbound phone script lives in the private ops repo (`sales/phone-sales-script.md`).
+- The online form has no 3-day notice; it has the auto-renewal terms, a separate consent box before any charge, and the one-step online cancel page (`/#cancel`).
