@@ -1398,3 +1398,10 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   .hm-hero .hm-hero-txt{margin-top:-150px!important;padding-top:64px!important}
   .hm-hero h1{font-size:41px!important}
 }
+
+/* Sign Up Policies deck (Max, Oct 17): red text plus red box outline on field errors (05); referral code checked as you type (03); monthly equivalent under Due At Sign Up (04); tall agreement box about 10 lines (06). */
+input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="true"]{border-color:#b91c1c!important;box-shadow:0 0 0 1.5px #b91c1c!important}
+.ferr:not(:empty),.ref-check.bad{color:#b91c1c}
+.ref-check{margin:.35rem 0 0;min-height:1.1em}.ref-check.ok{color:#0B6E4F}
+.su-due-mo{margin:.2rem 0 0;text-align:right}
+.legal.open-box{max-height:15rem}

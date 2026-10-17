@@ -1204,8 +1204,7 @@
       ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + addMo(x) + '</span></div>'; }).join("")
       : '<div><span>Add-ons</span><span>None selected</span></div>';
     var lmSummary = selectedLastMinute().length
-      ? selectedLastMinute().map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("") +
-        '<div><span>Last-Minute Due with Next Visit</span><span>' + money(lastMinuteTotal()) + '</span></div>'
+      ? selectedLastMinute().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + money(x.price) + ' one-time, with next visit</span></div>'; }).join("")
       : '';
     /* Order Form Deck (Max, 19:28 ICT Oct 15): summary at top (08) with each extra on its own line (13), running total only here (15), yard sign near the total (14);
        short recap of home details (17) with an edit link back to the questions (02); full name first (03), name and phone stacked (16); referral behind "Have a Code?" (11);
@@ -1224,7 +1223,7 @@
       (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>' + money(6 * monthlyOf(t.membershipAnnual)) + ' Value</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
       ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · +1 Free Month</span></div>' : "") +
       addonSummary + lmSummary +
-      '<div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div>' +
+      '<div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div>' + '<p class="small muted su-due-mo">That works out to about ' + money(t.today / (t.plan === "biennial" ? 24 : 12)) + '/month over ' + (t.plan === "biennial" ? "24 paid months" : "12 months") + '</p></div>' +
       '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label>' +
       '<div class="su-recap small"><strong>Your Home:</strong> ' + recap + ' <button type="button" class="link mw-hover" data-edit="0">Edit Home Details</button></div></div>' +
       '<div class="card"><h3>Your Details</h3>' +
@@ -1233,7 +1232,7 @@
       '<label class="fl" for="sEmail">Email</label><input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' + fe("sEmail") +
       '<label class="fl" for="sAddr">Service Address</label><input id="sAddr" type="text" autocomplete="street-address" value="' + esc(addr) + '">' + fe("sAddr") +
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have a Code?</button></p>' +
-      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Referral Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"></div></div>' +
+      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Referral Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
       extrasRow() +
       cancelPolicyCard(S.tier) +
       '<div class="card"><h3>Membership Agreement and Liability Waiver</h3>' +
@@ -1569,6 +1568,8 @@
       S.signup = Object.assign({}, S.signup, { address: val("sAddr"), name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, yardSignOk: !!(document.getElementById("sYardSign") || {}).checked });
     }
     var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); var w = document.getElementById("refWrap"); w.hidden = false; document.getElementById("sRef").focus(); });
+    /* Sign Up Policies deck 03: check the referral code right away (format only; the real check happens on our side). */
+    (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right. +1 free month once your first payment clears." : "Codes look like SU-HOME-1234."; o.className = "small ref-check " + (ok ? "ok" : "bad"); r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
     ["sAddr", "sName", "sPhone", "sEmail", "sRef", "sYardSign"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keepFields(); save(); }); });
     document.getElementById("suF").addEventListener("submit", function (e) {
       e.preventDefault(); keepFields();
