@@ -1411,3 +1411,4 @@ input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="tr
 .hm-wait-f{display:grid;grid-template-columns:1fr 2fr;gap:.5rem;margin-top:.6rem}.hm-wait-f .btn{grid-column:1/-1}
 .hm-wait-f input{min-height:46px}
 @media(min-width:900px){.hm-wait-f{grid-template-columns:8rem 1fr auto}.hm-wait-f .btn{grid-column:auto}}
+.qt-wait{margin-top:1rem}

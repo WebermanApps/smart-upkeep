@@ -284,7 +284,7 @@
     bind();
     document.body.classList.toggle("on-home", s === "home");
     if (s === "home") bindHome();
-    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z } }); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
+    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
   }
 
   /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
@@ -625,7 +625,7 @@
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
-      '<section class="hm-row hm-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Outside Our Area?</h3><p class="small muted">We serve Metro Detroit: Wayne, Oakland, Macomb. Join the waitlist and we will tell you when we reach your ZIP.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>' +
+      /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
         wwCarousel() + '</section>' +
@@ -1051,7 +1051,13 @@
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
       runHtml +
       '<button class="btn btn-primary btn-big mw-hover" data-act="extras" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
-      (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta;
+      (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta + waitlistEnd();
+  }
+  /* Out-of-area waitlist (Max, Oct 17): only after the price, only when the ZIP they entered is outside the service area (inArea). In-area and Unsure visitors never see it. */
+  function waitlistEnd() {
+    var z = S.answers && S.answers.zip && S.answers.zip !== "unsure" ? zipOf(S.answers.zip) : "";
+    if (!z || inArea(z)) return "";
+    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Outside Our Area?</h3><p class="small muted">ZIP ' + esc(z) + ' is outside the area we serve today: Metro Detroit (Wayne, Oakland, Macomb). Join the waitlist and we will tell you when we reach your ZIP.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
   var lastScreen = null;
