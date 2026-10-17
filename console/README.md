@@ -14,7 +14,7 @@ URL: https://smartupkeep.ai/console/ (behind the same password gate as the rest 
   "member": "Jordan Sample", "tech": null, "ts": "2026-10-17T03:40:00.000Z",
   "payload": { }, "sample": false }
 ```
-Types in use: visit.requested, visit.reschedule_requested, addon.ordered, plan.paused, message.sent, photo.added, settings.changed (member); tech.checkin, tech.checkout, photo.arrival, report.submitted, moisture.wet, inventory.logged, inventory.restocked, message.sent (tech); site.visit, scan.started, quote.generated, signup.completed, addon.clicked, waitlist.joined, alacarte_open (site); ask.question and ask.safety (Ask Anything, sample only for now); payment.failed (billing, sample only for now).
+Types in use: visit.requested, visit.reschedule_requested, addon.ordered, plan.paused, message.sent, photo.added, settings.changed (member); tech.checkin, tech.checkout, photo.arrival, report.submitted, moisture.wet, inventory.logged, inventory.restocked, message.sent (tech); site.visit, scan.started, quote.generated, signup.completed, addon.clicked, waitlist.joined, alacarte_open (site); tech.enroute (tech, Navigate); ask.question and ask.safety (Ask Anything, sample only for now); payment.failed (billing, sample only for now).
 
 ## Swapping to Supabase later
 1. Create the table `events (id text primary key, type text, app text, member text, tech text, ts timestamptz default now(), payload jsonb, sample bool default false)`. Turn on Row Level Security: apps may insert, and only staff may select.
@@ -27,6 +27,9 @@ Types in use: visit.requested, visit.reschedule_requested, addon.ordered, plan.p
 
 ## Swapping to Firebase later
 Same idea with Firestore: `addDoc(collection(db,'events'), ev)` for emit, `query(orderBy('ts','desc'), limit(500))` for all, and `onSnapshot` for on. Lock writes and reads down with security rules.
+
+## House photo rule
+Always show the member's real house, using the best available photo (a clear, well-lit front exterior). Fall back to the drawn house only when no good photo exists or the photo fails to load. Member records carry `photo` (URL) and `photoSource` (where it came from). The console Members list shows a thumbnail, member detail shows a banner, and the tech app's job card and Driving To view follow the same rule. With a real backend, store the chosen photo per home (for example a `homes.photo_url` column) and keep the drawn house as the default.
 
 ## Still placeholder
 Payments (failed cards and prepaid balance), Ask Anything safety escalations, the route map (it's a drawn sketch, not real geo), arrival/report photos, and NPS/reviews. They need real systems behind them.

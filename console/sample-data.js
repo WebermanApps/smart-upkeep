@@ -1,10 +1,11 @@
 /* SAMPLE DATA ONLY for the operator console. Fake people, fake addresses, fake numbers. No real traction.
-   Seed events use the same format as ../events.js and are marked sample:true. Times are relative to "now" so the board always looks current. */
+   Seed events use the same format as ../events.js and are marked sample:true. Times are relative to "now" so the board always looks current.
+   House photo rule: each member record has a photo field (best clear, well-lit front exterior). Empty = the console shows the drawn house. */
 (function () {
   var now = Date.now(), m = 60000, h = 60 * m, d = 24 * h;
   function t(ago) { return new Date(now - ago).toISOString(); }
   var MEMBERS = [
-    { id: "m1", name: "Jordan Sample", addr: "2573 Wickfield Rd, West Bloomfield", tier: "gold", status: "Active", health: "1 to recheck", next: "Dec 8 to 12", credits: 1, since: "Apr 2026" },
+    { id: "m1", name: "Jordan Sample", addr: "2573 Wickfield Rd, West Bloomfield", tier: "gold", status: "Active", health: "1 to recheck", next: "Dec 8 to 12", credits: 1, since: "Apr 2026", photo: "../assets/member-house-2573.jpg?v=1", photoSource: "Public listing photo (LakeHomes.com / Realcomp MLS 2210045190)" },
     { id: "m2", name: "Avery Example", addr: "100 Sample St, Royal Oak", tier: "gold", status: "Active", health: "All good", next: "Today", credits: 0, since: "May 2026" },
     { id: "m3", name: "Blake Demo", addr: "200 Example Ave, Troy", tier: "silver", status: "Active", health: "All good", next: "Today", credits: 0, since: "Jun 2026" },
     { id: "m4", name: "Casey Test", addr: "300 Demo Ct, Birmingham", tier: "platinum", status: "Active", health: "Watch: attic", next: "Today", credits: 2, since: "Apr 2026" },
