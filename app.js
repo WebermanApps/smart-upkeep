@@ -1748,6 +1748,7 @@
    beside the centered logo (never over logo/Share). Stays parked until the visitor scrolls back to the top after 300px+,
    then the tech waves and it drives off left (~1.2s). Once per page load; reduced motion skips. */
 (function () {
+  var bar0 = document.querySelector(".topbar"); if (bar0 && window.SUVan) window.SUVan.mount(bar0, "");
   var v = document.querySelector(".hdr-van"), rd = document.querySelector(".hdr-road"); if (!v) return;
   var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var done = false;
@@ -1771,9 +1772,9 @@
     if (done || rm || !document.body.classList.contains("on-home")) return;
     if (y > maxY) maxY = y;
     if (state === "out" && ready) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
-      if (!place()) return;
+      var bar = document.querySelector(".topbar");
+      if (!(window.SUVan ? window.SUVan.play(bar, bar.querySelector(".brand"), bar.querySelector(".top-share")) : place())) return;
       state = "gone"; done = true;
-      void v.offsetWidth; v.classList.add("vcross"); if (rd) rd.classList.add("vcross");
     }
   }
   var rafQ = false; window.addEventListener("scroll", function () { if (rafQ) return; rafQ = true; requestAnimationFrame(function () { rafQ = false; check(); }); }, { passive: true });
