@@ -1727,11 +1727,11 @@
 
 /* Oct 17 2026: header van. First scroll >80px: speeds in from the right (~700ms) and parks in the larger free gap
    beside the centered logo (never over logo/Share). Stays parked until the visitor scrolls back to the top after 300px+,
-   then the tech waves and it drives off left (~1.2s). Once per session; reduced motion skips. */
+   then the tech waves and it drives off left (~1.2s). Once per page load; reduced motion skips. */
 (function () {
   var v = document.querySelector(".hdr-van"), rd = document.querySelector(".hdr-road"); if (!v) return;
   var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var done = false; try { done = sessionStorage.getItem("suVanDone") === "1"; } catch (e) {}
+  var done = false;
   var state = "out", maxY = 0;
   function place() {
     var bar = document.querySelector(".topbar"), b = bar && bar.querySelector(".brand"), sh = bar && bar.querySelector(".top-share");
@@ -1753,7 +1753,7 @@
     if (y > maxY) maxY = y;
     if (state === "out" && ready) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
       if (!place()) return;
-      state = "gone"; done = true; try { sessionStorage.setItem("suVanDone", "1"); } catch (e) {}
+      state = "gone"; done = true;
       void v.offsetWidth; v.classList.add("vcross"); if (rd) rd.classList.add("vcross");
     }
   }
