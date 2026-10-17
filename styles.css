@@ -1383,3 +1383,13 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   .hm-hchips{margin-top:.5rem!important}
   .hm-hero .hm-lead{margin-top:.25rem!important}
 }
+/* Oct17: smaller hero media (~14%) + tighter vertical padding */
+@media (max-width:480px){
+  .hm-hero{padding-top:.6rem!important}
+  .hm-hero .hm-thumb{width:86%!important;margin:0 auto!important;border-radius:18px!important;box-shadow:0 6px 18px rgba(120,60,30,.10)!important}
+  .hm-hero .hm-hero-txt{margin-top:-120px!important;padding-top:56px!important;padding-bottom:.35rem!important}
+}
+@media (min-width:900px){
+  .hm-hero{padding:2.3rem 3rem!important;margin-top:1rem!important}
+  .hm-hero .hm-thumb{width:86%!important;justify-self:center}
+}
