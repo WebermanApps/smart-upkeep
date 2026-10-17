@@ -641,7 +641,7 @@
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
-      '</section>' + featuredAd() + '<div class="hm-share"><button type="button" class="hm-share-btn mw-hover" data-share aria-label="Share Smart Upkeep"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2"/></svg><span>Share</span></button><span class="hm-share-msg small" role="status"></span></div>' + wiPop() + icSheet() +
+      '</section>' + featuredAd() + '<div class="hm-share"><button type="button" class="hm-share-btn mw-hover" data-share aria-label="Share Smart Upkeep"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11.5v7.2c0 .9.7 1.6 1.6 1.6h10.8c.9 0 1.6-.7 1.6-1.6v-7.2"/></svg><span>Share</span></button><span class="hm-share-msg small" role="status"></span></div>' + wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
         [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
@@ -703,10 +703,37 @@
     }, true);
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") pop.hidden = true; });
   }
+  /* Shop À La Carte pop-up from the bottom bar (Max, Oct 17): every à la carte service from P.addons and P.lastMinute with its existing draft price, short description and an Add button. Bottom sheet on phones, centered modal on desktop. */
+  function acPop() {
+    var sel = S.alacarte || [];
+    return '<div class="xt-sheet ac-pop" id="acPop" hidden role="dialog" aria-modal="true" aria-labelledby="acPopT"><div class="xt-inner">' +
+      '<div class="xt-top"><h3 id="acPopT">Shop À La Carte</h3><button type="button" class="modal-x mw-hover" data-acpop-close="1" aria-label="Close">&times;</button></div>' +
+      '<p class="lead-sm">One-time services, no membership needed. Tap Add on anything you want, then Book. <span class="draft">Draft prices</span></p>' +
+      '<h4 class="acp-h">Services</h4>' + renderAddonList(P.addons || [], sel, "acpop", function (x) { return oncePriceLabel(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
+      '<h4 class="acp-h">Quick Jobs on a Visit</h4>' + renderAddonList(P.lastMinute || [], sel, "acpop", function (x) { return oncePriceLabel(x) + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
+      '<div class="acp-foot"><button type="button" class="btn btn-primary btn-big mw-hover" data-acpop-book="1">' + (sel.length ? "Book " + sel.length + " Selected" : "Book À La Carte") + '</button></div></div></div>';
+  }
+  function bindAcPop(root) {
+    var pop = root.querySelector("#acPop"); if (!pop) return; var from = null;
+    function close() { if (pop.hidden) return; pop.hidden = true; document.body.classList.remove("xt-lock"); if (from) from.focus(); }
+    function foot() { var n = (S.alacarte || []).length; pop.querySelector("[data-acpop-book]").textContent = n ? "Book " + n + " Selected" : "Book À La Carte"; }
+    acPop.open = function (btn) { from = btn || null; pop.hidden = false; document.body.classList.add("xt-lock"); pop.querySelector(".xt-inner").scrollTop = 0; pop.querySelector(".modal-x").focus({ preventScroll: true });
+      try { window.SUEvents && SUEvents.emit("alacarte_open", "site", { payload: { from: "bottom bar" } }); } catch (x) {} };
+    pop.addEventListener("click", function (e) {
+      if (e.target === pop || e.target.closest("[data-acpop-close]")) return close();
+      if (e.target.closest("[data-acpop-book]")) { close(); return go("alacarte"); }
+      var b = e.target.closest("[data-acpop]"); if (!b) return;
+      var id = b.getAttribute("data-acpop"); S.alacarte = Array.isArray(S.alacarte) ? S.alacarte : [];
+      var i = S.alacarte.indexOf(id), on = i < 0; if (on) S.alacarte.push(id); else S.alacarte.splice(i, 1); save();
+      b.classList.toggle("sel", on); b.setAttribute("aria-pressed", on); b.querySelector(".chk").innerHTML = on ? "&#10003;" : ""; var ad = b.querySelector(".acp-add"); if (ad) ad.textContent = on ? "Added" : "Add"; foot();
+      if (on) logAddon("tap", [id], "alacarte-popup");
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanSwipe(root); bindOffer(root); bindInc(root);
-    bindPlanSelect(root);
+    bindPlanSelect(root); bindAcPop(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     function setOpen(d, open) {
@@ -726,6 +753,7 @@
     var toast = root.querySelector(".hm-toast"), tt;
     root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
       var t = b.getAttribute("data-hm-tab");
+      if (t === "addons" && acPop.open) { acPop.open(b); return; }
       if (t === "myhome" || t === "account") { toast.textContent = (t === "myhome" ? "My Home" : "Account") + " Is Coming Soon"; toast.hidden = false; clearTimeout(tt); tt = setTimeout(function () { toast.hidden = true; }, 2200); return; }
       root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o === b); });
       if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });

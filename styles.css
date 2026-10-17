@@ -1412,3 +1412,12 @@ input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="tr
 .hm-wait-f input{min-height:46px}
 @media(min-width:900px){.hm-wait-f{grid-template-columns:8rem 1fr auto}.hm-wait-f .btn{grid-column:auto}}
 .qt-wait{margin-top:1rem}
+/* Shop À La Carte pop-up (Oct 17) */
+.ac-pop .xt-inner{border-radius:18px 18px 0 0;padding-bottom:0;display:flex;flex-direction:column;max-height:86vh;overscroll-behavior:contain}
+@media(min-width:760px){.ac-pop .xt-inner{border-radius:18px;max-height:84vh}}
+.ac-pop .acp-h{margin:.8rem 0 .35rem;font-family:var(--mw-font-head,"Khand"),sans-serif;font-size:1.15rem}
+.ac-pop .addon-price{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem}
+.ac-pop .acp-add{margin-left:auto;border:1.5px solid #0a0a0a;border-radius:999px;padding:.05rem .7rem;font-weight:600;font-size:.8rem;color:#0a0a0a}
+.ac-pop .addon.sel .acp-add{background:#0a0a0a;color:#fff}
+.ac-pop .acp-foot{position:sticky;bottom:0;background:#fff;padding:.6rem 0 calc(.8rem + env(safe-area-inset-bottom));margin-top:.6rem;border-top:1px solid var(--mw-border)}
+.ac-pop .acp-foot .btn{width:100%}
