@@ -1393,3 +1393,8 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   .hm-hero{padding:2.3rem 3rem!important;margin-top:1rem!important}
   .hm-hero .hm-thumb{width:86%!important;justify-self:center}
 }
+@media (max-width:480px){
+  .hm-hero{padding-top:.45rem!important}
+  .hm-hero .hm-hero-txt{margin-top:-150px!important;padding-top:64px!important}
+  .hm-hero h1{font-size:41px!important}
+}
