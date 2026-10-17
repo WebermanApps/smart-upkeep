@@ -391,12 +391,17 @@
 
   /* ROSCA (Legal, Max 20:10 ICT Oct 17): clear auto-renewal terms before billing info, express consent box, simple online cancel. Draft wording. */
   function renewTerms() {
-    var t = totals(), yrs = t.plan === "biennial" ? "24 paid months (plus 6 free months at the end)" : "12 months";
-    return '<div class="renew-terms notice" role="note"><span class="draft">DRAFT, pending legal review</span><p><strong>Auto-Renewal Terms</strong></p><ul class="feat small">' +
-      '<li>Today you pay <strong>' + money(t.today) + '</strong> for ' + yrs + ' of ' + esc(P.tiers[S.tier].label) + '.</li>' +
-      '<li>Your membership <strong>renews automatically</strong> at the end of the term for another 12 months, charged to the card you add at the payment step, unless you cancel before the renewal date.</li>' +
-      '<li>The renewal price is your plan price at that time. We email you the renewal date and price at least 30 days before any renewal charge.</li>' +
-      '<li><strong>Cancel anytime, no fee, online in one step:</strong> <a href="#cancel" class="link mw-hover">Cancel Membership</a>. Refund = prepaid minus completed services.</li></ul></div>';
+    /* Legal follow-up (Max 20:38 ICT Oct 17). Start = first visit (membership starts at the first visit); before one is booked we show the
+       earliest bookable day (2 days out, same as the first-visit picker). Renewal = start + term (12 months, or 24 paid + 6 free = 30). */
+    var t = totals(), bi = t.plan === "biennial", yrs = bi ? "24 paid months (plus 6 free months at the end)" : "12 months";
+    var st = S.firstVisit ? new Date(S.firstVisit + "T12:00:00") : new Date(Date.now() + 2 * 864e5), rn = new Date(st.getTime());
+    rn.setMonth(rn.getMonth() + (bi ? 30 : 12));
+    function dd(d) { return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); }
+    return '<div class="renew-terms notice" role="note"><span class="draft">Draft, pending Michigan attorney review</span><p><strong>Auto-Renewal Terms</strong></p><ul class="feat small">' +
+      '<li>Your plan: <strong>' + esc(P.tiers[S.tier].label) + '</strong>, current price <strong>' + money(t.membershipAnnual) + '/year</strong> (about ' + money(monthlyOf(t.membershipAnnual)) + '/month). Today you pay <strong>' + money(t.today) + '</strong> for ' + yrs + '.</li>' +
+      '<li>Your membership starts at your first visit' + (S.firstVisit ? ' (' + dd(st) + ')' : ' (earliest: ' + dd(st) + ')') + ' and <strong>renews automatically on ' + dd(rn) + '</strong>' + (S.firstVisit ? '' : ' if it starts that day') + ', for another 12 months at the plan price at that time, charged to the card you add at the payment step. Free months from referrals move this date later.</li>' +
+      '<li>You can cancel anytime before renewal at <a href="/#cancel" class="link mw-hover">smartupkeep.ai/#cancel</a>; we\u2019ll email you at least 30 days before any price change or renewal charge.</li>' +
+      '<li><strong>Cancel anytime, no fee, online in one step.</strong> Refund = prepaid minus completed services.</li></ul></div>';
   }
   function cancelPage() {
     return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Your refund is what you prepaid minus the itemized price of services already done.</p>' +
@@ -702,7 +707,7 @@
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", "Michigan 3-Day Cancel Right"])) +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signing up in person or by phone? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
