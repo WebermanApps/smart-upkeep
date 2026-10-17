@@ -1365,3 +1365,21 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
 @media (max-width:600px){#videoModal .vp-btn{width:44px;height:44px}}
 @media (min-width:601px){#videoModal .modal-x{position:absolute!important;top:.6rem;right:.7rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}#videoModal .vp-wrap{padding-top:52px}}
 #videoModal video{background:#fff!important}
+/* Oct 17 2026 (j): phone "Plans" cue under the hero (tap = smooth scroll to Plans), tighter hero bottom */
+.hm-plans-cue{display:none}
+@media (max-width:480px){
+  .hm-hero .hm-hero-txt{padding-bottom:.45rem!important}
+  .hm-hchips{margin-top:.65rem!important}
+  .hm-hero .hm-cta-inline{margin-top:.65rem!important}
+  .hm-plans-cue{display:flex;align-items:center;gap:.2rem;margin:.35rem auto 0;padding:.3rem .8rem;min-height:36px;border:0;background:transparent;font:600 .8rem Hind,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#A8431F;cursor:pointer}
+  .hm-plans-cue svg{animation:cueBounce 1.6s ease-in-out infinite}
+  body.on-home .hm > .hm-row#row-plans{padding-top:2px}
+}
+@keyframes cueBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.hm-plans-cue svg{animation:none}}
+@media (max-width:480px) and (max-height:720px){
+  .hm-plans-cue{margin-top:0;min-height:32px;padding:.2rem .8rem}
+  .hm-hero .hm-cta-inline{margin-top:.5rem!important}
+  .hm-hchips{margin-top:.5rem!important}
+  .hm-hero .hm-lead{margin-top:.25rem!important}
+}

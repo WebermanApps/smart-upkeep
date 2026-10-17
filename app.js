@@ -430,13 +430,13 @@
   function heroMedia() {
     var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (port) { /* Oct 17: phone hero uses a word-free square cut (V7 26.9-30.6s: furnace + moisture scan) */ tsrc = "video/teaser-v7-phone-1x1.mp4?v=p2"; poster = "assets/teaser-v7-phone-1x1-poster.jpg?v=p1"; wh = 'width="720" height="720"'; }
+    if (port) { /* Oct 17 08:00: phone hero loops word-free in-home work scenes (V7 9:16 24.5-25.9 fridge filter, 26.6-28.4 furnace filter, 29.0-30.9 moisture scan) */ tsrc = "video/teaser-v7-phone-work-1x1.mp4?v=w1"; poster = "assets/teaser-v7-phone-1x1-poster.jpg?v=p1"; wh = 'width="720" height="720"'; }
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     var hold = port && !window.__suFirst; /* Oct 17: phone holds the van-at-house poster until first interaction */
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
-  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Honest Refund"], ["clipboard", "Report Every Visit"], ["house", "Metro Detroit"], ["shield", "Insured Techs"], ["shield", "Background-Checked Yearly"], ["refund", "Cancel Anytime, No Fee"], ["clipboard", "Photo Report Every Visit"], ["house", "Home Record Kept"], ["clock", "Seasonal Visits"], ["meter", "Moisture Scan Every Visit"]];
+  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
   /* gentle auto-scroll for phone hero chips; pauses on touch, skipped for reduced motion */
   (function heroChips() {
     var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (rm) return;
@@ -601,7 +601,7 @@
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
-    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Honest Refund", "Cancel anytime, no fee. Refund = prepaid minus work done."], ["clipboard", "Report Every Visit", "Written report with photos saved to your Home Record."], ["house", "Metro Detroit", "Wayne, Oakland and Macomb counties."]];
+    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Refund = prepaid minus work done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
     function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong>' + (sub ? '<span class="muted small">' + sub + '</span>' : '') + (extra || "") + '</div>'; }
@@ -616,6 +616,7 @@
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
         '<div class="hm-hchips" aria-label="Why Trust Us">' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '">' + I(c[0], "xs") + '<span>' + c[1] + '</span></span>'; }).join("") + '</div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
+      '<button type="button" class="hm-plans-cue mw-hover" data-plans-cue aria-label="Scroll to Plans"><span>Plans</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
@@ -724,6 +725,7 @@
       if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
       else document.getElementById("row-" + t).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     }); });
+    var cue = root.querySelector("[data-plans-cue]"); if (cue) cue.addEventListener("click", function () { var t = document.getElementById("row-plans"); if (!t) return; var top = t.getBoundingClientRect().top + window.scrollY - ((document.querySelector(".topbar") || {}).offsetHeight || 0) - 8; window.scrollTo({ top: top, behavior: reduce ? "auto" : "smooth" }); });
     var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
     if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
     /* service tiles: tap opens a small card (never automatic) */
