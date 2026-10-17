@@ -417,9 +417,9 @@
   }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
-  var ADDON_ICO = { windows: "window", carpet: "brush", pool: "pool", snow: "snow", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", handyman: "wrench", pest: "bug", guttersExtra: "gutter", backflow: "waterheater" };
+  var ADDON_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter" };
   /* Limits per a-la-carte item: only what pricing-config.js desc/unit already says. Missing = not in repo (reported as a gap). */
-  var AC_LIMITS = { windows: "Outside glass only.", carpet: "One whole-home clean a year.", pool: "One spring opening and one fall closing.", snow: "One winter season.", chimney: "Wood-burning chimneys.", lights: "One fall install and one take-down after the holidays.", radon: "One test for your home.", handyman: "8 hours a year.", pest: "Four quarterly visits a year, through a partner.", guttersExtra: "One extra cleaning.", backflow: "One test a year, where required." };
+  var AC_LIMITS = { windows: "Outside glass only.", carpet: "One whole-home clean a year.", chimney: "Wood-burning chimneys.", lights: "One fall install and one take-down after the holidays.", radon: "One test for your home.", guttersExtra: "One extra cleaning." };
   function priceRange(a) { return a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high); }
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
@@ -641,7 +641,7 @@
     function openAddon(id, from) { var a = P.addons.filter(function (x) { return x.id === id; })[0]; if (!a) return;
       var parts = [["What's Included", a.desc]];
       parts.push(["Limits", AC_LIMITS[a.id] || "Not set yet. We confirm limits when you book."]);
-      parts.push(["How the Price Is Set", addMo(a) + " added to your membership. It is the yearly price divided by 12, rounded, and the yearly price is set at the midpoint of metro Detroit market pricing research." + (a.id === "pool" ? " Opening and closing are priced the same, $550 each." : "") + " Draft price."]);
+      parts.push(["How the Price Is Set", addMo(a) + " added to your membership. It is the yearly price divided by 12, rounded, and the yearly price is set at the midpoint of metro Detroit market pricing research." + " Draft price."]);
       show(a.label, addMo(a), parts.map(function (p) { return '<li class="ac-part"><span><b>' + p[0] + '</b><br>' + p[1] + '</span></li>'; }).join(""), "Shop À La Carte", from); }
     function show(title, lead, html, cta, from) {
       pop.querySelector("#icT").textContent = title;
@@ -676,7 +676,7 @@
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
     var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Refund = prepaid minus work done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
     trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
-    var popular = ["windows", "chimney", "ducts", "pressure", "radon", "pest", "snow", "lights"];
+    var popular = ["windows", "chimney", "ducts", "pressure", "radon", "guttersExtra", "deck", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
     function card(ic, t, sub, extra, cls) { return '<div class="hm-card card mw-hover ' + (cls || "") + '">' + I(ic) + '<strong>' + t + '</strong>' + (sub ? '<span class="muted small">' + sub + '</span>' : '') + (extra || "") + '</div>'; }
     function row(id, title, cards, link, pre) {
@@ -1035,7 +1035,7 @@
   }
 
   var XT = { open: false, pick: null };
-  var XT_ICO = { windows: "window", carpet: "brush", pool: "pool", snow: "snow", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", handyman: "wrench", pest: "bug", guttersExtra: "gutter", backflow: "meter", lmInteriorWindows: "window", lmScreens: "window", lmBulbs: "lights" };
+  var XT_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmInteriorWindows: "window", lmScreens: "window", lmBulbs: "lights" };
   function extrasEntry() {
     var add = P.addons || [], lm = P.lastMinute || [];
     var nSel = (S.addons || []).length;

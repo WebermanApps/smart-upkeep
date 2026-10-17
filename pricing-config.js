@@ -45,7 +45,7 @@ window.SMART_UPKEEP_PRICING = {
     sump:        { label: "Sump Pump", gold: 60 },
     fireplace:   { label: "Gas Fireplace", gold: 150 },
     generator:   { label: "Standby Generator", platinumOnly: 450 },
-    pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits; opening and closing quoted separately" },
+    pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits" },
     humidifier:  { label: "Whole-House Humidifier", gold: 60 },
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
@@ -86,22 +86,18 @@ window.SMART_UPKEEP_PRICING = {
   /* A la carte add-ons / one-off services. Midpoints from pricing-48322. Draft. */
   /* Add Extras row on the sign-up form shows these first (Max's note, deck card 11: offer the ones members are likeliest to add).
      Picks: yearly seasonal jobs most homes can use that pair with visits. Tune from the add-on event log once real data exists. */
-  likelyAddons: ["guttersExtra", "windows", "pressure", "pest", "lights"],
+  likelyAddons: ["guttersExtra", "windows", "pressure", "chimney", "lights"],
+  /* Removed Oct 17 (Max): Pool Opening/Closing, Snow Removal, Extra Handyman Hours, Pest Control, Irrigation Backflow Test. */
   addons: [
     { id: "windows", label: "Exterior Window Washing", desc: "Outside glass, typically once or twice a year.", low: 150, high: 302, unit: "service", annual: 225 },
     { id: "carpet", label: "Carpet Cleaning", desc: "Whole-home carpet clean, once a year.", low: 400, high: 1800, unit: "service", annual: 600 },
-    { id: "pool", label: "Pool Opening and Closing", desc: "Spring open and fall close for your pool.", low: 1100, high: 1100, unit: "service", annual: 1100, note: "$550 each (open + close)" },
-    { id: "snow", label: "Snow Removal (Season)", desc: "Coordinated plowing for the winter season.", low: 1595, high: 1995, unit: "season", annual: 1795 },
     { id: "pressure", label: "Pressure Washing", desc: "House, driveway or patio wash as needed.", low: 100, high: 720, unit: "service", annual: 310 },
     { id: "deck", label: "Deck Sealing or Staining", desc: "Protect and refresh your deck every few years.", low: 550, high: 1250, unit: "service", annual: 900 },
     { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 129, high: 381, unit: "service", annual: 255 },
     { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years.", low: 271, high: 509, unit: "service", annual: 390 },
     { id: "lights", label: "Christmas Lights Up and Down", desc: "Seasonal extra: we put your Christmas lights up and take them down after the holidays.", low: 220, high: 684, unit: "season", annual: 450 },
     { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
-    { id: "handyman", label: "Extra Handyman Hours", desc: "8 hours of extra handyman time during the year.", low: 600, high: 1000, unit: "service", annual: 800, note: "$75–$125/hr" },
-    { id: "pest", label: "Pest Control (Quarterly)", desc: "Four quarterly visits through a coordinated partner.", low: 400, high: 1200, unit: "service", annual: 800 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
-    { id: "backflow", label: "Irrigation Backflow Test", desc: "Yearly backflow preventer test where required.", low: 85, high: 100, unit: "service", annual: 90 }
   ],
   /* Last-minute extras tacked onto an upcoming visit. Flat one-time prices (draft).
      Chosen to complement (not duplicate) the seasonal add-on menu: interior glass,
