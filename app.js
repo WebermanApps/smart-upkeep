@@ -284,7 +284,7 @@
     bind();
     document.body.classList.toggle("on-home", s === "home");
     if (s === "home") bindHome();
-    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
+    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z } }); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
   }
 
   /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
@@ -1262,7 +1262,7 @@
   }
   function bindPay() {
     var f = document.getElementById("payF"); if (!f) return;
-    f.addEventListener("submit", function (e) { e.preventDefault(); /* demo: no card data read or sent */ S.signup = Object.assign({}, S.signup, { paidDemoAt: new Date().toISOString() }); go("confirm"); });
+    f.addEventListener("submit", function (e) { e.preventDefault(); /* demo: no card data read or sent */ S.signup = Object.assign({}, S.signup, { paidDemoAt: new Date().toISOString() }); try { window.SUEvents && SUEvents.emit("signup.completed", "site", { member: (S.signup.name || "New member") + " (demo)", payload: { plan: P.tiers[S.tier].label, payment: S.plan, addons: (S.addons || []).length, yardSign: !!S.signup.yardSignOk } }); } catch (x) {} go("confirm"); });
   }
   /* Order Form Details Deck 01, 03, 07 + Max's note on 11 (19:33 ICT Oct 15): no last-extra pop-up; a small "Add Extras" row on the form.
      Shows the add-ons members are likeliest to add first (P.likelyAddons), each with Skip / Add To My Plan. Monthly = annual / 12. */
@@ -1338,6 +1338,7 @@
   /* Add-on event log: placeholder until real analytics. Local only, capped at 500 events. */
   var EVKEY = "smartUpkeep.addonEvents";
   function logAddon(type, ids, ctx) {
+    try { if (window.SUEvents && /tap|accepted/.test(type)) SUEvents.emit("addon.clicked", "site", { payload: { action: type, addon: ids, where: ctx } }); } catch (x) {}
     ids = [].concat(ids || []).filter(Boolean); if (!ids.length) return;
     var ev = { t: new Date().toISOString(), type: type, ids: ids, ctx: ctx || "" };
     try { var a = JSON.parse(localStorage.getItem(EVKEY) || "[]"); a.push(ev); if (a.length > 500) a = a.slice(-500); localStorage.setItem(EVKEY, JSON.stringify(a)); } catch (e) {}
@@ -1385,6 +1386,7 @@
     }
     document.body.classList.toggle("on-qf", /^q\d$/.test(s) || s === "choice");
     var tb = document.querySelector(".topbar"); if (tb) document.documentElement.style.setProperty("--tb", tb.offsetHeight + "px");
+    if (s === "quote" && lastScreen !== "quote") { try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     if (s === "quote") revealPrices(); else lastScreen = s;
     if (s === "quote" || s === "alacarte") {
       var seen = []; app.querySelectorAll("[data-addon],[data-lastminute],[data-alacarte]").forEach(function (b) { seen.push(b.getAttribute("data-addon") || b.getAttribute("data-lastminute") || b.getAttribute("data-alacarte")); });
@@ -1452,6 +1454,7 @@
     if (a === "dismissResume") { S = fresh(); photoMem = {}; save(); render(); return; }
     if (a === "startOver") { S = fresh(); photoMem = {}; save(); return go("q0"); }
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : "q0"); }
+    if (a === "start") { try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {} }
     if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
     if (a === "watch") return openVideo(true);
     if (a === "q0") return go("q0");
