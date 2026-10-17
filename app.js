@@ -535,46 +535,6 @@
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
     { id: "storm", art: "storm", title: "Pre and Post Storm Checks", hook: "Ready Before, Checked After.", popTitle: "Pre and Post Storm Checks", popText: "We check your home before a storm hits and again after it passes, so problems get caught fast.", cta: "Free Quote in Minutes" }];
-  /* What We Take Care Of (decks 12:01 + Grid And Home Map 17:03, Max Oct 17): heading + subhead; Certified Techs and Licensed & Insured pinned up top;
-     8 core services (no 16-item list) grouped by home system with 'Every Visit' first; line icons, no photos or drawings; grid with a season strip under it;
-     house map with numbered pins on top (pins jump to the item) plus its own House Map tab; open in place, one at a time; Records tile with
-     Recall Monitoring + Warranty Check corner tags; Moisture Scan Every Visit pinned to its tile; lawn as one banner with the site's lawn line + Add-On tag.
-     Desktop layout (07) skipped: no change. */
-  var WW_GROUPS = [["Every Visit", [5]], ["Heating & Cooling", [0, 1]], ["Water", [2]], ["Air & Safety", [4, 3]], ["Outside", [6, 7]]];
-  var WW_PINS = [[0, 30, 84], [2, 46, 84], [3, 66, 60], [4, 50, 40], [5, 34, 60], [1, 92, 84], [6, 80, 26], [7, 50, 14]];
-  function wwPlan(t) { return t === "silver" ? "Every Plan" : t === "gold" ? "Plus and Complete" : "Complete"; }
-  function wwMap(big) {
-    return '<div class="ww-map' + (big ? ' big' : '') + '" role="group" aria-label="House map: tap a number to jump to that item"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false" fill="none" stroke="#1f1b17" stroke-width="1.4" stroke-linejoin="round"><path d="M12 46 50 12l38 34"/><path d="M18 41v53h64V41"/><path d="M18 72h64M50 41v31" stroke-dasharray="2 2" stroke="#999"/><rect x="86" y="80" width="12" height="12" rx="1.5"/><path d="M88 28h4v18" stroke="#999"/></svg>' +
-      WW_PINS.map(function (p, i) { return '<button type="button" class="ww-pin" style="left:' + p[1] + '%;top:' + p[2] + '%" data-wwpin="' + p[0] + '" aria-label="' + (i + 1) + ': ' + HM_SVC[p[0]][1] + '">' + (i + 1) + '</button>'; }).join("") +
-      '</div>' + (big ? '<ol class="ww-key small">' + WW_PINS.map(function (p) { return '<li><button type="button" class="link mw-hover" data-wwpin="' + p[0] + '">' + HM_SVC[p[0]][1] + '</button></li>'; }).join("") + '</ol>' : '') +
-      '<p class="small muted ww-mapnote">On your first visit, your tech pins where each item is in your home, so every visit after is faster.</p>';
-  }
-  function wwTile(i) {
-    var d = HM_SVC[i];
-    return '<details class="ww-t" name="ww" id="ww-' + i + '"><summary class="mw-hover">' + wwIco(d[2]) + '<b>' + d[1] + '</b>' + (i === 5 ? '<span class="ww-tag">Moisture Scan Every Visit</span>' : '') + '</summary><div class="ww-d"><p>' + d[3] + '</p><span class="ww-plan small">' + wwPlan(d[4]) + '</span></div></details>';
-  }
-  function wwSection() {
-    return '<div class="ww2"><p class="ww-sub">Eight core services, grouped the way a tech works through your house.</p>' +
-      '<div class="ww-pinned"><span class="ww-badge">Certified Techs</span><span class="ww-badge">Licensed &amp; Insured</span></div>' +
-      '<div class="ww-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-wwtab="grid">Services</button><button type="button" role="tab" aria-selected="false" data-wwtab="map">House Map</button></div>' +
-      '<div class="ww-pane" data-wwpane="grid">' + wwMap(false) +
-        WW_GROUPS.map(function (g) { return '<div class="ww-g"><h3>' + g[0] + '</h3><div class="ww-grid">' + g[1].map(wwTile).join("") + '</div></div>'; }).join("") +
-        '<div class="ww-g"><h3>Records</h3><div class="ww-grid"><details class="ww-t ww-rec" name="ww" id="ww-rec"><summary class="mw-hover">' + wwIco("clipboard") + '<b>Records</b><span class="ww-tags"><span class="ww-tag">Recall Monitoring</span><span class="ww-tag">Warranty Check</span></span></summary><div class="ww-d"><p>Written report after every visit, a maintenance proof pack, recall monitoring and warranty checks. Your Home Record transfers when you sell.</p><span class="ww-plan small">Every Plan</span></div></details></div></div>' +
-        '<div class="ww-seasons" aria-label="By season"><span><b>Spring</b>AC Tune-Up · Gutters</span><span><b>Summer</b>Moisture Scan · Plus and Complete checks</span><span><b>Fall</b>Furnace Tune-Up · Gutters</span><span><b>Winter</b>Moisture Scan · Complete storm checks</span></div>' +
-        '<a class="ww-lawn mw-hover" href="lawn/"><span class="ww-tag">Add-On</span><b>Learn About Our Custom Grass Cutting</b><small>Measured From Above. No Visit Needed.</small><i aria-hidden="true">&rsaquo;</i></a>' +
-      '</div><div class="ww-pane" data-wwpane="map" hidden>' + wwMap(true) + '</div></div>';
-  }
-  function bindWW2(root) {
-    var w = root.querySelector(".ww2"); if (!w) return;
-    w.addEventListener("click", function (e) {
-      var t = e.target.closest("[data-wwtab]"), p = e.target.closest("[data-wwpin]");
-      if (t) { var k = t.getAttribute("data-wwtab"); w.querySelectorAll("[data-wwtab]").forEach(function (b) { b.setAttribute("aria-selected", b === t ? "true" : "false"); }); w.querySelectorAll("[data-wwpane]").forEach(function (x) { x.hidden = x.getAttribute("data-wwpane") !== k; }); return; }
-      if (p) { var id = p.getAttribute("data-wwpin"); w.querySelectorAll("[data-wwtab]").forEach(function (b) { b.setAttribute("aria-selected", b.getAttribute("data-wwtab") === "grid" ? "true" : "false"); }); w.querySelectorAll("[data-wwpane]").forEach(function (x) { x.hidden = x.getAttribute("data-wwpane") !== "grid"; });
-        var el = document.getElementById("ww-" + id); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("ww-hi"); setTimeout(function () { el.classList.remove("ww-hi"); }, 1400); } }
-    });
-    /* one open at a time (also where <details name> is not supported) */
-    w.querySelectorAll("details.ww-t").forEach(function (d) { d.addEventListener("toggle", function () { if (d.open) w.querySelectorAll("details.ww-t[open]").forEach(function (o) { if (o !== d) o.open = false; }); }); });
-  }
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
@@ -696,7 +656,7 @@
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2><button class="link mw-hover" type="button" data-hm-open="plans">See All</button></div>' +
-        wwSection() + '</section>' +
+        wwCarousel() + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">&times;</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
@@ -844,7 +804,7 @@
       pop.querySelector(".hm-pop-x").focus();
     }
     root.querySelectorAll("#row-services [data-svc]").forEach(function (t) { t.addEventListener("click", function () { popOpen(t); }); });
-    bindWW(root); bindWW2(root);
+    bindWW(root);
     if (pop) {
       pop.querySelectorAll("[data-pop-close]").forEach(function (c) { c.addEventListener("click", popClose); });
       pop.querySelector(".hm-pop-go").addEventListener("click", function () {
