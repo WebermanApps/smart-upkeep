@@ -264,7 +264,7 @@
     if (S.screen === "overview") S.screen = "q0";
     S.path = S.path.filter(function (x) { return x !== "overview"; });
     var s = S.screen, html;
-    app.classList.toggle("wide", s === "quote" || s === "photos");
+    app.classList.toggle("wide", s === "quote" || s === "photos" || s === "extras");
     if (s === "home") html = home();
     else if (s === "overview") html = overview();
     else if (/^q\d$/.test(s)) html = question(Number(s.slice(1)));
@@ -274,6 +274,7 @@
     else if (s === "quote") html = quote();
     else if (s === "alacarte") html = alacarte();
     else if (s === "alacarteConfirm") html = alacarteConfirm();
+    else if (s === "extras") html = extrasStep();
     else if (s === "signup") html = signup();
     else if (s === "pay") html = payStep();
     else if (s === "confirm") html = confirm();
@@ -966,6 +967,17 @@
       tiles(add, "addon", S.addons || []) + detail(add, "addon", S.addons || [], addonPriceLabel) +
       '<button type="button" class="btn btn-primary mw-hover xt-done" data-xt-close="1">Done</button></div></div>';
   }
+
+  /* Menus & Headlines deck 10 (Max, Oct 17): add-ons are their own step after picking a plan. One "My Add-Ons" list; lawn is one item (priced after we measure, no number shown). */
+  function extrasStep() {
+    var addSum = addonsAnnual(), p = price(), runYear = p[S.tier] + addSum;
+    return backBtn() + stepRail(4) + '<p class="eyebrow">Optional Step</p><h1>My Add-Ons</h1><p>Add any extras to your ' + esc(P.tiers[S.tier].label) + ' plan, or skip. Draft prices; monthly figure is the yearly midpoint ÷ 12.</p>' +
+      renderAddonList(P.addons || [], S.addons || [], "addon", addonPriceLabel) +
+      '<a class="addon mw-hover addon-lawn" href="lawn/"><span class="chk" aria-hidden="true">&rsaquo;</span><span class="addon-body"><strong>Custom Grass Cutting</strong><p class="addon-desc">Measured from above. No visit needed. No member discount on mowing.</p><p class="addon-price">Price after we measure your lawn <span>(draft)</span></p></span></a>' +
+      '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' + priceBlock(runYear, "annual") + (addSum ? '<p class="small muted" style="margin:0">Incl. Add-Ons +' + money(monthlyOf(addSum)) + '/month</p>' : '') + '</div>' +
+      '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Continue to Sign Up</button>' +
+      '<p class="small" style="text-align:center"><button class="link mw-hover" data-act="signup" type="button">Skip, No Add-Ons</button></p>';
+  }
   function pickFinalOffer() {
     var F = P.finalOffer || {}; if (!F.enabled) return null;
     var have = (S.addons || []).concat(S.alacarte || []);
@@ -1029,14 +1041,14 @@
     return '<section class="pr-top"><div class="qf-top">' + backBtn() + '<span class="pr-tag hm-chip t3">' + I("shield", "xs") + 'Free Estimate</span></div>' +
       '<div class="pr-head">' + qArt("clipboard", 3) + '<div><h1 class="qf-h">Your Price</h1><p class="qf-help">Tap a plan. ' + esc(P.tiers[S.tier].label) + ' is selected.</p></div></div>' +
       strip +
-      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
+      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="extras" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
       '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
       '<h2 class="pr-more">Plan Details</h2>' +
       tiersHtml + status +
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
-      addonsHtml + runHtml +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
+      runHtml +
+      '<button class="btn btn-primary btn-big mw-hover" data-act="extras" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta;
   }
 
@@ -1378,7 +1390,7 @@
       if (!bind._viewed) bind._viewed = {};
       if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
     }
-    if (s === "quote") {
+    if (s === "quote" || s === "extras") {
       var xs = app.querySelector(".xt-sheet");
       function xtSet(o) { XT.open = o; if (xs) xs.hidden = !o; document.body.classList.toggle("xt-lock", o); }
       app.querySelectorAll("[data-xt-open]").forEach(function (b) { b.addEventListener("click", function () { xtSet(true); logAddon("view", (P.addons || []).map(function (a) { return a.id; }), "extras-sheet"); }); });
@@ -1445,6 +1457,7 @@
     if (a === "photos") return go("photos");
     if (a === "visit") return go("visit");
     if (a === "toQuote") return go("quote");
+    if (a === "extras") return go("extras");
     if (a === "signup") { if (S.plan !== "biennial") S.plan = "annual"; return go("signup"); }
     if (a === "alacarte") return go("alacarte");
     if (a === "photosDone") { var c = photoCards(); S.photosComplete = c.every(function (x) { return (S.photos[x[0]] || 0) > 0; }); return go("quote"); }
