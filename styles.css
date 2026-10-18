@@ -982,6 +982,18 @@ body.on-qf main{padding-bottom:0}
 .ww-all button:hover .ww-arr{animation:wwNudge .9s ease infinite}
 @keyframes wwNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 @media(prefers-reduced-motion:reduce){.ww-fx .ca-card{opacity:1;transform:none;transition:none}.ww-arr,.ww-all button:hover .ww-arr{animation:none}}
+/* Oct 18: Card Colours And Finish (Max): 01B own colour per card, 03B top band, 04B line icons in the card colour, 05B lifted shadow, 09B cream band, 10B dot in card colour. 02A, 06A, 07 (skipped), 08A unchanged. */
+.ca-card{--cc:#A8431F;position:relative;overflow:hidden;box-shadow:0 6px 16px rgba(10,10,10,.12),0 1px 3px rgba(10,10,10,.06)}
+.ca-card:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--cc)}
+.ca-card.ca-l{--cc:#05668D}.ca-card.ca-s{--cc:#D4A017}.ca-card.ca-j{--cc:#0B6E4F}
+.ca-card{padding-top:calc(.55rem + 4px)}
+.ca-j .ca-art{background:rgba(11,110,79,.08)}.ca-j h3{color:#0B6E4F}
+.ca-card .su-ico{color:var(--cc);stroke-width:1.5}
+.ca-s .su-ico{color:#8a6510}
+.ca-card .su-ico .f-t,.ca-card .su-ico .f-l,.ca-card .su-ico .f-s,.ca-card .su-ico .f-j{fill:none;stroke:currentColor}
+#row-services{background:#FAF6EE;box-shadow:0 0 0 100vmax #FAF6EE;clip-path:inset(0 -100vmax);padding:.6rem 0 .5rem}
+@media(min-width:601px){#row-services{box-shadow:none;clip-path:none;border-radius:16px;padding:.8rem 1rem .7rem}}
+.ca-dots b.on{background:#C1502E}.ca-dots b.on.d-l{background:#05668D}.ca-dots b.on.d-s{background:#D4A017}.ca-dots b.on.d-j{background:#0B6E4F}
 /* What's Included row + flat popups with plan tags */
 .wi-row{display:flex;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem .1rem .5rem;scrollbar-width:none}
 .wi-row::-webkit-scrollbar{display:none}

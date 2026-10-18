@@ -547,7 +547,8 @@
     ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"]], "l"],
     ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filters", "Essentials"]], "t"],
     ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"]], "s"],
-    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof", "Complete"], [7, "Flashing", "Complete"]], "t"]];
+    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof", "Complete"], [7, "Flashing", "Complete"]], "j"]];
+  /* Card Colours And Finish picks (Max, Oct 18): 01B every card its own colour (Water lagoon, Heating terracotta, Air mustard, Outside jungle), 02A flat white face, 03B thin colour band on top, 04B fine line icons in the card colour, 05B deeper lifted shadow, 06A See All link kept, 07 header unchanged (skipped), 08A soft filled chips kept, 09B warm cream band behind the cards, 10B active dot in the colour of the card in view. */
   var WW_WI = [
     ["clock", "Visits", "Seasonal visits on a set schedule", [["2 Seasonal Visits a Year", "Essentials"], ["4 Visits a Year, One Per Quarter", "Plus"], ["12 Visits a Year, Monthly Check-Ins", "Complete"]]],
     ["furnace", "Heating & Cooling", "Tune-ups before every season", [["Fall Furnace Tune-Up", "Essentials"], ["Spring AC Tune-Up", "Essentials"], ["Furnace Filters Changed During Visits", "Essentials"], ["Standby Generator Service (If You Have One)", "Complete"]]],
@@ -575,7 +576,7 @@
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
         c[2].map(function (s) { return '<li><span>' + s[1] + '</span><em class="ca-pl pl-' + s[2] + '" title="Included from ' + s[2] + ' up">' + s[2] + '</em></li>'; }).join("") + '</ul></div></article>';
-    }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b' + (i ? "" : ' class="on"') + '></b>'; }).join("") + '</div></div>';
+    }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b class="d-' + c[3] + (i ? "" : " on") + '"></b>'; }).join("") + '</div></div>';
   }
   function wiRow() {
     return '<div class="wi-row va" data-ptr-ignore>' + WW_WI.map(function (g, i) { return '<button type="button" class="mw-hover" data-wi="' + i + '" aria-haspopup="dialog"><span class="wt-i">' + wwIco(g[0]) + '</span><strong>' + g[1] + '</strong><small>' + g[3].length + ' Included &rsaquo;</small></button>'; }).join("") + '</div>' +
