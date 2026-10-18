@@ -110,6 +110,12 @@ window.SMART_UPKEEP_PRICING = {
     { id: "lmHang", label: "Picture or TV Hanging", desc: "Hang up to 2 pictures or one TV. Mounting hardware at cost if needed.", price: 150 },
     { id: "lmSmallWash", label: "Small Patio Pressure Wash", desc: "Entry, patio or walkway wash — not a full-house wash.", price: 175 },
     { id: "lmAssemble", label: "Furniture Assembly", desc: "Assemble one furniture item during a visit.", price: 120 },
-    { id: "lmBatteries", label: "Smoke and CO Battery Swap", desc: "Replace batteries in all smoke and CO detectors. Batteries included.", price: 65 }
+    { id: "lmBatteries", label: "Smoke and CO Battery Swap", desc: "Replace batteries in all smoke and CO detectors. Batteries included.", price: 65 },
+    /* Added Oct 18 (Max, Extras Ideas deck: 01 both, 05B, 06B, 07A). One-time prices are the example prices shown on the deck cards. Draft. home: also listed in the home Shop À La Carte list. */
+    { id: "lmLeakSensors", label: "Water Leak Sensor Setup", desc: "Leak sensors under sinks, by the water heater and washer, linked to your phone.", price: 149, home: true },
+    { id: "lmSumpBackup", label: "Sump Pump Battery Backup", desc: "A battery backup pump that keeps the basement dry when the power goes out.", price: 650, home: true },
+    { id: "lmHoodFilter", label: "Range Hood Filter Degrease", desc: "Degrease or replace range hood filters so the fan pulls smoke out.", price: 75, home: true },
+    { id: "lmBathFan", label: "Bath Fan Clean And Check", desc: "Clean bathroom exhaust fans and check they vent outside.", price: 95, home: true },
+    { id: "lmThermostat", label: "Smart Thermostat Install", desc: "Install and set up a smart thermostat you buy or we bring.", price: 175, home: true }
   ]
 };
