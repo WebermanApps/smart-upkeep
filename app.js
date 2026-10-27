@@ -286,7 +286,7 @@
     document.body.classList.toggle("on-home", s === "home");
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
-    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "Thanks. You are on the list (demo: saved on this device only)."; wf.reset(); });
+    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You are on the list. Coming soon to you — founding badge and first month extra when we launch (demo: saved on this device only)."; wf.reset(); });
   }
 
   /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
@@ -1152,7 +1152,7 @@
   function waitlistEnd() {
     var z = S.answers && S.answers.zip && S.answers.zip !== "unsure" ? zipOf(S.answers.zip) : "";
     if (!z || inArea(z)) return "";
-    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Outside Our Area?</h3><p class="small muted">ZIP ' + esc(z) + ' is outside the area we serve today: Metro Detroit (Wayne, Oakland, Macomb). Join the waitlist and we will tell you when we reach your ZIP.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
+    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon To You</h3><p class="small muted">Bold local launch for a few close metro Detroit areas (Wayne, Oakland, Macomb). ZIP ' + esc(z) + ' is outside today. Join the waitlist — launch date <b>March 15, 2027</b> (TEST). Founding members get a badge and the first month extra. No spots counter.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
   var lastScreen = null;
