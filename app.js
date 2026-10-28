@@ -264,7 +264,7 @@
     if (S.screen === "overview") S.screen = "q0";
     S.path = S.path.filter(function (x) { return x !== "overview"; });
     var s = S.screen, html;
-    app.classList.toggle("wide", s === "quote" || s === "photos" || s === "extras");
+    app.classList.toggle("wide", s === "quote" || s === "accept" || s === "photos" || s === "extras");
     if (s === "home") html = home();
     else if (s === "overview") html = overview();
     else if (/^q\d$/.test(s)) html = question(Number(s.slice(1)));
@@ -272,6 +272,7 @@
     else if (s === "photos") html = photos();
     else if (s === "visit") html = visitForm();
     else if (s === "quote") html = quote();
+    else if (s === "accept") html = accept();
     else if (s === "alacarte") html = alacarte();
     else if (s === "alacarteConfirm") html = alacarteConfirm();
     else if (s === "extras") html = extrasStep();
@@ -284,6 +285,7 @@
     app.setAttribute("data-screen", s);
     bind();
     document.body.classList.toggle("on-home", s === "home");
+    document.body.classList.toggle("on-accept", s === "accept");
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
     var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You are on the list. Coming soon to you — founding badge and first month extra when we launch (demo: saved on this device only)."; wf.reset(); });
@@ -880,7 +882,7 @@
 
   /* Coming back later: Resume Card (Info Gather Deck). */
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
-  function hasResume() { return !!S.resume && /^(q\d+|choice|photos|visit|quote|signup|pay)$/.test(S.resume); }
+  function hasResume() { return !!S.resume && /^(q\d+|choice|photos|visit|quote|accept|signup|pay)$/.test(S.resume); }
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function resumeCard() {
     var done = Q.filter(function (q) { return S.answers[q.id] !== undefined; }).length;
@@ -1104,50 +1106,93 @@
   }
   function tierKeys() { return (P.tierOrder || Object.keys(P.tiers)).filter(function (k) { return P.tiers[k]; }); }
   function quote() {
+    /* Quote & Accept lock (Machan Oct 28 2026 via Swatch): compare-first stacked tiers,
+       line-item lead (not price hero), expand-on-tap detail, combo included (icons+checklist),
+       CTA opens full-bleed Accept — not sticky bar. */
     var p = price(), a = S.answers;
     var final = S.photosComplete && S.visit && S.visit.completed;
     var status = S.visit ? '<p class="small"><strong>Free tech visit requested</strong> for ' + esc(S.visit.date) + ' (' + esc((S.visit.windows || []).join(", ")) + '). We will confirm by text.</p>' : S.photosComplete ? '<p class="small"><strong>Photos added.</strong> We will review them and confirm your final price.</p>' : "";
     var unsure = Object.keys(a).filter(function (k) { return a[k] === "unsure"; }).length;
     var addSum = addonsAnnual();
-    var tiersHtml = '<div class="tiers n' + tierKeys().length + '">' + tierKeys().map(function (k) {
-      var t = P.tiers[k], amt = p[k], sel = S.tier === k;
-      var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our $99/Month membership minimum</p>' : "";
-      return '<div class="card tier mw-hover' + (sel ? " sel" : "") + '" data-tier="' + k + '" role="button" tabindex="0" aria-pressed="' + sel + '">' + (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
-        '<p class="eyebrow" style="margin-top:.4rem">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2>' + priceBlock(amt, "annual") + floorNote +
-        '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button>' +
-        '<details class="tier-feats"><summary>What\'s Included</summary><ul>' + t.features.map(function (f) { return "<li>" + (/^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f) + "</li>"; }).join("") + '</ul></details>' +
-        '<button class="btn ' + (sel ? "btn-primary" : "btn-outline") + ' mw-hover" data-pick="' + k + '" type="button">' + (sel ? "Selected: " : "Choose ") + t.label + '</button></div>';
-    }).join("") + '</div>';
     var lmSum = lastMinuteTotal();
-    var addonsHtml = extrasEntry();
-    var runYear = p[S.tier] + addSum;
-    var runHtml = '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' +
-      priceBlock(runYear, "annual") +
-      (addSum ? '<p class="small muted" style="margin:0">Incl. Add-Ons +' + money(monthlyOf(addSum)) + '/month</p>' : '') +
-      (lmSum ? '<p class="lm-due"><strong>Last-minute for next visit:</strong> ' + money(lmSum) + ' one-time (draft)</p>' : '') +
-      (S.tier === "platinum" ? '<p class="small muted" style="margin:.35rem 0 0">Pay Yearly: Save 10%</p>' : "") +
-      '</div>';
-    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Shop À La Carte</button></p>';
-    var strip = '<div class="price-strip n' + tierKeys().length + '" role="group" aria-label="Estimated Monthly Prices">' + tierKeys().map(function (k) {
-      var t = P.tiers[k], sel = S.tier === k, pts = (t.keyPoints || t.features.slice(0, 3)).filter(function (x) { return x !== "And More"; });
-      return '<button type="button" class="ps-row mw-hover' + (sel ? " sel" : "") + (t.recommended ? " rec" : "") + '" data-tier="' + k + '" aria-pressed="' + sel + '">' +
-        '<span class="ps-head"><span class="ps-name">' + t.label + '</span>' + (t.recommended ? '<span class="ps-pop">Most Popular</span>' : '') +
-        '<span class="ps-amt"><span class="ps-num" data-amt="' + monthlyOf(p[k]) + '">' + money(monthlyOf(p[k])) + '</span><small>/Mo</small></span></span>' +
-        '<span class="ps-pts">' + pts.map(function (x) { return '<span>' + x + '</span>'; }).join("") + '</span></button>';
+    var bd = breakdown(S.tier);
+    var expanded = S.quoteExpand || S.tier;
+    var lineLead = (function () {
+      var rows = bd.lines.filter(function (L) { return L.kind === "item" || L.kind === "addon"; }).slice(0, 6);
+      var html = '<div class="qa-lines card" aria-label="Line-item estimate">' +
+        '<div class="qa-lines-h"><span>Estimate detail · ' + esc(P.tiers[S.tier].label) + '</span><button type="button" class="detail-link" data-detail="' + S.tier + '">Full breakdown</button></div>' +
+        '<ul class="qa-line-list">' + rows.map(function (L) {
+          return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Est.</span>' : '') + '</span><span>' + (L.amt === 0 ? 'Included' : money(L.amt)) + '</span></li>';
+        }).join("") + '</ul>' +
+        (bd.floorLine ? '<p class="floor-note">' + esc(bd.floorLine.label) + '</p>' : '') +
+        '<div class="qa-due"><span>Due today (draft)</span><strong>' + money(bd.year + (lmSum || 0)) + '</strong></div>' +
+        '<p class="small muted" style="margin:.35rem 0 0">' + money(bd.monthly) + '/mo · annual billing' + (addSum ? ' · incl. add-ons' : '') + (lmSum ? ' · +' + money(lmSum) + ' last-minute next visit' : '') + '</p></div>';
+      return html;
+    })();
+    function includedCombo(k, open) {
+      var t = P.tiers[k];
+      var feats = (t.features || []).filter(function (f) { return f !== "And More"; });
+      var icons = (t.keyPoints || feats.slice(0, 6)).filter(function (x) { return x !== "And More"; }).slice(0, 6);
+      var icoMap = ["calendar", "eye", "chat", "camera", "house", "wrench"];
+      var grid = '<div class="qa-ico-grid">' + icons.map(function (lab, i) {
+        return '<div class="qa-ico"><span class="qa-ico-g" aria-hidden="true">' + I(icoMap[i % icoMap.length], "sm") + '</span><span>' + esc(String(lab).split(":")[0].split(" (")[0]) + '</span></div>';
+      }).join("") + '</div>';
+      var list = '<ul class="qa-check">' + feats.slice(0, open ? feats.length : Math.min(4, feats.length)).map(function (f) {
+        var lab = /^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f;
+        return "<li>" + lab + "</li>";
+      }).join("") + '</ul>';
+      return grid + list;
+    }
+    var tiersHtml = '<div class="qa-stack" role="list">' + tierKeys().map(function (k) {
+      var t = P.tiers[k], amt = p[k], sel = S.tier === k, open = expanded === k;
+      var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our $99/Month membership minimum</p>' : "";
+      var pts = (t.keyPoints || t.features.slice(0, 3)).filter(function (x) { return x !== "And More"; });
+      return '<div class="qa-tier card' + (sel ? " sel" : "") + (open ? " open" : "") + '" data-tier="' + k + '" data-qa-expand="' + k + '" role="listitem" tabindex="0" aria-pressed="' + sel + '" aria-expanded="' + open + '">' +
+        (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
+        '<div class="qa-tier-top"><div><p class="eyebrow" style="margin:0">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2></div>' +
+        '<div class="qa-tier-price"><span class="qa-mo">' + money(monthlyOf(amt)) + '</span><small>/mo</small></div></div>' +
+        '<p class="qa-tier-pts">' + pts.slice(0, 3).map(function (x) { return esc(String(x).split(":")[0]); }).join(" · ") + '</p>' +
+        floorNote +
+        '<div class="qa-tier-more"' + (open ? "" : " hidden") + '>' + includedCombo(k, true) +
+        '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button></div>' +
+        '<p class="qa-expand-hint">' + (open ? "Tap to collapse" : "Tap for more detail") + '</p></div>';
     }).join("") + '</div>';
-    return '<section class="pr-top"><div class="qf-top">' + backBtn() + '<span class="pr-tag hm-chip t3">' + I("shield", "xs") + 'Free Estimate</span></div>' +
-      '<div class="pr-head">' + qArt("clipboard", 3) + '<div><h1 class="qf-h">Your Price</h1><p class="qf-help">Tap a plan. ' + esc(P.tiers[S.tier].label) + ' is selected.</p></div></div>' +
-      strip +
-      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="extras" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
-      '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
-      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
-      '<h2 class="pr-more">Plan Details</h2>' +
+    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Shop À La Carte</button></p>';
+    return '<section class="qa-top"><div class="qf-top">' + backBtn() + '<span class="pr-tag hm-chip t3">' + I("shield", "xs") + 'Free Estimate</span></div>' +
+      '<div class="pr-head">' + qArt("clipboard", 3) + '<div><h1 class="qf-h">Compare plans</h1><p class="qf-help">Stacked tiers · tap one for detail. ' + esc(P.tiers[S.tier].label) + ' is selected.</p></div></div>' +
+      lineLead +
+      '<h2 class="pr-more">Membership tiers</h2>' +
       tiersHtml + status +
       (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
-      runHtml +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="extras" type="button">Sign Up for ' + P.tiers[S.tier].label + '</button>' +
+      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="accept" type="button">Review &amp; Accept ' + P.tiers[S.tier].label + '</button>' +
+      '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
+      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta + waitlistEnd();
   }
+  function accept() {
+    /* Full-bleed Accept (Machan Oct 28): not sticky bar. */
+    var p = price(), t = P.tiers[S.tier], amt = p[S.tier], bd = breakdown(S.tier);
+    var addSum = addonsAnnual(), lmSum = lastMinuteTotal();
+    var feats = (t.features || []).filter(function (f) { return f !== "And More"; }).slice(0, 6);
+    var icons = (t.keyPoints || feats).filter(function (x) { return x !== "And More"; }).slice(0, 6);
+    var icoMap = ["calendar", "eye", "chat", "camera", "house", "wrench"];
+    return '<section class="qa-accept">' +
+      '<div class="qa-accept-inner">' + backBtn() +
+      '<p class="eyebrow qa-accept-eye">Ready to join?</p>' +
+      '<h1>' + esc(t.label) + ' membership</h1>' +
+      '<p class="qa-accept-price"><span class="qa-accept-num">' + money(monthlyOf(amt)) + '</span><span class="qa-accept-per">per month · annual billing</span></p>' +
+      '<p class="small muted">Due today (draft): <strong>' + money(bd.year + (lmSum || 0)) + '</strong>' + (addSum ? ' · incl. add-ons' : '') + '</p>' +
+      '<div class="qa-accept-card card">' +
+      '<div class="qa-ico-grid">' + icons.map(function (lab, i) {
+        return '<div class="qa-ico"><span class="qa-ico-g" aria-hidden="true">' + I(icoMap[i % icoMap.length], "sm") + '</span><span>' + esc(String(lab).split(":")[0].split(" (")[0]) + '</span></div>';
+      }).join("") + '</div>' +
+      '<ul class="qa-check">' + feats.map(function (f) { return '<li>' + (/Recall Monitoring/.test(f) ? '<strong>' + f + '</strong>' : f) + '</li>'; }).join("") + '</ul>' +
+      '<button type="button" class="detail-link" data-detail="' + S.tier + '">See line-item breakdown</button></div>' +
+      '<button class="btn btn-primary btn-big mw-hover qa-accept-cta" data-act="extras" type="button">Accept membership</button>' +
+      '<p class="small" style="text-align:center;margin-top:.7rem"><button type="button" class="link mw-hover" data-act="toQuote">Keep browsing plans</button></p>' +
+      '</div></section>';
+  }
+
   /* Out-of-area waitlist (Max, Oct 17): only after the price, only when the ZIP they entered is outside the service area (inArea). In-area and Unsure visitors never see it. */
   function waitlistEnd() {
     var z = S.answers && S.answers.zip && S.answers.zip !== "unsure" ? zipOf(S.answers.zip) : "";
@@ -1383,11 +1428,21 @@
       (XR.all ? '' : '<button type="button" class="link mw-hover" data-xr-all="1">See All Extras</button>') + '</div>';
   }
   function confirm() {
+    /* After-accept lock (Machan Oct 28): next-steps list incl. how to log in;
+       welcome message fires on first account login — NOT Messages greeting right after pay. */
     var su = S.signup || {}, t = su.totals || totals();
-    var next = S.visit ? "We Confirm Your Tech Visit" : S.photosComplete ? "We Review Your Photos" : "We Confirm Your Final Price";
-    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
-      '<p class="lead-sm">We sent a greeting to <strong>Messages</strong> in your member app. Before you are a member, this funnel goes straight into house questions; after pay, chat is where we say hello.</p>' +
-      '<div class="card"><h3>Summary</h3>' +
+    var next = S.visit ? "We confirm your tech visit by text" : S.photosComplete ? "We review your photos and lock the final price" : "We confirm your final price before visit one";
+    var email = su.email || "";
+    try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
+    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re in' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
+      '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what to do next — including how to log in.</p>' +
+      '<div class="card qa-next"><h3>Next steps</h3><ol class="qa-steps">' +
+      '<li><strong>Log in to your member app</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' (<strong>' + esc(email) + '</strong>)' : '') + ' and the password from your welcome email (prototype: any password works on the sample login).</span></li>' +
+      '<li><strong>Read your welcome message</strong><span>The first time you sign in, Ask Anything will open with a welcome from your care team.</span></li>' +
+      '<li><strong>' + next + '</strong><span>We book visit one once the estimate is final.</span></li>' +
+      '<li><strong>Finish equipment photos</strong><span>So techs bring the right parts — start from Home after login.</span></li>' +
+      '</ol></div>' +
+      '<div class="card" style="margin-top:1rem"><h3>Summary</h3>' +
       '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
       '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div>' +
       (function () {
@@ -1400,7 +1455,6 @@
         return html;
       })() +
       '<div><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
-      '<div class="card" style="margin-top:1rem"><h3>Next</h3><ol class="feat"><li>' + next + '</li><li>We Book Visit One</li></ol></div>' +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
@@ -1417,8 +1471,9 @@
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
       myHomeCard(su) + firstVisitCard() +
-      '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
+      '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open member login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
+
   /* Plans & Pricing Deck note (Oct 14): a picture of the member's house after sign-up. Placeholder drawing for now; real street or satellite photo from the address is a follow-up. */
   function myHomeCard(su) {
     return '<div class="card my-home-card" style="margin-top:1rem"><h3>Your Home</h3>' +
@@ -1497,6 +1552,11 @@
       if (!bind._viewed) bind._viewed = {};
       if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
     }
+    if (s === "accept") {
+      app.querySelectorAll("[data-detail]").forEach(function (b) {
+        b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
+      });
+    }
     if (s === "quote" || s === "extras") {
       var xs = app.querySelector(".xt-sheet");
       function xtSet(o) { XT.open = o; if (xs) xs.hidden = !o; document.body.classList.toggle("xt-lock", o); }
@@ -1508,7 +1568,12 @@
       app.querySelectorAll("[data-tier]").forEach(function (c) {
         function pick(e) {
           if (e && e.target.closest("[data-act], [data-detail], [data-addon], [data-lastminute]")) return;
-          S.tier = c.getAttribute("data-tier"); save(); render();
+          var k = c.getAttribute("data-tier");
+          var wasOpen = S.quoteExpand === k;
+          S.tier = k;
+          /* Expand-on-tap: selecting a tier opens its detail; tapping the open one collapses. */
+          S.quoteExpand = wasOpen ? null : k;
+          save(); var y = window.scrollY; render(); window.scrollTo(0, y);
         }
         c.addEventListener("click", pick);
         c.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
@@ -1565,6 +1630,7 @@
     if (a === "photos") return go("photos");
     if (a === "visit") return go("visit");
     if (a === "toQuote") return go("quote");
+    if (a === "accept") return go("accept");
     if (a === "extras") return go("extras");
     if (a === "signup") { if (S.plan !== "biennial") S.plan = "annual"; return go("signup"); }
     if (a === "alacarte") return go("alacarte");
@@ -1831,7 +1897,7 @@
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
-    if (S.screen === "quote" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
+    if (S.screen === "quote" || S.screen === "accept" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $99/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + " " + url).then(done, fallbackCopy); else fallbackCopy();
