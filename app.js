@@ -1386,6 +1386,7 @@
     var su = S.signup || {}, t = su.totals || totals();
     var next = S.visit ? "We Confirm Your Tech Visit" : S.photosComplete ? "We Review Your Photos" : "We Confirm Your Final Price";
     return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>Welcome to Smart Upkeep' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '.</h1>' +
+      '<p class="lead-sm">We sent a greeting to <strong>Messages</strong> in your member app. Before you are a member, this funnel goes straight into house questions; after pay, chat is where we say hello.</p>' +
       '<div class="card"><h3>Summary</h3>' +
       '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
       '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div>' +
