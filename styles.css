@@ -1559,3 +1559,15 @@ body.on-accept .topbar{border-bottom-color:transparent}
 .pc-t{font-family:Khand,sans-serif;font-weight:600;font-size:1.05rem}.pc-p s,.pc-tot s{color:#777}.pc-p b{font-size:1.25rem}
 .pc-s{font-size:.88rem;color:#0B6E4F}.pc-tot{font-size:1.05rem;margin:.7rem 0 .2rem}.pc-tot b{font-size:1.3rem}.pc-tot span{color:#0B6E4F;font-size:.9rem}
 .pc-sub{font-size:.88rem;color:#555}
+/* What We Will Service (Plan Services deck, Nov 2 2026) */
+.sr-card{margin:1rem 0;padding:1rem 1.1rem;text-align:left}
+.sr-h{margin:0 0 .2rem;font-family:Khand,sans-serif;font-size:1.25rem}
+.sr-sub{margin:0 0 .6rem}
+.sr-list{list-style:none;margin:0;padding:0}
+.sr-row{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem 0;border-top:1px solid #ece6dc}
+.sr-row:first-child{border-top:0}
+.sr-l{display:flex;flex-direction:column;min-width:0}
+.sr-l small{color:#6b6459}
+.sr-off .sr-l b{color:#9a9287;text-decoration:line-through}
+.sr-btn{flex:none;font:600 .9rem Hind,sans-serif;padding:.35rem .8rem;border-radius:999px;border:1px solid #d9d1c4;background:#fff;color:#1f1b17;cursor:pointer;min-height:36px}
+.sr-off .sr-btn{border-color:#05668D;color:#05668D}

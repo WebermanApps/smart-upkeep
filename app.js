@@ -159,25 +159,27 @@
     linesSilver.push({ label: "Furnace filter changes during visits", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "Roof drone inspection with drone gutter check and roof photos (once a year)", amt: 0, est: false, note: "Included" });
+    extras.forEach(function (k) {
+      var e = P.extras[k]; if (!e || !(e.all > 0)) return;
+      linesSilver.push({ label: e.label + " service (you have one)", amt: e.all, est: uEx, kind: "system", sys: k });
+    });
     var silverRaw = linesSilver.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesGold = [];
     linesGold.push({ label: "4 seasonal visits × " + money(seasonal) + " each", amt: 4 * seasonal, est: uSqft });
     linesGold = linesGold.concat(hvacLines());
     linesGold.push({ label: "Gutter cleaning, spring and fall (" + stories + "-story home)", amt: gutters, est: uSt });
     extras.forEach(function (k) {
-      var e = P.extras[k]; if (!e || !(e.gold > 0)) return;
-      linesGold.push({ label: e.label, amt: e.gold, est: uEx });
+      var e = P.extras[k]; if (!e || !(e.all > 0)) return;
+      linesGold.push({ label: e.label + " service (you have one)", amt: e.all, est: uEx, kind: "system", sys: k });
     });
+    linesGold.push({ label: "Roof drone inspection with drone gutter check and roof photos (twice a year)", amt: 0, est: false, note: "Included" });
     if (a.softener === "yes" || extras.indexOf("softener") > -1) linesGold.push({ label: "Water softener salt top-off and service check", amt: 0, est: false, note: "Included" });
     linesGold.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
     linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
-    linesPlat.push({ label: "Yearly roof and flashing inspection", amt: P.platinumRoofInspection, est: false });
-    extras.forEach(function (k) {
-      var e = P.extras[k]; if (!e || !(e.platinumOnly > 0)) return;
-      linesPlat.push({ label: e.label, amt: e.platinumOnly, est: uEx });
-    });
+    linesPlat.push({ label: "Roof drone inspections after major storms, with vent and ice dam clearing", amt: P.platinumRoofInspection, est: false });
     var platRaw = linesPlat.reduce(function (s, L) { return s + L.amt; }, 0);
     var sF = applyFloor(silverRaw, "silver"), gF = applyFloor(goldRaw, "gold"), pF = applyFloor(platRaw, "platinum");
     return {
@@ -550,16 +552,16 @@
     ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"]], "l"],
     ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filters", "Essentials"]], "t"],
     ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"]], "s"],
-    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof", "Complete"], [7, "Flashing", "Complete"]], "j"]];
+    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof Drone Inspection", "Essentials"], [6, "Drone Gutter Check", "Essentials"]], "j"]];
   /* Card Colours And Finish picks (Max, Oct 18): 01B every card its own colour (Water lagoon, Heating terracotta, Air mustard, Outside jungle), 02A flat white face, 03B thin colour band on top, 04B fine line icons in the card colour, 05B deeper lifted shadow, 06A See All link kept, 07 header unchanged (skipped), 08A soft filled chips kept, 09B warm cream band behind the cards, 10B active dot in the colour of the card in view. */
   var WW_WI = [
     ["clock", "Visits", "Seasonal visits on a set schedule", [["2 Seasonal Visits a Year", "Essentials"], ["4 Visits a Year, One Per Quarter", "Plus"], ["12 Visits a Year, Monthly Check-Ins", "Complete"]]],
-    ["furnace", "Heating & Cooling", "Tune-ups before every season", [["Fall Furnace Tune-Up", "Essentials"], ["Spring AC Tune-Up", "Essentials"], ["Furnace Filters Changed During Visits", "Essentials"], ["Standby Generator Service (If You Have One)", "Complete"]]],
+    ["furnace", "Heating & Cooling", "Tune-ups before every season", [["Fall Furnace Tune-Up", "Essentials"], ["Spring AC Tune-Up", "Essentials"], ["Furnace Filters Changed During Visits", "Essentials"], ["Thermostat Battery and Settings Check", "Essentials"]]],
     ["waterheater", "Water", "Less sediment, longer life", [["Water Heater Flush or Tankless Descale", "Essentials"], ["Water Softener Salt Top-Off", "Plus"], ["Fridge Water Filter Changes", "Plus"]]],
-    ["detector", "Air & Safety", "Alarms that work when it counts", [["Dryer Vent Cleaning", "Essentials"], ["Smoke and CO Detector Checks", "Essentials"], ["GFCI and Shut-Off Valve Checks", "Plus"]]],
+    ["detector", "Air & Safety", "Alarms that work when it counts", [["Dryer Vent Cleaning", "Essentials"], ["Smoke and CO Checks and Battery Swap", "Essentials"], ["Main Water Shut-Off Tag", "Essentials"]]],
     ["meter", "Mold and Moisture Scan", "Every visit, whole home", [["Moisture Meter and Thermal Camera Check", "Essentials"], ["Damp Spots Flagged With Photos", "Essentials"], ["Readings Saved to Your Home Record", "Essentials"]]],
-    ["gutter", "Outside", "Gutters, roof and winter prep", [["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Lube and Weatherproofing", "Plus"], ["Roof and Flashing Inspection", "Complete"], ["Ice Dam Clearing After Storms", "Complete"], ["Pre and Post Storm Checks", "Complete"]]],
-    ["clipboard", "Records", "Proof for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Maintenance Proof Pack", "Essentials"], ["Recall Monitoring", "Essentials"], ["Warranty Check", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
+    ["gutter", "Outside", "Gutters, roof and winter prep", [["Roof Drone Inspection", "Essentials"], ["Drone Gutter Check", "Essentials"], ["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Tune-Up", "Plus"], ["Storm Checks After Major Storms", "Complete"], ["Vent and Ice Dam Clearing After Storms", "Complete"]]],
+    ["clipboard", "Records", "Records for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Downloadable Visit Record", "Essentials"], ["Recall Monitoring", "Essentials"], ["Warranties Checked Badge", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
   function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
   var FS_ART = {
     lawn: function (c) { return fsBg(c, "#F4F8EF", '<path d="M14 66h92" stroke="#cfd8c4"/><path d="M22 62l12-28 34 4 16 20-18 8H32z" fill="rgba(11,110,79,.14)" stroke="#0B6E4F" stroke-dasharray="4 3"/><rect x="40" y="45" width="24" height="10" rx="2" fill="#fff" stroke="#05668D"/><path d="M44 50h16" stroke="#05668D" stroke-width="1.4"/><g transform="translate(96 16) rotate(-20)"><rect x="-5" y="-4" width="10" height="8" rx="1.5" fill="#D4A017"/><path d="M-15 -3h9v6h-9zM6 -3h9v6H6z" fill="#05668D"/><path d="M-10 -3v6M10 -3v6M0 4v4"/></g><path d="M92 26L60 40M96 27l-8 31" stroke="#C1502E" stroke-dasharray="2 3"/><circle cx="22" cy="62" r="2.2" fill="#C1502E" stroke="none"/><circle cx="84" cy="58" r="2.2" fill="#C1502E" stroke="none"/>'); },
@@ -571,10 +573,10 @@
   /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Non-lawn entries start the Get Started flow. */
   var FEATURED = [
     { id: "lawn", art: "lawn", title: "Learn About Our Custom Grass Cutting", hook: "Measured From Above. No Visit Needed.", popTitle: "Custom Grass Cutting", popText: "We measure your lawn from above and give you a custom mowing price, no visit needed.", cta: "Get My Lawn Quote", href: "lawn/" },
-    { id: "warranty", art: "warranty", title: "Warranty Check", hook: "Coverage Tracked for You.", popTitle: "Warranty Check", popText: "We track the warranty on your equipment and flag coverage before it expires.", cta: "Free Quote in Minutes" },
+    { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge on Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
-    { id: "storm", art: "storm", title: "Pre and Post Storm Checks", hook: "Ready Before, Checked After.", popTitle: "Pre and Post Storm Checks", popText: "We check your home before a storm hits and again after it passes, so problems get caught fast.", cta: "Free Quote in Minutes" }];
+    { id: "storm", art: "storm", title: "Storm Checks", hook: "Checked After Major Storms.", popTitle: "Storm Checks", popText: "On Complete, we check your home after major storms, with a drone roof check and vent and ice dam clearing, so problems get caught fast.", cta: "Free Quote in Minutes" }];
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
@@ -1198,6 +1200,17 @@
     }
     return h + '</div>';
   }
+  /* Plan Services deck (Machan, Nov 2 2026): last step before joining. Every system the member said they have is listed;
+     they can remove any they do not want serviced (e.g. a generator) and the price updates. Removed ones can be added back. */
+  function sysReview() {
+    var have = Array.isArray(S.answers.extras) ? S.answers.extras : [], gone = Array.isArray(S.sysRemoved) ? S.sysRemoved : [];
+    if (!have.length && !gone.length) return "";
+    function row(k, on) { var e = P.extras[k] || { label: k }, amt = e.all > 0 ? money(monthlyOf(e.all)) + '/mo' : 'Included';
+      return '<li class="sr-row' + (on ? '' : ' sr-off') + '"><span class="sr-l"><b>' + esc(e.label) + '</b><small>' + (on ? amt : 'Removed, not serviced') + '</small></span>' +
+        '<button type="button" class="sr-btn mw-hover" data-sys="' + esc(k) + '" data-on="' + (on ? 1 : 0) + '">' + (on ? 'Remove' : 'Add Back') + '</button></li>'; }
+    return '<div class="card sr-card"><h3 class="sr-h">What We Will Service</h3><p class="small muted sr-sub">Remove anything you do not want serviced. Your price updates.</p><ul class="sr-list">' +
+      have.map(function (k) { return row(k, true); }).join("") + gone.filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) { return row(k, false); }).join("") + '</ul></div>';
+  }
   function accept() {
     /* Full-bleed Accept (Machan Oct 28): not sticky bar. */
     var p = price(), t = P.tiers[S.tier], amt = p[S.tier], bd = breakdown(S.tier);
@@ -1218,6 +1231,7 @@
       }).join("") + '</div>' +
       '<ul class="qa-check">' + feats.map(function (f) { return '<li>' + (/Recall Monitoring/.test(f) ? '<strong>' + f + '</strong>' : f) + '</li>'; }).join("") + '</ul>' +
       '<button type="button" class="detail-link" data-detail="' + S.tier + '">See line-item breakdown</button></div>' +
+      sysReview() +
       '<button class="btn btn-primary btn-big mw-hover qa-accept-cta" data-act="extras" type="button">Accept membership</button>' +
       '<p class="small" style="text-align:center;margin-top:.7rem"><button type="button" class="link mw-hover" data-act="toQuote">Keep browsing plans</button></p>' +
       '</div></section>';
@@ -1565,6 +1579,12 @@
       });
     });
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
+    app.querySelectorAll("[data-sys]").forEach(function (b) { b.addEventListener("click", function () {
+      var k = b.getAttribute("data-sys"), on = b.getAttribute("data-on") === "1";
+      var have = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], gone = Array.isArray(S.sysRemoved) ? S.sysRemoved.slice() : [];
+      if (on) { have = have.filter(function (x) { return x !== k; }); if (gone.indexOf(k) < 0) gone.push(k); }
+      else { gone = gone.filter(function (x) { return x !== k; }); if (have.indexOf(k) < 0) have.push(k); }
+      S.answers.extras = have; S.sysRemoved = gone; save(); render(); }); });
     var s = S.screen;
     app.querySelectorAll("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { go("q" + b.getAttribute("data-edit")); }); });
     if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
