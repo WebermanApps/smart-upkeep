@@ -2,7 +2,9 @@
    Recalibrated from the metro Detroit pricing research (pricing-48322):
    price = visits + per-system services at market midpoints, not multipliers.
    Silver targets (pre-floor): ~$700–$900 (1.2–2k sq ft), ~$800–$1,100 (2–3k),
-   ~$900–$1,300 (3.5–5k). Hard floor: every membership >= $99/mo ($1,188/yr). */
+   ~$900–$1,300 (3.5–5k). Hard floor: every membership >= $99/mo ($1,188/yr).
+   Nov 2 2026 (Machan approved): plan prices raised. Essentials from $129/mo, Plus from $209/mo, Complete from $399/mo.
+   Every per-service input below scaled by about 1.27, and each tier has its own minimum (tierMinAnnual). */
 window.SMART_UPKEEP_PRICING = {
   /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
   prelaunchGate: {
@@ -31,25 +33,26 @@ window.SMART_UPKEEP_PRICING = {
   },
   status: "Prototype, Draft Pricing",
   roundTo: 10,
-  minMonthly: 99,                              // Max: no subscription under $99/mo
-  minAnnual: 1188,                             // 99 * 12
+  minMonthly: 129,                             // Nov 2 2026: no subscription under $129/mo (was $99)
+  minAnnual: 1548,                             // 129 * 12
+  tierMinAnnual: { silver: 1548, gold: 2508, platinum: 4788 }, // $129 / $209 / $399 per month minimums (Nov 2 2026)
   // Visit pricing scales gently with home size
-  silverVisit:   { base: 150, perSqft: 0.02 }, // 2 seasonal visits (Silver)
-  seasonalVisit: { base: 275, perSqft: 0.02 }, // 4 seasonal visits (Gold+)
-  checkInVisit:  { base: 175, perSqft: 0.01 }, // 8 extra monthly check-ins (Platinum)
-  perUnit: { furnace: 145, ac: 140, tankWaterHeater: 110, tanklessWaterHeater: 250 },
-  dryerVent: 135,                                // one per home, assumed
-  gutters2Cleanings: { 1: 360, 2: 540, 3: 720 }, // by stories (Gold+)
+  silverVisit:   { base: 185, perSqft: 0.03 }, // 2 seasonal visits (Silver)
+  seasonalVisit: { base: 342, perSqft: 0.03 }, // 4 seasonal visits (Gold+)
+  checkInVisit:  { base: 214, perSqft: 0.02 }, // 8 extra monthly check-ins (Platinum)
+  perUnit: { furnace: 184, ac: 178, tankWaterHeater: 140, tanklessWaterHeater: 318 },
+  dryerVent: 171,                                // one per home, assumed
+  gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
   extras: {        // gold = included in Gold/Platinum, platinumOnly = Platinum only
-    irrigation:  { label: "Irrigation System", gold: 180 },
-    sump:        { label: "Sump Pump", gold: 60 },
-    fireplace:   { label: "Gas Fireplace", gold: 150 },
-    generator:   { label: "Standby Generator", platinumOnly: 450 },
+    irrigation:  { label: "Irrigation System", gold: 229 },
+    sump:        { label: "Sump Pump", gold: 76 },
+    fireplace:   { label: "Gas Fireplace", gold: 191 },
+    generator:   { label: "Standby Generator", platinumOnly: 572 },
     pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits" },
-    humidifier:  { label: "Whole-House Humidifier", gold: 60 },
+    humidifier:  { label: "Whole-House Humidifier", gold: 76 },
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
-  platinumRoofInspection: 250,
+  platinumRoofInspection: 318,
   platinumAnnualDiscount: 0.10, // DRAFT
   unsureDefaults: { sqft: 4000, furnaces: 2, acs: 2, waterHeaters: 1, whType: "tank", stories: 2 },
   /* Plans shown, in order. Remove a key (e.g. "platinum") to show 2 tiers; layouts adapt. */
@@ -67,18 +70,18 @@ window.SMART_UPKEEP_PRICING = {
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),
-     1 tank water heater, 1 story, no extras. Annual totals: Essentials 890 -> floored to 1188, Plus 1970,
-     Complete 3740 (roundTo 10). Recompute if any pricing input above changes. */
+     1 tank water heater, 1 story, no extras. Annual totals (Nov 2 2026 inputs): Essentials 955 -> floored to 1548, Plus 2500 -> floored to 2508,
+     Complete 4770 -> floored to 4788 (roundTo 10). Recompute if any pricing input above changes. */
   tiers: {
-    silver: { fromMonthly: 99, label: "Essentials", tagline: "Seasonal Care", visits: 2,
+    silver: { fromMonthly: 129, label: "Essentials", tagline: "Seasonal Care", visits: 2,
       keyPoints: ["Furnace/AC Tune-Up", "Water Heater Flush", "Dryer Vent Cleaning", "Mold and Moisture Scan", "And More"],
       keyPointsOnCard: true,
       features: ["2 seasonal visits a year (spring and fall)", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Furnace filter changes during visits", "Water heater flush or tankless descale", "Dryer vent cleaning", "Smoke and CO detector checks", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    gold: { fromMonthly: 164, label: "Plus", tagline: "Quarterly Care", visits: 4, recommended: true,
+    gold: { fromMonthly: 209, label: "Plus", tagline: "Quarterly Care", visits: 4, recommended: true,
       keyPoints: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Irrigation Start-Up/Blowout", "Salt in Water Softener", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Essentials", "4 seasonal visits a year (one per quarter)", "Gutter and downspout cleaning, spring and fall", "Smoke, CO, GFCI and shut-off valve checks", "Garage door lube and pre-winter weatherproofing", "Water softener salt top-off during visits", "Fridge water filter changes during visits", "Your selected extras serviced (irrigation start-up and blowout, fireplace, sump, softener)", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
-    platinum: { fromMonthly: 312, label: "Complete", tagline: "Monthly Care", visits: 12,
+    platinum: { fromMonthly: 399, label: "Complete", tagline: "Monthly Care", visits: 12,
       keyPoints: ["Everything in Plus, and:", "Roof and Flashing Inspections", "Pre and Post Storm Checks", "Ice Dam Clearing After Storms", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Plus", "12 visits a year (monthly check-ins)", "Yearly roof and flashing inspection", "Standby generator service (if you have one)", "Winter vent clearing and ice dam clearing after storms", "Pre-storm, post-storm and pre-travel home checks", "Fridge coil cleaning and small fixes during visits", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Recall Monitoring on your equipment", "Written report after every visit", "Maintenance Proof Pack: downloadable visit record for warranty claims", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] }
