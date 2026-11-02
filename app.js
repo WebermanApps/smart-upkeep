@@ -1174,8 +1174,8 @@
   var PROMO_CODES = ["friendsandfamily", "familyandfriends"];
   function promoNorm(c) { return String(c || "").toLowerCase().replace(/\s+/g, ""); }
   function promoOpts(m) {
-    return { A: { t: "Option A: Pay 2 Years Upfront, Half Price", was: m * 24, total: Math.round(m * 24 * 0.5), term: "24 months" },
-             B: { t: "Option B: Pay 1 Year Upfront, 30% Off", was: m * 12, total: Math.round(m * 12 * 0.7), term: "12 months" } };
+    return { A: { t: "Option A: 2 Years For The Price Of 1", sub: "Pay 2 years upfront at half price", was: m * 24, total: Math.round(m * 24 * 0.5), term: "24 months" },
+             B: { t: "Option B: 1 Year Upfront, 30% Off", sub: "Pay 1 year upfront at 30% off", was: m * 12, total: Math.round(m * 12 * 0.7), term: "12 months" } };
   }
   function promoBlock(m) {
     var on = S.promo && PROMO_CODES.indexOf(promoNorm(S.promo)) >= 0;
@@ -1185,10 +1185,11 @@
       '<p class="pc-msg' + (S.promoErr ? ' pc-err' : '') + '" aria-live="polite">' + (S.promoErr ? 'Hmm, that code didn’t work. Check the spelling and try again.' : '') + '</p>';
     if (on) {
       var o = promoOpts(m), sel = S.promoOpt === "B" ? "B" : "A";
-      h += '<p class="pc-ok">Founding 25 Offer Unlocked</p><div class="pc-opts" role="radiogroup">' + ["A", "B"].map(function (k) {
+      h += '<p class="pc-ok">Be One Of The First 25 Homes</p><p class="small muted" style="margin:-.3rem 0 .5rem">Founding 25 offer unlocked. Pick one option; offers don’t stack.</p><div class="pc-opts" role="radiogroup">' + ["A", "B"].map(function (k) {
         var x = o[k];
         return '<button type="button" role="radio" aria-checked="' + (k === sel) + '" class="pc-opt' + (k === sel ? ' on' : '') + '" data-promo-opt="' + k + '">' +
           '<span class="pc-t">' + x.t + '</span>' +
+          '<span class="pc-sub">' + x.sub + '</span>' +
           '<span class="pc-p"><s>' + money(x.was) + '</s> <b>' + money(x.total) + '</b></span>' +
           '<span class="pc-s">You Save ' + money(x.was - x.total) + ' · ' + money(m) + '/mo for ' + x.term + ', paid once</span></button>';
       }).join("") + '</div><p class="pc-tot">Total: <s>' + money(o[sel].was) + '</s> <b>' + money(o[sel].total) + '</b> <span>(save ' + money(o[sel].was - o[sel].total) + ')</span></p>' +

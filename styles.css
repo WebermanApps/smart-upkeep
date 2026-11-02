@@ -1558,3 +1558,4 @@ body.on-accept .topbar{border-bottom-color:transparent}
 .pc-opt.on{border-color:#05668D;box-shadow:0 0 0 3px rgba(5,102,141,.15)}
 .pc-t{font-family:Khand,sans-serif;font-weight:600;font-size:1.05rem}.pc-p s,.pc-tot s{color:#777}.pc-p b{font-size:1.25rem}
 .pc-s{font-size:.88rem;color:#0B6E4F}.pc-tot{font-size:1.05rem;margin:.7rem 0 .2rem}.pc-tot b{font-size:1.3rem}.pc-tot span{color:#0B6E4F;font-size:.9rem}
+.pc-sub{font-size:.88rem;color:#555}
