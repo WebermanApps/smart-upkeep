@@ -1546,3 +1546,15 @@ details.cp-link .acc-body{margin-top:.6rem;border-left:3px solid var(--mw-terrac
 .qa-next .qa-steps strong{display:block;margin-bottom:.2rem;font-size:1.02rem}
 .qa-next .qa-steps span{display:block;color:var(--mw-ink-2,#5c5346);font-size:.92rem;line-height:1.45}
 body.on-accept .topbar{border-bottom-color:transparent}
+
+/* Promo Code (Nov 2 2026) */
+.pc-box{margin:1rem 0;padding:1rem 1.1rem;text-align:left}
+.pc-lab{display:block;font-family:Khand,sans-serif;font-weight:600;font-size:1.15rem;margin-bottom:.4rem}
+.pc-row{display:flex;gap:.5rem}.pc-row input{flex:1;min-width:0;font:inherit;padding:.6rem .75rem;border:1px solid #cfcfcf;border-radius:10px;background:#fff;color:#1a1a1a}
+.pc-msg{margin:.4rem 0 0;font-size:.9rem;min-height:0}.pc-err{color:#B02030}
+.pc-ok{font-family:Khand,sans-serif;font-weight:600;font-size:1.1rem;color:#0B6E4F;margin:.6rem 0 .5rem}
+.pc-opts{display:grid;gap:.6rem}@media(min-width:760px){.pc-opts{grid-template-columns:1fr 1fr}}
+.pc-opt{display:flex;flex-direction:column;gap:.25rem;text-align:left;font:inherit;padding:.8rem .9rem;border:1.5px solid #d5d5d5;border-radius:12px;background:#fff;color:#1a1a1a;cursor:pointer}
+.pc-opt.on{border-color:#05668D;box-shadow:0 0 0 3px rgba(5,102,141,.15)}
+.pc-t{font-family:Khand,sans-serif;font-weight:600;font-size:1.05rem}.pc-p s,.pc-tot s{color:#777}.pc-p b{font-size:1.25rem}
+.pc-s{font-size:.88rem;color:#0B6E4F}.pc-tot{font-size:1.05rem;margin:.7rem 0 .2rem}.pc-tot b{font-size:1.3rem}.pc-tot span{color:#0B6E4F;font-size:.9rem}

@@ -1169,6 +1169,33 @@
       '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
       (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta + waitlistEnd();
   }
+
+  /* Promo Code (Machan Nov 2 2026): friendsandfamily / familyandfriends unlock the Founding 25 offer. Display only; no payment processing. */
+  var PROMO_CODES = ["friendsandfamily", "familyandfriends"];
+  function promoNorm(c) { return String(c || "").toLowerCase().replace(/\s+/g, ""); }
+  function promoOpts(m) {
+    return { A: { t: "Option A: Pay 2 Years Upfront, Half Price", was: m * 24, total: Math.round(m * 24 * 0.5), term: "24 months" },
+             B: { t: "Option B: Pay 1 Year Upfront, 30% Off", was: m * 12, total: Math.round(m * 12 * 0.7), term: "12 months" } };
+  }
+  function promoBlock(m) {
+    var on = S.promo && PROMO_CODES.indexOf(promoNorm(S.promo)) >= 0;
+    var h = '<div class="pc-box card"><label class="pc-lab" for="pc-in">Promo Code</label>' +
+      '<form class="pc-row" data-promo><input id="pc-in" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Enter Code" value="' + esc(on ? S.promo : (S.promoTry || "")) + '">' +
+      '<button class="btn btn-outline mw-hover" type="submit">' + (on ? "Applied" : "Apply") + '</button></form>' +
+      '<p class="pc-msg' + (S.promoErr ? ' pc-err' : '') + '" aria-live="polite">' + (S.promoErr ? 'Hmm, that code didn’t work. Check the spelling and try again.' : '') + '</p>';
+    if (on) {
+      var o = promoOpts(m), sel = S.promoOpt === "B" ? "B" : "A";
+      h += '<p class="pc-ok">Founding 25 Offer Unlocked</p><div class="pc-opts" role="radiogroup">' + ["A", "B"].map(function (k) {
+        var x = o[k];
+        return '<button type="button" role="radio" aria-checked="' + (k === sel) + '" class="pc-opt' + (k === sel ? ' on' : '') + '" data-promo-opt="' + k + '">' +
+          '<span class="pc-t">' + x.t + '</span>' +
+          '<span class="pc-p"><s>' + money(x.was) + '</s> <b>' + money(x.total) + '</b></span>' +
+          '<span class="pc-s">You Save ' + money(x.was - x.total) + ' · ' + money(m) + '/mo for ' + x.term + ', paid once</span></button>';
+      }).join("") + '</div><p class="pc-tot">Total: <s>' + money(o[sel].was) + '</s> <b>' + money(o[sel].total) + '</b> <span>(save ' + money(o[sel].was - o[sel].total) + ')</span></p>' +
+      '<p class="small muted">Draft pricing; no payment is taken here. <button type="button" class="link" data-promo-clear>Remove Code</button></p>';
+    }
+    return h + '</div>';
+  }
   function accept() {
     /* Full-bleed Accept (Machan Oct 28): not sticky bar. */
     var p = price(), t = P.tiers[S.tier], amt = p[S.tier], bd = breakdown(S.tier);
@@ -1182,6 +1209,7 @@
       '<h1>' + esc(t.label) + ' membership</h1>' +
       '<p class="qa-accept-price"><span class="qa-accept-num">' + money(monthlyOf(amt)) + '</span><span class="qa-accept-per">per month · annual billing</span></p>' +
       '<p class="small muted">Due today (draft): <strong>' + money(bd.year + (lmSum || 0)) + '</strong>' + (addSum ? ' · incl. add-ons' : '') + '</p>' +
+      promoBlock(monthlyOf(amt)) +
       '<div class="qa-accept-card card">' +
       '<div class="qa-ico-grid">' + icons.map(function (lab, i) {
         return '<div class="qa-ico"><span class="qa-ico-g" aria-hidden="true">' + I(icoMap[i % icoMap.length], "sm") + '</span><span>' + esc(String(lab).split(":")[0].split(" (")[0]) + '</span></div>';
@@ -1553,6 +1581,10 @@
       if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
     }
     if (s === "accept") {
+      var pf = app.querySelector("[data-promo]");
+      if (pf) pf.addEventListener("submit", function (e) { e.preventDefault(); var v = pf.querySelector("input").value; if (PROMO_CODES.indexOf(promoNorm(v)) >= 0) { S.promo = v.trim(); S.promoErr = 0; S.promoTry = ""; S.promoOpt = S.promoOpt || "A"; } else { S.promo = ""; S.promoErr = 1; S.promoTry = v; } save(); render(); });
+      app.querySelectorAll("[data-promo-opt]").forEach(function (b) { b.addEventListener("click", function () { S.promoOpt = b.getAttribute("data-promo-opt"); save(); render(); }); });
+      var pcx = app.querySelector("[data-promo-clear]"); if (pcx) pcx.addEventListener("click", function () { S.promo = ""; S.promoErr = 0; S.promoTry = ""; save(); render(); });
       app.querySelectorAll("[data-detail]").forEach(function (b) {
         b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
       });
