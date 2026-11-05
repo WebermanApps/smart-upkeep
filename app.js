@@ -723,7 +723,7 @@
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
-        [["home", "house", "Home"], ["plans", "star", "Plans"], ["addons", "wrench", "À La Carte"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
+        [["home", "house", "Home"], ["plans", "star", "Plans"], ["faq", "faq", "FAQs"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
       '</nav><div class="hm-toast" role="status" aria-live="polite" hidden></div>' +
       '</div>';
   }
@@ -832,7 +832,7 @@
     var toast = root.querySelector(".hm-toast"), tt;
     root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
       var t = b.getAttribute("data-hm-tab");
-      if (t === "addons" && acPop.open) { acPop.open(b); return; }
+      if (t === "faq") { var fq = document.getElementById("acc-faq"); if (fq) openAcc(fq, true); return; }
       if (t === "myhome" || t === "account") { toast.textContent = (t === "myhome" ? "My Home" : "Account") + " Is Coming Soon"; toast.hidden = false; clearTimeout(tt); tt = setTimeout(function () { toast.hidden = true; }, 2200); return; }
       root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o === b); });
       if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
