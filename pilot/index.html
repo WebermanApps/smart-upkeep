@@ -1,66 +1,22 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<meta name="color-scheme" content="light only">
-<title>Auth + Quote Ping Pilot · Smart Upkeep</title>
-<script src="/su-config.js"></script>
-<script src="/su-auth.js"></script>
-<script src="/su-pings.js"></script>
-<script src="/pricing-config.js"></script>
-<style>
-body{margin:0;font-family:Hind,system-ui,sans-serif;background:#FAF6EE;color:#1a1a1a;padding:24px}
-.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid #e6dfd1;padding:22px;border-radius:12px}
-h1{margin:0 0 8px;font-size:24px}p{color:#5c5c5c}
-button,.btn{display:inline-block;margin:6px 6px 0 0;padding:10px 14px;border:0;border-radius:10px;background:#C1502E;color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
-button.secondary{background:#1a1a1a}
-#log{white-space:pre-wrap;background:#fffdf8;border:1px solid #e6dfd1;padding:12px;min-height:120px;margin-top:14px;font:13px ui-monospace,monospace}
-footer{text-align:center;margin-top:24px;color:#737373;font-size:13px}
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>Pilot: Auth + Quote Ping</h1>
-  <p>Sign in as the member pilot, tap a quote-required add-on, then open Command Center signed in as ops to see the live ping.</p>
-  <p id="who">Checking session…</p>
-  <p>
-    <a class="btn" href="/login/?next=/pilot/">Sign in</a>
-    <button type="button" class="secondary" id="out">Sign out</button>
-  </p>
-  <p><strong>Send quote request</strong></p>
-  <p>
-    <button type="button" data-q="chimney">Chimney Sweep</button>
-    <button type="button" data-q="ducts">Air Duct Cleaning</button>
-    <button type="button" data-q="generatorTune">Generator Annual Service</button>
-    <button type="button" data-q="lmCaulk">Caulk Touch-Ups</button>
-  </p>
-  <div id="log"></div>
-</div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#FAF6EE">
+<title>Auth + Quote Ping Pilot · Smart Upkeep</title><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="favicon.ico" sizes="any"><link rel="manifest" href="manifest.webmanifest">
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#FAF6EE;color:#1a1a1a;font-family:Hind,-apple-system,system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px}
+.card{width:100%;max-width:360px;background:#fff;border:1px solid #e6dfd1;padding:28px 22px}h1{font-size:28px;margin:0 0 4px;font-weight:700}p{margin:0 0 20px;color:#5c5c5c;font-size:15px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}input[type=password]{width:100%;font-size:16px;min-height:48px;padding:10px 12px;border:1px solid #cfc6b4;background:#fffdf8;border-radius:0}
+.rm{display:flex;align-items:center;gap:10px;margin:14px 0 18px;font-size:15px;min-height:44px}.rm input{width:20px;height:20px}
+button{width:100%;min-height:48px;font-size:16px;font-weight:600;background:#1a1a1a;color:#fff;border:0;border-radius:0;cursor:pointer}
+#err{color:#a12a1b;font-size:14px;min-height:20px;margin:10px 0 0}footer{text-align:center;font-size:13px;color:#737373;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}</style></head>
+<body><main><form class="card" id="f" hidden><h1>Auth + Quote Ping Pilot · Smart Upkeep</h1><p>Enter the password to open.</p>
+<label for="p">Password</label><input id="p" type="password" autocomplete="current-password" required autofocus enterkeyhint="go" autocapitalize="off" autocorrect="off" spellcheck="false">
+<label class="rm"><input type="checkbox" id="r" checked> Remember this device</label><button type="submit">Open</button><div id="err" role="alert"></div></form></main>
 <footer>Built by Machan</footer>
-<script>
-(function(){
-  var logEl=document.getElementById("log");
-  function log(m){logEl.textContent += m + "\n";}
-  function refresh(){
-    SUAuth.user().then(function(u){
-      document.getElementById("who").textContent = u ? ("Signed in as " + u.email + " · role " + SUAuth.roleOf(u)) : "Not signed in — quote taps will queue until you sign in.";
-    });
-  }
-  refresh();
-  document.getElementById("out").onclick=function(){SUAuth.signOut().then(function(){location.href="/login/?next=/pilot/";});};
-  document.querySelectorAll("[data-q]").forEach(function(b){
-    b.onclick=function(){
-      var id=b.getAttribute("data-q");
-      var ev={t:new Date().toISOString(),type:"quote_request",ids:[id],ctx:"pilot-harness"};
-      log("Sending " + id + "…");
-      SUPings.insertQuoteRequest(ev).then(function(rows){
-        log("OK " + JSON.stringify(rows,null,2));
-      }).catch(function(err){log("ERR " + (err && err.message || err));});
-    };
-  });
-})();
-</script>
-</body>
-</html>
+<script>(()=>{const D={"s": "h1YeWA5S7tHNNgfrOtWNBw==", "i": "mfWUYIAiHw72exdw", "c": "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", "n": 600000, "w": [{"s": "1hXkCZ0mwWtkMC83OK8Qfg==", "i": "2IJqzdXcDpaz0w+F", "c": "qaYbLn4TYI8D2vWziUc+0JRDW5AOUygj5nW6zhYwlz2tZhYTVUxq+NlTnePsuDnF", "k": "shareKey_upkeep"}]},K='mwPagesKey',u=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)),f=document.getElementById('f');
+async function aes(raw,iv,c){const k=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:u(iv)},k,u(c)))}
+async function dec(kek,w){const cek=await aes(kek,w.i,w.c);return new TextDecoder().decode(await aes(cek,D.i,D.c))}
+function show(t,k){try{sessionStorage.setItem('mwPagelockOk',k)}catch(e){}const x=[...document.head.querySelectorAll('base,script')].map(e=>e.outerHTML).join('');if(x&&!/<base[\s>]/i.test(t))t=t.replace(/<head[^>]*>/i,m=>m+x);document.open();document.write(t);document.close()}
+addEventListener('DOMContentLoaded',async()=>{for(const w of D.w){const s=localStorage.getItem(w.k);if(!s)continue;try{const t=await dec(u(s),w);if(document.readyState!=='complete')await new Promise(r=>addEventListener('load',r,{once:true}));show(t,w.k);return}catch(e){if(w.k!==K)localStorage.removeItem(w.k)}}f.hidden=false;document.getElementById('p').focus()});
+f.onsubmit=async e=>{e.preventDefault();const er=document.getElementById('err');er.textContent='';const v0=document.getElementById('p').value.normalize('NFC'),v1=v0.trim(),cs=[...new Set([v0,v1,v1.charAt(0).toLowerCase()+v1.slice(1)])];
+for(const pv of cs){const b=await crypto.subtle.importKey('raw',new TextEncoder().encode(pv),'PBKDF2',false,['deriveBits']);
+for(const w of D.w){try{const raw=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:u(w.s),iterations:D.n,hash:'SHA-256'},b,256));const t=await dec(raw,w);
+if(document.getElementById('r').checked)localStorage.setItem(w.k,btoa(String.fromCharCode(...raw)));show(t,w.k);return}catch(x){}}}er.textContent='Wrong password. Try again.'}})()</script></body></html>
