@@ -2,8 +2,9 @@
    Recalibrated from the metro Detroit pricing research (pricing-48322):
    price = visits + per-system services at market midpoints, not multipliers.
    Silver targets (pre-floor): ~$700–$900 (1.2–2k sq ft), ~$800–$1,100 (2–3k),
-   ~$900–$1,300 (3.5–5k). Hard floor: every membership >= $99/mo ($1,188/yr).
+   ~$900–$1,300 (3.5–5k). Hard floor: every membership >= $139/mo ($1,668/yr).
    Nov 2 2026 (Machan approved): plan prices raised. Essentials from $129/mo, Plus from $209/mo, Complete from $399/mo.
+   Nov 5 2026 (Machan locked): Essentials from $139/mo, Plus from $209/mo, Complete from $379/mo.
    Every per-service input below scaled by about 1.27, and each tier has its own minimum (tierMinAnnual). */
 window.SMART_UPKEEP_PRICING = {
   /* Pre-launch password gate. At launch: set enabled to false (or remove gate.js script tag). */
@@ -33,9 +34,9 @@ window.SMART_UPKEEP_PRICING = {
   },
   status: "Prototype, Draft Pricing",
   roundTo: 10,
-  minMonthly: 129,                             // Nov 2 2026: no subscription under $129/mo (was $99)
-  minAnnual: 1548,                             // 129 * 12
-  tierMinAnnual: { silver: 1548, gold: 2508, platinum: 4788 }, // $129 / $209 / $399 per month minimums (Nov 2 2026)
+  minMonthly: 139,                             // Nov 5 2026 lock: no subscription under $139/mo (was $129)
+  minAnnual: 1668,                             // 139 * 12
+  tierMinAnnual: { silver: 1668, gold: 2508, platinum: 4548 }, // $139 / $209 / $379 per month minimums (Nov 5 2026 lock)
   // Visit pricing scales gently with home size
   silverVisit:   { base: 185, perSqft: 0.03 }, // 2 seasonal visits (Silver)
   seasonalVisit: { base: 342, perSqft: 0.03 }, // 4 seasonal visits (Gold+)
@@ -45,11 +46,9 @@ window.SMART_UPKEEP_PRICING = {
   gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
   /* Systems the member owns. Plan Services deck (Nov 2 2026): servicing them is an extra. If picked, it is added to ANY plan
      at the yearly price below (higher monthly price); the member can remove it on the Accept step. Draft prices unchanged. */
-  extras: {        // all = added to every plan when the member has it
+  extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
     irrigation:  { label: "Irrigation System", all: 229 },
     sump:        { label: "Sump Pump", all: 76 },
-    fireplace:   { label: "Gas Fireplace", all: 191 },
-    generator:   { label: "Standby Generator", all: 572 },
     pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits" },
     humidifier:  { label: "Whole-House Humidifier", all: 76 },
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
@@ -72,12 +71,12 @@ window.SMART_UPKEEP_PRICING = {
   tierOrder: ["silver", "gold", "platinum"],
   /* fromMonthly = home-page "From $X/Mo" per tier. Computed by running app.js buildLines/tierAmt/monthlyOf
      against this config for the smallest quote the flow allows: Under 2,000 sq ft (1500), 1 furnace, 0 AC (None),
-     1 tank water heater, 1 story, no extras. Annual totals (Nov 2 2026 inputs): Essentials 955 -> floored to 1548, Plus 2500 -> floored to 2508,
-     Complete 4770 -> floored to 4788 (roundTo 10). Recompute if any pricing input above changes. */
+     1 tank water heater, 1 story, no extras. Annual totals (Nov 2 2026 inputs): Essentials 955 -> floored to 1668, Plus 2500 -> floored to 2508,
+     Complete 4770, above the 4548 floor (roundTo 10). Nov 5 2026: fromMonthly LOCKED by Machan at 139 / 209 / 379; keep these unless Machan changes them. */
   tiers: {
     /* Plan Services deck (Machan, Nov 2 2026). Plans differ mainly by visit frequency. Drone roof frequency per plan is a DEFAULT, not decided yet:
        Essentials once a year, Plus twice a year, Complete after storms too. */
-    silver: { fromMonthly: 129, label: "Essentials", tagline: "Seasonal Care", visits: 2,
+    silver: { fromMonthly: 139, label: "Essentials", tagline: "Seasonal Care", visits: 2,
       keyPoints: ["Furnace/AC Tune-Up", "Roof Drone Inspection", "Mold and Moisture Scan", "Downloadable Visit Record", "And More"],
       keyPointsOnCard: true,
       features: ["2 seasonal visits a year (spring and fall)", "Roof Drone Inspection once a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Furnace filter changes during visits", "Water heater flush or tankless descale", "Dryer vent cleaning", "Smoke and CO detector checks and battery swap", "Drone Gutter Check: a drone flight spots clogged or sagging gutters and downspouts, no ladder needed", "Drone Roof Photos To Home Record: dated roof photos from each drone flight, saved to track wear", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Winter Freeze Prep: hose bibs, crawlspace vents and exposed pipes checked before the first hard freeze; outdoor faucets shut off and drained", "Pipe Insulation Check on your first visit (repairs are a paid extra)", "Thermostat battery and settings check", "Sump pump test before spring thaw", "Main water shut-off found, tested and tagged", "Washing machine hose check", "Toilet leak dye test", "Caulk check at tubs and sinks", "Range hood filter clean", "Fridge coil cleaning", "Basement window well check", "Grading and downspout check", "Humidifier pad swap and service", "Dehumidifier check", "Attic insulation check", "Seasonal home checklist email before each season", "Annual Home Health Score built from your Home Record", "Vetted Contractor Network: every contractor licensed, certified and insured", "Recall Monitoring on your equipment", "Warranties Checked badge on your Home Record", "Written report after every visit", "Downloadable Visit Record: every visit kept in a downloadable record with dates, photos and work done", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
@@ -85,7 +84,7 @@ window.SMART_UPKEEP_PRICING = {
       keyPoints: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Garage Door Tune-Up", "Salt in Water Softener", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Essentials", "4 seasonal visits a year (one per quarter)", "Roof Drone Inspection twice a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Gutter and downspout cleaning, spring and fall", "Garage door tune-up", "Water softener salt top-off during visits", "Fridge water filter changes during visits"] },
-    platinum: { fromMonthly: 399, label: "Complete", tagline: "Monthly Care", visits: 12,
+    platinum: { fromMonthly: 379, label: "Complete", tagline: "Monthly Care", visits: 12,
       keyPoints: ["Everything in Plus, and:", "Monthly Visits", "Storm Checks After Major Storms", "Vent and Ice Dam Clearing After Storms", "And More"],
       keyPointsOnCard: true,
       features: ["Everything in Plus", "12 visits a year (monthly check-ins)", "Roof Drone Inspection twice a year and after major storms: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Storm checks after major storms", "Vent and ice dam clearing after storms"] }

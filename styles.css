@@ -241,7 +241,7 @@ label.fl,p.fl{font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transfo
 #priceModal .bd-foot{margin-top:.75rem}
 #priceModal .eyebrow{color:var(--mw-lagoon)}
 
-/* Essentials + $99 start + a la carte */
+/* Essentials + $139 start + a la carte */
 .start-at{display:inline-block;margin:.35rem 0 .85rem;padding:.4rem .75rem;border:1px solid var(--mw-lagoon);color:var(--mw-lagoon);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;background:#fff}
 .hero .start-at{margin-top:.5rem}
 .video-start-at{display:block;text-align:center;margin:.65rem 0 .25rem;width:100%}
@@ -1147,7 +1147,7 @@ body.on-qf main{padding-bottom:0}
 .hm-prices .ac-item b:after{content:" \203A";color:var(--mw-lagoon)}
 
 
-/* Oct 15 Plans And Pricing Follow-Up Deck: plan card accent Lagoon (05), roomy spacing (07), swipe cards on phone (06), $99 minimum note hidden (08), ticks per card (10), pill buttons (14) */
+/* Oct 15 Plans And Pricing Follow-Up Deck: plan card accent Lagoon (05), roomy spacing (07), swipe cards on phone (06), $139 minimum note hidden (08), ticks per card (10), pill buttons (14) */
 .hm-plan.pc{border-top-color:var(--mw-lagoon)!important}
 .hm-plan.pc.sel{border-color:var(--mw-lagoon)!important;box-shadow:0 8px 22px rgba(0,0,0,.12)}
 .hm-plan.pc .pc-more-link{color:var(--mw-lagoon)!important}
