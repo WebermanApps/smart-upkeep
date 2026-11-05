@@ -60,7 +60,7 @@ window.SMART_UPKEEP_PRICING = {
   /* Final pop-up offer shown once, right before sign-up Submit (beta test).
      strategy: "roundRobin" (index kept in localStorage) or "random". Items already in the cart are skipped. */
   finalOffer: { enabled: false, /* Order Form Details Deck 03/07 (Max 19:33 ICT Oct 15): pop-up dropped for an Add Extras row */ strategy: "roundRobin", storageKey: "smartUpkeep.finalOfferIdx",
-    candidates: ["windows", "chimney", "radon", "guttersExtra", "pressure", "ducts"] },
+    candidates: ["chimney", "radon", "guttersExtra", "ducts"] },
   /* Home hero teaser loop (muted, autoplay, loop, inline). Tap opens the full explainer with sound.
      Built with ffmpeg from video/explainer-16x9.mp4 (V.1): 7.9s, 640x360 H.264, no audio, faststart.
      To swap to V.2 later, change these two paths only. */
@@ -92,14 +92,12 @@ window.SMART_UPKEEP_PRICING = {
   /* A la carte add-ons / one-off services. Midpoints from pricing-48322. Draft. */
   /* Add Extras row on the sign-up form shows these first (Max's note, deck card 11: offer the ones members are likeliest to add).
      Picks: yearly seasonal jobs most homes can use that pair with visits. Tune from the add-on event log once real data exists. */
-  likelyAddons: ["guttersExtra", "windows", "pressure", "chimney", "lights"],
+  likelyAddons: ["guttersExtra", "chimney"],
   /* Removed Nov 2 2026 (Plan Services deck): Carpet Cleaning, Deck Sealing, Furniture Assembly, TV/Picture Hanging; Smoke/CO Battery Swap and Range Hood Filter now in every plan. Removed Oct 17 (Max): Pool Opening/Closing, Snow Removal, Extra Handyman Hours, Pest Control, Irrigation Backflow Test. */
   addons: [
-    { id: "windows", label: "Exterior Window Washing", desc: "Outside glass, typically once or twice a year.", low: 150, high: 302, unit: "service", annual: 225 },
-    { id: "pressure", label: "Pressure Washing", desc: "House, driveway or patio wash as needed.", low: 100, high: 720, unit: "service", annual: 310 },
-    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 129, high: 381, unit: "service", annual: 255 },
-    { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years.", low: 271, high: 509, unit: "service", annual: 390 },
-    { id: "lights", label: "Christmas Lights Up and Down", desc: "Seasonal extra: we put your Christmas lights up and take them down after the holidays.", low: 220, high: 684, unit: "season", annual: 450 },
+    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check. Quote required — we will follow up.", quoteRequired: true, low: 129, high: 381, unit: "service", annual: 255 },
+    { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years. Quote required — we will follow up.", quoteRequired: true, low: 271, high: 509, unit: "service", annual: 390 },
+    { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up / service for a standby generator. Quote required — we will follow up.", quoteRequired: true, low: 200, high: 400, unit: "service", annual: 275 },
     { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
   ],
@@ -107,11 +105,7 @@ window.SMART_UPKEEP_PRICING = {
      Chosen to complement (not duplicate) the seasonal add-on menu: interior glass,
      screens, bulbs, caulk, hanging, small wash, assembly, detector batteries. */
   lastMinute: [
-    { id: "lmInteriorWindows", label: "Interior Window Washing", desc: "Inside glass on an upcoming visit. Pairs with exterior washing if you need both.", price: 175 },
-    { id: "lmScreens", label: "Window Screen Cleaning", desc: "Remove, wash and rehang screens while we are on site.", price: 85 },
-    { id: "lmBulbs", label: "High Fixture Light Bulb Swap", desc: "Replace up to 6 hard-to-reach bulbs. Common bulbs included; specialty bulbs at cost.", price: 95 },
-    { id: "lmCaulk", label: "Caulk Touch-Ups", desc: "Up to one hour of sink, tub or window caulk touch-ups.", price: 125 },
-    { id: "lmSmallWash", label: "Small Patio Pressure Wash", desc: "Entry, patio or walkway wash — not a full-house wash.", price: 175 },
+    { id: "lmCaulk", label: "Caulk Touch-Ups", desc: "Up to one hour of sink, tub or window caulk touch-ups. Quote required — we will follow up.", quoteRequired: true, price: 125 },
     /* Added Oct 18 (Max, Extras Ideas deck: 01 both, 05B, 06B, 07A). One-time prices are the example prices shown on the deck cards. Draft. home: also listed in the home Shop À La Carte list. */
     { id: "lmLeakSensors", label: "Water Leak Sensor Setup", desc: "Leak sensors under sinks, by the water heater and washer, linked to your phone.", price: 149, home: true },
     { id: "lmSumpBackup", label: "Sump Pump Battery Backup", desc: "A battery backup pump that keeps the basement dry when the power goes out.", price: 650, home: true },
