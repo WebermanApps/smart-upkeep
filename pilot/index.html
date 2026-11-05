@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="light only">
+<title>Auth + Quote Ping Pilot · Smart Upkeep</title>
+<script src="/su-config.js"></script>
+<script src="/su-auth.js"></script>
+<script src="/su-pings.js"></script>
+<script src="/pricing-config.js"></script>
+<style>
+body{margin:0;font-family:Hind,system-ui,sans-serif;background:#FAF6EE;color:#1a1a1a;padding:24px}
+.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid #e6dfd1;padding:22px;border-radius:12px}
+h1{margin:0 0 8px;font-size:24px}p{color:#5c5c5c}
+button,.btn{display:inline-block;margin:6px 6px 0 0;padding:10px 14px;border:0;border-radius:10px;background:#C1502E;color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
+button.secondary{background:#1a1a1a}
+#log{white-space:pre-wrap;background:#fffdf8;border:1px solid #e6dfd1;padding:12px;min-height:120px;margin-top:14px;font:13px ui-monospace,monospace}
+footer{text-align:center;margin-top:24px;color:#737373;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Pilot: Auth + Quote Ping</h1>
+  <p>Sign in as the member pilot, tap a quote-required add-on, then open Command Center signed in as ops to see the live ping.</p>
+  <p id="who">Checking session…</p>
+  <p>
+    <a class="btn" href="/login/?next=/pilot/">Sign in</a>
+    <button type="button" class="secondary" id="out">Sign out</button>
+  </p>
+  <p><strong>Send quote request</strong></p>
+  <p>
+    <button type="button" data-q="chimney">Chimney Sweep</button>
+    <button type="button" data-q="ducts">Air Duct Cleaning</button>
+    <button type="button" data-q="generatorTune">Generator Annual Service</button>
+    <button type="button" data-q="lmCaulk">Caulk Touch-Ups</button>
+  </p>
+  <div id="log"></div>
+</div>
+<footer>Built by Machan</footer>
+<script>
+(function(){
+  var logEl=document.getElementById("log");
+  function log(m){logEl.textContent += m + "\n";}
+  function refresh(){
+    SUAuth.user().then(function(u){
+      document.getElementById("who").textContent = u ? ("Signed in as " + u.email + " · role " + SUAuth.roleOf(u)) : "Not signed in — quote taps will queue until you sign in.";
+    });
+  }
+  refresh();
+  document.getElementById("out").onclick=function(){SUAuth.signOut().then(function(){location.href="/login/?next=/pilot/";});};
+  document.querySelectorAll("[data-q]").forEach(function(b){
+    b.onclick=function(){
+      var id=b.getAttribute("data-q");
+      var ev={t:new Date().toISOString(),type:"quote_request",ids:[id],ctx:"pilot-harness"};
+      log("Sending " + id + "…");
+      SUPings.insertQuoteRequest(ev).then(function(rows){
+        log("OK " + JSON.stringify(rows,null,2));
+      }).catch(function(err){log("ERR " + (err && err.message || err));});
+    };
+  });
+})();
+</script>
+</body>
+</html>

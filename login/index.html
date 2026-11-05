@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="light only">
+<meta name="theme-color" content="#FAF6EE">
+<title>Sign In · Smart Upkeep</title>
+<script src="/su-config.js"></script>
+<script src="/su-auth.js"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#FAF6EE;color:#1a1a1a;font-family:Hind,-apple-system,system-ui,sans-serif}
+body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px}
+.card{width:100%;max-width:380px;background:#fff;border:1px solid #e6dfd1;padding:28px 22px}
+h1{font-size:26px;margin:0 0 6px;font-weight:700}p.sub{margin:0 0 18px;color:#5c5c5c;font-size:15px}
+label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
+input{width:100%;font-size:16px;min-height:48px;padding:10px 12px;border:1.5px solid #cfc6b4;background:#fffdf8;border-radius:10px;margin-bottom:12px}
+button{width:100%;min-height:48px;font-size:16px;font-weight:700;background:#C1502E;color:#fff;border:0;border-radius:10px;cursor:pointer;margin-top:6px}
+button:disabled{opacity:.6;cursor:wait}
+#err{color:#a12a1b;font-size:14px;min-height:20px;margin:10px 0 0}
+footer{text-align:center;font-size:13px;color:#737373;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.hint{font-size:13px;color:#737373;margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+  <form class="card" id="f" autocomplete="on">
+    <h1>Sign In</h1>
+    <p class="sub">Members, techs, and operators use the same door. We send you to the right app.</p>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="username" required enterkeyhint="next">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required enterkeyhint="go">
+    <button type="submit" id="go">Sign In</button>
+    <div id="err" role="alert"></div>
+    <p class="hint">Pilot accounts only for now. Ask Machan if you need a reset.</p>
+  </form>
+</main>
+<footer>Built by Machan</footer>
+<script>
+(function () {
+  var f = document.getElementById("f");
+  var err = document.getElementById("err");
+  var go = document.getElementById("go");
+  var params = new URLSearchParams(location.search);
+  var next = params.get("next");
+  /* If already signed in, bounce. */
+  SUAuth.session().then(function (s) {
+    if (!s || !s.user) return;
+    var role = SUAuth.roleOf(s.user);
+    location.replace(next || SUAuth.homeForRole(role));
+  }).catch(function () {});
+  f.addEventListener("submit", function (e) {
+    e.preventDefault();
+    err.textContent = "";
+    go.disabled = true;
+    SUAuth.signIn(f.email.value.trim(), f.password.value).then(function (data) {
+      var role = SUAuth.roleOf(data.user);
+      location.replace(next || SUAuth.homeForRole(role));
+    }).catch(function (ex) {
+      err.textContent = (ex && (ex.message || ex.error_description)) || "Sign in failed.";
+      go.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>

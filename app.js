@@ -1550,6 +1550,18 @@
     var ev = { t: new Date().toISOString(), type: type, ids: ids, ctx: ctx || "" };
     try { var a = JSON.parse(localStorage.getItem(EVKEY) || "[]"); a.push(ev); if (a.length > 500) a = a.slice(-500); localStorage.setItem(EVKEY, JSON.stringify(a)); } catch (e) {}
     try { console.info("[addon-event]", ev); } catch (e) {}
+    if (type === "tap" || type === "offer_accepted") quotePing(ids, ctx);
+  }
+  /* Quote ping: quoteRequired picks → window.MWQuotePing / mw:quote_request (wired by su-pings.js). */
+  function quotePing(ids, ctx) {
+    var all = (P.addons || []).concat(P.lastMinute || []);
+    var q = ids.filter(function (id) { return all.some(function (a) { return a.id === id && a.quoteRequired; }); });
+    if (!q.length) return;
+    var ev = { t: new Date().toISOString(), type: "quote_request", ids: q, ctx: ctx || "" };
+    try { var a = JSON.parse(localStorage.getItem(EVKEY) || "[]"); a.push(ev); localStorage.setItem(EVKEY, JSON.stringify(a.slice(-500))); } catch (e) {}
+    try { console.info("[quote-ping]", ev); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("mw:quote_request", { detail: ev })); } catch (e) {}
+    try { if (typeof window.MWQuotePing === "function") window.MWQuotePing(ev); } catch (e) {}
   }
   function bindReferralShare() {
     var txt = document.getElementById("refShareText"), msg = document.getElementById("refCopyMsg"), codeEl = document.getElementById("myRefCode");
