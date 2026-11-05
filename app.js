@@ -567,15 +567,13 @@
     ["clipboard", "Records", "Records for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Downloadable Visit Record", "Essentials"], ["Recall Monitoring", "Essentials"], ["Warranties Checked Badge", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
   function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
   var FS_ART = {
-    lawn: function (c) { return fsBg(c, "#F4F8EF", '<path d="M14 66h92" stroke="#cfd8c4"/><path d="M22 62l12-28 34 4 16 20-18 8H32z" fill="rgba(11,110,79,.14)" stroke="#0B6E4F" stroke-dasharray="4 3"/><rect x="40" y="45" width="24" height="10" rx="2" fill="#fff" stroke="#05668D"/><path d="M44 50h16" stroke="#05668D" stroke-width="1.4"/><g transform="translate(96 16) rotate(-20)"><rect x="-5" y="-4" width="10" height="8" rx="1.5" fill="#D4A017"/><path d="M-15 -3h9v6h-9zM6 -3h9v6H6z" fill="#05668D"/><path d="M-10 -3v6M10 -3v6M0 4v4"/></g><path d="M92 26L60 40M96 27l-8 31" stroke="#C1502E" stroke-dasharray="2 3"/><circle cx="22" cy="62" r="2.2" fill="#C1502E" stroke="none"/><circle cx="84" cy="58" r="2.2" fill="#C1502E" stroke="none"/>'); },
     warranty: function (c) { return fsBg(c, "#FAF3EB", '<rect x="18" y="14" width="40" height="52" rx="4" fill="#fff"/><path d="M26 26h24M26 34h24M26 42h16"/><path d="M38 52l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/><rect x="70" y="30" width="30" height="34" rx="3" fill="#fff"/><path d="M70 38h30" stroke="#C1502E"/><path d="M78 26v8M92 26v8"/><circle cx="85" cy="51" r="6" stroke="#05668D"/><path d="M85 48v3l2 2" stroke="#05668D"/>'); },
     mold: function (c) { return fsBg(c, "#EEF5F8", '<path d="M20 64V30l26-16 26 16v34z" fill="#fff"/><path d="M34 64V46h14v18"/><path d="M60 40c-3 5-3 8 0 9s3-4 0-9z" fill="#05668D" stroke="#05668D"/><rect x="74" y="28" width="22" height="34" rx="4" fill="#fff"/><rect x="78" y="32" width="14" height="10" rx="1.5" fill="#D4A017"/><path d="M80 50h10M80 55h6"/><path d="M85 28v-8" stroke="#C1502E"/>'); },
     wh: function (c) { return fsBg(c, "#FAF3EB", '<rect x="40" y="12" width="32" height="54" rx="12" fill="#fff"/><path d="M48 30h16M48 38h16"/><circle cx="56" cy="52" r="4" fill="#C1502E"/><path d="M72 58h14v8" stroke="#05668D"/><path d="M86 68c-2 3-2 5 0 6s2-3 0-6z" fill="#05668D" stroke="#05668D"/>'); },
     storm: function (c) { return fsBg(c, "#F3F1EC", '<path d="M24 34a12 12 0 0 1 22-6 10 10 0 1 1 6 18H28a8 8 0 0 1-4-12z" fill="#fff"/><path d="M44 48l-5 9h7l-5 9" stroke="#D4A017" stroke-width="2.2"/><path d="M70 64V42l14-10 14 10v22z" fill="#fff"/><path d="M80 64v-10h8v10"/><path d="M98 26l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/>'); }
   };
-  /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Non-lawn entries start the Get Started flow. */
+  /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Entries start the Get Started flow. */
   var FEATURED = [
-    { id: "lawn", art: "lawn", title: "Learn About Our Custom Grass Cutting", hook: "Measured From Above. No Visit Needed.", popTitle: "Custom Grass Cutting", popText: "We measure your lawn from above and give you a custom mowing price, no visit needed.", cta: "Get My Lawn Quote", href: "lawn/" },
     { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge on Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
@@ -1073,12 +1071,11 @@
       '<button type="button" class="btn btn-primary mw-hover xt-done" data-xt-close="1">Done</button></div></div>';
   }
 
-  /* Menus & Headlines deck 10 (Max, Oct 17): add-ons are their own step after picking a plan. One "My Add-Ons" list; lawn is one item (priced after we measure, no number shown). */
+  /* Menus & Headlines deck 10 (Max, Oct 17): add-ons are their own step after picking a plan. One "My Add-Ons" list. */
   function extrasStep() {
     var addSum = addonsAnnual(), p = price(), runYear = p[S.tier] + addSum;
     return backBtn() + stepRail(4) + '<p class="eyebrow">Optional Step</p><h1>My Add-Ons</h1><p>Add any extras to your ' + esc(P.tiers[S.tier].label) + ' plan, or skip. Draft prices; monthly figure is the yearly midpoint ÷ 12.</p>' +
       renderAddonList(P.addons || [], S.addons || [], "addon", addonPriceLabel) +
-      '<a class="addon mw-hover addon-lawn" href="lawn/"><span class="chk" aria-hidden="true">&rsaquo;</span><span class="addon-body"><strong>Custom Grass Cutting</strong><p class="addon-desc">Measured from above. No visit needed. No member discount on mowing.</p><p class="addon-price">Price after we measure your lawn <span>(draft)</span></p></span></a>' +
       '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' + priceBlock(runYear, "annual") + (addSum ? '<p class="small muted" style="margin:0">Incl. Add-Ons +' + money(monthlyOf(addSum)) + '/month</p>' : '') + '</div>' +
       '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Continue to Sign Up</button>' +
       '<p class="small" style="text-align:center"><button class="link mw-hover" data-act="signup" type="button">Skip, No Add-Ons</button></p>';
