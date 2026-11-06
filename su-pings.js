@@ -1,5 +1,5 @@
 /* Smart Upkeep pings → public.pings (Command Center Ping Log).
-   Kinds: quote_request, reschedule, change_plan, cancel_request, manage_extras, book_fix, message, urgent,
+   Kinds: quote_request, reschedule, change_plan, cancel_request, manage_extras, book_fix, message, urgent, refer_neighbor,
    tech_visit_start, tech_checkout, tech_time_off, tech_help. Signed-out actions queue in localStorage and flush on sign-in. */
 (function (w) {
   "use strict";
