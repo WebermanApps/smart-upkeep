@@ -99,10 +99,9 @@
   };
 
   /* ---- UI hooks (capture phase: read state before page handlers mutate it) ---- */
+  /* Change Plan + Manage Extras: member sheet confirms → SUPings.ping (not data-beta). */
   var BETA = {
-    "Change Plan": ["change_plan", "Change plan request"],
     "Cancel Membership": ["cancel_request", "Cancel membership request"],
-    "Manage Extras": ["manage_extras", "Manage extras request"],
     "Book a Fix": ["book_fix", "Book a fix request"]
   };
   function txt(el) { return ((el && el.textContent) || "").replace(/\s+/g, " ").trim(); }
