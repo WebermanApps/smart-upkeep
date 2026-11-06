@@ -40,8 +40,9 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .hint{margin:4px 0 0;font-size:13px;color:var(--mute)}
 .field{margin:0 0 14px}
 .field label{display:block;margin:0 0 6px;font-weight:600;font-size:14px}
-.field input,.field select{width:100%;min-height:48px;padding:0 14px;border:1.5px solid #CFC6B8;border-radius:12px;background:#fff;font-size:16px}
-.field input:focus,.field select:focus{outline:3px solid rgba(5,102,141,.18);border-color:var(--lagoon)}
+.field input,.field select,.field textarea{width:100%;min-height:48px;padding:0 14px;border:1.5px solid #CFC6B8;border-radius:12px;background:#fff;font-size:16px}
+.field textarea{min-height:108px;padding:12px 14px;resize:vertical;line-height:1.45}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid rgba(5,102,141,.18);border-color:var(--lagoon)}
 .sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .sw:first-child{border-top:0;padding-top:0}
 .sw .t{font-weight:600}.sw .s{font-size:13.5px;color:var(--mute)}
@@ -57,11 +58,19 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .btn.sec{background:#fff;color:var(--terra-d);border:1.5px solid var(--terra)}
 .btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--line2)}
 .btn.ink{background:var(--ink)}
+.btn:disabled,.btn[aria-disabled='true']{opacity:.5;cursor:not-allowed}
+.btn.sec:hover{background:var(--terra-t)}
 .row-btns{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .money{font:700 34px/1 "Khand",sans-serif;letter-spacing:.01em}
-.inv{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.inv{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
 .inv:first-child{border-top:0;padding-top:0}
 .inv .grow{flex:1}.inv .amt{font-weight:700;font-family:"Khand",sans-serif;font-size:18px}
+.inv .meta{font-size:14.5px;color:var(--ink2)}
+.inv-tools{display:flex;gap:8px;margin:0 0 8px}
+.inv-tools .btn{min-height:42px;font-size:14.5px}
+.inv input[type=checkbox]{width:20px;height:20px;accent-color:var(--terra);flex:none}
+.icon-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--ink2);border-radius:12px;cursor:pointer;flex:none}
+.icon-btn:hover{background:rgba(29,26,22,.05);color:var(--terra-d)}
 .faq details{border-top:1px solid var(--line);padding:4px 0}
 .faq details:first-child{border-top:0}
 .faq summary{cursor:pointer;list-style:none;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:600;font-size:15px}
@@ -72,7 +81,7 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .ft{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 14px calc(28px + env(safe-area-inset-bottom));color:var(--mute);font-size:13px;text-align:center}
 .ft .brand{display:inline-flex;align-items:center;gap:8px;font:600 17px/1 "Khand";letter-spacing:.04em;color:var(--ink2)}
 .ft .brand img{height:18px}
-.machan-ft a{color:inherit;text-decoration:none}
+.machan-ft,.machan-ft a{color:inherit;text-decoration:none}
 .hub{margin-top:4px}
 .confirm{text-align:center;padding:12px 4px 8px}
 .confirm .av{width:64px;height:64px;border-radius:50%;background:var(--terra);color:#fff;display:grid;place-items:center;font:700 28px/1 "Khand",sans-serif;margin:0 auto 14px}
@@ -80,4 +89,52 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
   .wrap{padding-top:24px}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .grid-2 .span{grid-column:1/-1}
+}
+
+.sw.locked{opacity:.72}
+.sw .t .chip{margin-left:8px;vertical-align:middle}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.card-h h2{margin:0}
+.edit-link{font:600 14px Hind,sans-serif;color:var(--lagoon);text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
+.ident-top{display:flex;align-items:center;gap:14px;margin:0 0 16px}
+.ident-av{width:64px;height:64px;border-radius:50%;border:2px solid var(--terra);color:var(--terra);background:#fff;display:grid;place-items:center;font:700 22px/1 "Khand",sans-serif;flex:none;letter-spacing:.02em}
+.ident-name{font:700 22px/1.15 "Khand",sans-serif}
+.ident-role{margin-top:2px;font-size:14px;color:var(--mute)}
+.ident-contact{margin:0 0 4px}
+.ident-contact .em,.ident-contact .ph{font-weight:500}
+.plan-slim{display:flex;align-items:center;gap:12px;min-height:48px;text-decoration:none;color:inherit}
+.plan-slim .grow{flex:1;color:var(--lagoon);font-weight:600}
+.plan-slim .chev{color:var(--mute)}
+.charge-quiet{font:700 28px/1.15 "Khand",sans-serif;letter-spacing:.01em}
+.charge-quiet .sep{font-weight:700;color:var(--ink)}
+.save-line{color:var(--jungle);font-weight:600;font-size:14px;margin:8px 0 0}
+.pay-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pay-row .k,.list .k{font-size:13px;color:var(--mute)}
+.pay-row .v,.list .v{font-weight:600;color:var(--ink)}
+.pay-compact{padding:14px 16px}
+.quiet-link{display:inline-block;margin:2px 0 16px;font-weight:600;color:var(--lagoon);text-decoration:none}
+.wrap.has-stuck{padding-bottom:16px}
+.stuck{position:sticky;bottom:0;z-index:35;margin:18px -16px 0;padding:12px 16px 8px;background:linear-gradient(180deg,rgba(251,248,243,0),var(--bg) 36%);}
+.stuck .btn{max-width:none}
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(29,26,22,.48);opacity:0;pointer-events:none;transition:opacity .35s ease;-webkit-backdrop-filter:saturate(1.1) blur(2px);backdrop-filter:saturate(1.1) blur(2px)}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;background:var(--paper);border-radius:24px 24px 0 0;box-shadow:0 -18px 48px -12px rgba(29,26,22,.35),0 -4px 16px rgba(29,26,22,.12);transform:translateY(110%);visibility:hidden;transition:transform .55s cubic-bezier(.16,1.1,.3,1),visibility 0s linear .55s}
+.sheet.on{transform:none;visibility:visible;transition:transform .55s cubic-bezier(.16,1.1,.3,1),visibility 0s}
+.sheet.drag{transition:none}
+.sh-top{flex:none;padding:8px 12px 6px 16px;touch-action:none;cursor:grab}
+.grab{width:38px;height:5px;border-radius:3px;background:#ddd5c9;margin:0 auto 6px}
+.sh-head{display:grid;grid-template-columns:auto minmax(0,1fr) 48px;align-items:center;gap:4px;min-height:44px}
+.sh-head h2{grid-column:2;margin:0;font:700 22px/1.15 "Khand",sans-serif;text-align:center;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-back{display:inline-flex;align-items:center;justify-content:flex-start;gap:2px;min-height:44px;min-width:44px;padding:0 6px 0 0;font:700 14px Hind,sans-serif;color:var(--terra-d);border:0;background:transparent;cursor:pointer}
+.sh-back svg{width:22px;height:22px}
+#shX{justify-self:end}
+.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);border:0;background:transparent;cursor:pointer}
+.ib:hover{background:rgba(29,26,22,.05)}
+.sh-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 20px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translate(-50%,12px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font:600 14px Hind,sans-serif;opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:min(92vw,420px);text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (min-width:720px){
+  .sheet{left:50%;right:auto;bottom:24px;width:560px;max-height:min(86vh,820px);border-radius:24px;transform:translate(-50%,110%)}
+  .sheet.on{transform:translate(-50%,0)}
+  .stuck .btn{width:100%}
 }
