@@ -140,3 +140,8 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
   .sheet.on{transform:translate(-50%,0)}
   .stuck .btn{width:100%}
 }
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.faq .faq-jump{display:inline-block;margin:-4px 0 12px;font-weight:600;color:var(--lagoon);text-decoration:none}
+.btn.saved{background:#e7f4ed;color:var(--jungle);border:1.5px solid var(--jungle)}
+button.edit-link{border:0;background:transparent;cursor:pointer;padding:0}
