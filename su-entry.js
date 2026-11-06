@@ -11,6 +11,8 @@
   function mount(user) {
     if (document.getElementById("su-auth-badge")) return;
     var role = pathRole();
+    /* Member app: Sign Out lives in More → Account only — no fixed bottom badge covering nav. */
+    if (role === "member") return;
     var st = document.createElement("style");
     st.textContent = "#su-auth-badge{position:fixed;right:12px;bottom:12px;z-index:9998;font:600 13px Hind,system-ui,sans-serif}" +
       "#su-auth-badge a,#su-auth-badge span{display:inline-block;background:#fff;border:1px solid #d9d1c4;border-radius:999px;padding:8px 12px;color:#1a1a1a;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.06)}";
