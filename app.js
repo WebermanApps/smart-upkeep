@@ -1187,7 +1187,7 @@
       '<p class="pc-msg' + (S.promoErr ? ' pc-err' : '') + '" aria-live="polite">' + (S.promoErr ? 'Hmm, that code didn’t work. Check the spelling and try again.' : '') + '</p>';
     if (on) {
       var o = promoOpts(m), sel = "A";
-      h += '<p class="pc-ok">First 50 members get 2 years for the price of 1</p><p class="small muted" style="margin:-.3rem 0 .5rem">Founding offer unlocked. Offers don’t stack.</p><div class="pc-opts" role="radiogroup">' + ["A"].map(function (k) {
+      h += '<p class="pc-ok">Be One Of The First 50 Homes</p><p class="small muted" style="margin:-.3rem 0 .5rem">Founding 50 offer unlocked: 2 years for the price of 1' + (P.tiers && P.tiers.silver && P.tiers.silver.fromMonthly ? ', from ' + money(P.tiers.silver.fromMonthly) + '/Month' : '') + '. Offers don’t stack.</p><div class="pc-opts" role="radiogroup">' + ["A"].map(function (k) {
         var x = o[k];
         return '<button type="button" role="radio" aria-checked="' + (k === sel) + '" class="pc-opt' + (k === sel ? ' on' : '') + '" data-promo-opt="' + k + '">' +
           '<span class="pc-t">' + x.t + '</span>' +
@@ -1240,7 +1240,7 @@
   function waitlistEnd() {
     var z = S.answers && S.answers.zip && S.answers.zip !== "unsure" ? zipOf(S.answers.zip) : "";
     if (!z || inArea(z)) return "";
-    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon To You</h3><p class="small muted">Bold local launch for a few close metro Detroit areas (Wayne, Oakland, Macomb). ZIP ' + esc(z) + ' is outside today. Join the waitlist — launch date <b>March 15, 2027</b> (TEST). First 50 members get 2 years for the price of 1. No spots counter.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
+    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon To You</h3><p class="small muted">Bold local launch for a few close metro Detroit areas (Wayne, Oakland, Macomb). ZIP ' + esc(z) + ' is outside today. Join the waitlist — launch date <b>March 15, 2027</b> (TEST). First 50 members get 2 years for the price of 1' + (P.tiers && P.tiers.silver && P.tiers.silver.fromMonthly ? ', from ' + money(P.tiers.silver.fromMonthly) + '/Month' : '') + '. No spots counter.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
   var lastScreen = null;
