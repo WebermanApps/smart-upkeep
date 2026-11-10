@@ -15,6 +15,8 @@
     try {
       /* Outer page-lock gate already passed this session (share or main password): skip pre-launch gate. */
       if (sessionStorage.getItem("mwPagelockOk")) return true;
+      /* Member app already signed in this tab: keep Notifications and other member sub-pages open. */
+      if (sessionStorage.getItem("su.memberIn")) return true;
       var s = sessionStorage.getItem(KEY); return !!s && HASHES.indexOf(s) > -1;
     } catch (e) { return false; }
   }
