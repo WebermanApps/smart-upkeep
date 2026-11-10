@@ -162,3 +162,7 @@ button.edit-link{border:0;background:transparent;cursor:pointer;padding:0}
 html.mm-embed .top{display:none!important}
 html.mm-embed nav.bar,html.mm-embed nav.mbar,html.mm-embed .bar{display:none!important}
 html.mm-embed body{min-height:0}
+html.mm-embed .eyebrow,
+html.mm-embed main.wrap > h1{
+  display: none;
+}
