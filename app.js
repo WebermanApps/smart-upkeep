@@ -255,6 +255,8 @@
   function trustBlock() {
     return '<h3 class="grp">Trust and Licensing</h3>' + sampleVisitCard() + sampleTechCard() + vettingSection();
   }
+  /* Legal (Max 20:10 ICT Oct 17): the 3-day Home Solicitation notice is for OFFLINE sign-ups only (home/door, event, outbound phone).
+     It is NOT shown on the online form. Offline wording lives in forms/in-person/ (printable) and the ops phone script. */
   function cancelPage() {
     return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Your refund is what you prepaid minus the itemized price of services already done.</p>' +
       '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
@@ -293,13 +295,11 @@
   /* Plan detail (Details section): icon checklist; anything after ":" is a collapsed drop-down. Content comes from P.tiers[k].features. */
   function planDetail(k) {
     var t = P.tiers[k];
-    return '<ul class="pd-list">' + feats(k).map(function (f) { var i = f.indexOf(":"), h = i > 0 ? f.slice(0, i) : f, rest = i > 0 ? f.slice(i + 1).trim() : "";
+    return '<ul class="pd-list">' + t.features.map(function (f) { var i = f.indexOf(":"), h = i > 0 ? f.slice(0, i) : f, rest = i > 0 ? f.slice(i + 1).trim() : "";
       return '<li>' + I(FICO(f), "xs") + (rest ? '<details class="pd-more"><summary>' + h + '</summary><p class="small muted">' + rest + '</p></details>' : '<span>' + h + '</span>') + '</li>'; }).join("") + '</ul>' +
       '<p class="small muted">Visits Per Year: ' + t.visits + '</p>' +
       '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
   }
-  /* Plan features from pricing-config.js, minus "Selling? Gift the Buyers 3 Months Free" (held by Legal; removed Nov 11). */
-  function feats(k) { return (P.tiers[k].features || []).filter(function (f) { return !/^Selling\?/i.test(f); }); }
   function planCard(k, ord) {
     var t = P.tiers[k], inc = t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
@@ -487,7 +487,7 @@
     function go(d) { var i = Math.max(0, Math.min(cards.length - 1, idx() + d)); row.scrollTo({ left: cards[i].offsetLeft - cards[0].offsetLeft, behavior: "smooth" }); }
     root.querySelector(".ic-prev").addEventListener("click", function () { go(-1); });
     root.querySelector(".ic-next").addEventListener("click", function () { go(1); });
-    function open(k, from) { var t = P.tiers[k], f = feats(k), lead = "";
+    function open(k, from) { var t = P.tiers[k], f = t.features.slice(), lead = "";
       if (/^Everything in/.test(f[0])) lead = f.shift();
       show(t.label + " · What's Included", lead, f.map(function (x) { var i = x.indexOf(":"); return '<li>' + I(FICO(x), "xs") + '<span>' + (i > 0 ? '<b>' + x.slice(0, i) + '</b>: ' + x.slice(i + 1).trim() : x) + '</span></li>'; }).join(""), "Get Started", from); }
     /* A la carte pop-up: only facts from P.addons (desc, unit, low, high, note). Parts with no fact are left out. */
@@ -564,8 +564,8 @@
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + (P.lastMinute || []).filter(function (a) { return a.home; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
-      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. Your tech logs your equipment at your first visit.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
+      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
@@ -730,11 +730,12 @@
   }
   function acc(t, body) { return '<details class="acc"><summary class="mw-hover">' + t + '</summary><div class="acc-body">' + body + '</div></details>'; }
 
-  /* Coming back later: Resume Card (Info Gather Deck). Counts onboarding steps reached. */
+  /* Coming back later: Resume Card (Info Gather Deck). */
+  /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
   function hasResume() { return !!S.resume && isOb(S.resume); }
   function resumeCard() {
     var done = Math.max(0, OB.indexOf(S.resume));
-    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' steps done</small></div>' +
+    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' questions answered</small></div>' +
       '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">&times;</button>' +
       '<span class="hm-resume-btns"><button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button><button class="btn btn-outline mw-hover" data-act="startOver" type="button">Start Over</button></span></div>';
   }
@@ -744,13 +745,12 @@
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
   var OB = ["address", "basics", "systems", "addons", "plan", "billing", "access", "start", "accept"];
   var OB_NAME = { address: "Your Address", basics: "Home Basics", systems: "Your Systems", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", accept: "Accept" };
-  /* Onboarding Flow Deck (b4c76e3): option A is built for every card. To switch a card to B, set its key to "B" here.
-     Preview without editing: ?ob=stepper:B,plan:B,billing:B,accept:B,basics:B (any subset). Each key adds class ob-<key>-a / ob-<key>-b on the screen. */
-  var OB_STYLE = { stepper: "A", plan: "A", billing: "A", accept: "A", basics: "A" };
-  (function () { try { var m = /[?&]ob=([^&#]+)/.exec(location.search); if (!m) return; decodeURIComponent(m[1]).split(",").forEach(function (p) { var kv = p.split(":"); if (OB_STYLE[kv[0]] && /^[AB]$/.test(kv[1])) OB_STYLE[kv[0]] = kv[1]; }); } catch (e) {} })();
+  /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
+  /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
+  var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
   function obCls() { return Object.keys(OB_STYLE).map(function (k) { return "ob-" + k + "-" + OB_STYLE[k].toLowerCase(); }).join(" "); }
   /* Founding 50 (Machan Nov 11): 2 years for the price of 1 is shown and preselected automatically while founding spots last; no code needed.
-     Set open to false when the 50 spots are gone. Annual then becomes 10% off on every plan (P.platinumAnnualDiscount), and it never combines with the 2-for-1. */
+     Set open to false when the 50 spots are gone. There is no other annual offer (Machan 4:02 PM ICT Nov 11: no 10% annual discount), so only Monthly is offered then. */
   var FOUNDING = { open: true };
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
@@ -787,16 +787,15 @@
   }
   function planTag(k) { return [P.tiers[k || S.tier].label].concat(extraTags()).join(" · "); }
   function moLabel(annual) { return "+" + money(monthlyOf(annual)) + "/mo"; }
-  /* Billing (Machan Nov 11): founding = pay 1 year at the quoted plan price, get 2 years. monthly = plan price each month, charged on the start date.
-     annual (after the first 50) = 10% off every plan. Add-ons are billed at their own config price and are not part of either offer. */
-  function obPlan() { var p = S.plan; if (p === "monthly") return p; return FOUNDING.open ? "founding" : "annual"; }
+  /* Billing (Machan Nov 11, updated 4:02 PM ICT): founding = pay 1 year of plan + add-ons, get 2 years (add-ons included in the 2-for-1).
+     monthly = plan + add-ons each month, first charge today at sign-up, then on that date each month. No 10% annual path. */
+  function obPlan() { var p = S.plan; if (p === "monthly" || !FOUNDING.open) return "monthly"; return "founding"; }
   function obBill(tier) {
     tier = tier || S.tier;
     var mem = price()[tier], add = addonsAnnual(), plan = obPlan();
     var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(add) };
     if (plan === "founding") { r.label = "Annual · Founding 2-For-1"; r.long = "Founding Member: 2 Years For The Price Of 1"; r.today = mem + add; r.termMonths = 24; }
-    else if (plan === "annual") { var disc = Math.max(round(mem * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1668); r.membership = disc; r.save = mem - disc; r.label = "Annual · 10% Off"; r.long = "You're Saving 10% By Paying Annually"; r.today = disc + add; r.termMonths = 12; }
-    else { r.label = "Monthly"; r.long = "Monthly, Charged On Your Start Date"; r.today = 0; r.perCharge = r.monthly + r.addonsMonthly; r.termMonths = 12; }
+    else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge; r.termMonths = 12; }
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored to Your Home &middot; Warranties Checked</p>'; }
@@ -911,30 +910,35 @@
 
   /* 6. Billing: founding 2-for-1 annual preselected vs monthly. Deck card 3: A segmented control, B stacked cards. */
   function obBilling() {
-    var plan = obPlan(), annualKey = FOUNDING.open ? "founding" : "annual", t = P.tiers[S.tier];
-    var an = (function () { var s = S.plan; S.plan = annualKey; var r = obBill(); S.plan = s; return r; })();
+    var plan = obPlan(), t = P.tiers[S.tier];
+    var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
     var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
-    var aSel = plan !== "monthly";
-    var annualCopy = FOUNDING.open ? "Pay one year at the " + esc(t.label) + " plan price, get two years of care." : "You're saving 10% by paying annually.";
-    var monthlyCopy = FOUNDING.open ? "Pay monthly, charged on your start date each month. Switch to annual and get 2 years for the price of 1." : "Save 10% by paying annually. Monthly is charged on your start date each month.";
-    var addNote = an.addonsAnnual ? " Includes add-ons " + money(an.addonsAnnual) + "/yr." : "";
+    var aSel = plan === "founding";
+    var annualCopy = "Pay one year of your " + esc(t.label) + " plan" + (an.addonsAnnual ? " and add-ons" : "") + ", get two years of care.";
+    var monthlyCopy = "First charge today, then on this date each month." + (FOUNDING.open ? " Switch to annual and get 2 years for the price of 1." : "");
+    var addNote = an.addonsAnnual ? " Includes add-ons " + money(an.addonsAnnual) + "/yr, also 2 years for the price of 1." : "";
     function annualCard(sel, withDue) {
-      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="' + annualKey + '"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="badge-found">' + (FOUNDING.open ? "Founding 2-For-1" : "Save 10%") + '</span></div>' +
-        (FOUNDING.open ? '<p class="bill-lead">Founding Member: 2 Years For The Price Of 1</p>' : '') + '<p class="bill-copy">' + annualCopy + '</p>' +
+      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="founding"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="badge-found">Founding 2-For-1</span></div>' +
+        '<p class="bill-lead">Founding Member: 2 Years For The Price Of 1</p><p class="bill-copy">' + annualCopy + '</p>' +
         (withDue ? '<div class="due-box in"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : '') + '</div>';
     }
     function monthlyCard(sel) {
       return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="monthly"' : '') + '><div class="bill-top"><p class="bill-name">Monthly</p><span class="bill-amt">' + money(mo.perCharge) + '/mo</span></div><p class="bill-copy">' + monthlyCopy + '</p></div>';
     }
+    var moDue = '<div class="due-box"><span class="k">Due Today</span><span class="v">' + money(mo.perCharge) + '</span></div>';
     var body;
-    if (OB_STYLE.billing === "B") {
+    if (!FOUNDING.open) {
+      /* Founding spots gone: Monthly is the only way to pay (no annual option). */
+      body = monthlyCard(true) + '<div class="gap-md"></div>' + moDue;
+    } else if (OB_STYLE.billing === "B") {
       body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualCard(aSel, true) + monthlyCard(!aSel) + '</div>';
     } else {
-      body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aSel ? " on" : "") + '" aria-checked="' + aSel + '" data-ob-bill="' + annualKey + '">Annual</button><button type="button" role="radio" class="mw-hover' + (!aSel ? " on" : "") + '" aria-checked="' + !aSel + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
-        (aSel ? annualCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div><div class="due-box"><span class="k">Each Month</span><span class="v">' + money(mo.perCharge) + '</span></div>');
+      body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aSel ? " on" : "") + '" aria-checked="' + aSel + '" data-ob-bill="founding">Annual<span class="seg-badge">Limited Offer</span></button><button type="button" role="radio" class="mw-hover' + (!aSel ? " on" : "") + '" aria-checked="' + !aSel + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
+        (aSel ? annualCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
     }
-    body += '<p class="due-note">' + (aSel ? (FOUNDING.open ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." : "One year of " + esc(t.label) + ", 10% off.") + addNote + " Monthly is the other choice, charged on your start date." : "Charged on your start date, then on that date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
-    var help = FOUNDING.open ? "Founding members get two years for the price of one, while spots last. Annual is selected." : "Save 10% on any plan when you pay annually.";
+    body += '<p class="due-note">' + (aSel ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." + addNote + " Monthly is the other choice, charged today and then each month."
+      : "Charged today, then on this date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
+    var help = FOUNDING.open ? "Founding members get two years for the price of one, while spots last. Annual is selected." : "Pay monthly. Your first charge is today.";
     return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Access", true));
   }
 
@@ -955,7 +959,7 @@
     var d = S.firstVisit && S.firstVisit >= minStart() ? S.firstVisit : "";
     var body = '<label class="fl" for="obDate">First Visit Date</label><input id="obDate" type="date" min="' + minStart() + '" value="' + esc(d) + '">' +
       '<div class="price-confirm ob-blurb"><b>Your First Visit</b><br>' + FIRST_VISIT_BLURB + '</div>' +
-      '<p class="priced-note">Your membership starts on this visit.' + (obPlan() === "monthly" ? " Monthly charges land on this date each month." : "") + ' We confirm the time by text.</p>';
+      '<p class="priced-note">Your membership starts on this visit.' + "" + ' We confirm the time by text.</p>';
     return obShell("start", "clock", 1, "When Should We Start?", "Pick the day for your first visit.", body, nextBtn("Next", !!d));
   }
 
@@ -964,8 +968,8 @@
   function obAccept() {
     var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
     var start = S.firstVisit ? longDate(S.firstVisit) : "";
-    var billTxt = b.plan === "monthly" ? "Monthly" : b.plan === "founding" ? "Annual · Founding 2-For-1" : "Annual · 10% Off";
-    var dueK = b.plan === "monthly" ? "First Charge" : "Due Today", dueV = b.plan === "monthly" ? money(b.perCharge) + (start ? " on " + start : "") : money(b.today);
+    var billTxt = b.plan === "monthly" ? "Monthly" : "Annual · Founding 2-For-1";
+    var dueK = "Due Today", dueV = money(b.today);
     var adds = selectedAddons();
     var recap;
     if (OB_STYLE.accept === "B") {
@@ -980,11 +984,9 @@
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
-    /* Charge-consent text: Legal review, Nov 11 (verbatim). */
+    /* Charge-consent text, verbatim. Founding: Legal review Nov 11. Monthly (charged at sign-up): Legal approved 4:03 PM ICT Nov 11. */
     var consent = b.plan === "monthly"
-      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> on my start date and on that date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days\' notice of any price change. I can cancel anytime in the app under Profile &amp; Account.'
-      : b.plan === "annual"
-      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>12 months</strong> of membership, and that my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.'
+      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> today and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days\' notice of any price change. I can cancel anytime in the app under Profile &amp; Account.'
       : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.';
     /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
     var open = !!AGREEMENT.url;
@@ -1005,7 +1007,7 @@
       '<p class="fl">Signature</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
       '<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (b.plan === "monthly" ? "Accept And Join" : "Accept And Pay " + money(b.today)) + '</button>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + "Accept And Pay " + money(b.today) + '</button>' +
       (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
     return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan, billing and start date.", body, "");
@@ -1185,7 +1187,7 @@
     var su = S.signup || {}, t = su.totals || {}, fv = su.firstVisit || S.firstVisit || "";
     var email = su.email || "";
     try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
-    var paid = t.plan === "monthly" ? ['First Charge', money(t.perCharge) + (fv ? " on " + longDate(fv) : "")] : ['Paid Today', money(t.today || 0)];
+    var paid = ['Paid Today', money(t.today || 0)];
     return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
       '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what happens next, including how to log in.</p>' +
       '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
