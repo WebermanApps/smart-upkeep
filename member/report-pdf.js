@@ -6,7 +6,7 @@
   if(window.SUReportPdf) return;
   var me=(document.currentScript&&document.currentScript.src)||(function(){ var s=document.querySelector('script[src*="report-pdf.js"]'); return s&&s.src; })()||location.href;
   var BASE=new URL("../assets/member/pdf/",me).href;
-  var VER="rp2";
+  var VER="rp3";
   var loading=null, cache={}, busy=false;
 
   function data(){ try{ return (window.SU_REPORT_DATA&&window.SU_REPORT_DATA())||{}; }catch(e){ return {}; } }
