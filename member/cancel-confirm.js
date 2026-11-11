@@ -92,7 +92,33 @@
     p.push(where);
     return p;
   }
-  function successBody(rec) { return successParas(rec).map(function (t) { return "<p>" + t + "</p>"; }).join(""); }
+  var BETA_REFUND_COPY = {
+    title: "Refunds During Beta",
+    body: "Your cancellation is complete. During our beta, our team processes refunds personally and will follow up with you about yours."
+  };
+  /* Prepaid, annual, founding, or any no-visit full refund. Monthly members ending with no refund do not see this. */
+  function refundDue(rec) {
+    if (!rec) return false;
+    if (num(rec.refund) != null && rec.refund > 0) return true;
+    if (rec.noVisit) return true;
+    return false;
+  }
+  function betaRefundNotice(rec) {
+    if (!refundDue(rec)) return "";
+    return '<div class="beta-pay" role="note"><h2 class="beta-pay-h">' + esc(BETA_REFUND_COPY.title) + '</h2><p class="beta-pay-b">' + esc(BETA_REFUND_COPY.body) + "</p></div>";
+  }
+  function successBody(rec) {
+    var html = "", inserted = false;
+    successParas(rec).forEach(function (t) {
+      html += "<p>" + t + "</p>";
+      if (!inserted && refundDue(rec) && /refund/i.test(t)) {
+        html += betaRefundNotice(rec);
+        inserted = true;
+      }
+    });
+    if (!inserted && refundDue(rec)) html += betaRefundNotice(rec);
+    return html;
+  }
   function rowHtml() {
     var rec = record(); if (!rec) return "";
     var sub = rec.type === "end" ? "Cancelled on " + fmt(rec.date) + " · Ends " + fmt(rec.endDate) : "Cancelled on " + fmt(rec.date) + (num(rec.refund) != null && rec.refund > 0 ? " · Refund " + money(rec.refund) : "");
@@ -105,7 +131,7 @@
     if (document.getElementById("suCcCss")) return;
     var s = document.createElement("style"); s.id = "suCcCss";
     s.textContent = ".su-cc{border-left:4px solid #A8431F}.su-cc .su-cc-k{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;background:rgba(193,80,46,.12);color:#A8431F;font:700 12px/1.4 Hind,sans-serif;letter-spacing:.08em;text-transform:uppercase}" +
-      ".su-cc h1,.su-cc .bh{border-left-color:#A8431F}.su-cc-sec{border-left-color:#A8431F!important}.su-cc-id{color:#A8431F;font-weight:700;letter-spacing:.02em}";
+      ".su-cc h1,.su-cc .bh{border-left-color:#A8431F}.su-cc-sec{border-left-color:#A8431F!important}.su-cc-id{color:#A8431F;font-weight:700;letter-spacing:.02em}.beta-pay{background:#F8F2E9;border:1px solid #e6e0d6;border-radius:16px;padding:14px 16px;margin:12px 0}.beta-pay-h{margin:0 0 8px;font:700 1.15rem/1.2 Khand,sans-serif;color:#3a352e}.beta-pay-b{margin:0;font:500 14.5px/1.45 Hind,sans-serif;color:#3a352e}";
     (document.head || document.documentElement).appendChild(s);
   })();
   window.SUCancel = { complete: complete, record: record, successBody: successBody, successParas: successParas, rowHtml: rowHtml, saveBilling: saveBilling, isPrepaid: isPrepaid, showPrepaidLine: showPrepaidLine, askHtml: askHtml, _keys: [KEY_REC, KEY_BILL] };
