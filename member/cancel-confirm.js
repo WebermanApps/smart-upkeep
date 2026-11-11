@@ -25,9 +25,12 @@
     if (inv && inv.length) { paid = 0; inv.forEach(function (x) { var a = amt(x && (x.amount != null ? x.amount : x.amt)); if (a != null) paid += a; }); }
     var done = null;
     if (extra.visits) done = extra.visits.filter(function (v) { var d = new Date(String(v.date) + "T12:00:00"); return !isNaN(+d) && d <= today && v.completed !== false; }).length;
-    set(KEY_BILL, { kind: b.kind || plan.billing || (M && M.billing) || "", planCharge: num(b.planCharge), prepaidBalance: num(b.prepaidBalance),
+    var annualPaid = num(b.planCharge);
+    if (annualPaid == null && M) annualPaid = num(M.annualPaid);
+    if (annualPaid == null && plan) annualPaid = num(plan.annualPaid);
+    set(KEY_BILL, { kind: b.kind || plan.billing || (M && M.billing) || "", planCharge: num(b.planCharge) != null ? num(b.planCharge) : annualPaid, prepaidBalance: num(b.prepaidBalance),
       workDone: num(b.workDone != null ? b.workDone : b.workDoneAmount), nextCharge: b.nextCharge || (CL && CL.renewDate) || null,
-      completedVisits: done, paid: paid });
+      completedVisits: done, paid: paid, annualPaid: annualPaid, founding: !!(M && M.founding) || !!(plan && plan.founding) });
   }
   function billing(CL, M) {
     var s = get(KEY_BILL) || {};
@@ -80,6 +83,8 @@
       try { console.warn("[Smart Upkeep] Full refund due but amount unknown. Confirmation " + rec.id + (who ? " (" + who + ")" : "") + ". Issue the refund of everything paid."); } catch (e) {}
       try { if (window.SUEvents) SUEvents.emit("refund.amount_missing", "billing", { member: who, payload: { confirmation: rec.id, date: rec.date, reason: "Zero completed visits; amount paid unknown", app: base() } }); } catch (e) {}
     }
+    if (b.kind) rec.kind = b.kind;
+    if (!monthly) rec.prepaid = true;
     set(KEY_REC, rec);
     return rec;
   }
@@ -96,11 +101,19 @@
     title: "Refunds During Beta",
     body: "Your cancellation is complete. During our beta, our team processes refunds personally and will follow up with you about yours."
   };
-  /* Prepaid, annual, founding, or any no-visit full refund. Monthly members ending with no refund do not see this. */
+  /* Prepaid, annual, or founding-annual, even when the dollar amount is not computed yet. Monthly members ending with no refund do not see this. */
   function refundDue(rec) {
     if (!rec) return false;
     if (num(rec.refund) != null && rec.refund > 0) return true;
     if (rec.noVisit) return true;
+    if (rec.type === "end") return false;
+    var b = get(KEY_BILL) || {};
+    var kind = rec.kind || b.kind || "";
+    if (isMonthly(kind)) return false;
+    if (kind) return true;
+    if (num(rec.annualPaid) != null || num(b.annualPaid) != null) return true;
+    if (num(b.planCharge) != null) return true;
+    if (rec.prepaid || rec.founding || b.founding) return true;
     return false;
   }
   function betaRefundNotice(rec) {
