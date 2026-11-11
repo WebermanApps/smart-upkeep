@@ -207,8 +207,10 @@
     }
     function page(){ newPage(); header(); }
     function ensure(h){ if(y+h>H-58) page(); }
-    function heading(t, sub){
-      ensure(sub?60:44);
+    /* Keep-with-next: the heading, its subline and the first block/tile row (next = the space that block asks ensure() for) share a page. */
+    function heading(t, sub, next){
+      var hb=(y>150?12:0)+16+(sub?12:0);
+      if(y+hb+(next||0)>H-58) page();
       if(y>150) y+=12;
       font(d,"Khand","semibold",15,INK); d.text(t, MX, y); y+=8;
       if(sub){ font(d,"Hind","normal",9,MUTED); y+=8; d.text(sub, MX, y); y+=4; }
@@ -240,8 +242,8 @@
     /* ---- summary + Task Cards (B) ---- */
     page();
     if(v.note){
-      heading("Visit Summary");
       var nl=wrap(v.note, CW, "Hind","normal",10);
+      heading("Visit Summary", null, nl.length*14+6);
       ensure(nl.length*14+6); font(d,"Hind","normal",10,INK2); d.text(nl, MX, y, {lineHeightFactor:1.4}); y+=nl.length*14+10;
     }
     (v.finds||[]).forEach(function(f){
@@ -255,8 +257,7 @@
       if(bl.length){ font(d,"Hind","normal",9.5,INK); d.text(bl, MX+14, y+18+tl.length*13, {lineHeightFactor:1.4}); }
       y+=h+10;
     });
-    heading("What We Did");
-    bs.forEach(function(b,i){
+    function taskBox(b){
       var name=titleCase(clean(b.task)), st=steps(b.task);
       var tl=wrap(name, CW-44, "Khand","semibold",12);
       var rows=st.map(function(s){ return wrap(s, CW-46, "Hind","normal",9); });
@@ -267,6 +268,11 @@
       notes.forEach(function(n){ h+=n.length*12.5+6; });
       if(moist) h+=10+moist.length*15+14;
       h+=8;
+      return {tl:tl, rows:rows, notes:notes, moist:moist, h:h};
+    }
+    heading("What We Did", null, bs.length?taskBox(bs[0]).h+8:0);
+    bs.forEach(function(b,i){
+      var tb=taskBox(b), tl=tb.tl, rows=tb.rows, notes=tb.notes, moist=tb.moist, h=tb.h;
       ensure(h+8);
       d.setFillColor("#FFFFFF"); d.setDrawColor(LINE); d.setLineWidth(.7); d.roundedRect(MX, y, CW, h, 5, 5, "FD");
       var yy=y+12+11;
@@ -299,16 +305,22 @@
     var um=(bs._unmapped&&bs._unmapped.photos||[]).filter(function(k){return imgs[k]});
     if(um.length) groups.push({t:"More Photos From This Visit", ph:um});
     if(!groups.length){
-      heading("Visit Photos");
+      heading("Visit Photos", null, 20);
       ensure(20); font(d,"Hind","normal",9.5,INK2); d.text("No Photos On This Visit.", MX, y); y+=18;
     } else {
-      heading("Visit Photos", "Photos From Your Technician, Grouped By Task.");
-      groups.forEach(function(gp){
-        var cw=(CW-24-10)/2, rowsH=[];
+      var pcw=(CW-24-10)/2;
+      function photoRows(gp){
+        var rowsH=[];
         for(var i=0;i<gp.ph.length;i+=2){
-          var hs=gp.ph.slice(i,i+2).map(function(k){ var im=imgs[k]; return Math.min(190, cw*im.h/im.w); });
+          var hs=gp.ph.slice(i,i+2).map(function(k){ var im=imgs[k]; return Math.min(190, pcw*im.h/im.w); });
           rowsH.push(Math.max.apply(null,hs)+22);
         }
+        return rowsH;
+      }
+      var r0=photoRows(groups[0]), g0=34+r0.reduce(function(a,b){return a+b},0)+4;
+      heading("Visit Photos", "Photos From Your Technician, Grouped By Task.", Math.min(g0, 34+r0[0]+8)+8);
+      groups.forEach(function(gp){
+        var cw=pcw, rowsH=photoRows(gp);
         var h=34+rowsH.reduce(function(a,b){return a+b},0)+4;
         ensure(Math.min(h, 34+rowsH[0]+8)+8);
         if(y+h>H-58){ page(); }
@@ -333,9 +345,10 @@
     /* ---- System Tiles (B) ---- */
     var sys=systems();
     if(sys.length){
-      var now=new Date(); heading("Systems Snapshot", "Your Systems As Of "+MONTHS[now.getMonth()]+" "+now.getDate()+", "+now.getFullYear()+".");
       var gap=8, tw=(CW-2*gap)/3, rowBuf=[];
       function tileHeight(units){ return 12+16+units*0+4*13.5+10; }
+      function groupHeight(gp){ return 12+16+Math.ceil(gp.units.length/3)*(14+4*13.5+6)+4; }
+      var now=new Date(); heading("Systems Snapshot", "Your Systems As Of "+MONTHS[now.getMonth()]+" "+now.getDate()+", "+now.getFullYear()+".", (sys[0].units.length===1?tileHeight(1):groupHeight(sys[0]))+gap);
       function drawFields(s, x, yy, w){
         fieldsOf(s).forEach(function(f){
           font(d,"Hind","semibold",7.5,MUTED); d.text(f[0], x, yy);
@@ -365,7 +378,7 @@
         if(gp.units.length===1){ rowBuf.push(gp); if(rowBuf.length===3) flush(); return; }
         flush();
         var per=3, nrow=Math.ceil(gp.units.length/per), uw=(CW-18-(per-1)*12)/per;
-        var h=12+16+nrow*(14+4*13.5+6)+4;
+        var h=groupHeight(gp);
         ensure(h+gap);
         frame(MX, y, CW, h, gp.extra);
         font(d,"Khand","semibold",11,INK); d.text(titleCase(gp.title), MX+9, y+19);
