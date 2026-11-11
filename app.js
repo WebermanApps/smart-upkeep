@@ -46,16 +46,19 @@
     s=String(s||"").replace(/\s+/g," ").trim();
     var keep={AC:1,CO:1,ID:1};
     return s.split(" ").map(function(w){
-      var bare=w.replace(/[^A-Za-z]/g,"");
-      if(keep[bare.toUpperCase()]) return w.replace(bare,bare.toUpperCase());
       if(!w) return w;
-      return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();
+      return w.split("-").map(function(p){
+        var bare=p.replace(/[^A-Za-z]/g,"");
+        if(keep[bare.toUpperCase()]) return p.replace(bare,bare.toUpperCase());
+        if(!p) return p;
+        return p.charAt(0).toUpperCase()+p.slice(1).toLowerCase();
+      }).join("-");
     }).join(" ");
   }
   function suClose(a,b){
     a=suNorm(a); b=suNorm(b);
     if(!a||!b) return false;
-    return a===b || a.indexOf(b)>=0 || b.indexOf(a)>=0;
+    return a===b;
   }
   function suCatalogByLabels(labels, pool, once){
     return labels.map(function(label, i){
@@ -79,15 +82,16 @@
     var pool=[];
     Object.keys((P&&P.extras)||{}).forEach(function(k){
       var e=P.extras[k]; if(!e) return;
-      pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all});
+      pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all, fromExtras:true});
     });
     pool=pool.concat(P.addons||[]);
     return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false);
   }
   function onceAddonCatalog(){
-    var pool=(P.lastMinute||[]).concat(P.addons||[]);
+    var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; o.draft=true; return o; });
+    var pool=lm.concat(P.addons||[]);
     var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
-    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; });
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(a.fromLastMinute||a.draft){ a.quoteRequired=true; a.price=null; } });
     return rows;
   }
 
@@ -102,8 +106,22 @@
   function serviceOncePrice(a) { if (a.quoteRequired) return 0; return a.price != null ? a.price : (a.annual || 0); }
   /* Oct 15 (Max 19:11-19:19 ICT): add-ons show ONLY the added monthly price. No add-on has its own monthly figure in pricing-config.js, so monthly = annual / 12, rounded (monthlyOf). */
   /* TODO(quoteRequired): ping-to-CC for quote requests is NOT built yet. Quote items stay in S.addons / S.lastMinute and ride the normal request/submit flow at $0; ops must follow up manually until a CC notification is wired. */
-  var QUOTE_LABEL = "Get a Quote";
-  function addMo(a) { if (a.quoteRequired) return QUOTE_LABEL; return "+" + money(monthlyOf(a.annual)) + "/month"; }
+  var QUOTE_LABEL = "Quote";
+  function hasRealMonthly(a){
+    return !!(a && a.fromExtras && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0 && !a.draft);
+  }
+  function hasRealOncePrice(a){
+    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && !a.fromLastMinute && isFinite(+a.price) && +a.price>0);
+  }
+  function needsSiteVisit(label){
+    var n=String(label||"").toLowerCase();
+    return /window/.test(n)&&/wash/.test(n);
+  }
+  function addMo(a) {
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (hasRealMonthly(a)) return "+" + money(monthlyOf(a.annual)) + "/mo";
+    return QUOTE_LABEL;
+  }
   function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
     return '<div class="addon-list">' + items.map(function (ad) {
       var on = selectedIds.indexOf(ad.id) > -1;
@@ -330,7 +348,7 @@
   var ADDON_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmLeakSensors: "bell", lmSumpBackup: "meter", lmHoodFilter: "spray", lmBathFan: "duct", lmThermostat: "furnace" };
   /* Limits per a-la-carte item: only what pricing-config.js desc/unit already says. Missing = not in repo (reported as a gap). */
   var AC_LIMITS = { windows: "Outside glass only.", carpet: "One whole-home clean a year.", chimney: "Wood-burning chimneys.", lights: "One fall install and one take-down after the holidays.", radon: "One test for your home.", guttersExtra: "One extra cleaning.", lmLeakSensors: "Up to 3 sensors set up. Sensors included.", lmSumpBackup: "Homes with an existing sump pit.", lmHoodFilter: "One range hood.", lmBathFan: "Up to 3 bathroom fans.", lmThermostat: "One thermostat." };
-  function priceRange(a) { if (a.quoteRequired) return QUOTE_LABEL; return a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high); }
+  function priceRange(a) { if (needsSiteVisit(a && a.label)) return "Needs A Site Visit"; if (a.quoteRequired || a.low==null || a.high==null || a.low !== a.high) return QUOTE_LABEL; return money(a.low); }
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -933,7 +951,16 @@
   }
 
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
-  function aoPrice(a) { return a.quoteRequired ? "Get A Quote" : moLabel(a.annual); }
+  function aoPrice(a) {
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (a && a.once) {
+      if (hasRealOncePrice(a)) return money(+a.price);
+      return QUOTE_LABEL;
+    }
+    if (hasRealMonthly(a)) return moLabel(a.annual);
+    if (hasRealOncePrice(a)) return money(+a.price);
+    return QUOTE_LABEL;
+  }
   function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return d + (a.quoteRequired ? " We'll follow up with a price." : ""); }
   function obAddons() {
     var sel = S.addons || [];
@@ -1206,7 +1233,8 @@
     return selectedAlacarte().reduce(function (s, a) { return s + serviceOncePrice(a); }, 0);
   }
   function oncePriceLabel(a) {
-    if (a.quoteRequired) return QUOTE_LABEL;
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (a.quoteRequired || !hasRealOncePrice(a)) return QUOTE_LABEL;
     if (a.price != null) return money(a.price);
     return money(a.annual) + (a.unit === "season" ? "/Season" : "");
   }
