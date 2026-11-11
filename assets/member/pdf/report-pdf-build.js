@@ -190,7 +190,7 @@
 
   function Report(d, v, imgs){
     var m=member(), plan=planName(v), accent=ACCENTS[plan]||ACCENTS.Plus, lab=reportLabel(v);
-    var bs=bundles(v), y=0, first=d.getNumberOfPages()+1, isFirstDoc=d.__used;
+    var bs=bundles(v), y=0, first=0;
     var VERSO=lab.label+" \u00b7 "+m.name;
     function newPage(){ if(d.__used) d.addPage("letter","portrait"); d.__used=true; }
     function header(){
@@ -218,6 +218,7 @@
 
     /* ---- cover: Full Cover (A) ---- */
     newPage();
+    first=d.getNumberOfPages();
     drawLogo(d, MX+4, 70, 168, accent);
     d.setDrawColor(accent); d.setLineWidth(3); d.line(MX, 176, MX+112, 176);
     font(d,"Hind","medium",8.5,MUTED); d.text("Visit Report", MX, 196);
