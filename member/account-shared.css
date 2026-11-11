@@ -80,7 +80,7 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .faq summary::after{content:"+";color:var(--mute);font-weight:700}
 .faq details[open] summary::after{content:"\2212"}
 .faq p{margin:0 0 12px;color:var(--ink2);font-size:14.5px}
-.ft{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 14px calc(28px + env(safe-area-inset-bottom));color:var(--mute);font-size:13px;text-align:center}
+.ft{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 16px calc(28px + env(safe-area-inset-bottom));color:var(--mute);font-size:13px;text-align:center}
 .ft .brand{display:inline-flex;align-items:center;gap:8px;font:600 17px/1 "Khand";letter-spacing:.04em;color:var(--ink2)}
 .ft .brand img{height:18px}
 .machan-ft,.machan-ft a{color:inherit;text-decoration:none}

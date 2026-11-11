@@ -14,7 +14,7 @@ URL: https://smartupkeep.ai/console/ (behind the same password gate as the rest 
   "member": "Jordan Sample", "tech": null, "ts": "2026-10-17T03:40:00.000Z",
   "payload": { }, "sample": false }
 ```
-Types in use: visit.requested, visit.reschedule_requested, addon.ordered, plan.paused, message.sent, photo.added, settings.changed (member); tech.checkin, tech.checkout, photo.arrival, report.submitted, moisture.wet, inventory.logged, inventory.restocked, message.sent (tech); site.visit, scan.started, quote.generated, signup.completed, addon.clicked, waitlist.joined, alacarte_open (site); tech.enroute (tech, Navigate); ask.question and ask.safety (Ask Anything, sample only for now); payment.failed (billing, sample only for now).
+Types in use: visit.requested, visit.reschedule_requested, addon.ordered, plan.paused, message.sent, photo.added, settings.changed (member); tech.checkin, tech.checkout, photo.arrival, report.submitted, moisture.wet, inventory.logged, inventory.restocked, message.sent (tech); site.visit, scan.started, quote.generated, signup.completed, addon.clicked, waitlist.joined, alacarte_open (site); tech.enroute (tech, Navigate); ask.question and ask.safety (Ask Anything, sample only for now); payment.failed (billing, sample only for now); refund.amount_missing (billing: a zero-visit cancel whose amount paid is unknown, payload.confirmation = the member's confirmation #, so the full refund still gets issued).
 
 ## Swapping to Supabase later
 1. Create the table `events (id text primary key, type text, app text, member text, tech text, ts timestamptz default now(), payload jsonb, sample bool default false)`. Turn on Row Level Security: apps may insert, and only staff may select.

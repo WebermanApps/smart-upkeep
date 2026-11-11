@@ -1,6 +1,8 @@
 /* Smart Upkeep member cancel confirmation (Legal-approved success copy, Nov 11 2026).
    One record per member app (/member/, /member/brett/, /member/weberman/), saved in localStorage until a backend exists.
-   Record: {id, date, type: "now" | "end", endDate, refund}. Refund = prepaid minus work done, from CL.billing; omitted when 0 or unknown. */
+   Record: {id, date, type: "now" | "end", endDate, refund}. Refund = prepaid minus work done, from CL.billing; omitted when 0 or unknown.
+   Zero completed visits (any plan): full refund of everything paid. If that amount is unknown the record gets refundAmountMissing: true,
+   a console.warn, and a "refund.amount_missing" event in the operator console store (su.events.v1) so the refund still gets issued. */
 (function () {
   var SUB = /(cancel|profile|billing|help|notifications|sign-out)\/$/;
   function base() { var p = location.pathname.replace(/index\.html$/, ""); if (!/\/$/.test(p)) p += "/"; return p.replace(SUB, ""); }
@@ -58,9 +60,11 @@
   function record() { return get(KEY_REC); }
   /* Confirm screen: prepaid/annual members get the refund rule line under "Cancel anytime, no fee." */
   function isPrepaid(M) { var b = get(KEY_BILL) || {}; return !isMonthly(b.kind || (M && M.billing) || ""); }
+  /* The prepaid rule line only applies once work has been done; zero-visit members get a full refund, so no line. */
+  function showPrepaidLine(M) { var b = get(KEY_BILL) || {}; return isPrepaid(M) && b.completedVisits !== 0; }
   function askHtml(M, tag) {
     tag = tag || "h2 class=\"bh\""; var close = tag.split(" ")[0];
-    return "<" + tag + ">Cancel Your Membership?</" + close + "><p>Cancel anytime, no fee.</p>" + (isPrepaid(M) ? "<p>Any refund is prepaid minus work done.</p>" : "");
+    return "<" + tag + ">Cancel Your Membership?</" + close + "><p>Cancel anytime, no fee.</p>" + (showPrepaidLine(M) ? "<p>Any refund is prepaid minus work done.</p>" : "");
   }
   function complete(CL, M, today) {
     var have = record(); if (have) return have;
@@ -70,6 +74,12 @@
     var noVisit = b.completedVisits === 0;
     var rec = noVisit ? { id: newId(today), date: iso(today), type: "now", endDate: null, refund: num(b.paid) != null && b.paid > 0 ? b.paid : null, noVisit: true }
       : { id: newId(today), date: iso(today), type: monthly ? "end" : "now", endDate: monthly ? monthlyEnd(b, today) : null, refund: monthly ? null : refundOf(b) };
+    if (noVisit && rec.refund == null) {
+      rec.refundAmountMissing = true;
+      var who = M && (M.first || M.last) ? ((M.first || "") + " " + (M.last || "")).trim() : null;
+      try { console.warn("[Smart Upkeep] Full refund due but amount unknown. Confirmation " + rec.id + (who ? " (" + who + ")" : "") + ". Issue the refund of everything paid."); } catch (e) {}
+      try { if (window.SUEvents) SUEvents.emit("refund.amount_missing", "billing", { member: who, payload: { confirmation: rec.id, date: rec.date, reason: "Zero completed visits; amount paid unknown", app: base() } }); } catch (e) {}
+    }
     set(KEY_REC, rec);
     return rec;
   }
@@ -77,7 +87,8 @@
     var where = "You can view this confirmation anytime in the app under Profile &amp; Account.";
     if (rec.type === "end") return ["Your membership is cancelled and ends on " + esc(fmt(rec.endDate)) + ". You won't be charged after that. Confirmation #" + esc(rec.id) + ". " + where];
     var p = ["Your membership is cancelled. You won't be charged again. Cancelled on " + esc(fmt(rec.date)) + ", confirmation #" + esc(rec.id) + "."];
-    if (num(rec.refund) != null && rec.refund > 0) p.push(rec.noVisit ? "Your full refund of " + money(rec.refund) + " will go back to your original payment method." : "Your refund of " + money(rec.refund) + " (prepaid minus work done) will go back to your original payment method.");
+    if (rec.noVisit && !(num(rec.refund) != null && rec.refund > 0)) p.push("Your full refund will go back to your original payment method.");
+    else if (num(rec.refund) != null && rec.refund > 0) p.push(rec.noVisit ? "Your full refund of " + money(rec.refund) + " will go back to your original payment method." : "Your refund of " + money(rec.refund) + " (prepaid minus work done) will go back to your original payment method.");
     p.push(where);
     return p;
   }
@@ -97,5 +108,5 @@
       ".su-cc h1,.su-cc .bh{border-left-color:#A8431F}.su-cc-sec{border-left-color:#A8431F!important}.su-cc-id{color:#A8431F;font-weight:700;letter-spacing:.02em}";
     (document.head || document.documentElement).appendChild(s);
   })();
-  window.SUCancel = { complete: complete, record: record, successBody: successBody, successParas: successParas, rowHtml: rowHtml, saveBilling: saveBilling, isPrepaid: isPrepaid, askHtml: askHtml, _keys: [KEY_REC, KEY_BILL] };
+  window.SUCancel = { complete: complete, record: record, successBody: successBody, successParas: successParas, rowHtml: rowHtml, saveBilling: saveBilling, isPrepaid: isPrepaid, showPrepaidLine: showPrepaidLine, askHtml: askHtml, _keys: [KEY_REC, KEY_BILL] };
 })();

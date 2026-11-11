@@ -267,7 +267,7 @@
     var f = document.getElementById("cxF"); if (!f) return;
     f.addEventListener("submit", function (e) { e.preventDefault(); var v = document.getElementById("cxEmail").value.trim(), er = document.getElementById("e-cxEmail");
       if (!/^\S+@\S+\.\S+$/.test(v)) { er.textContent = "Enter email."; return; } er.textContent = ""; f.hidden = true;
-      document.getElementById("cxDone").textContent = "Cancellation received. You will get a confirmation email with your refund amount."; });
+      document.getElementById("cxDone").textContent = "Cancellation received."; });
   }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
