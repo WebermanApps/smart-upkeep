@@ -14,13 +14,20 @@
   function set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
   /* Member home saves its billing source so the stand-alone cancel page can use the same amounts. */
-  function saveBilling(CL, M) {
-    var b = (CL && CL.billing) || {}, plan = (CL && CL.plan) || {};
+  function amt(v) { if (typeof v === "number") return v; var n = parseFloat(String(v || "").replace(/[^0-9.]/g, "")); return isFinite(n) ? n : null; }
+  /* extra.visits: the member's visit history; completed = dated today or earlier. invoices: what has been paid. */
+  function saveBilling(CL, M, extra) {
+    extra = extra || {};
+    var b = (CL && CL.billing) || {}, plan = (CL && CL.plan) || {}, today = extra.today || new Date();
+    var inv = (CL && (CL.invoices || b.invoices)) || extra.invoices || null, paid = null;
+    if (inv && inv.length) { paid = 0; inv.forEach(function (x) { var a = amt(x && (x.amount != null ? x.amount : x.amt)); if (a != null) paid += a; }); }
+    var done = null;
+    if (extra.visits) done = extra.visits.filter(function (v) { var d = new Date(String(v.date) + "T12:00:00"); return !isNaN(+d) && d <= today && v.completed !== false; }).length;
     set(KEY_BILL, { kind: b.kind || plan.billing || (M && M.billing) || "", planCharge: num(b.planCharge), prepaidBalance: num(b.prepaidBalance),
-      workDone: num(b.workDone != null ? b.workDone : b.workDoneAmount), nextCharge: b.nextCharge || (CL && CL.renewDate) || null });
+      workDone: num(b.workDone != null ? b.workDone : b.workDoneAmount), nextCharge: b.nextCharge || (CL && CL.renewDate) || null,
+      completedVisits: done, paid: paid });
   }
   function billing(CL, M) {
-    if (CL && CL.billing) { saveBilling(CL, M); }
     var s = get(KEY_BILL) || {};
     if (!s.kind && M && M.billing) s.kind = M.billing;
     return s;
@@ -49,11 +56,20 @@
     return "SU-" + String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0") + "-" + s;
   }
   function record() { return get(KEY_REC); }
+  /* Confirm screen: prepaid/annual members get the refund rule line under "Cancel anytime, no fee." */
+  function isPrepaid(M) { var b = get(KEY_BILL) || {}; return !isMonthly(b.kind || (M && M.billing) || ""); }
+  function askHtml(M, tag) {
+    tag = tag || "h2 class=\"bh\""; var close = tag.split(" ")[0];
+    return "<" + tag + ">Cancel Your Membership?</" + close + "><p>Cancel anytime, no fee.</p>" + (isPrepaid(M) ? "<p>Any refund is prepaid minus work done.</p>" : "");
+  }
   function complete(CL, M, today) {
     var have = record(); if (have) return have;
     today = today || new Date();
     var b = billing(CL, M), monthly = isMonthly(b.kind);
-    var rec = { id: newId(today), date: iso(today), type: monthly ? "end" : "now", endDate: monthly ? monthlyEnd(b, today) : null, refund: monthly ? null : refundOf(b) };
+    /* Agreement 7.2: a monthly member with no completed visit (incl. the Starter Visit) cancels effective now with a full refund of everything paid. */
+    var noVisit = monthly && b.completedVisits === 0;
+    var rec = noVisit ? { id: newId(today), date: iso(today), type: "now", endDate: null, refund: num(b.paid) != null && b.paid > 0 ? b.paid : null, noVisit: true }
+      : { id: newId(today), date: iso(today), type: monthly ? "end" : "now", endDate: monthly ? monthlyEnd(b, today) : null, refund: monthly ? null : refundOf(b) };
     set(KEY_REC, rec);
     return rec;
   }
@@ -81,5 +97,5 @@
       ".su-cc h1,.su-cc .bh{border-left-color:#A8431F}.su-cc-sec{border-left-color:#A8431F!important}.su-cc-id{color:#A8431F;font-weight:700;letter-spacing:.02em}";
     (document.head || document.documentElement).appendChild(s);
   })();
-  window.SUCancel = { complete: complete, record: record, successBody: successBody, successParas: successParas, rowHtml: rowHtml, saveBilling: saveBilling, _keys: [KEY_REC, KEY_BILL] };
+  window.SUCancel = { complete: complete, record: record, successBody: successBody, successParas: successParas, rowHtml: rowHtml, saveBilling: saveBilling, isPrepaid: isPrepaid, askHtml: askHtml, _keys: [KEY_REC, KEY_BILL] };
 })();
