@@ -162,3 +162,5 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .ob-addr span{color:#525252}
 .ob .ob-slot{display:inline-block;padding:.35rem .6rem;border:1.5px dashed var(--mw-terracotta);border-radius:.5rem;color:var(--mw-terracotta-deep);font-weight:600}
 .ob .ob-wait{margin-top:.8rem}
+.ob .ob-accept-form .btn-big:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.ob .ob-soon{text-align:center;margin:.25rem 0 0}

@@ -564,7 +564,7 @@
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + (P.lastMinute || []).filter(function (a) { return a.home; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", "Free Months: Added at End of Term, Apply Once You Complete It", "Stay Offer: 6+ Months, 1 Month Free. 1+ Year, 2 Months Free.", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. Your tech logs your equipment at your first visit.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
@@ -980,11 +980,16 @@
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
+    /* Charge-consent text: Legal review, Nov 11 (verbatim). */
     var consent = b.plan === "monthly"
-      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> on my start date and on that date each month, and that my membership <strong>renews automatically</strong> as described in the Member Agreement until I cancel.'
-      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today, and that my membership <strong>renews automatically</strong> as described in the Member Agreement until I cancel.';
+      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> on my start date and on that date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days\' notice of any price change. I can cancel anytime in the app under Profile &amp; Account.'
+      : b.plan === "annual"
+      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>12 months</strong> of membership, and that my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.'
+      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.';
+    /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
+    var open = !!AGREEMENT.url;
     var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
-      : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">[Member Agreement Link · From Legal]</span>';
+      : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">Member Agreement · Link Coming Soon</span>';
     var body = recap +
       '<form id="obF" novalidate class="stack ob-accept-form">' +
       '<div class="card"><h3>Your Details</h3>' +
@@ -995,12 +1000,13 @@
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
       '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
       '<div class="card"><h3>Member Agreement</h3><p class="small">' + agreeLink + '</p>' +
-      '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Smart Upkeep Member Agreement.</span></label>' + fe("agree") +
+      '<label class="checkrow"><input type="checkbox" id="agree"><span>I have read and agree to the Smart Upkeep Member Agreement, including the arbitration agreement and class action waiver. I can opt out of arbitration within 30 days.</span></label>' + fe("agree") +
       '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>' + consent + '</span></label>' + fe("chargeOk") +
       '<p class="fl">Signature</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
       '<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
       '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit">' + (b.plan === "monthly" ? "Accept And Join" : "Accept And Pay " + money(b.today)) + '</button>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (b.plan === "monthly" ? "Accept And Join" : "Accept And Pay " + money(b.today)) + '</button>' +
+      (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
     return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan, billing and start date.", body, "");
   }
@@ -1092,6 +1098,7 @@
     ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
     document.getElementById("obF").addEventListener("submit", function (e) {
       e.preventDefault(); keep();
+      if (!AGREEMENT.url) return;
       var s = S.signup, errs = [
         ["sName", !s.name ? "Enter full name." : ""],
         ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter phone number." : ""],
