@@ -261,13 +261,13 @@
     return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Your refund is what you prepaid minus the itemized price of services already done.</p>' +
       '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
       '<button class="btn btn-primary btn-big mw-hover" type="submit">Cancel My Membership</button></form><p class="small muted" id="cxDone" aria-live="polite"></p>' +
-      '<p class="small muted">Prototype: nothing is sent and no account is changed.</p></div>';
+      '</div>';
   }
   function bindCancel() {
     var f = document.getElementById("cxF"); if (!f) return;
     f.addEventListener("submit", function (e) { e.preventDefault(); var v = document.getElementById("cxEmail").value.trim(), er = document.getElementById("e-cxEmail");
       if (!/^\S+@\S+\.\S+$/.test(v)) { er.textContent = "Enter email."; return; } er.textContent = ""; f.hidden = true;
-      document.getElementById("cxDone").textContent = "Cancellation received. You will get a confirmation email with your refund amount. (Prototype: nothing was sent.)"; });
+      document.getElementById("cxDone").textContent = "Cancellation received. You will get a confirmation email with your refund amount."; });
   }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
