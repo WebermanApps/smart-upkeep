@@ -258,7 +258,7 @@
   /* Legal (Max 20:10 ICT Oct 17): the 3-day Home Solicitation notice is for OFFLINE sign-ups only (home/door, event, outbound phone).
      It is NOT shown on the online form. Offline wording lives in forms/in-person/ (printable) and the ops phone script. */
   function cancelPage() {
-    return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Cancel anytime, no fee. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded what they prepaid minus the itemized price of services already done, and monthly members stop being charged and keep service until their next billing date.</p>' +
+    return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No phone call needed. Cancel anytime, no fee. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded what they prepaid minus the itemized price of services already done, and monthly members stop being charged and keep service until their next billing date.</p>' +
       '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
       '<button class="btn btn-primary btn-big mw-hover" type="submit">Cancel My Membership</button></form><p class="small muted" id="cxDone" aria-live="polite"></p>' +
       '</div>';
