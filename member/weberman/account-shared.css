@@ -32,7 +32,7 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .ic svg{width:18px;height:18px}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font:600 12.5px Hind,sans-serif;border:1.5px solid var(--jungle);color:var(--jungle);background:#fff}
 .chip.plan{background:var(--terra);border-color:var(--terra);color:#fff;font-family:"Khand",sans-serif;letter-spacing:.04em}
-.chip.warn{border-color:#D4A017;color:#7A5A00}
+.chip.warn{border-color:#A8431F;color:#A8431F;background:var(--terra-t,#F6E7E0)}
 .row-link{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit;font-weight:500;text-align:left;background:transparent;border-left:0;border-right:0;border-bottom:0;cursor:pointer}
 .row-link:first-child{border-top:0}
 .row-link .grow{flex:1}
@@ -80,7 +80,7 @@ h1{margin:0 0 6px;font:700 clamp(26px,7vw,32px)/1.05 "Khand",sans-serif;letter-s
 .faq summary::after{content:"+";color:var(--mute);font-weight:700}
 .faq details[open] summary::after{content:"\2212"}
 .faq p{margin:0 0 12px;color:var(--ink2);font-size:14.5px}
-.ft{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 14px calc(28px + env(safe-area-inset-bottom));color:var(--mute);font-size:13px;text-align:center}
+.ft{display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 16px calc(28px + env(safe-area-inset-bottom));color:var(--mute);font-size:13px;text-align:center}
 .ft .brand{display:inline-flex;align-items:center;gap:8px;font:600 17px/1 "Khand";letter-spacing:.04em;color:var(--ink2)}
 .ft .brand img{height:18px}
 .machan-ft,.machan-ft a{color:inherit;text-decoration:none}

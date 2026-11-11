@@ -414,9 +414,9 @@
   function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
   var FS_ART = {
     warranty: function (c) { return fsBg(c, "#FAF3EB", '<rect x="18" y="14" width="40" height="52" rx="4" fill="#fff"/><path d="M26 26h24M26 34h24M26 42h16"/><path d="M38 52l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/><rect x="70" y="30" width="30" height="34" rx="3" fill="#fff"/><path d="M70 38h30" stroke="#C1502E"/><path d="M78 26v8M92 26v8"/><circle cx="85" cy="51" r="6" stroke="#05668D"/><path d="M85 48v3l2 2" stroke="#05668D"/>'); },
-    mold: function (c) { return fsBg(c, "#EEF5F8", '<path d="M20 64V30l26-16 26 16v34z" fill="#fff"/><path d="M34 64V46h14v18"/><path d="M60 40c-3 5-3 8 0 9s3-4 0-9z" fill="#05668D" stroke="#05668D"/><rect x="74" y="28" width="22" height="34" rx="4" fill="#fff"/><rect x="78" y="32" width="14" height="10" rx="1.5" fill="#D4A017"/><path d="M80 50h10M80 55h6"/><path d="M85 28v-8" stroke="#C1502E"/>'); },
+    mold: function (c) { return fsBg(c, "#EEF5F8", '<path d="M20 64V30l26-16 26 16v34z" fill="#fff"/><path d="M34 64V46h14v18"/><path d="M60 40c-3 5-3 8 0 9s3-4 0-9z" fill="#05668D" stroke="#05668D"/><rect x="74" y="28" width="22" height="34" rx="4" fill="#fff"/><rect x="78" y="32" width="14" height="10" rx="1.5" fill="#A8431F"/><path d="M80 50h10M80 55h6"/><path d="M85 28v-8" stroke="#C1502E"/>'); },
     wh: function (c) { return fsBg(c, "#FAF3EB", '<rect x="40" y="12" width="32" height="54" rx="12" fill="#fff"/><path d="M48 30h16M48 38h16"/><circle cx="56" cy="52" r="4" fill="#C1502E"/><path d="M72 58h14v8" stroke="#05668D"/><path d="M86 68c-2 3-2 5 0 6s2-3 0-6z" fill="#05668D" stroke="#05668D"/>'); },
-    storm: function (c) { return fsBg(c, "#F3F1EC", '<path d="M24 34a12 12 0 0 1 22-6 10 10 0 1 1 6 18H28a8 8 0 0 1-4-12z" fill="#fff"/><path d="M44 48l-5 9h7l-5 9" stroke="#D4A017" stroke-width="2.2"/><path d="M70 64V42l14-10 14 10v22z" fill="#fff"/><path d="M80 64v-10h8v10"/><path d="M98 26l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/>'); }
+    storm: function (c) { return fsBg(c, "#F3F1EC", '<path d="M24 34a12 12 0 0 1 22-6 10 10 0 1 1 6 18H28a8 8 0 0 1-4-12z" fill="#fff"/><path d="M44 48l-5 9h7l-5 9" stroke="#A8431F" stroke-width="2.2"/><path d="M70 64V42l14-10 14 10v22z" fill="#fff"/><path d="M80 64v-10h8v10"/><path d="M98 26l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/>'); }
   };
   /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Entries start the Get Started flow. */
   var FEATURED = [
@@ -899,13 +899,24 @@
     var detail = OB_STYLE.plan === "B"
       ? '<ul class="check-list"><li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(t.label + " · " + t.tagline) + '</li><li><span class="tick" aria-hidden="true">&#10003;</span>Standard Systems Included</li>' + tags.map(function (x) { return '<li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(x) + '</li>'; }).join("") + '</ul>'
       : '<p class="plan-visits">' + esc(t.tagline) + '</p><div class="tag-row"><span class="tag-chip">' + esc(t.label) + '</span>' + tags.map(function (x) { return '<span class="tag-chip extra">' + esc(x) + '</span>'; }).join("") + '</div>';
-    var main = '<div class="plan-card sel" data-ob-tier="' + k + '">' + (t.recommended ? '<span class="ribbon">Fits This Home</span>' : '') +
-      '<p class="plan-kicker">' + t.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(t.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[k])) + '<small>/mo</small></p>' + detail +
-      '<button type="button" class="tailor mw-hover" data-ob-tailor="1">Tailor Your Plan</button></div>';
-    var alts = tierKeys().filter(function (x) { return x !== k; }).map(function (x) {
-      return '<button type="button" class="plan-alt mw-hover" data-ob-tier="' + x + '"><div><b>' + esc(P.tiers[x].label) + '</b><span>' + P.tiers[x].visits + ' Visits A Year</span></div><span class="amt">' + money(monthlyOf(p[x])) + '/mo</span></button>';
+    function planAccent(xk){
+      var lab=((P.tiers[xk]||{}).label||xk)+"";
+      var s=(xk+" "+lab).toLowerCase();
+      if(/platinum|complete/.test(s)) return "#05668D";
+      if(/gold|plus/.test(s)) return "#A8431F";
+      return "#0B6E4F";
+    }
+    var cards = tierKeys().map(function (x) {
+      var tx = P.tiers[x], col = planAccent(x), rec = !!tx.recommended, sel = x === k;
+      var cta = rec
+        ? '<button type="button" class="plan-cta filled mw-hover"' + (sel ? ' data-ob-tailor="1"' : ' data-ob-tier="' + x + '"') + '>' + (sel ? "Tailor Your Plan" : "Choose Plus") + "</button>"
+        : '<button type="button" class="plan-cta outline mw-hover" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' + (sel ? "Tailor Your Plan" : ("Choose " + tx.label)) + "</button>";
+      return '<div class="plan-card' + (sel ? " sel" : "") + (rec ? " is-popular" : "") + '" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' +
+        (rec ? '<span class="ribbon">Most Popular</span>' : "") +
+        '<p class="plan-kicker">' + tx.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(tx.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[x])) + '<small>/mo</small></p>' +
+        (sel ? detail : "") + cta + "</div>";
     }).join("");
-    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + main + alts + '</div>', nextBtn("Continue To Billing", true));
+    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>', nextBtn("Continue To Billing", true));
   }
 
   /* 6. Billing: founding 2-for-1 annual preselected vs monthly. Deck card 3: A segmented control, B stacked cards. */
@@ -1226,7 +1237,7 @@
   /* Plans & Pricing Deck note (Oct 14): a picture of the member's house after sign-up. Placeholder drawing for now; real street or satellite photo from the address is a follow-up. */
   function myHomeCard(su) {
     return '<div class="card my-home-card" style="margin-top:1rem"><h3>Your Home</h3>' +
-      '<div class="mh-pic" role="img" aria-label="Your home picture (placeholder)"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#D4A017" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#D4A017"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
+      '<div class="mh-pic" role="img" aria-label="Your home picture (placeholder)"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#A8431F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#A8431F"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
       '<p style="margin:.6rem 0 0"><strong>' + esc(su.address || "Your Address") + '</strong></p><p class="small muted" style="margin:.2rem 0 0">A photo of your home from street view appears here soon.</p></div>';
   }
 
@@ -1419,7 +1430,7 @@
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
-  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob4"; document.head.appendChild(l); })();
+  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob5"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
