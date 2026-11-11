@@ -66,8 +66,8 @@
     var have = record(); if (have) return have;
     today = today || new Date();
     var b = billing(CL, M), monthly = isMonthly(b.kind);
-    /* Agreement 7.2: a monthly member with no completed visit (incl. the Starter Visit) cancels effective now with a full refund of everything paid. */
-    var noVisit = monthly && b.completedVisits === 0;
+    /* Agreement 7.2: any member (monthly or prepaid/annual) with no completed visit (incl. the Starter Visit) cancels effective now with a full refund of everything paid. */
+    var noVisit = b.completedVisits === 0;
     var rec = noVisit ? { id: newId(today), date: iso(today), type: "now", endDate: null, refund: num(b.paid) != null && b.paid > 0 ? b.paid : null, noVisit: true }
       : { id: newId(today), date: iso(today), type: monthly ? "end" : "now", endDate: monthly ? monthlyEnd(b, today) : null, refund: monthly ? null : refundOf(b) };
     set(KEY_REC, rec);
@@ -77,7 +77,7 @@
     var where = "You can view this confirmation anytime in the app under Profile &amp; Account.";
     if (rec.type === "end") return ["Your membership is cancelled and ends on " + esc(fmt(rec.endDate)) + ". You won't be charged after that. Confirmation #" + esc(rec.id) + ". " + where];
     var p = ["Your membership is cancelled. You won't be charged again. Cancelled on " + esc(fmt(rec.date)) + ", confirmation #" + esc(rec.id) + "."];
-    if (num(rec.refund) != null && rec.refund > 0) p.push("Your refund of " + money(rec.refund) + " (prepaid minus work done) will go back to your original payment method.");
+    if (num(rec.refund) != null && rec.refund > 0) p.push(rec.noVisit ? "Your full refund of " + money(rec.refund) + " will go back to your original payment method." : "Your refund of " + money(rec.refund) + " (prepaid minus work done) will go back to your original payment method.");
     p.push(where);
     return p;
   }
