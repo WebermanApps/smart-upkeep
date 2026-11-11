@@ -176,3 +176,12 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .su-ico,.ob .su-ico.sm,.ob .su-ico.xs{stroke-width:2}
 /* The ribbon overlaps the card border, so the .12 terracotta tint is layered on white to keep the border line from striking through the text. */
 .ob .plan-card .ribbon{background:linear-gradient(rgba(193,80,46,.12),rgba(193,80,46,.12)),#fff}
+/* Swatch re-QA Nov 11 (F16): no gold icon tiles in onboarding (Systems "Do You Have Any Of These?", Access "Door Code"). */
+.ob .qt.t2 .qt-ic{background:rgba(5,102,141,.12);color:#05668D}
+/* (b) Limited Offer badge inside the selected Annual segment: white chip so #A8431F text passes AA at small size. */
+.ob .seg-toggle button.on .seg-badge{background:#fff}
+/* (c) Off home, the parked header van sat past the right edge and widened the page to 485px at 390px. Clip it (home already clips). */
+body:not(.on-home) .topbar{overflow-x:clip}
+/* (d) À la carte: 2px icon strokes, and the Quick Jobs heading accent matches the lagoon headings instead of gold. */
+#app[data-screen="alacarte"] .su-ico,#app[data-screen="alacarteConfirm"] .su-ico{stroke-width:2}
+.addons.last-minute > h3::before{background:#05668D}
