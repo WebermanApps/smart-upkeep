@@ -38,16 +38,90 @@
   function lastMinuteTotal() {
     return selectedLastMinute().reduce(function (sum, a) { return sum + (a.quoteRequired ? 0 : (a.price || 0)); }, 0);
   }
-  function findService(id) {
+
+  var SU_MONTHLY_ADDONS = ["Flat Roof Inspection And Clean","Irrigation System","Gutter Cleaning","Sump Pump","Chimney Sweep","Generator Annual Service","Whole-House Humidifier"];
+  var SU_ONCE_ADDONS = ["Furnace Tune-Up","AC Tune-Up","Exterior Window Washing","Christmas Lights Up And Down","Extra Gutter Cleaning","Extra Flat Roof Cleaning","Irrigation System Startup Or Shutdown","Chimney Sweep","Radon Test","Water Leak Sensor Setup","Sump Pump Battery Backup","Bath Fan Clean And Check","Smart Thermostat Install","Lawn Mower Winterizing","Snowblower Tune-Up","Hose Bib Freeze Covers","Video Doorbell Install","Appliance Deep Clean","Lead And Water Test"];
+  function suNorm(s){return String(s||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();}
+  function suTitle(s){
+    s=String(s||"").replace(/\s+/g," ").trim();
+    var keep={AC:1,CO:1,ID:1};
+    return s.split(" ").map(function(w){
+      if(!w) return w;
+      return w.split("-").map(function(p){
+        var bare=p.replace(/[^A-Za-z]/g,"");
+        if(keep[bare.toUpperCase()]) return p.replace(bare,bare.toUpperCase());
+        if(!p) return p;
+        return p.charAt(0).toUpperCase()+p.slice(1).toLowerCase();
+      }).join("-");
+    }).join(" ");
+  }
+  function suClose(a,b){
+    a=suNorm(a); b=suNorm(b);
+    if(!a||!b) return false;
+    return a===b;
+  }
+  function suCatalogByLabels(labels, pool, once){
+    return labels.map(function(label, i){
+      var found=null;
+      (pool||[]).forEach(function(a){
+        if(!suClose(label, a.label)) return;
+        if(once && a.price==null && a.quoteRequired==null && found) return;
+        found=a;
+      });
+      if(found){
+        var out={}; for(var k in found) out[k]=found[k];
+        out.label=suTitle(label);
+        if(once && (out.price==null || out.quoteRequired) && out.quoteRequired!==false && out.price==null) out.quoteRequired=true;
+        if(once && out.price==null) out.quoteRequired=true;
+        return out;
+      }
+      return {id:(once?"q_o_":"q_m_")+suNorm(label).replace(/ /g,"_"), label:suTitle(label), quoteRequired:true, desc:""};
+    });
+  }
+  function monthlyAddonCatalog(){
+    var pool=[];
+    Object.keys((P&&P.extras)||{}).forEach(function(k){
+      var e=P.extras[k]; if(!e) return;
+      pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all, fromExtras:true});
+    });
+    pool=pool.concat(P.addons||[]);
+    return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false);
+  }
+  function onceAddonCatalog(){
+    var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; o.draft=true; return o; });
+    var pool=lm.concat(P.addons||[]);
+    var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(a.fromLastMinute||a.draft){ a.quoteRequired=true; a.price=null; } });
+    return rows;
+  }
+
+    function findService(id) {
     var a = (P.addons || []).find(function (x) { return x.id === id; });
     if (a) return a;
-    return (P.lastMinute || []).find(function (x) { return x.id === id; }) || null;
+    a = (P.lastMinute || []).find(function (x) { return x.id === id; });
+    if (a) return a;
+    var all = monthlyAddonCatalog().concat(onceAddonCatalog());
+    return all.find(function (x) { return x.id === id; }) || null;
   }
   function serviceOncePrice(a) { if (a.quoteRequired) return 0; return a.price != null ? a.price : (a.annual || 0); }
   /* Oct 15 (Max 19:11-19:19 ICT): add-ons show ONLY the added monthly price. No add-on has its own monthly figure in pricing-config.js, so monthly = annual / 12, rounded (monthlyOf). */
   /* TODO(quoteRequired): ping-to-CC for quote requests is NOT built yet. Quote items stay in S.addons / S.lastMinute and ride the normal request/submit flow at $0; ops must follow up manually until a CC notification is wired. */
-  var QUOTE_LABEL = "Get a Quote";
-  function addMo(a) { if (a.quoteRequired) return QUOTE_LABEL; return "+" + money(monthlyOf(a.annual)) + "/month"; }
+  var QUOTE_LABEL = "Quote";
+  function hasRealMonthly(a){
+    return !!(a && a.fromExtras && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0 && !a.draft);
+  }
+  function hasRealOncePrice(a){
+    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && !a.fromLastMinute && isFinite(+a.price) && +a.price>0);
+  }
+  function needsSiteVisit(label){
+    var n=String(label||"").toLowerCase();
+    return /window/.test(n)&&/wash/.test(n);
+  }
+  function addMo(a) {
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (hasRealMonthly(a)) return "+" + money(monthlyOf(a.annual)) + "/mo";
+    return QUOTE_LABEL;
+  }
   function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
     return '<div class="addon-list">' + items.map(function (ad) {
       var on = selectedIds.indexOf(ad.id) > -1;
@@ -274,7 +348,7 @@
   var ADDON_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmLeakSensors: "bell", lmSumpBackup: "meter", lmHoodFilter: "spray", lmBathFan: "duct", lmThermostat: "furnace" };
   /* Limits per a-la-carte item: only what pricing-config.js desc/unit already says. Missing = not in repo (reported as a gap). */
   var AC_LIMITS = { windows: "Outside glass only.", carpet: "One whole-home clean a year.", chimney: "Wood-burning chimneys.", lights: "One fall install and one take-down after the holidays.", radon: "One test for your home.", guttersExtra: "One extra cleaning.", lmLeakSensors: "Up to 3 sensors set up. Sensors included.", lmSumpBackup: "Homes with an existing sump pit.", lmHoodFilter: "One range hood.", lmBathFan: "Up to 3 bathroom fans.", lmThermostat: "One thermostat." };
-  function priceRange(a) { if (a.quoteRequired) return QUOTE_LABEL; return a.low === a.high ? money(a.low) : money(a.low) + "–" + money(a.high); }
+  function priceRange(a) { if (needsSiteVisit(a && a.label)) return "Needs A Site Visit"; if (a.quoteRequired || a.low==null || a.high==null || a.low !== a.high) return QUOTE_LABEL; return money(a.low); }
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -563,7 +637,7 @@
         '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + P.addons.map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + (P.lastMinute || []).filter(function (a) { return a.home; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
@@ -634,8 +708,8 @@
     return '<div class="xt-sheet ac-pop" id="acPop" hidden role="dialog" aria-modal="true" aria-labelledby="acPopT"><div class="xt-inner">' +
       '<div class="xt-top"><h3 id="acPopT">Shop À La Carte</h3><button type="button" class="modal-x mw-hover" data-acpop-close="1" aria-label="Close">&times;</button></div>' +
       '<p class="lead-sm">One-time services, no membership needed. Tap Add on anything you want, then Book. <span class="draft">Draft prices</span></p>' +
-      '<h4 class="acp-h">Services</h4>' + renderAddonList(P.addons || [], sel, "acpop", function (x) { return oncePriceLabel(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
-      '<h4 class="acp-h">Quick Jobs on a Visit</h4>' + renderAddonList(P.lastMinute || [], sel, "acpop", function (x) { return oncePriceLabel(x) + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
+      '<h4 class="acp-h">Monthly Add-Ons</h4>' + renderAddonList(monthlyAddonCatalog(), sel, "acpop", function (x) { return oncePriceLabel(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
+      '<h4 class="acp-h">One-Time Add-Ons</h4>' + renderAddonList(onceAddonCatalog(), sel, "acpop", function (x) { return oncePriceLabel(x) + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
       '<div class="acp-foot"><button type="button" class="btn btn-primary btn-big mw-hover" data-acpop-book="1">' + (sel.length ? "Book " + sel.length + " Selected" : "Book À La Carte") + '</button></div></div></div>';
   }
   function bindAcPop(root) {
@@ -715,8 +789,8 @@
     /* search */
     var idx = [];
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
-    P.addons.forEach(function (a) { idx.push({ t: a.label + " · " + addMo(a), k: (a.label + " " + a.desc).toLowerCase(), acc: document.getElementById("acc-addons") }); });
-    (P.lastMinute || []).filter(function (a) { return a.home; }).forEach(function (a) { idx.push({ t: a.label + " · " + (a.quoteRequired ? QUOTE_LABEL : money(a.price) + " one time"), k: (a.label + " " + a.desc).toLowerCase(), acc: document.getElementById("acc-addons") }); });
+    monthlyAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + addMo(a), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
+    onceAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + " one time"), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
     var inp = root.querySelector(".hm-search input"), res = root.querySelector(".hm-results");
     if (!inp || !res) return; /* search lives in future My Home area */
     inp.addEventListener("input", function () {
@@ -877,11 +951,20 @@
   }
 
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
-  function aoPrice(a) { return a.quoteRequired ? "Get A Quote" : moLabel(a.annual); }
+  function aoPrice(a) {
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (a && a.once) {
+      if (hasRealOncePrice(a)) return money(+a.price);
+      return QUOTE_LABEL;
+    }
+    if (hasRealMonthly(a)) return moLabel(a.annual);
+    if (hasRealOncePrice(a)) return money(+a.price);
+    return QUOTE_LABEL;
+  }
   function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return d + (a.quoteRequired ? " We'll follow up with a price." : ""); }
   function obAddons() {
     var sel = S.addons || [];
-    var rows = (P.addons || []).map(function (a) {
+    var rows = monthlyAddonCatalog().concat(onceAddonCatalog()).map(function (a) {
       var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
       return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(XT_ICO[a.id] || "wrench", "sm") +
         '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
@@ -914,6 +997,7 @@
       return '<div class="plan-card' + (sel ? " sel" : "") + (rec ? " is-popular" : "") + '" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' +
         (rec ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="plan-kicker">' + tx.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(tx.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[x])) + '<small>/mo</small></p>' +
+        (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
     }).join("");
     return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>', nextBtn("Continue To Billing", true));
@@ -1149,7 +1233,8 @@
     return selectedAlacarte().reduce(function (s, a) { return s + serviceOncePrice(a); }, 0);
   }
   function oncePriceLabel(a) {
-    if (a.quoteRequired) return QUOTE_LABEL;
+    if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (a.quoteRequired || !hasRealOncePrice(a)) return QUOTE_LABEL;
     if (a.price != null) return money(a.price);
     return money(a.annual) + (a.unit === "season" ? "/Season" : "");
   }
@@ -1158,10 +1243,10 @@
     var list = selectedAlacarte();
     var total = alacarteTotal();
     var picks = '<div class="addons"><h3>Services</h3>' +
-      renderAddonList(P.addons || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>' +
+      renderAddonList(monthlyAddonCatalog(), S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>' +
       '<div class="addons last-minute"><h3>Shop À La Carte: Quick Jobs</h3>' +
       
-      renderAddonList(P.lastMinute || [], S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
+      renderAddonList(onceAddonCatalog(), S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
     return backBtn() + '<h1>Shop À La Carte</h1>' +
       
       picks +
