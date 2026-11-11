@@ -1,0 +1,164 @@
+/* Smart Upkeep onboarding (Nov 11 2026 redo). 9 screens, 390px first, light mode, Khand/Hind.
+   Ported from the Onboarding Flow Deck mocks (b4c76e3). Deck A/B switches are classes on section.ob:
+   ob-stepper-a|b, ob-plan-a|b, ob-billing-a|b, ob-accept-a|b, ob-basics-a|b (set OB_STYLE in app.js). */
+body.on-ob{background:#FCF9F4}
+body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding:.4rem 1rem 1.6rem}
+.ob{max-width:420px;margin:0 auto}
+.ob .qf-hero.stack.compact{gap:.2rem;margin:.35rem 0 .6rem}
+.ob .qf-art.mid{width:4.2rem;height:4.2rem;border-radius:1.15rem}
+.ob .qf-art.mid .su-ico{width:2.5rem;height:2.5rem}
+.ob .qf-hero.compact .qf-h{font-size:1.65rem}
+.ob .qf-help{color:#525252}
+.ob .qf-segs.nine{display:flex;gap:4px}
+.ob .qf-segs.nine span{flex:1;height:6px;border-radius:99px;background:#ece6dc;margin:0}
+.ob .qf-segs.nine span.done{background:var(--mw-terracotta)}
+.ob .qf-segs.nine span.cur{background:linear-gradient(90deg,var(--mw-terracotta),#e6a07f)}
+.ob .gap-md{height:.55rem}
+.ob .blk-lab{margin:.15rem 0 .4rem;font:700 1.05rem/1.15 var(--mw-font-heading);letter-spacing:.01em}
+.ob .priced-note,.ob .due-note{margin:.45rem 0 0;font:500 .8rem/1.35 var(--mw-font-body);color:#737373}
+.ob .ferr{color:#A8431F;font-size:.85rem;margin:.25rem 0 0;min-height:0}
+.ob input[type=text],.ob input[type=tel],.ob input[type=email],.ob input[type=date],.ob textarea{width:100%;min-height:48px;font-size:16px;padding:10px 12px;border:1px solid #cfc6b4;background:#fff;border-radius:.6rem;font-family:var(--mw-font-body)}
+.ob .fl{display:block;margin:.6rem 0 .3rem;font:600 .9rem/1.2 var(--mw-font-body)}
+.ob .ob-fields .fl:first-child{margin-top:0}
+
+/* +1 tag */
+.ob .plus-tag{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:0 .45rem;margin-left:.35rem;border-radius:999px;border:1px solid rgba(5,102,141,.28);background:rgba(5,102,141,.08);color:var(--mw-lagoon);font:700 .72rem/1 var(--mw-font-body);letter-spacing:.04em;white-space:nowrap}
+
+/* Systems rows */
+.ob .sys-list{display:grid;gap:.45rem}
+.ob .sys-row{display:flex;align-items:center;gap:.65rem;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.55rem .7rem;box-shadow:0 1px 3px rgba(10,10,10,.05);min-height:64px}
+.ob .sys-row .sys-ic{flex:none;width:2.6rem;height:2.6rem;border-radius:.7rem;display:grid;place-items:center}
+.ob .sys-row .sys-ic .su-ico{width:1.55rem;height:1.55rem}
+.ob .sys-ic.t0{background:rgba(193,80,46,.13)}.ob .sys-ic.t1{background:rgba(5,102,141,.12)}.ob .sys-ic.t2{background:rgba(212,160,23,.17)}
+.ob .sys-meta{flex:1;min-width:0}
+.ob .sys-name{display:flex;align-items:center;flex-wrap:wrap;gap:.15rem;font:600 1.05rem/1.15 var(--mw-font-heading);letter-spacing:.01em;color:#0a0a0a}
+.ob .sys-sub{margin:.15rem 0 0;font:500 .75rem/1.25 var(--mw-font-body);color:#737373}
+.ob .ob-whs{display:grid;gap:.3rem;margin-top:.35rem}
+.ob .ob-wh{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.ob .ob-wh>span{font:500 .78rem/1.2 var(--mw-font-body);color:#525252;min-width:5.6rem}
+.ob .type-seg{display:inline-flex;border:1px solid #e6dfd1;border-radius:999px;overflow:hidden;background:#fff}
+.ob .type-seg button{border:0;background:transparent;padding:.3rem .65rem;min-height:30px;font:600 .76rem/1.2 var(--mw-font-body);color:#525252;cursor:pointer}
+.ob .type-seg button.on{background:#0a0a0a;color:#fff}
+
+/* Stepper. Deck card 1: A inline pill (default), B big circles */
+.ob .ob-step{display:inline-flex;align-items:center;flex:none}
+.ob .ob-step button{cursor:pointer;padding:0;color:#0a0a0a;font-family:var(--mw-font-heading);font-weight:700}
+.ob .ob-step button:disabled{opacity:.3;cursor:default}
+.ob .ob-step .n{text-align:center;font-family:var(--mw-font-heading);font-weight:700}
+.ob.ob-stepper-a .ob-step{background:#FCF9F4;border:1px solid #e6dfd1;border-radius:999px;padding:2px}
+.ob.ob-stepper-a .ob-step button{width:36px;height:36px;border:0;background:transparent;border-radius:50%;font-size:1.2rem;line-height:1}
+.ob.ob-stepper-a .ob-step .n{min-width:1.5rem;font-size:1.05rem}
+.ob.ob-stepper-b .sys-row{flex-wrap:wrap;padding:.7rem .75rem .65rem;gap:.5rem .65rem}
+.ob.ob-stepper-b .sys-row .sys-ic{width:3rem;height:3rem}
+.ob.ob-stepper-b .sys-row .sys-name{font-size:1.2rem}
+.ob.ob-stepper-b .sys-row .ob-step{width:100%;justify-content:flex-end;gap:.65rem}
+.ob.ob-stepper-b .ob-step button{width:48px;height:48px;border-radius:50%;border:1.5px solid #cfc6b4;background:#fff;font-size:1.6rem;line-height:1;box-shadow:0 1px 2px rgba(10,10,10,.05)}
+.ob.ob-stepper-b .ob-step .n{min-width:1.8rem;font-size:1.7rem}
+
+/* Home basics. Deck card 5: A chips, B steppers */
+.ob .size-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.ob .size-grid .qt{min-height:58px;padding:.4rem .55rem;flex-direction:row;justify-content:flex-start;gap:.45rem;text-align:left}
+.ob .size-grid .qt-ic{width:2.1rem;height:2.1rem;border-radius:.55rem;display:grid;place-items:center;flex:none}
+.ob .size-grid .qt-ic .su-ico{width:1.15rem;height:1.15rem}
+.ob .size-grid .sz0 .qt-ic .su-ico{width:1.05rem;height:1.05rem}.ob .size-grid .sz2 .qt-ic .su-ico{width:1.3rem;height:1.3rem}.ob .size-grid .sz3 .qt-ic .su-ico{width:1.4rem;height:1.4rem}.ob .size-grid .sz4 .qt-ic .su-ico{width:1.5rem;height:1.5rem}.ob .size-grid .sz5 .qt-ic .su-ico{width:1.6rem;height:1.6rem}
+.ob .size-grid .qt b,.ob .story-row .qt b{display:block;font:600 .88rem/1.15 var(--mw-font-body)}
+.ob .size-grid .qt small,.ob .story-row .qt small{display:block;font:500 .72rem/1.1 var(--mw-font-body);color:#737373}
+.ob .size-grid .qt.sel,.ob .story-row .qt.sel{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle);background:#fff}
+.ob .story-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+.ob .story-row .qt{min-height:64px;padding:.4rem .3rem}
+.ob .story-row .qt-ic{width:2rem;height:2rem;display:grid;place-items:center}
+.ob .story-row .qt-ic .su-ico{width:1.35rem;height:1.35rem}
+.ob .pick-step{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.7rem .8rem;box-shadow:0 1px 3px rgba(10,10,10,.05);display:flex;align-items:center;gap:.6rem}
+.ob .pick-step .meta{flex:1;min-width:0}
+.ob .pick-step .k{font:700 .7rem/1 var(--mw-font-body);letter-spacing:.1em;text-transform:uppercase;color:#737373;margin:0 0 .15rem}
+.ob .pick-step .v{font:700 1.2rem/1.15 var(--mw-font-heading);margin:0}
+.ob .pick-step .s{margin:.15rem 0 0;font:500 .75rem/1.2 var(--mw-font-body);color:#737373}
+.ob .pick-step .ob-step{gap:.45rem}
+.ob .pick-step .ob-step button{width:44px;height:44px;border-radius:50%;border:1.5px solid #cfc6b4;background:#fff;font-size:1.45rem}
+.ob .pick-step .ob-step .n{min-width:1.6rem;font-size:1.5rem}
+
+/* Add-ons list: name + price, on/off switch, tap row to open detail in place */
+.ob .ob-ao-list{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
+.ob .ob-ao{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .ob-ao.on{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
+.ob .ob-ao-top{display:flex;align-items:center;gap:.4rem;padding:.35rem .6rem .35rem .4rem}
+.ob .ob-ao-row{flex:1;display:flex;align-items:center;gap:.55rem;min-height:52px;background:transparent;border:0;padding:0 .2rem;text-align:left;cursor:pointer;color:#0a0a0a}
+.ob .ob-ao-row .su-ico{width:1.4rem;height:1.4rem;flex:none}
+.ob .ob-ao-t{flex:1;min-width:0}
+.ob .ob-ao-t b{display:block;font:600 1rem/1.15 var(--mw-font-heading)}
+.ob .ob-ao-t small{display:block;font:500 .78rem/1.2 var(--mw-font-body);color:#525252;margin-top:.1rem}
+.ob .ob-chev{width:9px;height:9px;border-right:2px solid #8a8a8a;border-bottom:2px solid #8a8a8a;transform:rotate(45deg);margin:0 .35rem;transition:transform .2s}
+.ob .ob-ao.open .ob-chev{transform:rotate(-135deg)}
+.ob .ob-ao-d{margin:0;padding:0 .9rem .75rem 2.75rem;font:500 .86rem/1.4 var(--mw-font-body);color:#3d3d3d}
+.ob .ob-sw{flex:none;width:50px;height:30px;border-radius:999px;border:0;background:#d9d2c5;position:relative;cursor:pointer;padding:0;transition:background .2s}
+.ob .ob-sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .2s}
+.ob .ob-sw[aria-checked="true"]{background:var(--mw-jungle)}
+.ob .ob-sw[aria-checked="true"] i{left:23px}
+
+/* Plan. Deck card 2: A tag chips, B checklist */
+.ob .plan-stack{display:grid;gap:.55rem}
+.ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.95rem .9rem .5rem;box-shadow:0 1px 3px rgba(10,10,10,.05);position:relative}
+.ob .plan-card.sel{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
+.ob .plan-card .ribbon{position:absolute;top:-10px;left:.8rem;right:auto;background:var(--mw-saffron);color:#0a0a0a;font:700 .68rem/1 var(--mw-font-body);letter-spacing:.08em;text-transform:uppercase;padding:.25rem .5rem;border-radius:999px;transform:none}
+.ob .plan-kicker{font:700 .68rem/1 var(--mw-font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--mw-lagoon);margin:0 0 .15rem}
+.ob .plan-name{font:700 1.55rem/1 var(--mw-font-heading);margin:0;letter-spacing:-.01em}
+.ob .plan-price{font:700 1.7rem/1 var(--mw-font-heading);margin:.15rem 0 0}
+.ob .plan-price small{font:600 .85rem/1 var(--mw-font-body);color:#737373;margin-left:.15rem}
+.ob .plan-visits{margin:.2rem 0 0;font:500 .82rem/1.3 var(--mw-font-body);color:#525252}
+.ob .tag-row{display:flex;flex-wrap:wrap;gap:.3rem;margin:.45rem 0 .15rem}
+.ob .tag-chip{display:inline-flex;align-items:center;min-height:26px;padding:0 .55rem;border-radius:999px;border:1px solid #e6dfd1;background:#FCF9F4;font:600 .75rem/1 var(--mw-font-body);color:#0a0a0a}
+.ob .tag-chip.extra{border-color:rgba(5,102,141,.28);background:rgba(5,102,141,.08);color:var(--mw-lagoon)}
+.ob .check-list{list-style:none;margin:.45rem 0 0;padding:0;display:grid;gap:.28rem}
+.ob .check-list li{display:flex;align-items:flex-start;gap:.45rem;font:500 .88rem/1.3 var(--mw-font-body);color:#0a0a0a}
+.ob .check-list .tick{flex:none;width:18px;color:var(--mw-jungle);font-weight:700}
+.ob .plan-alt{display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:#fff;border:1px solid var(--mw-border);border-radius:.75rem;padding:.55rem .8rem;min-height:56px;width:100%;text-align:left;cursor:pointer;color:#0a0a0a}
+.ob .plan-alt>div{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;min-width:0}
+.ob .plan-alt b{font:700 1.1rem/1 var(--mw-font-heading)}
+.ob .plan-alt>div span{display:block;font:500 .8rem/1.2 var(--mw-font-body);color:#525252}
+.ob .plan-alt .amt{flex:none;margin-left:.5rem;font:700 1rem/1 var(--mw-font-heading);color:#0a0a0a}
+.ob .tailor{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:.15rem;background:transparent;border:0;padding:0;font:700 .86rem/1 var(--mw-font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mw-terracotta-deep);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* Billing. Deck card 3: A segmented control, B stacked cards */
+.ob .seg-toggle{display:flex;background:#fff;border:1px solid #e6dfd1;border-radius:999px;padding:3px;box-shadow:0 1px 3px rgba(10,10,10,.04)}
+.ob .seg-toggle button{flex:1;display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:999px;border:0;background:transparent;font:700 .92rem/1 var(--mw-font-body);color:#525252;cursor:pointer}
+.ob .seg-toggle button.on{background:#0a0a0a;color:#fff}
+.ob .bill-stack{display:grid;gap:.55rem}
+.ob .bill-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.9rem .95rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob.ob-billing-b .bill-card{cursor:pointer}
+.ob .bill-card.sel{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
+.ob .bill-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.ob .bill-name{font:700 1.25rem/1 var(--mw-font-heading);margin:0}
+.ob .bill-amt{font:700 1.05rem/1 var(--mw-font-heading)}
+.ob .badge-found{display:inline-flex;align-items:center;min-height:22px;padding:0 .5rem;border-radius:999px;background:var(--mw-saffron);color:#0a0a0a;font:700 .68rem/1 var(--mw-font-body);letter-spacing:.06em;text-transform:uppercase}
+.ob .bill-lead{margin:.4rem 0 0;font:700 1.05rem/1.25 var(--mw-font-heading);color:#0a0a0a}
+.ob .bill-copy{margin:.25rem 0 0;font:500 .88rem/1.35 var(--mw-font-body);color:#525252}
+.ob .due-box{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.7rem .9rem;display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.ob .due-box.in{border:0;border-top:1px solid #efe8dc;border-radius:0;padding:.6rem 0 0;margin-top:.6rem}
+.ob .due-box .k{font:700 .7rem/1 var(--mw-font-body);letter-spacing:.12em;text-transform:uppercase;color:#525252}
+.ob .due-box .v{font:700 1.45rem/1 var(--mw-font-heading)}
+
+/* Access + start */
+.ob-access .qt-grid{margin-bottom:.4rem}
+.ob .price-confirm{margin:.6rem 0 0;padding:.6rem .75rem;border-radius:.7rem;background:#fff;border:1px dashed #d8cfc2;font:500 .88rem/1.4 var(--mw-font-body);color:#3d3d3d}
+.ob .ob-blurb{border-style:solid}
+
+/* Accept. Deck card 4: A compact recap line, B itemized */
+.ob .accept-line{margin:0;font:500 .98rem/1.45 var(--mw-font-body);color:#0a0a0a}
+.ob .accept-due{display:flex;justify-content:space-between;align-items:baseline;margin:.55rem 0 0;padding:.6rem .8rem;background:#fff;border:1px solid var(--mw-border);border-radius:.75rem}
+.ob .accept-due span{font:700 .7rem/1 var(--mw-font-body);letter-spacing:.12em;text-transform:uppercase;color:#525252}
+.ob .accept-due b{font:700 1.3rem/1 var(--mw-font-heading)}
+.ob .item-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.2rem .95rem .15rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .item-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:.55rem 0;border-bottom:1px solid #efe8dc;font:500 .9rem/1.3 var(--mw-font-body)}
+.ob .item-row .k{color:#525252}
+.ob .item-row .v{font-weight:600;text-align:right;color:#0a0a0a}
+.ob .item-row.total .v{font:700 1.2rem/1 var(--mw-font-heading)}
+.ob .item-row.stack{flex-direction:column;align-items:flex-start;gap:.2rem}
+.ob .item-row.stack .v{text-align:left}
+.ob .item-card .price-confirm{margin:.25rem 0 .7rem;border-style:solid}
+.ob .ob-accept-form{margin-top:.9rem;display:grid;gap:.75rem}
+.ob .ob-accept-form .card{padding:.9rem .95rem;border-radius:.85rem}
+.ob .ob-accept-form h3{margin:0 0 .35rem;font-family:var(--mw-font-heading)}
+.ob .ob-addr{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35rem;margin:.75rem 0 0}
+.ob .ob-addr span{color:#525252}
+.ob .ob-slot{display:inline-block;padding:.35rem .6rem;border:1.5px dashed var(--mw-terracotta);border-radius:.5rem;color:var(--mw-terracotta-deep);font-weight:600}
+.ob .ob-wait{margin-top:.8rem}
