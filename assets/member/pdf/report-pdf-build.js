@@ -46,14 +46,14 @@
   /* Per-plan label rule: Complete = month + year, Plus = season + year, Essentials = "Fall Visit 2026". */
   function labelParts(plan, iso, season){
     var d=dt(iso), y=d?String(d.getFullYear()):"", s=clean(season)||seasonOf(iso)||"Visit";
-    if(plan==="Complete") return {when:d?MONTHS[d.getMonth()]:s, year:y, label:"Complete \u00b7 "+(d?MONTHS[d.getMonth()]+" "+y:s+" "+y).trim()};
+    if(plan==="Complete") return {when:d?MONTHS[d.getMonth()]:s, year:y, label:(d?MONTHS[d.getMonth()]+" "+y:s+" "+y).trim()};
     if(plan==="Essentials") return {when:s, year:y, label:(s+" Visit "+y).trim()};
     return {when:s, year:y, label:(plan+" \u00b7 "+s+" "+y).trim()};
   }
   function reportLabel(v){
     var plan=planName(v), p=labelParts(plan, v.date, v.season), vl=g("visitLabel");
     if(typeof vl==="function"){
-      try{ var x=clean(vl(v)); if(x&&/\d{4}/.test(x)){ if(plan!=="Essentials"&&x.indexOf(plan)<0) x=plan+" \u00b7 "+x; p.label=x; } }catch(e){}
+      try{ var x=clean(vl(v)); if(x&&/\d{4}/.test(x)){ if(plan!=="Essentials"&&plan!=="Complete"&&x.indexOf(plan)<0) x=plan+" \u00b7 "+x; p.label=x; } }catch(e){}
     }
     return p;
   }
