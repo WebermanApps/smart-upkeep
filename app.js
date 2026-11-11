@@ -1,84 +1,20 @@
-/* Smart Upkeep sign-up funnel. Static prototype, no backend.
-   Progress lives in localStorage. Photos and card data never leave the browser
-   (photos are in-memory previews only; card fields are disabled and never read). */
+/* Smart Upkeep sign-up funnel. Static site, no backend yet.
+   Progress lives in localStorage. Card fields are disabled and never read until a payment processor is connected. */
 (function () {
   "use strict";
   var P = window.SMART_UPKEEP_PRICING;
   var KEY = "smartUpkeep.v1", VKEY = "smartUpkeep.videoDismissed";
   var app = document.getElementById("app");
   function I(n, c) { return window.SUIcon ? window.SUIcon(n, c) : ""; }
-  var photoMem = {}; // cardId -> [objectURL], browser memory only
-
-  var Q = [
-    { id: "sqft", type: "single", title: "About How Big Is Your Home?", help: "Finished square footage, a rough range is fine.",
-      opts: [["1500", "Under 2,000 sq ft"], ["2500", "2,000 to 3,000 sq ft"], ["3500", "3,000 to 4,000 sq ft"], ["4500", "4,000 to 5,000 sq ft"], ["5500", "5,000 to 6,000 sq ft"], ["6500", "Over 6,000 sq ft"]] },
-    { id: "furnaces", type: "single", title: "How Many Furnaces Do You Have?", help: "Most homes over 3,500 sq ft have two.", opts: [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4 or More"]] },
-    { id: "acs", type: "single", title: "How Many AC Units?", help: "Count the outdoor condensers.", opts: [["0", "None"], ["1", "1"], ["2", "2"], ["3", "3 or More"]] },
-    { id: "waterHeaters", type: "wh", title: "How Many Water Heaters?", help: "And what kind. Tankless units mount on the wall.", opts: [["1", "1"], ["2", "2"], ["3", "3 or More"]] },
-    /* Funnel Deck (Max, Oct 14): no "When was your home built?" question. We look up home age from the address later. Water softener moved into Extras. */
-    { id: "stories", type: "single", title: "How Many Stories Is Your Home?", help: "This sets gutter cleaning and ladder work.", opts: [["1", "1 Story (Ranch)"], ["2", "2 Stories"], ["3", "3 Stories"]] },
-    { id: "extras", type: "multi", title: "Do You Have Any of These?", help: "Pick all that apply.",
-      opts: Object.keys(P.extras).map(function (k) { return [k, P.extras[k].label]; }) },
-    { id: "zip", type: "zip", title: "What's Your Address or ZIP Code?", help: "We serve metro Detroit: Wayne, Oakland, Macomb and nearby." },
-  ];
-  /* Info Gather Deck (Oct 14): three chapters shown above a segmented bar, one segment per question. */
-  var CHAPTERS = [["Your Home", ["sqft"]], ["Your Systems", ["furnaces", "acs", "waterHeaters"]], ["Finishing Up", ["stories", "extras", "zip"]]];
-  function chapterOf(id) { for (var c = 0; c < CHAPTERS.length; c++) if (CHAPTERS[c][1].indexOf(id) > -1) return c; return CHAPTERS.length - 1; }
-  /* Snap-a-photo side path on each system question. */
-  var QPHOTO = { furnaces: "furnace1", acs: "ac1", waterHeaters: "wh1", softener: "softener" };
-  /* Did You Know card: one service teaser per question screen. */
-  var DYK = {
-    sqft: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
-    furnaces: "We change your furnace filters during every visit, at no extra charge.",
-    acs: "A spring AC tune-up can catch a weak capacitor before the first heat wave.",
-    waterHeaters: "A yearly flush cuts sediment and can help extend a tank's life.",
-    softener: "On Plus and up, we top off your softener salt during visits.",
-    stories: "Plus includes gutter and downspout cleaning every spring and fall.",
-    extras: "On Plus and up, we top off your softener salt during visits.", /* Max 19:35 Oct 15: softener DYK shows on the Extras screen (softener is a tile there, no own screen) */
-    zip: "Every visit ends with a written report saved to your Home Record."
-  };
 
   var S = load();
-  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "annual", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, photos: {}, visit: null, photosComplete: false, signup: null, referralCodeIn: "", path: [] }; }
+  function fresh() { return { screen: "home", answers: {}, tier: "gold", plan: "founding", addons: [], lastMinute: [], alacarte: [], alacarteBooking: null, signup: null, referralCodeIn: "", access: null, firstVisit: "", path: [] }; }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.lastMinute)) o.lastMinute = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
   function round(n) { return Math.round(n / P.roundTo) * P.roundTo; }
   function monthlyOf(annual) { return Math.round(Number(annual) / 12); }
-  /* Lead with monthly equivalent; asterisk explains how it is billed. */
-  function billLine(kind, annualTotal) {
-    if (kind === "quarterly") return "*Billed quarterly (" + money(annualTotal / 4) + " every 3 months)";
-    if (kind === "annualDiscount") return "*Billed annually (" + money(annualTotal) + "/yr, 10% off)";
-    if (kind === "biennial") return "*Prepaid for 2 years (" + money(annualTotal) + "), then 6 extra months free at the end of your term, once you complete it (draft)";
-    return "*Billed annually (" + money(annualTotal) + "/yr)";
-  }
-  function priceBlock(annualTotal, kind) {
-    if (kind === "biennial") {
-      return '<div class="price">' + money(Math.round(Number(annualTotal) / 24)) + '<small>/Month</small></div>' +
-        '<p class="price-bill">' + billLine("biennial", annualTotal) + '</p>' +
-        '<p class="price-save">6 Extra Months Free at the End of Your Term, Once You Complete It · stacks with referrals (draft)</p>';
-    }
-    return '<div class="price">' + money(monthlyOf(annualTotal)) + '<small>/Month</small></div>' +
-      '<p class="price-bill">' + billLine(kind, annualTotal) + '</p>';
-  }
-  function listedMembership(tier) {
-    return price()[tier || S.tier];
-  }
-  function welcomeBanner() {
-    return '<details class="acc warn-drop"><summary class="mw-hover">1 Warning · Draft Offer Terms</summary><div class="acc-body">' +
-      '<p class="eyebrow" style="margin:0">Welcome Offer</p>' +
-      '<h3 style="margin:.2rem 0 .55rem">Stackable Savings</h3>' +
-      '<ul class="feat offer-list">' +
-      '<li><strong>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</strong> — prepay 24 months at the normal monthly price; 6 extra months are added free after your 24 paid months. Available on every tier. Listed price still honors the $139/Month floor.</li>' +
-      '<li><strong>Refer a Neighbor, You Both Get a Month Free</strong> — no cap on referrals. Credited once your neighbor\'s first payment clears, added at the end of your term and applied once you complete it.</li>' +
-      '</ul>' +
-      '<p class="small muted" style="margin:0">Offers stack. Free months are added at the end of your term and apply once you complete it. Cancel early and they are forfeited. Free months carry no refund value. Final terms pending legal review.</p></div></details>';
-  }
-  function offerTermsShort() {
-    return '<details class="acc warn-drop offer-terms"><summary class="mw-hover">1 Warning · Draft Offer Terms</summary><div class="acc-body">' +
-      '<p style="margin:0"><strong>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term:</strong> pay 24 months at the normal membership price (minimum $139/Month); 6 extra months are added free at the end of your term, for 30 months of coverage. <strong>Refer a Neighbor:</strong> you and your neighbor each get one free month per successful referral, with no cap. Free months are credited only after the referred neighbor\'s first payment has cleared. Offers stack. Free months are added at the end of your term and apply once you complete it. Cancel early and they are forfeited; free months have no refund value.</p></div></details>';
-  }
   function makeReferralCode(name) {
     var base = String(name || "HOME").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4) || "HOME";
     var n = 1000 + Math.floor(Math.random() * 9000);
@@ -112,11 +48,6 @@
   /* TODO(quoteRequired): ping-to-CC for quote requests is NOT built yet. Quote items stay in S.addons / S.lastMinute and ride the normal request/submit flow at $0; ops must follow up manually until a CC notification is wired. */
   var QUOTE_LABEL = "Get a Quote";
   function addMo(a) { if (a.quoteRequired) return QUOTE_LABEL; return "+" + money(monthlyOf(a.annual)) + "/month"; }
-  function addonPriceLabel(a) { if (a.quoteRequired) return QUOTE_LABEL + " <span>(we follow up)</span>"; return addMo(a) + " <span>(draft)</span>"; }
-  function lastMinutePriceLabel(a) {
-    if (a.quoteRequired) return QUOTE_LABEL + " <span>· we follow up</span>";
-    return money(a.price) + " one-time <span>(draft) · with next visit</span>";
-  }
   function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
     return '<div class="addon-list">' + items.map(function (ad) {
       var on = selectedIds.indexOf(ad.id) > -1;
@@ -138,7 +69,7 @@
     var sqft = num("sqft", d.sqft), f = num("furnaces", d.furnaces), ac = num("acs", d.acs), wh = num("waterHeaters", d.waterHeaters);
     var whType = (a.whType && a.whType !== "unsure") ? a.whType : d.whType;
     var stories = num("stories", d.stories), extras = Array.isArray(a.extras) ? a.extras : [];
-    var tankless = whType === "tankless" ? wh : whType === "both" ? Math.max(1, Math.floor(wh / 2)) : 0;
+    var tankless = Array.isArray(a.whTypes) ? a.whTypes.slice(0, wh).filter(function (t) { return t === "tankless"; }).length : whType === "tankless" ? wh : whType === "both" ? Math.max(1, Math.floor(wh / 2)) : 0; /* Nov 11: tank or tankless is set per unit */
     var tank = wh - tankless;
     var silverV = (P.silverVisit || P.seasonalVisit).base + (P.silverVisit || P.seasonalVisit).perSqft * sqft;
     var seasonal = P.seasonalVisit.base + P.seasonalVisit.perSqft * sqft;
@@ -150,7 +81,7 @@
     function hvacLines() {
       var L = [];
       if (f > 0) L.push({ label: f + " Furnace" + (f > 1 ? "s" : "") + " × " + money(P.perUnit.furnace), amt: f * P.perUnit.furnace, est: uF });
-      if (ac > 0) L.push({ label: ac + " AC Unit" + (ac > 1 ? "s" : "") + " × " + money(P.perUnit.ac), amt: ac * P.perUnit.ac, est: uAc });
+      if (ac > 0) L.push({ label: ac + " AC" + " × " + money(P.perUnit.ac), amt: ac * P.perUnit.ac, est: uAc });
       if (tank > 0) L.push({ label: tank + " Tank Water Heater" + (tank > 1 ? "s" : "") + " × " + money(P.perUnit.tankWaterHeater), amt: tank * P.perUnit.tankWaterHeater, est: uWh });
       if (tankless > 0) L.push({ label: tankless + " Tankless Water Heater" + (tankless > 1 ? "s" : "") + " × " + money(P.perUnit.tanklessWaterHeater), amt: tankless * P.perUnit.tanklessWaterHeater, est: uWh });
       L.push({ label: "Dryer vent cleaning", amt: P.dryerVent, est: false });
@@ -218,46 +149,6 @@
     if (tier === "platinum") return b.platinumRaw;
     return b.goldRaw;
   }
-  function breakdown(tier) {
-    var b = buildLines(), mem = tierAmt(b, tier);
-    var lines = tierLines(b, tier).filter(function (L) { return L.amt > 0 || L.note; }).map(function (L) {
-      return { label: L.label + (L.note ? " (" + L.note + ")" : ""), amt: L.amt, est: L.est, kind: "item" };
-    });
-    var floorLine = null;
-    if (tierFloored(b, tier)) {
-      floorLine = { label: "Plan minimum (" + money(monthlyOf(tierMin(tier))) + "/Month)", amt: mem - tierRaw(b, tier), kind: "floor" };
-    }
-    var add = selectedAddons();
-    add.forEach(function (x) {
-      lines.push({ label: "Add-on: " + x.label + (x.quoteRequired ? " (Get a Quote)" : ""), amt: x.quoteRequired ? 0 : x.annual, est: false, kind: "addon" });
-    });
-    var lm = selectedLastMinute();
-    lm.forEach(function (x) {
-      lines.push({ label: "Last-minute: " + x.label + (x.quoteRequired ? " (Get a Quote)" : ""), amt: x.quoteRequired ? 0 : x.price, est: false, kind: "lastMinute" });
-    });
-    var addSum = addonsAnnual();
-    var lmSum = lastMinuteTotal();
-    var membership = mem;
-    var discLine = null, year;
-    var offerLine = null, termMonths = 12, prepaid = null;
-    if (S.plan === "biennial") {
-      var two = mem * 2;
-      var freeVal = Math.round(mem / 2); // 6 months at listed annual/12 * 6
-      offerLine = { label: "+6 Free Months Added At The End Of Your Term (Once You Complete It)", amt: 0, kind: "offer" };
-      membership = two;
-      year = two + addSum * 2;
-      prepaid = year;
-      termMonths = 30;
-    } else if (tier === "platinum" && S.plan === "annual") {
-      var disc = Math.max(round(mem * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1668);
-      discLine = { label: "Annual pay-in-full discount (10%, draft)", amt: -(mem - disc), kind: "discount" };
-      membership = disc;
-      year = disc + addSum;
-    } else {
-      year = mem + addSum;
-    }
-    return { tier: tier, lines: lines, floorLine: floorLine, discLine: discLine, offerLine: offerLine, membership: membership, addons: addSum, lastMinute: lmSum, year: year, monthly: termMonths === 30 ? Math.round(year / 24) : monthlyOf(year), termMonths: termMonths, prepaid: prepaid, floored: tierFloored(b, tier) };
-  }
   window.SmartUpkeepPrice = price; // exposed for testing
 
   /* ---------- Navigation ---------- */
@@ -266,24 +157,15 @@
   function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2.2" stroke-linejoin="round"/></svg></button></span>'; }
 
   function render() {
-    /* Intro screen retired: old links and saved state land on the first question. */
-    if (S.screen === "overview") S.screen = "q0";
-    S.path = S.path.filter(function (x) { return x !== "overview"; });
+    /* Nov 11 2026 onboarding redo: the old question screens, photos, free tech visit, compare, sign-up and pay screens are retired. Saved state on any of them lands on step 1. */
+    if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
+    S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     var s = S.screen, html;
-    app.classList.toggle("wide", s === "quote" || s === "accept" || s === "photos" || s === "extras");
+    app.classList.remove("wide");
     if (s === "home") html = home();
-    else if (s === "overview") html = overview();
-    else if (/^q\d$/.test(s)) html = question(Number(s.slice(1)));
-    else if (s === "choice") html = choice();
-    else if (s === "photos") html = photos();
-    else if (s === "visit") html = visitForm();
-    else if (s === "quote") html = quote();
-    else if (s === "accept") html = accept();
+    else if (isOb(s)) html = obRender(s);
     else if (s === "alacarte") html = alacarte();
     else if (s === "alacarteConfirm") html = alacarteConfirm();
-    else if (s === "extras") html = extrasStep();
-    else if (s === "signup") html = signup();
-    else if (s === "pay") html = payStep();
     else if (s === "confirm") html = confirm();
     else if (s === "cancel") html = cancelPage();
     else { S.screen = "home"; html = home(); }
@@ -294,23 +176,7 @@
     document.body.classList.toggle("on-accept", s === "accept");
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
-    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You are on the list. Coming soon to you — first 50 members get 2 years for the price of 1 when we launch (demo: saved on this device only)."; wf.reset(); });
-  }
-
-  /* ---------- Guided step rail (Style Swipe: guided, visual, system-like) ---------- */
-  function stepRail(active) {
-    var steps = [
-      { n: 1, label: "Questions", ico: I("pen","xs") },
-      { n: 2, label: "Photos", ico: I("camera","xs") },
-      { n: 3, label: "Quote", ico: I("clipboard","xs") },
-      { n: 4, label: "Sign Up", ico: I("doc","xs") }
-    ];
-    return '<nav class="step-rail" aria-label="Your Progress">' + steps.map(function (s) {
-      var state = s.n < active ? " done" : (s.n === active ? " on" : "");
-      return '<div class="step-dot' + state + '" aria-current="' + (s.n === active ? "step" : "false") + '">' +
-        '<span class="step-ico" aria-hidden="true">' + s.ico + '</span>' +
-        '<span class="step-lab">' + s.label + '</span></div>';
-    }).join('<span class="step-join" aria-hidden="true"></span>') + '</nav>';
+    var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You're on the list. We'll email you when Smart Upkeep is coming to your area."; wf.reset(); });
   }
 
   /* ---------- Screens ---------- */
@@ -391,26 +257,6 @@
   }
   /* Legal (Max 20:10 ICT Oct 17): the 3-day Home Solicitation notice is for OFFLINE sign-ups only (home/door, event, outbound phone).
      It is NOT shown on the online form. Offline wording lives in forms/in-person/ (printable) and the ops phone script. */
-  function miCancelNotice() {
-    return '<div class="mi-cancel notice" role="note">' +
-      '<p><strong>Michigan Home Solicitation Sales Notice (MCL 445.113).</strong> You, the buyer, may cancel this transaction at any time prior to midnight of the third business day after the date of this transaction. See the attached notice of cancellation form for an explanation of this right.</p>' +
-      '<details class="warn-drop mi-draft"><summary class="mw-hover">1 Warning · Draft Wording</summary><div class="warn-body small muted">This bold notice appears next to your signature when the sale is made at your home. Final wording pending legal review.</div></details></div>';
-  }
-
-  /* ROSCA (Legal, Max 20:10 ICT Oct 17): clear auto-renewal terms before billing info, express consent box, simple online cancel. Draft wording. */
-  function renewTerms() {
-    /* Legal follow-up (Max 20:38 ICT Oct 17). Start = first visit (membership starts at the first visit); before one is booked we show the
-       earliest bookable day (2 days out, same as the first-visit picker). Renewal = start + term (12 months, or 24 paid + 6 free = 30). */
-    var t = totals(), bi = t.plan === "biennial", yrs = bi ? "24 paid months (plus 6 free months at the end)" : "12 months";
-    var st = S.firstVisit ? new Date(S.firstVisit + "T12:00:00") : new Date(Date.now() + 2 * 864e5), rn = new Date(st.getTime());
-    rn.setMonth(rn.getMonth() + (bi ? 30 : 12));
-    function dd(d) { return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); }
-    return '<div class="renew-terms notice" role="note"><span class="draft">Draft, pending Michigan attorney review</span><p><strong>Auto-Renewal Terms</strong></p><ul class="feat small">' +
-      '<li>Your plan: <strong>' + esc(P.tiers[S.tier].label) + '</strong>, current price <strong>' + money(t.membershipAnnual) + '/year</strong> (about ' + money(monthlyOf(t.membershipAnnual)) + '/month). Today you pay <strong>' + money(t.today) + '</strong> for ' + yrs + '.</li>' +
-      '<li>Your membership starts at your first visit' + (S.firstVisit ? ' (' + dd(st) + ')' : ' (earliest: ' + dd(st) + ')') + ' and <strong>renews automatically on ' + dd(rn) + '</strong>' + (S.firstVisit ? '' : ' if it starts that day') + ', for another 12 months at the plan price at that time, charged to the card you add at the payment step. Free months from referrals move this date later.</li>' +
-      '<li>You can cancel anytime before renewal at <a href="/#cancel" class="link mw-hover">smartupkeep.ai/#cancel</a>; we\u2019ll email you at least 30 days before any price change or renewal charge.</li>' +
-      '<li><strong>Cancel anytime, no fee, online in one step.</strong> Refund = prepaid minus completed services.</li></ul></div>';
-  }
   function cancelPage() {
     return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No fee, no phone call needed. Your refund is what you prepaid minus the itemized price of services already done.</p>' +
       '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
@@ -705,7 +551,7 @@
       row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
-      '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term</p><p>Refer a Neighbor: 1 Month Free Each, Added at the End of Your Term Once You Complete It</p><p>Free months are added at the end of your term and apply once you complete it.</p><p class="muted">Offers Stack. Draft Terms.</p></div></div></div>' +
+      '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">&times;</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
         wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
@@ -861,7 +707,7 @@
       pop.querySelector(".hm-pop-go").addEventListener("click", function () {
         pop.hidden = true; document.documentElement.classList.remove("hm-pop-open");
         if (popTier && P.tiers[popTier]) S.tier = popTier;
-        go("q0");
+        go(OB[0]);
       });
       document.addEventListener("keydown", function (e) { if (e.key === "Escape") popClose(); });
     }
@@ -886,436 +732,397 @@
 
   /* Coming back later: Resume Card (Info Gather Deck). */
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
-  function hasResume() { return !!S.resume && /^(q\d+|choice|photos|visit|quote|accept|signup|pay)$/.test(S.resume); }
-  function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
+  function hasResume() { return !!S.resume && isOb(S.resume); }
   function resumeCard() {
-    var done = Q.filter(function (q) { return S.answers[q.id] !== undefined; }).length;
-    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + Q.length + ' questions answered</small></div>' +
+    var done = Math.max(0, OB.indexOf(S.resume));
+    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' questions answered</small></div>' +
       '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">&times;</button>' +
       '<span class="hm-resume-btns"><button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button><button class="btn btn-outline mw-hover" data-act="startOver" type="button">Start Over</button></span></div>';
   }
-  function overview() {
-    var steps = [
-      [I("pen"), "8 Quick Questions", ""],
-      [I("camera"), "Photos (Optional)", ""],
-      [I("clipboard"), "Pick a Plan", ""],
-      [I("doc"), "Sign Up", ""]
-    ];
-    return backBtn() + stepRail(1) + '<h1>Four Quick Steps</h1>' +
-      '<ol class="steps guide-steps">' + steps.map(function (s, i) {
-        return '<li class="card mw-hover"><span class="num accent-' + (i % 4) + '" aria-hidden="true">' + s[0] + '</span><div><h3 style="margin:0">' + s[1] + '</h3></div></li>';
-      }).join("") + '</ol>' +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="q0" type="button">Start</button>';
-  }
+  var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", pool: "pool", humidifier: "radon", softener: "meter" };
+  /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
+     Address > Home Basics > Systems > Add-Ons > Plan > Billing > Access > Start Date > Accept.
+     No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
+  var OB = ["address", "basics", "systems", "addons", "plan", "billing", "access", "start", "accept"];
+  var OB_NAME = { address: "Your Address", basics: "Home Basics", systems: "Your Systems", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", accept: "Accept" };
+  /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
+  /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
+  var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
+  function obCls() { return Object.keys(OB_STYLE).map(function (k) { return "ob-" + k + "-" + OB_STYLE[k].toLowerCase(); }).join(" "); }
+  /* Founding 50 (Machan Nov 11): 2 years for the price of 1 is shown and preselected automatically while founding spots last; no code needed.
+     Set open to false when the 50 spots are gone. There is no other annual offer (Machan 4:02 PM ICT Nov 11: no 10% annual discount), so only Monthly is offered then. */
+  var FOUNDING = { open: true };
+  /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
+  var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
+  var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
+  var STORY_OPTS = [["1", "1 Story", "Ranch"], ["2", "2 Stories", ""], ["3", "3 Stories", ""]];
+  var ACCESS_OPTS = [["home", "I'll Be Home", "user"], ["lockbox", "Lockbox", "shield"], ["door", "Door Code", "tag"], ["other", "Something Else", "pen"]];
+  /* Did You Know tips stay on the question screens (Machan Nov 11). */
+  var DYK = {
+    address: "Every visit ends with a written report saved to your Home Record.",
+    basics: "Plus includes gutter and downspout cleaning every spring and fall.",
+    systems: "We change your furnace filters during every visit, at no extra charge.",
+    addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera."
+  };
+  /* Legal-approved First Visit blurb. Keep word for word. */
+  var FIRST_VISIT_BLURB = "Your first visit is a full visit. We check every system in your plan, start your Home Record and get to know your home. Seasonal tasks happen on the visits when they're due.";
+  /* Approved price-confirm line for Accept. Keep word for word. */
+  var PRICE_CONFIRM = "Your price is based on your answers. At your first visit, your tech confirms your home's systems. If anything changes your price, you'll see the new price before it applies and can accept it or cancel with no fee.";
+  /* LINK SLOT: Legal's Member Agreement (UpKeep board id member-agreement-draft, commit 54e4f1d) is still in Michigan attorney review and has no public URL yet.
+     Set url when Legal publishes it. Until then Accept shows a marked slot instead of agreement text (no new legal text is written here). */
+  var AGREEMENT = { id: "member-agreement-draft", rev: "54e4f1d", url: "" };
 
-  /* ---------- Quote flow (one question per screen) ---------- */
-  var QART = { zip: "house", sqft: "house", furnaces: "furnace", acs: "ac", waterHeaters: "waterheater", softener: "meter", stories: "gutter", extras: "star" };
-  var QSHORT = { zip: "Your ZIP or Address", sqft: "Home Size", furnaces: "Furnaces", acs: "AC Units", waterHeaters: "Water Heaters", softener: "Water Softener", stories: "Stories", extras: "Extras" };
-  var QTITLE = { zip: "Where's Your Home?", sqft: "How Big Is Your Home?", furnaces: "How Many Furnaces?", acs: "How Many AC Units?", waterHeaters: "How Many Water Heaters?", softener: "Do You Have a Water Softener?", stories: "How Many Stories?", extras: "Any of These?" };
-  var QHELP = { zip: "ZIP or street address. Metro Detroit.", sqft: "A rough range is fine.", furnaces: "Most homes over 3,500 sq ft have two.", acs: "Count the outdoor units.", waterHeaters: "Then pick the type.", softener: "Usually a tall tank and a salt bin near the water heater.", stories: "Sets gutter and ladder work.", extras: "Pick all that apply." };
-  var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", pool: "pool", humidifier: "radon" };
-  var SQICO = ["house", "house", "house", "house", "house", "house"];
-  var PCOL = { silver: 1, gold: 2, platinum: 3 };
-  function qTile(attr, val, label, ico, tint, sel, extra) {
-    return '<button type="button" class="qt mw-hover t' + tint + (sel ? " sel" : "") + (extra || "") + '" data-' + attr + '="' + val + '" aria-pressed="' + !!sel + '">' +
-      '<span class="qt-ic">' + ico + '</span><span class="qt-lab">' + label + '</span>' + (sel ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-  }
-  /* Drawn illustrations on answer tiles (Info Gather Deck): the equipment drawing, stacked for 2+, crossed for none. */
-  function drawnCount(icoName, n) { if (n === "0") return I(icoName, "sm") + '<b class="qt-x" aria-hidden="true"></b>'; var k = Math.min(3, Number(n) || 1), h = ""; for (var j = 0; j < k; j++) h += I(icoName, "sm"); return '<span class="qt-stack n' + k + '">' + h + '</span>'; }
-  function countIco(icoName, n) { return n === "0" ? I(icoName, "sm") + '<b class="qt-x" aria-hidden="true"></b>' : '<b class="qt-n">' + esc(n) + '</b>'; }
-  function planChip() {
-    var t = P.tiers[S.tier] || P.tiers[tierKeys()[0]];
-    return '<div class="qf-plan"><button type="button" class="qf-chip mw-hover tc' + (PCOL[S.tier] || 1) + '" data-plan-chip="1" aria-expanded="false" aria-controls="qfPlans">' + '<span class="qf-dot" aria-hidden="true"></span>' + esc(t.label) + ' Plan<span class="qf-chg">Change</span></button>' +
-      '<div class="qf-plans" id="qfPlans" hidden>' + tierKeys().map(function (k) { return '<button type="button" class="qf-pick mw-hover tc' + (PCOL[k] || 1) + (S.tier === k ? " sel" : "") + '" data-plan-pick="' + k + '"><span class="qf-dot" aria-hidden="true"></span>' + esc(P.tiers[k].label) + '</button>'; }).join("") + '</div></div>';
-  }
-  function qHead(i) {
-    var q = Q[i], c = chapterOf(q.id);
-    return '<div class="qf-top">' + planChip() + '</div>' +
-      '<div class="qf-prog"><span class="qf-step">Chapter ' + (c + 1) + ' of ' + CHAPTERS.length + ' &middot; ' + CHAPTERS[c][0] + '</span>' +
-      '<div class="qf-segs" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + Q.length + '" aria-label="Question ' + (i + 1) + ' of ' + Q.length + '">' +
-      Q.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + (k > 0 && chapterOf(x.id) !== chapterOf(Q[k - 1].id) ? " gap" : "") + '"></span>'; }).join("") + '</div></div>';
-  }
-  function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Free Offer in Minutes &middot; Tailored to Your Home &middot; Warranties Checked</p>'; }
-  function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
-  function qArt(name, tint) { return '<div class="qf-art big t' + tint + '" aria-hidden="true">' + I(name) + '</div>'; }
-  function question(i) {
-    var q = Q[i], a = S.answers[q.id], body = "", tint = i % 4, foot = "";
-    if (q.type === "zip") {
-      body = '<div class="qf-field"><label class="sr" for="zip">Address or ZIP</label>' + I("search", "sm") +
-        '<input id="zip" type="text" inputmode="text" enterkeyhint="next" autocomplete="street-address" placeholder="48322 or 123 Main St, Novi" value="' + esc(a && a !== "unsure" ? a : "") + '"></div>' +
-        '<div class="err" id="zipErr" role="alert"></div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>See My Price</button>' +
-        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure? Skip for Now</button>';
-    } else if (q.type === "multi") {
-      var arr = Array.isArray(a) ? a : [];
-      body = '<div class="qt-grid two" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("multi", o[0], o[1].replace("Whole-House ", ""), I(XICO[o[0]] || "wrench", "sm"), k % 4, arr.indexOf(o[0]) > -1, " chkt"); }).join("") +
-        qTile("multi", "none", "None of These", I("shield", "sm"), 3, a === "none", " chkt") + '</div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
-        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
-    } else if (q.type === "wh") {
-      var t = S.answers.whType;
-      body = '<div class="qt-grid two cmp" data-ptr-ignore>' + q.opts.map(function (o, k) { return qTile("single", o[0], o[1] === "1" ? "One" : o[1] === "2" ? "Two" : o[1], drawnCount("waterheater", o[0]), k % 4, String(a) === o[0], " chkt"); }).join("") + '</div>' +
-        '<p class="qf-sub">Tank or Tankless?</p><div class="qt-grid two cmp" data-ptr-ignore>' + [["tank", "Tank", "waterheater"], ["tankless", "Tankless", "tankless"], ["both", "One of Each", "grid"]].map(function (o, k) { return qTile("wh", o[0], o[1], I(o[2], "sm"), (k + 1) % 4, t === o[0], " chkt"); }).join("") + '</div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' +
-        '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>';
-    } else {
-      var cnt = q.id === "furnaces" || q.id === "acs";
-      var cls = "two";
-      body = '<div class="qt-grid ' + cls + '" data-ptr-ignore>' + q.opts.map(function (o, k) {
-        var ico = cnt ? drawnCount(QART[q.id], o[0]) : q.id === "stories" ? drawnCount("house", o[0]) : q.id === "softener" ? I(o[0] === "yes" ? "meter" : o[0] === "no" ? "shield" : "faq", "sm") : I("house", "sm");
-        var lab = cnt ? (o[0] === "0" ? "None" : o[1] === o[0] ? (o[0] === "1" ? "One" : o[0] === "2" ? "Two" : o[0] === "3" ? "Three" : o[1]) : o[1]) : o[1].replace(" sq ft", "").replace(" (Ranch)", "");
-        var sub = q.id === "sqft" ? '<small>sq ft</small>' : q.id === "stories" && o[0] === "1" ? '<small>Ranch</small>' : "";
-        return qTile("single", o[0], lab + sub, ico, k % 4, String(a) === o[0], q.id === "sqft" ? " sz" + k : "");
-      }).join("") + '</div>';
-      foot = '<button class="btn btn-primary btn-big mw-hover" data-act="next" type="button"' + (isAnswered(q) ? "" : " disabled") + '>Next</button>' + (q.id === "softener" ? "" : '<button type="button" class="qf-unsure mw-hover' + (a === "unsure" ? " sel" : "") + '" data-unsure="1">Unsure</button>');
-    }
-    var ph = QPHOTO[q.id], phN = ph ? (S.photos[ph] || 0) : 0;
-    var side = ph ? '<label class="qf-snap mw-hover">' + I("camera", "xs") + '<span><b>' + (phN ? phN + " Photo" + (phN > 1 ? "s" : "") + " Added" : "Snap a Photo (Optional)") + '</b><small>Snapping a photo will help improve your maintenance service.</small></span>' +
-      '<input type="file" accept="image/*" capture="environment" data-photo="' + ph + '" hidden></label>' : "";
-    var dyk = DYK[q.id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[q.id] + '</p></div>' : "";
-    return '<section class="qf qf-' + q.id + '">' + qHead(i) +
-      '<div class="qf-hero stack">' + qArt(QART[q.id], tint) + '<h1 class="qf-h">' + QTITLE[q.id] + '</h1><p class="qf-help">' + QHELP[q.id] + '</p></div>' +
-      '<div class="qf-body">' + body + side + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + startOverBtn() + '</div></section>';
-  }
-  function unsureBtn(sel) { return '<button type="button" class="opt unsure mw-hover' + (sel ? " sel" : "") + '" data-unsure="1">Unsure</button>'; }
-  function isAnswered(q) {
-    var a = S.answers[q.id];
-    if (q.type === "zip") return a === "unsure" || (typeof a === "string" && a.trim().length >= 5);
-    if (q.type === "multi") return a === "unsure" || a === "none" || (Array.isArray(a) && a.length > 0);
-    if (q.type === "wh") return a !== undefined && !!S.answers.whType;
-    return a !== undefined;
-  }
-  function zipOf(s) { var m = String(s || "").match(/\b(4[89]\d{3})\b/) || String(s || "").match(/\b(\d{5})\b/); return m ? m[1] : null; }
+  function isOb(s) { return OB.indexOf(s) > -1; }
+  /* Service area: metro Detroit ZIPs 480xx to 483xx (same check as before). */
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
+  function localISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function minStart() { return localISO(new Date(Date.now() + 2 * 864e5)); }
+  function longDate(iso) { var t = new Date(iso + "T12:00:00"); return isNaN(t) ? iso : t.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }); }
+  function cnt(k) { var v = S.answers[k]; return v === undefined || v === "unsure" ? BASE_SET[k] : Math.max(0, Number(v) || 0); }
+  function whTypes() { var n = cnt("waterHeaters"), t = Array.isArray(S.answers.whTypes) ? S.answers.whTypes.slice(0, n) : []; while (t.length < n) t.push("tank"); return t; }
+  function extraTags() {
+    var t = [];
+    [["furnaces", "Furnace"], ["acs", "AC"], ["waterHeaters", "Water Heater"]].forEach(function (x) { var n = cnt(x[0]) - BASE_SET[x[0]]; if (n > 0) t.push("+" + n + " " + x[1]); });
+    return t;
+  }
+  function planTag(k) { return [P.tiers[k || S.tier].label].concat(extraTags()).join(" · "); }
+  function moLabel(annual) { return "+" + money(monthlyOf(annual)) + "/mo"; }
+  /* Billing (Machan Nov 11, updated 4:02 PM ICT): founding = pay 1 year of plan + add-ons, get 2 years (add-ons included in the 2-for-1).
+     monthly = plan + add-ons each month, first charge today at sign-up, then on that date each month. No 10% annual path. */
+  function obPlan() { var p = S.plan; if (p === "monthly" || !FOUNDING.open) return "monthly"; return "founding"; }
+  function obBill(tier) {
+    tier = tier || S.tier;
+    var mem = price()[tier], add = addonsAnnual(), plan = obPlan();
+    var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(add) };
+    if (plan === "founding") { r.label = "Annual · Founding 2-For-1"; r.long = "Founding Member: 2 Years For The Price Of 1"; r.today = mem + add; r.termMonths = 24; }
+    else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge; r.termMonths = 12; }
+    return r;
+  }
+  function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored to Your Home &middot; Warranties Checked</p>'; }
+  function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
+  function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
+  function obShell(id, art, tint, title, help, body, foot) {
+    var i = OB.indexOf(id);
+    var prog = '<div class="qf-prog"><span class="qf-step">Step ' + (i + 1) + ' of ' + OB.length + ' &middot; ' + OB_NAME[id] + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + OB.length + '" aria-label="Step ' + (i + 1) + ' of ' + OB.length + '">' +
+      OB.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
+    var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
+    return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
+      '<div class="qf-hero stack compact"><div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div><h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
+      '<div class="qf-body">' + body + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + startOverBtn() + '</div></section>';
+  }
+  function nextBtn(label, ok) { return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + '>' + label + '</button>'; }
 
-  function answerText(q) {
-    var a = S.answers[q.id];
-    if (a === undefined) return "Not Answered"; if (a === "unsure") return "Unsure"; if (a === "none") return "None";
-    if (q.id === "zip") return esc(a);
-    if (q.id === "extras") return (Array.isArray(a) ? a : []).map(function (k) { return esc((P.extras[k] || {}).label || k); }).join(", ");
-    var o = (q.opts || []).filter(function (x) { return x[0] === String(a); })[0], t = o ? o[1] : String(a);
-    if (q.id === "waterHeaters") { var w = S.answers.whType; t += w === "tank" ? ", Tank" : w === "tankless" ? ", Tankless" : w === "both" ? ", One of Each" : ""; }
-    if (q.id === "acs" && a === "0") t = "None";
-    return esc(t);
+  /* 1. Address: first, required street address + ZIP, in-area check. Out of area shows the waitlist (Coming Soon, no date). */
+  function addrOk() { var a = S.answers; return /\d+\s+\S+/.test(String(a.street || "").trim()) && /^\d{5}$/.test(String(a.zipcode || "")); }
+  function obAddress() {
+    var a = S.answers, out = S._outZip && S._outZip === a.zipcode;
+    var body = '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
+      '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '"></div>' +
+      '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "");
+    return obShell("address", "house", 0, "Where's Your Home?", "What's the address of the home you'd like us to take care of? We serve metro Detroit: Wayne, Oakland, Macomb and nearby.", body, nextBtn("Next", addrOk() && !out));
   }
-  function answerSummary() {
-    return '<ul class="qf-sum">' + Q.map(function (q, i) { return '<li><span class="qf-sum-ic">' + I(QART[q.id], "xs") + '</span><span class="qf-sum-k">' + QSHORT[q.id] + '</span><b>' + answerText(q) + '</b><button type="button" class="link mw-hover" data-edit="' + i + '">Edit</button></li>'; }).join("") + '</ul>';
-  }
-  function choice() {
-    return '<section class="qf qf-done">' + '<div class="qf-top">' + planChip() + '</div>' +
-      '<div class="qf-prog"><span class="qf-step">All ' + Q.length + ' Done</span><div class="qf-segs all" aria-hidden="true">' + Q.map(function () { return '<span class="done"></span>'; }).join("") + '</div></div>' +
-      '<h1 class="qf-h center">Your Price Is Ready</h1><p class="qf-help center">Built from your answers.</p>' + answerSummary() +
-      '<div class="qf-foot"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See My Price</button>' +
-      '<button class="btn btn-outline btn-big mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos to Lock It In</button><p class="qf-help center small">Photos are optional.</p>' + tagLine() + navBar() + startOverBtn() + '</div></section>';
+  function waitlistCard(z) {
+    return '<section class="hm-wait qt-wait ob-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon</h3><p class="small muted">We don\'t serve ZIP ' + esc(z) + ' yet. Join the waitlist and we\'ll email you when we\'re coming to your area. While founding spots last, founding members get 2 years for the price of 1.</p>' +
+      '<form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join The Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
-  function photoCards() {
-    var a = S.answers, d = P.unsureDefaults, cards = [];
-    var f = num("furnaces", d.furnaces), ac = num("acs", d.acs), wh = num("waterHeaters", d.waterHeaters);
-    for (var i = 1; i <= f; i++) cards.push(["furnace" + i, "Furnace " + (f > 1 ? i + " " : "") + "Label", "The sticker inside the furnace door with model and serial."]);
-    for (i = 1; i <= ac; i++) cards.push(["ac" + i, "AC Unit " + (ac > 1 ? i + " " : "") + "Label", "The data plate on the outdoor condenser."]);
-    for (i = 1; i <= wh; i++) cards.push(["wh" + i, "Water Heater " + (wh > 1 ? i + " " : "") + "Label", "The rating label on the side of the tank or unit."]);
-    cards.push(["panel", "Electrical Panel", "Open the panel door; include the label inside it."]);
-    (Array.isArray(a.extras) ? a.extras : []).forEach(function (k) { if (P.extras[k]) cards.push(["x-" + k, P.extras[k].label, "A photo of the unit and any label you can find."]); });
-    return cards;
+  /* 2. Home Basics: size AND stories, both priced (Machan Nov 11). Deck card 5: A chips, B steppers. */
+  function obBasics() {
+    var a = S.answers, sz = a.sqft != null && a.sqft !== "unsure" ? String(a.sqft) : "", st = a.stories != null && a.stories !== "unsure" ? String(a.stories) : "";
+    var body;
+    if (OB_STYLE.basics === "B") {
+      var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === sz) si = k; });
+      body = '<div class="pick-step"><div class="meta"><p class="k">Home Size</p><p class="v">' + (si > -1 ? SIZE_OPTS[si][1] + " sq ft" : "Pick A Size") + '</p><p class="s">A rough range is fine</p></div>' + obStepper("sqft", null, si <= 0, si >= SIZE_OPTS.length - 1, "Home size") + '</div>' +
+        '<div class="gap-md"></div><div class="pick-step"><div class="meta"><p class="k">Stories</p><p class="v">' + (st ? STORY_OPTS[Number(st) - 1][1] : "Pick Stories") + '</p><p class="s">Sets gutter and ladder work</p></div>' + obStepper("stories", st || "–", !st || st === "1", st === "3", "Stories") + '</div>';
+    } else {
+      body = '<p class="blk-lab">Home Size</p><div class="size-grid" data-ptr-ignore>' + SIZE_OPTS.map(function (o, k) {
+          return '<button type="button" class="qt mw-hover t' + (k % 4) + ' sz' + k + (sz === o[0] ? " sel" : "") + '" data-ob-size="' + o[0] + '" aria-pressed="' + (sz === o[0]) + '"><span class="qt-ic">' + I("house", "sm") + '</span><span class="qt-lab"><b>' + o[1] + '</b><small>sq ft</small></span></button>';
+        }).join("") + '</div>' +
+        '<p class="blk-lab" style="margin-top:.8rem">Stories</p><div class="story-row" data-ptr-ignore>' + STORY_OPTS.map(function (o, k) {
+          return '<button type="button" class="qt mw-hover t' + ((k + 1) % 4) + (st === o[0] ? " sel" : "") + '" data-ob-story="' + o[0] + '" aria-pressed="' + (st === o[0]) + '"><span class="qt-ic">' + I("house", "sm") + '</span><span class="qt-lab"><b>' + o[1] + '</b>' + (o[2] ? '<small>' + o[2] + '</small>' : '') + '</span></button>';
+        }).join("") + '</div>';
+    }
+    body += '<p class="priced-note">Size and stories are both priced into your plan.</p>';
+    return obShell("basics", "house", 1, "About Your Home", "About how big is your home? A rough range is fine. How many stories is your home?", body, nextBtn("Next", !!(sz && st)));
   }
-  function photos() {
-    var cards = photoCards();
-    return backBtn() + stepRail(2) + '<p class="eyebrow">Step 2 &middot; Optional</p><h1>Take Some Photos</h1>' +
-      '<p class="muted">One Label Photo Each Locks Your Price.</p>' +
-      '<div class="photos" style="margin-top:1rem">' + cards.map(function (c) {
-        var urls = photoMem[c[0]] || [], n = urls.length || (S.photos[c[0]] || 0);
-        return '<div class="card pcard mw-hover"><h3>' + esc(c[1]) + (n ? '<span class="done-badge">' + n + ' Added</span>' : "") + '</h3><p class="muted small" style="margin:0 0 .6rem">' + esc(c[2]) + '</p>' +
-          '<label class="btn btn-outline mw-hover" style="width:100%">' + I("camera","xs") + ' Take or Choose Photo<input type="file" accept="image/*" capture="environment" multiple data-photo="' + c[0] + '"></label>' +
-          '<div class="prev">' + urls.map(function (u) { return '<img alt="Preview" src="' + u + '">'; }).join("") + (n && !urls.length ? '<span class="small muted">Previews clear on reload.</span>' : "") + '</div></div>';
+  /* -/+ stepper. Deck card 1: A inline pill, B big circles (CSS only, see onboarding.css .ob-stepper-a / .ob-stepper-b). */
+  function obStepper(key, n, noMinus, noPlus, label) {
+    return '<div class="ob-step" role="group" aria-label="' + esc(label) + '"><button type="button" class="mw-hover" data-ob-step="' + key + ':-1" aria-label="Fewer"' + (noMinus ? " disabled" : "") + '>&minus;</button>' +
+      (n === null ? '' : '<span class="n" aria-live="polite">' + esc(n) + '</span>') + '<button type="button" class="mw-hover" data-ob-step="' + key + ':1" aria-label="More"' + (noPlus ? " disabled" : "") + '>+</button></div>';
+  }
+
+  /* 3. Systems: -/+ steppers (no "or More" caps), AC labeled AC / AC 1 / AC 2, tank or tankless per water heater, priced extras tiles.
+     Electrical panel and sensors are not asked; they're logged at the first visit (Machan Nov 11). */
+  var SYS_MAX = 20;
+  function obSystems() {
+    var f = cnt("furnaces"), ac = cnt("acs"), wh = cnt("waterHeaters"), types = whTypes();
+    function units(word, n) { return n > 1 ? Array.apply(null, Array(n)).map(function (_, i) { return word + " " + (i + 1); }).join(" · ") : n === 0 ? "None" : ""; }
+    function plus(k, n) { var x = n - BASE_SET[k]; return x > 0 ? '<span class="plus-tag">+' + x + '</span>' : ''; }
+    function row(k, ico, tint, name, n, extra) {
+      var sub = units(name, n);
+      return '<div class="sys-row"><div class="sys-ic t' + tint + '" aria-hidden="true">' + I(ico, "sm") + '</div><div class="sys-meta"><div class="sys-name">' + name + plus(k, n) + '</div>' + (sub ? '<p class="sys-sub">' + sub + '</p>' : '') + (extra || '') + '</div>' + obStepper(k, n, n <= 0, n >= SYS_MAX, name + " count") + '</div>';
+    }
+    var whx = types.map(function (t, i) {
+      return '<div class="ob-wh"><span>' + (wh > 1 ? "Water Heater " + (i + 1) : "Type") + '</span><div class="type-seg" role="group" aria-label="Water Heater ' + (i + 1) + ' type">' +
+        [["tank", "Tank"], ["tankless", "Tankless"]].map(function (o) { return '<button type="button" class="mw-hover' + (t === o[0] ? " on" : "") + '" data-ob-wh="' + i + ':' + o[0] + '" aria-pressed="' + (t === o[0]) + '">' + o[1] + '</button>'; }).join("") + '</div></div>';
+    }).join("");
+    var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
+    var tiles = Object.keys(P.extras).map(function (k, j) {
+      var e = P.extras[k], on = ex.indexOf(k) > -1, sub = e.all > 0 ? moLabel(e.all) : "Included On Plus And Up";
+      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(e.label.replace("Whole-House ", "")) + '<small>' + sub + '</small></span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
+    }).join("");
+    var body = '<div class="sys-list">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh, wh ? '<div class="ob-whs">' + whx + '</div>' : '') + '</div>' +
+      '<p class="blk-lab" style="margin-top:.9rem">Do You Have Any Of These?</p><div class="qt-grid two" data-ptr-ignore>' + tiles + '</div>';
+    return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true));
+  }
+
+  /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
+  function aoPrice(a) { return a.quoteRequired ? "Get A Quote" : moLabel(a.annual); }
+  function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return d + (a.quoteRequired ? " We'll follow up with a price." : ""); }
+  function obAddons() {
+    var sel = S.addons || [];
+    var rows = (P.addons || []).map(function (a) {
+      var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
+      return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(XT_ICO[a.id] || "wrench", "sm") +
+        '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
+        '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button></div>' +
+        (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
+    }).join("");
+    var add = addonsAnnual();
+    var body = '<ul class="ob-ao-list">' + rows + '</ul>' + (add ? '<p class="priced-note">Your add-ons: ' + moLabel(add) + '</p>' : '');
+    return obShell("addons", "wrench", 3, "Add-Ons", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
+  }
+
+  /* 5. Plan with tags: Essentials / Plus / Complete, Plus by default, one "Tailor Your Plan" control. Deck card 2: A tag chips, B checklist. */
+  function obPlanScreen() {
+    var p = price(), k = S.tier, t = P.tiers[k], tags = extraTags();
+    var detail = OB_STYLE.plan === "B"
+      ? '<ul class="check-list"><li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(t.label + " · " + t.tagline) + '</li><li><span class="tick" aria-hidden="true">&#10003;</span>Standard Systems Included</li>' + tags.map(function (x) { return '<li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(x) + '</li>'; }).join("") + '</ul>'
+      : '<p class="plan-visits">' + esc(t.tagline) + '</p><div class="tag-row"><span class="tag-chip">' + esc(t.label) + '</span>' + tags.map(function (x) { return '<span class="tag-chip extra">' + esc(x) + '</span>'; }).join("") + '</div>';
+    var main = '<div class="plan-card sel" data-ob-tier="' + k + '">' + (t.recommended ? '<span class="ribbon">Fits This Home</span>' : '') +
+      '<p class="plan-kicker">' + t.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(t.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[k])) + '<small>/mo</small></p>' + detail +
+      '<button type="button" class="tailor mw-hover" data-ob-tailor="1">Tailor Your Plan</button></div>';
+    var alts = tierKeys().filter(function (x) { return x !== k; }).map(function (x) {
+      return '<button type="button" class="plan-alt mw-hover" data-ob-tier="' + x + '"><div><b>' + esc(P.tiers[x].label) + '</b><span>' + P.tiers[x].visits + ' Visits A Year</span></div><span class="amt">' + money(monthlyOf(p[x])) + '/mo</span></button>';
+    }).join("");
+    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + main + alts + '</div>', nextBtn("Continue To Billing", true));
+  }
+
+  /* 6. Billing: founding 2-for-1 annual preselected vs monthly. Deck card 3: A segmented control, B stacked cards. */
+  function obBilling() {
+    var plan = obPlan(), t = P.tiers[S.tier];
+    var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
+    var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
+    var aSel = plan === "founding";
+    var annualCopy = "Pay one year of your " + esc(t.label) + " plan" + (an.addonsAnnual ? " and add-ons" : "") + ", get two years of care.";
+    var monthlyCopy = "First charge today, then on this date each month." + (FOUNDING.open ? " Switch to annual and get 2 years for the price of 1." : "");
+    var addNote = an.addonsAnnual ? " Includes add-ons " + money(an.addonsAnnual) + "/yr, also 2 years for the price of 1." : "";
+    function annualCard(sel, withDue) {
+      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="founding"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="badge-found">Founding 2-For-1</span></div>' +
+        '<p class="bill-lead">Founding Member: 2 Years For The Price Of 1</p><p class="bill-copy">' + annualCopy + '</p>' +
+        (withDue ? '<div class="due-box in"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : '') + '</div>';
+    }
+    function monthlyCard(sel) {
+      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="monthly"' : '') + '><div class="bill-top"><p class="bill-name">Monthly</p><span class="bill-amt">' + money(mo.perCharge) + '/mo</span></div><p class="bill-copy">' + monthlyCopy + '</p></div>';
+    }
+    var moDue = '<div class="due-box"><span class="k">Due Today</span><span class="v">' + money(mo.perCharge) + '</span></div>';
+    var body;
+    if (!FOUNDING.open) {
+      /* Founding spots gone: Monthly is the only way to pay (no annual option). */
+      body = monthlyCard(true) + '<div class="gap-md"></div>' + moDue;
+    } else if (OB_STYLE.billing === "B") {
+      body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualCard(aSel, true) + monthlyCard(!aSel) + '</div>';
+    } else {
+      body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aSel ? " on" : "") + '" aria-checked="' + aSel + '" data-ob-bill="founding">Annual<span class="seg-badge">Limited Offer</span></button><button type="button" role="radio" class="mw-hover' + (!aSel ? " on" : "") + '" aria-checked="' + !aSel + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
+        (aSel ? annualCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
+    }
+    body += '<p class="due-note">' + (aSel ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." + addNote + " Monthly is the other choice, charged today and then each month."
+      : "Charged today, then on this date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
+    var help = FOUNDING.open ? "Founding members get two years for the price of one, while spots last. Annual is selected." : "Pay monthly. Your first charge is today.";
+    return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Access", true));
+  }
+
+  /* 7. Access */
+  function obAccess() {
+    var a = S.access || {};
+    var body = '<div class="qt-grid two" data-ptr-ignore>' + ACCESS_OPTS.map(function (o, k) {
+        var on = a.how === o[0];
+        return '<button type="button" class="qt chkt mw-hover t' + (k % 4) + (on ? " sel" : "") + '" data-ob-access="' + o[0] + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(o[2], "sm") + '</span><span class="qt-lab">' + o[1] + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
       }).join("") + '</div>' +
-      '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="photosDone" type="button">Continue to My Price</button></div>' +
-      '<div class="btn-row"><button class="btn btn-outline btn-big mw-hover" data-act="visit" type="button">Free Tech Visit Instead</button></div>';
+      '<label class="fl" for="obAccessNote">Anything We Should Know? (Optional)</label><textarea id="obAccessNote" rows="3" placeholder="Pets, a gate, where the lockbox is">' + esc(a.note || "") + '</textarea>' +
+      '<p class="priced-note">Lockbox and door codes go in your member app, not here.</p>';
+    return obShell("access", "house", 0, "How Should We Get In?", "You don't need to be home. You can leave a lockbox or a door code, or meet us there.", body, nextBtn("Next", !!a.how));
   }
 
-  function visitForm() {
-    var v = S.visit || {}, w = v.windows || [];
-    var min = new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10);
-    return backBtn() + stepRail(2) + '<p class="eyebrow">Free Tech Visit</p><h1>Schedule a Free Tech Visit</h1><p>A tech comes by, logs your equipment and confirms your final price. About 30 minutes, no charge.</p>' +
-      '<form id="visitF" novalidate><label class="fl" for="vDate">Preferred Date</label><input id="vDate" type="date" min="' + min + '" value="' + esc(v.date) + '">' +
-      '<p class="fl">Preferred Time Windows</p><div class="opts two">' + ["Morning (8 to 11)", "Midday (11 to 2)", "Afternoon (2 to 5)", "Evening (5 to 7)"].map(function (t) { var s = w.indexOf(t) > -1; return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-win="' + t + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span>' + t + '</button>'; }).join("") + '</div>' +
-      '<label class="fl" for="vName">Name</label><input id="vName" type="text" autocomplete="name" value="' + esc(v.name) + '">' +
-      '<label class="fl" for="vPhone">Phone</label><input id="vPhone" type="tel" autocomplete="tel" value="' + esc(v.phone) + '">' +
-      '<label class="fl" for="vEmail">Email</label><input id="vEmail" type="email" autocomplete="email" value="' + esc(v.email) + '">' +
-      '<div class="err" id="vErr"></div><div class="btn-row"><button class="btn btn-primary btn-big mw-hover" type="submit">Request My Free Visit</button></div></form>';
+  /* 8. Start Date: date picker, earliest two days out, with the Legal-approved First Visit blurb. */
+  function obStart() {
+    var d = S.firstVisit && S.firstVisit >= minStart() ? S.firstVisit : "";
+    var body = '<label class="fl" for="obDate">First Visit Date</label><input id="obDate" type="date" min="' + minStart() + '" value="' + esc(d) + '">' +
+      '<div class="price-confirm ob-blurb"><b>Your First Visit</b><br>' + FIRST_VISIT_BLURB + '</div>' +
+      '<p class="priced-note">Your membership starts on this visit.' + "" + ' We confirm the time by text.</p>';
+    return obShell("start", "clock", 1, "When Should We Start?", "Pick the day for your first visit.", body, nextBtn("Next", !!d));
   }
 
-  var XT = { open: false, pick: null };
+  /* 9. Accept: recap, contact, code, agreement, signature, payment. Deck card 4: A compact recap line, B itemized. */
+  function accessLabel() { var a = (S.access || {}).how; var o = ACCESS_OPTS.filter(function (x) { return x[0] === a; })[0]; return o ? (a === "home" ? "Home For Visits" : o[1] + " Access") : ""; }
+  function obAccept() {
+    var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
+    var start = S.firstVisit ? longDate(S.firstVisit) : "";
+    var billTxt = b.plan === "monthly" ? "Monthly" : "Annual · Founding 2-For-1";
+    var dueK = "Due Today", dueV = money(b.today);
+    var adds = selectedAddons();
+    var recap;
+    if (OB_STYLE.accept === "B") {
+      var rows = [["Plan", esc(t.label) + " · " + money(b.monthly) + "/mo"], ["Tag", esc(planTag())], ["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]];
+      if (adds.length) rows.push(["Add-Ons", adds.map(function (x) { return esc(x.label) + " " + aoPrice(x); }).join("<br>")]);
+      rows.push([dueK, dueV]);
+      recap = '<div class="item-card">' + rows.map(function (r, i) { return '<div class="item-row' + (i === rows.length - 1 ? " total" : "") + (String(r[1]).length > 28 ? " stack" : "") + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>'; }).join("") +
+        '<p class="price-confirm">' + PRICE_CONFIRM + '</p></div>';
+    } else {
+      var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : "", esc(accessLabel())].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
+      recap = '<div class="accept-compact"><p class="accept-line">' + bits.join(" · ") + '</p><p class="accept-due"><span>' + dueK + '</span><b>' + dueV + '</b></p><p class="price-confirm">' + PRICE_CONFIRM + '</p></div>';
+    }
+    var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
+    function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
+    /* Charge-consent text, verbatim. Founding: Legal review Nov 11. Monthly (charged at sign-up): Legal approved 4:03 PM ICT Nov 11. */
+    var consent = b.plan === "monthly"
+      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> today and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days\' notice of any price change. I can cancel anytime in the app under Profile &amp; Account.'
+      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.';
+    /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
+    var open = !!AGREEMENT.url;
+    var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
+      : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">Member Agreement · Link Coming Soon</span>';
+    var body = recap +
+      '<form id="obF" novalidate class="stack ob-accept-form">' +
+      '<div class="card"><h3>Your Details</h3>' +
+      '<label class="fl" for="sName">Full Name</label>' + fe("sName") + '<input id="sName" type="text" autocomplete="name" value="' + esc(su.name || "") + '">' +
+      '<label class="fl" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || "") + '">' +
+      '<label class="fl" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || "") + '">' +
+      '<p class="small ob-addr"><span>Service Address</span><b>' + esc((a.street || "") + ", " + (a.zipcode || "")) + '</b><button type="button" class="link mw-hover" data-ob-go="address">Edit</button></p>' +
+      '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
+      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
+      '<div class="card"><h3>Member Agreement</h3><p class="small">' + agreeLink + '</p>' +
+      '<label class="checkrow"><input type="checkbox" id="agree"><span>I have read and agree to the Smart Upkeep Member Agreement, including the arbitration agreement and class action waiver. I can opt out of arbitration within 30 days.</span></label>' + fe("agree") +
+      '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>' + consent + '</span></label>' + fe("chargeOk") +
+      '<p class="fl">Signature</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
+      '<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
+      '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + "Accept And Pay " + money(b.today) + '</button>' +
+      (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
+      '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
+    return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan, billing and start date.", body, "");
+  }
+
+  function obRender(s) {
+    if (s === "address") return obAddress();
+    if (s === "basics") return obBasics();
+    if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
+    if (s === "addons") return obAddons();
+    if (s === "plan") return obPlanScreen();
+    if (s === "billing") return obBilling();
+    if (s === "access") return obAccess();
+    if (s === "start") return obStart();
+    return obAccept();
+  }
+  function obNextOf(s) { var i = OB.indexOf(s); return OB[Math.min(OB.length - 1, i + 1)]; }
+  function bindOb(s) {
+    function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
+    var nx = app.querySelector("[data-ob-next]");
+    app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-ob-go")); }); });
+    if (s === "address") {
+      var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
+      function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); save(); }
+      st.addEventListener("input", upd); zp.addEventListener("input", function () { upd(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
+      [st, zp].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === st) zp.focus(); else if (nx && !nx.disabled) nx.click(); } }); });
+      if (nx) nx.addEventListener("click", function () {
+        upd();
+        if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
+        if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
+        S._outZip = ""; go("basics");
+      });
+      return;
+    }
+    if (s === "basics") {
+      app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () { S.answers.sqft = b.getAttribute("data-ob-size"); rer(); }); });
+      app.querySelectorAll("[data-ob-story]").forEach(function (b) { b.addEventListener("click", function () { S.answers.stories = b.getAttribute("data-ob-story"); rer(); }); });
+      app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
+        var kv = b.getAttribute("data-ob-step").split(":"), d = Number(kv[1]);
+        if (kv[0] === "sqft") { var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(S.answers.sqft)) si = k; }); si = si < 0 ? 0 : Math.max(0, Math.min(SIZE_OPTS.length - 1, si + d)); S.answers.sqft = SIZE_OPTS[si][0]; }
+        else { var n = Number(S.answers.stories) || 0; n = n ? Math.max(1, Math.min(3, n + d)) : 1; S.answers.stories = String(n); }
+        rer(); }); });
+    }
+    if (s === "systems") {
+      app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
+        var kv = b.getAttribute("data-ob-step").split(":"), n = Math.max(0, Math.min(SYS_MAX, cnt(kv[0]) + Number(kv[1])));
+        S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); }); });
+      app.querySelectorAll("[data-ob-wh]").forEach(function (b) { b.addEventListener("click", function () {
+        var kv = b.getAttribute("data-ob-wh").split(":"), t = whTypes(); t[Number(kv[0])] = kv[1]; S.answers.whTypes = t; rer(); }); });
+      app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
+        var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
+        if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; rer(); }); });
+      if (nx) nx.addEventListener("click", function () { if (S.tailor) { S.tailor = false; go("plan"); } else go("addons"); });
+      return;
+    }
+    if (s === "addons") {
+      app.querySelectorAll("[data-ob-ao]").forEach(function (b) { b.addEventListener("click", function () {
+        var id = b.getAttribute("data-ob-ao"); S.addons = Array.isArray(S.addons) ? S.addons.slice() : []; var ix = S.addons.indexOf(id);
+        if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
+      app.querySelectorAll("[data-ob-ao-open]").forEach(function (b) { b.addEventListener("click", function () { var id = b.getAttribute("data-ob-ao-open"); S._aoOpen = S._aoOpen === id ? null : id; rer(); }); });
+    }
+    if (s === "plan") {
+      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function () { S.tier = b.getAttribute("data-ob-tier"); rer(); }); });
+      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { S.tailor = true; go("systems"); });
+      if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
+    }
+    if (s === "billing") {
+      app.querySelectorAll("[data-ob-bill]").forEach(function (b) {
+        function pick() { S.plan = b.getAttribute("data-ob-bill"); rer(); }
+        b.addEventListener("click", pick); b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      });
+    }
+    if (s === "access") {
+      app.querySelectorAll("[data-ob-access]").forEach(function (b) { b.addEventListener("click", function () { S.access = Object.assign({}, S.access, { how: b.getAttribute("data-ob-access"), note: val("obAccessNote") }); rer(); }); });
+      var nt = document.getElementById("obAccessNote"); if (nt) nt.addEventListener("input", function () { S.access = Object.assign({}, S.access, { note: nt.value }); save(); });
+    }
+    if (s === "start") {
+      var dt = document.getElementById("obDate");
+      if (dt) dt.addEventListener("input", function () { S.firstVisit = dt.value && dt.value >= minStart() ? dt.value : ""; if (nx) nx.disabled = !S.firstVisit; save(); });
+    }
+    if (s === "accept") { bindAccept(); return; }
+    if (nx) nx.addEventListener("click", function () { go(obNextOf(s)); });
+  }
+  function bindAccept() {
+    var sigs = {}; app.querySelectorAll("[data-sig]").forEach(function (r) { sigs[r.getAttribute("data-sig")] = setupSig(r); });
+    function keep() { var ref = val("sRef"); S.referralCodeIn = ref; S.signup = Object.assign({}, S.signup, { name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, address: (S.answers.street || "") + ", " + (S.answers.zipcode || "") }); }
+    var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); document.getElementById("refWrap").hidden = false; document.getElementById("sRef").focus(); });
+    /* Refer A Neighbor codes only. Format check here; the real check happens on our side. Reward lands at the neighbor's first payment (Machan Nov 11). */
+    (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right. You and your neighbor each get 1 free month once your first payment goes through. Free months have no cash value." : "Codes look like SU-HOME-1234."; o.className = "small ref-check " + (ok ? "ok" : "bad"); r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
+    ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
+    document.getElementById("obF").addEventListener("submit", function (e) {
+      e.preventDefault(); keep();
+      if (!AGREEMENT.url) return;
+      var s = S.signup, errs = [
+        ["sName", !s.name ? "Enter full name." : ""],
+        ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter phone number." : ""],
+        ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter email." : ""],
+        ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
+        ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
+        ["agreeSig", !sigs.agreeSig.valid() ? "Sign to accept." : ""]];
+      var first = null;
+      errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
+      if (first) { first.scrollIntoView({ block: "center" }); return; }
+      var b = obBill();
+      s.agreementSignature = sigs.agreeSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.planTag = planTag(); s.firstVisit = S.firstVisit; s.access = S.access;
+      s.agreement = AGREEMENT.id + "@" + AGREEMENT.rev;
+      s.totals = { plan: b.plan, label: b.label, today: b.today, perCharge: b.perCharge || 0, membershipAnnual: b.membershipAnnual, addonIds: (S.addons || []).slice(), termMonths: b.termMonths };
+      if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
+      logAddon("purchase", (S.addons || []).slice(), "accept:" + S.tier);
+      try { window.SUEvents && SUEvents.emit("signup.completed", "site", { member: s.name || "New member", payload: { plan: P.tiers[S.tier].label, tag: s.planTag, payment: b.plan, addons: (S.addons || []).length } }); } catch (x) {}
+      go("confirm");
+    });
+  }
   var XT_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmInteriorWindows: "window", lmScreens: "window", lmBulbs: "lights", lmLeakSensors: "bell", lmSumpBackup: "meter", lmHoodFilter: "spray", lmBathFan: "duct", lmThermostat: "furnace" };
-  function extrasEntry() {
-    var add = P.addons || [], lm = P.lastMinute || [];
-    var nSel = (S.addons || []).length;
-    function tiles(items, attr, sel) {
-      return '<div class="xt-grid">' + items.map(function (ad) {
-        var on = sel.indexOf(ad.id) > -1, cur = XT.pick === attr + ":" + ad.id;
-        return '<button type="button" class="xt-tile mw-hover' + (on ? " sel" : "") + (cur ? " cur" : "") + '" data-xt="' + attr + ':' + ad.id + '" aria-expanded="' + cur + '">' +
-          I(XT_ICO[ad.id] || "wrench", "sm") + '<span>' + esc(ad.label) + '</span>' + (on ? '<i class="xt-on" aria-label="Added">&#10003;</i>' : '') + '</button>';
-      }).join("") + '</div>';
-    }
-    function detail(items, attr, sel, fn) {
-      if (!XT.pick || XT.pick.indexOf(attr + ":") !== 0) return "";
-      var id = XT.pick.slice(attr.length + 1), it = items.filter(function (a) { return a.id === id; });
-      return it.length ? '<div class="xt-detail">' + renderAddonList(it, sel, attr, fn) + '</div>' : "";
-    }
-    return '<button type="button" class="xt-entry mw-hover" data-xt-open="1">' + I("grid", "sm") +
-      '<span><strong>Shop À La Carte</strong><small>' + add.length + ' Optional Services &middot; ' + (nSel ? nSel + ' Selected' : 'Tap to Browse') + '</small></span><b aria-hidden="true">&rsaquo;</b></button>' +
-      '<div class="xt-sheet"' + (XT.open ? "" : " hidden") + ' role="dialog" aria-modal="true" aria-label="Shop À La Carte"><div class="xt-inner">' +
-      '<div class="xt-top"><h3>Shop À La Carte</h3><button type="button" class="modal-x mw-hover" data-xt-close="1" aria-label="Close">&times;</button></div>' +
-      '<p class="lead-sm">Optional seasonal or specialty services for any membership. Draft market ranges; monthly figure is the yearly midpoint ÷ 12. Tap a tile for details and price.</p>' +
-      tiles(add, "addon", S.addons || []) + detail(add, "addon", S.addons || [], addonPriceLabel) +
-      '<button type="button" class="btn btn-primary mw-hover xt-done" data-xt-close="1">Done</button></div></div>';
-  }
-
-  /* Menus & Headlines deck 10 (Max, Oct 17): add-ons are their own step after picking a plan. One "My Add-Ons" list. */
-  function extrasStep() {
-    var addSum = addonsAnnual(), p = price(), runYear = p[S.tier] + addSum;
-    return backBtn() + stepRail(4) + '<p class="eyebrow">Optional Step</p><h1>My Add-Ons</h1><p>Add any extras to your ' + esc(P.tiers[S.tier].label) + ' plan, or skip. Draft prices; monthly figure is the yearly midpoint ÷ 12.</p>' +
-      renderAddonList(P.addons || [], S.addons || [], "addon", addonPriceLabel) +
-      '<div class="running card"><h3>Your Total · ' + P.tiers[S.tier].label + '</h3>' + priceBlock(runYear, "annual") + (addSum ? '<p class="small muted" style="margin:0">Incl. Add-Ons +' + money(monthlyOf(addSum)) + '/month</p>' : '') + '</div>' +
-      '<button class="btn btn-primary btn-big mw-hover" data-act="signup" type="button">Continue to Sign Up</button>' +
-      '<p class="small" style="text-align:center"><button class="link mw-hover" data-act="signup" type="button">Skip, No Add-Ons</button></p>';
-  }
-  function pickFinalOffer() {
-    var F = P.finalOffer || {}; if (!F.enabled) return null;
-    var have = (S.addons || []).concat(S.alacarte || []);
-    var pool = (F.candidates || []).map(function (id) { return (P.addons || []).filter(function (a) { return a.id === id; })[0]; })
-      .filter(function (a) { return a && have.indexOf(a.id) < 0; });
-    if (!pool.length) return null;
-    if (F.strategy === "random") return pool[Math.floor(Math.random() * pool.length)];
-    var key = F.storageKey || "smartUpkeep.finalOfferIdx", i = 0;
-    try { i = parseInt(localStorage.getItem(key) || "0", 10) || 0; localStorage.setItem(key, String(i + 1)); } catch (e) {}
-    return pool[i % pool.length];
-  }
-  function showFinalOffer(ad, done) {
-    var w = document.createElement("div");
-    w.className = "fo-wrap"; w.setAttribute("role", "dialog"); w.setAttribute("aria-modal", "true"); w.setAttribute("aria-label", "One Last Extra");
-    w.innerHTML = '<div class="fo-card"><p class="eyebrow">Before You Submit</p><div class="fo-head">' + I(XT_ICO[ad.id] || "wrench") +
-      '<div><h3>Add ' + esc(ad.label) + '?</h3><p class="fo-desc">' + esc(ad.desc) + '</p><p class="addon-price">' + addonPriceLabel(ad) + '</p></div></div>' +
-      '<div class="fo-btns"><button type="button" class="btn btn-outline mw-hover" data-fo="no">No Thanks</button><button type="button" class="btn btn-primary mw-hover" data-fo="add">Add</button></div></div>';
-    document.body.appendChild(w);
-    logAddon("offer_shown", ad.id, "final-offer");
-    w.addEventListener("click", function (e) {
-      var b = e.target.closest("[data-fo]"); if (!b) return;
-      if (b.getAttribute("data-fo") === "add") { S.addons = S.addons || []; if (S.addons.indexOf(ad.id) < 0) S.addons.push(ad.id); save(); logAddon("offer_accepted", ad.id, "final-offer"); }
-      else logAddon("offer_declined", ad.id, "final-offer");
-      w.remove(); done();
-    });
-    var f = w.querySelector('[data-fo="add"]'); if (f) f.focus();
-  }
   function tierKeys() { return (P.tierOrder || Object.keys(P.tiers)).filter(function (k) { return P.tiers[k]; }); }
-  function quote() {
-    /* Quote & Accept lock (Machan Oct 28 2026 via Swatch): compare-first stacked tiers,
-       line-item lead (not price hero), expand-on-tap detail, combo included (icons+checklist),
-       CTA opens full-bleed Accept — not sticky bar. */
-    var p = price(), a = S.answers;
-    var final = S.photosComplete && S.visit && S.visit.completed;
-    var status = S.visit ? '<p class="small"><strong>Free tech visit requested</strong> for ' + esc(S.visit.date) + ' (' + esc((S.visit.windows || []).join(", ")) + '). We will confirm by text.</p>' : S.photosComplete ? '<p class="small"><strong>Photos added.</strong> We will review them and confirm your final price.</p>' : "";
-    var unsure = Object.keys(a).filter(function (k) { return a[k] === "unsure"; }).length;
-    var addSum = addonsAnnual();
-    var lmSum = lastMinuteTotal();
-    var bd = breakdown(S.tier);
-    var expanded = S.quoteExpand || S.tier;
-    var lineLead = (function () {
-      var rows = bd.lines.filter(function (L) { return L.kind === "item" || L.kind === "addon"; }).slice(0, 6);
-      var html = '<div class="qa-lines card" aria-label="Line-item estimate">' +
-        '<div class="qa-lines-h"><span>Estimate detail · ' + esc(P.tiers[S.tier].label) + '</span><button type="button" class="detail-link" data-detail="' + S.tier + '">Full breakdown</button></div>' +
-        '<ul class="qa-line-list">' + rows.map(function (L) {
-          return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Est.</span>' : '') + '</span><span>' + (L.amt === 0 ? 'Included' : money(L.amt)) + '</span></li>';
-        }).join("") + '</ul>' +
-        (bd.floorLine ? '<p class="floor-note">' + esc(bd.floorLine.label) + '</p>' : '') +
-        '<div class="qa-due"><span>Due today (draft)</span><strong>' + money(bd.year + (lmSum || 0)) + '</strong></div>' +
-        '<p class="small muted" style="margin:.35rem 0 0">' + money(bd.monthly) + '/mo · annual billing' + (addSum ? ' · incl. add-ons' : '') + (lmSum ? ' · +' + money(lmSum) + ' last-minute next visit' : '') + '</p></div>';
-      return html;
-    })();
-    function includedCombo(k, open) {
-      var t = P.tiers[k];
-      var feats = (t.features || []).filter(function (f) { return f !== "And More"; });
-      var icons = (t.keyPoints || feats.slice(0, 6)).filter(function (x) { return x !== "And More"; }).slice(0, 6);
-      var icoMap = ["calendar", "eye", "chat", "camera", "house", "wrench"];
-      var grid = '<div class="qa-ico-grid">' + icons.map(function (lab, i) {
-        return '<div class="qa-ico"><span class="qa-ico-g" aria-hidden="true">' + I(icoMap[i % icoMap.length], "sm") + '</span><span>' + esc(String(lab).split(":")[0].split(" (")[0]) + '</span></div>';
-      }).join("") + '</div>';
-      var list = '<ul class="qa-check">' + feats.slice(0, open ? feats.length : Math.min(4, feats.length)).map(function (f) {
-        var lab = /^Selling\?/.test(f) ? I("gift", "xs") + " " + f : /Recall Monitoring/.test(f) ? "<strong>" + f + "</strong>" : f;
-        return "<li>" + lab + "</li>";
-      }).join("") + '</ul>';
-      return grid + list;
-    }
-    var tiersHtml = '<div class="qa-stack" role="list">' + tierKeys().map(function (k) {
-      var t = P.tiers[k], amt = p[k], sel = S.tier === k, open = expanded === k;
-      var floorNote = p[k + "Floored"] ? '<p class="floor-note">Priced at our ' + money(monthlyOf(tierMin(k))) + '/Month plan minimum</p>' : "";
-      var pts = (t.keyPoints || t.features.slice(0, 3)).filter(function (x) { return x !== "And More"; });
-      return '<div class="qa-tier card' + (sel ? " sel" : "") + (open ? " open" : "") + '" data-tier="' + k + '" data-qa-expand="' + k + '" role="listitem" tabindex="0" aria-pressed="' + sel + '" aria-expanded="' + open + '">' +
-        (t.recommended ? '<span class="ribbon">Most Popular</span>' : "") +
-        '<div class="qa-tier-top"><div><p class="eyebrow" style="margin:0">' + t.visits + ' Visits a Year</p><h2>' + t.label + '</h2></div>' +
-        '<div class="qa-tier-price"><span class="qa-mo">' + money(monthlyOf(amt)) + '</span><small>/mo</small></div></div>' +
-        '<p class="qa-tier-pts">' + pts.slice(0, 3).map(function (x) { return esc(String(x).split(":")[0]); }).join(" · ") + '</p>' +
-        floorNote +
-        '<div class="qa-tier-more"' + (open ? "" : " hidden") + '>' + includedCombo(k, true) +
-        '<button type="button" class="detail-link" data-detail="' + k + '">Price Details</button></div>' +
-        '<p class="qa-expand-hint">' + (open ? "Tap to collapse" : "Tap for more detail") + '</p></div>';
-    }).join("") + '</div>';
-    var alacarteCta = '<p class="small" style="text-align:center">Not Ready? <button class="link mw-hover" data-act="alacarte" type="button">Shop À La Carte</button></p>';
-    return '<section class="qa-top"><div class="qf-top">' + backBtn() + '<span class="pr-tag hm-chip t3">' + I("shield", "xs") + 'Free Estimate</span></div>' +
-      '<div class="pr-head">' + qArt("clipboard", 3) + '<div><h1 class="qf-h">Compare plans</h1><p class="qf-help">Stacked tiers · tap one for detail. ' + esc(P.tiers[S.tier].label) + ' is selected.</p></div></div>' +
-      lineLead +
-      '<h2 class="pr-more">Membership tiers</h2>' +
-      tiersHtml + status +
-      (final ? "" : '<details class="acc est-note"><summary class="mw-hover">Estimate. Final After Photos or Visit.</summary><div class="acc-body small">If photos or the site visit show something different, we adjust before your first billed visit.' + (unsure ? ' Unsure answers use a typical metro Detroit home.' : '') + ' Draft prices.</div></details>') +
-      '<button class="btn btn-primary btn-big mw-hover pr-cta" data-act="accept" type="button">Review &amp; Accept ' + P.tiers[S.tier].label + '</button>' +
-      '<button class="btn btn-outline btn-big mw-hover pr-alt" data-act="alacarte" type="button">' + I("grid", "xs") + ' Shop À La Carte</button></section>' +
-      '<p class="small muted pr-offer">Welcome Offer: Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term. Refer a Neighbor: 1 Month Free Each, Once You Complete Your Term. Free months are added at the end of your term and apply once you complete it.</p>' +
-      (!S.photosComplete && !S.visit ? '<div class="btn-row"><button class="btn btn-outline mw-hover" data-act="photos" type="button">' + I("camera", "xs") + ' Add Photos</button><button class="btn btn-outline mw-hover" data-act="visit" type="button">' + I("van", "xs") + ' Free Tech Visit</button></div>' : "") + alacarteCta + waitlistEnd();
-  }
-
-  /* Promo Code (Machan Nov 2 2026): friendsandfamily / familyandfriends unlock the founding offer (Machan Nov 9 2026: First 50 members get 2 years for the price of 1). Display only; no payment processing. */
-  var PROMO_CODES = ["friendsandfamily", "familyandfriends"];
-  function promoNorm(c) { return String(c || "").toLowerCase().replace(/\s+/g, ""); }
-  function promoOpts(m) {
-    return { A: { t: "2 Years For The Price Of 1", sub: "Pay 2 years upfront at half price", was: m * 24, total: Math.round(m * 24 * 0.5), term: "24 months" } };
-  }
-  function promoBlock(m) {
-    var on = S.promo && PROMO_CODES.indexOf(promoNorm(S.promo)) >= 0;
-    var h = '<div class="pc-box card"><label class="pc-lab" for="pc-in">Promo Code</label>' +
-      '<form class="pc-row" data-promo><input id="pc-in" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Enter Code" value="' + esc(on ? S.promo : (S.promoTry || "")) + '">' +
-      '<button class="btn btn-outline mw-hover" type="submit">' + (on ? "Applied" : "Apply") + '</button></form>' +
-      '<p class="pc-msg' + (S.promoErr ? ' pc-err' : '') + '" aria-live="polite">' + (S.promoErr ? 'Hmm, that code didn’t work. Check the spelling and try again.' : '') + '</p>';
-    if (on) {
-      var o = promoOpts(m), sel = "A";
-      h += '<p class="pc-ok">Be One Of The First 50 Homes</p><p class="small muted" style="margin:-.3rem 0 .5rem">Founding 50 offer unlocked: 2 years for the price of 1' + (P.tiers && P.tiers.silver && P.tiers.silver.fromMonthly ? ', from ' + money(P.tiers.silver.fromMonthly) + '/Month' : '') + '. Offers don’t stack.</p><div class="pc-opts" role="radiogroup">' + ["A"].map(function (k) {
-        var x = o[k];
-        return '<button type="button" role="radio" aria-checked="' + (k === sel) + '" class="pc-opt' + (k === sel ? ' on' : '') + '" data-promo-opt="' + k + '">' +
-          '<span class="pc-t">' + x.t + '</span>' +
-          '<span class="pc-sub">' + x.sub + '</span>' +
-          '<span class="pc-p"><s>' + money(x.was) + '</s> <b>' + money(x.total) + '</b></span>' +
-          '<span class="pc-s">You Save ' + money(x.was - x.total) + ' · ' + money(m) + '/mo for ' + x.term + ', paid once</span></button>';
-      }).join("") + '</div><p class="pc-tot">Total: <s>' + money(o[sel].was) + '</s> <b>' + money(o[sel].total) + '</b> <span>(save ' + money(o[sel].was - o[sel].total) + ')</span></p>' +
-      '<p class="small muted">Draft pricing; no payment is taken here. <button type="button" class="link" data-promo-clear>Remove Code</button></p>';
-    }
-    return h + '</div>';
-  }
-  /* Plan Services deck (Machan, Nov 2 2026): last step before joining. Every system the member said they have is listed;
-     they can remove any they do not want serviced (e.g. a generator) and the price updates. Removed ones can be added back. */
-  function sysReview() {
-    var have = Array.isArray(S.answers.extras) ? S.answers.extras : [], gone = Array.isArray(S.sysRemoved) ? S.sysRemoved : [];
-    if (!have.length && !gone.length) return "";
-    function row(k, on) { var e = P.extras[k] || { label: k }, amt = e.all > 0 ? money(monthlyOf(e.all)) + '/mo' : 'Included';
-      return '<li class="sr-row' + (on ? '' : ' sr-off') + '"><span class="sr-l"><b>' + esc(e.label) + '</b><small>' + (on ? amt : 'Removed, not serviced') + '</small></span>' +
-        '<button type="button" class="sr-btn mw-hover" data-sys="' + esc(k) + '" data-on="' + (on ? 1 : 0) + '">' + (on ? 'Remove' : 'Add Back') + '</button></li>'; }
-    return '<div class="card sr-card"><h3 class="sr-h">What We Will Service</h3><p class="small muted sr-sub">Remove anything you do not want serviced. Your price updates.</p><ul class="sr-list">' +
-      have.map(function (k) { return row(k, true); }).join("") + gone.filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) { return row(k, false); }).join("") + '</ul></div>';
-  }
-  function accept() {
-    /* Full-bleed Accept (Machan Oct 28): not sticky bar. */
-    var p = price(), t = P.tiers[S.tier], amt = p[S.tier], bd = breakdown(S.tier);
-    var addSum = addonsAnnual(), lmSum = lastMinuteTotal();
-    var feats = (t.features || []).filter(function (f) { return f !== "And More"; }).slice(0, 6);
-    var icons = (t.keyPoints || feats).filter(function (x) { return x !== "And More"; }).slice(0, 6);
-    var icoMap = ["calendar", "eye", "chat", "camera", "house", "wrench"];
-    return '<section class="qa-accept">' +
-      '<div class="qa-accept-inner">' + backBtn() +
-      '<p class="eyebrow qa-accept-eye">Ready to join?</p>' +
-      '<h1>' + esc(t.label) + ' membership</h1>' +
-      '<p class="qa-accept-price"><span class="qa-accept-num">' + money(monthlyOf(amt)) + '</span><span class="qa-accept-per">per month · annual billing</span></p>' +
-      '<p class="small muted">Due today (draft): <strong>' + money(bd.year + (lmSum || 0)) + '</strong>' + (addSum ? ' · incl. add-ons' : '') + '</p>' +
-      promoBlock(monthlyOf(amt)) +
-      '<div class="qa-accept-card card">' +
-      '<div class="qa-ico-grid">' + icons.map(function (lab, i) {
-        return '<div class="qa-ico"><span class="qa-ico-g" aria-hidden="true">' + I(icoMap[i % icoMap.length], "sm") + '</span><span>' + esc(String(lab).split(":")[0].split(" (")[0]) + '</span></div>';
-      }).join("") + '</div>' +
-      '<ul class="qa-check">' + feats.map(function (f) { return '<li>' + (/Recall Monitoring/.test(f) ? '<strong>' + f + '</strong>' : f) + '</li>'; }).join("") + '</ul>' +
-      '<button type="button" class="detail-link" data-detail="' + S.tier + '">See line-item breakdown</button></div>' +
-      sysReview() +
-      '<button class="btn btn-primary btn-big mw-hover qa-accept-cta" data-act="extras" type="button">Accept membership</button>' +
-      '<p class="small" style="text-align:center;margin-top:.7rem"><button type="button" class="link mw-hover" data-act="toQuote">Keep browsing plans</button></p>' +
-      '</div></section>';
-  }
-
-  /* Out-of-area waitlist (Max, Oct 17): only after the price, only when the ZIP they entered is outside the service area (inArea). In-area and Unsure visitors never see it. */
-  function waitlistEnd() {
-    var z = S.answers && S.answers.zip && S.answers.zip !== "unsure" ? zipOf(S.answers.zip) : "";
-    if (!z || inArea(z)) return "";
-    return '<section class="hm-wait qt-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon To You</h3><p class="small muted">Bold local launch for a few close metro Detroit areas (Wayne, Oakland, Macomb). ZIP ' + esc(z) + ' is outside today. Join the waitlist — launch date <b>March 15, 2027</b> (TEST). First 50 members get 2 years for the price of 1' + (P.tiers && P.tiers.silver && P.tiers.silver.fromMonthly ? ', from ' + money(P.tiers.silver.fromMonthly) + '/Month' : '') + '. No spots counter.</p><form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join the Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
-  }
-
-  var lastScreen = null;
-  function revealPrices() {
-    var fresh = lastScreen !== "quote"; lastScreen = "quote";
-    var rows = app.querySelector(".price-strip");
-    if (!rows || !fresh) return;
-    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    rows.classList.add("reveal");
-    app.querySelectorAll(".ps-num[data-amt]").forEach(function (el, ix) {
-      var to = Number(el.getAttribute("data-amt")), t0 = null, dur = 750, delay = 120 * ix;
-      el.textContent = money(0);
-      function step(ts) { if (t0 === null) t0 = ts + delay; var k = Math.max(0, Math.min(1, (ts - t0) / dur)); var e = 1 - Math.pow(1 - k, 3); el.textContent = money(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = money(to); }
-      requestAnimationFrame(step);
-    });
-  }
-  function totals() {
-    var amt = price()[S.tier], add = addonsAnnual(), lm = lastMinuteTotal();
-    var addonIds = (S.addons || []).slice(), lmIds = (S.lastMinute || []).slice();
-    var refIn = (S.referralCodeIn || (S.signup && S.signup.referralCodeIn) || "").trim();
-    if (S.plan === "biennial") {
-      var mem2 = amt * 2, add2 = add * 2, prepaid = mem2 + add2;
-      var save6 = Math.round(amt / 2);
-      return { plan: "biennial", label: "Pay 2 Years Get 30 Months", today: prepaid, year: prepaid, membership: mem2, membershipAnnual: amt, addons: add2, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "biennial", termMonths: 30, save: save6, freeMonths: 6, referralCodeIn: refIn,
-        note: money(Math.round(mem2 / 24)) + "/Month, prepaid " + money(prepaid) + " for 2 years. 6 extra months free at the end of your term, once you complete it (draft)." };
-    }
-    if (S.tier === "silver" || S.tier === "gold") {
-      return { plan: "annual", label: "Pay Yearly", today: amt + add, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annual", termMonths: 12, referralCodeIn: refIn,
-        note: (S.tier === "silver" ? "Essentials" : "Plus") + " is paid in full for the year, up front." };
-    }
-    /* Order Form Details Deck 13 (Max 19:33 ICT Oct 15): prepay only, no quarterly or monthly card option. */
-    if (false) return { plan: "quarterly", label: "4 Quarterly Payments", today: (amt + add) / 4, year: amt + add, membership: amt, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "quarterly", termMonths: 12, referralCodeIn: refIn, note: "4 payments of " + money((amt + add) / 4) + "." };
-    var disc = Math.max(round(amt * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1668);
-    return { plan: "annual", label: "Pay Yearly, Save 10%", today: disc + add, year: disc + add, membership: disc, membershipAnnual: amt, addons: add, addonIds: addonIds, lastMinute: lm, lastMinuteIds: lmIds, billKind: "annualDiscount", termMonths: 12, save: amt - disc, referralCodeIn: refIn, note: "You save " + money(amt - disc) + " on membership (draft discount). Add-ons are full price." };
-  }
-
-  function cancelExample(tier) {
-    var bd = breakdown(tier || S.tier || "gold");
-    var prepaid = bd.year;
-    var done = [];
-    var spent = 0;
-    bd.lines.forEach(function (L) {
-      if (L.kind === "addon" || L.kind === "lastMinute" || L.amt <= 0) return;
-      if (done.length >= 2) return;
-      done.push(L);
-      spent += L.amt;
-    });
-    if (!done.length) {
-      spent = Math.min(400, prepaid);
-      done = [{ label: "1 seasonal visit (example)", amt: spent }];
-    }
-    var refund = Math.max(0, prepaid - spent);
-    return {
-      prepaid: prepaid, spent: spent, refund: refund, done: done,
-      html: '<p class="small"><strong>Worked example (draft):</strong> You prepaid <strong>' + money(prepaid) + '</strong> for ' + (P.tiers[tier || S.tier].label) + '. Before canceling we completed: ' +
-        done.map(function (L) { return esc(L.label) + " (" + money(L.amt) + ")"; }).join(" and ") +
-        '. Services completed total <strong>' + money(spent) + '</strong>. Your refund is <strong>' + money(refund) + '</strong> (prepaid minus completed). No cancellation fee.</p>'
-    };
-  }
-  function cancelPolicyCard(tier) {
-    var ex = cancelExample(tier);
-    return '<details class="cancel-policy cp-link" id="cancelPolicy"><summary class="mw-hover">Cancel Policy: Cancel Anytime, No Fee. Fair Refunds.</summary><div class="acc-body">' +
-      '<span class="draft">DRAFT, pending legal review</span>' +
-      '<p>You may cancel at any time. <strong>There is no cancellation fee.</strong> Your refund equals the prepaid amount minus the itemized price of services already completed — the same lines shown in Detailed Pricing. Unused visits and unfinished line items are refunded. This is not a time-based proration.</p>' +
-      '<p class="retention">' + I("gift", "xs") + '<span><strong>Stay Offer:</strong> Thinking of canceling or renewing? Members of 6+ months get 1 month free to stay. Members of 1+ year get 2 months free. Optional, never required to cancel.</span></p>' +
-      '<p><strong>Welcome offers (draft):</strong> Free months from the 2-year prepay or from referrals carry <strong>no refund value</strong>. Only prepaid dollars (what you paid) are refundable after deducting completed services. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p>' +
-      ex.html +
-      '<p><a href="#cancel" class="link mw-hover">Cancel Membership online</a> in one step.</p>' +
-      '<p class="small muted" style="margin:0">Final terms pending legal review.</p></div></details>';
-  }
-  function agreementHtml() {
-    var ex = cancelExample(S.tier);
-    return '<span class="draft">DRAFT, pending legal review</span><h4>Smart Upkeep Membership Agreement</h4><p>This placeholder agreement is between you (the Member) and Smart Upkeep. It is not final and is shown for prototype purposes only.</p><h4>1. Services</h4><p>Smart Upkeep will perform the maintenance visits and services listed for your selected membership tier at the service address, on a schedule we set with you.</p><h4>2. Term and Renewal</h4><p>The membership runs for 12 months from your first visit, or 30 months if you choose Pay for 2 Years, Get 6 Extra Months Free at the End of Your Term (24 paid months, then 6 free months added at the end), plus any referral free months credited after a referred neighbor\'s first payment clears. Unless you cancel, the membership renews automatically at the end of the term for another 12 months at the plan price at that time, charged to your payment method on file. We email the renewal date and price at least 30 days before any renewal charge. You can cancel online at any time with no fee (Cancel Membership).</p><h4>3. Pricing and Adjustments</h4><p>Your price is based on the information and photos you provide. If photos or answers do not match what we find on site, pricing will be adjusted and you may accept the new price or cancel before your first billed visit.</p><h4>4. Payment</h4><p>Essentials and Plus memberships are paid in full annually, up front, or as a 2-year prepay welcome offer. Complete memberships are paid annually up front at a discount, or as a 2-year prepay welcome offer. No membership is priced below $139/Month. Referral free months are credited only after the referred neighbor\'s first payment has cleared.</p><h4>5. Access</h4><p>You agree to provide reasonable access to the home and equipment at scheduled times.</p><h4>6. Recall Monitoring</h4><p>We will monitor logged equipment for published manufacturer recalls and notify you. We do not guarantee that every recall will be identified.</p><h4>7. Cancellation and Refunds</h4><p>You may cancel at any time. There is no cancellation fee. If you cancel after prepaying, your refund equals the prepaid amount minus the itemized price of services already completed (using the same line items shown in Detailed Pricing). Unused visits and unfinished line items are refunded. Refunds are not based on calendar time remaining in the term. Free months from welcome offers (2-year prepay or referrals) carry no refund value. Stay Offer: if you ask to cancel or come up for renewal after 6 or more months of membership, we offer 1 month free to stay; after 1 year or more, 2 months free. Accepting is optional and never required to cancel; stay-offer months carry no refund value.</p><h4>8. Michigan Home Solicitation Cancel Right</h4><p><strong>DRAFT, pending legal review.</strong> YOU, THE BUYER, MAY CANCEL THIS TRANSACTION AT ANY TIME PRIOR TO MIDNIGHT OF THE THIRD BUSINESS DAY AFTER THE DATE OF THIS TRANSACTION. SEE THE ATTACHED NOTICE OF CANCELLATION FORM FOR AN EXPLANATION OF THIS RIGHT. (MCL 445.113)</p>' + ex.html;
-  }
-  var WAIVER = '<span class="draft">DRAFT, pending legal review</span><h4>Liability Waiver</h4><p>This placeholder waiver is for prototype purposes only and is not final.</p><p>Maintenance visits are preventive and do not guarantee that equipment will not fail. Smart Upkeep is not responsible for pre-existing conditions, normal wear, or failures of equipment that is past its service life. Our licensed and insured technicians will take reasonable care. Liability limits, exclusions and insurance details are to be determined by legal review.</p>';
 
   function sigBlock(id) {
     return '<div class="sig" data-sig="' + id + '"><div class="sig-tabs"><button type="button" class="btn btn-primary mw-hover" data-sigmode="draw">Draw</button><button type="button" class="btn btn-outline mw-hover" data-sigmode="type">Type</button></div>' +
@@ -1347,7 +1154,7 @@
     return backBtn() + '<h1>Shop À La Carte</h1>' +
       
       picks +
-      '<div class="running card"><h3>One-Time Total (Draft)</h3>' +
+      '<div class="running card"><h3>One-Time Total</h3>' +
       (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(serviceOncePrice(x)) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Pick a Service</p>') +
       '</div>' +
       '<form id="acF" novalidate class="stack">' +
@@ -1368,144 +1175,42 @@
       '<div class="card"><h3>Summary</h3><div class="summary">' +
       '<div><span>Type</span><span>A La Carte (No Membership)</span></div>' +
       list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + money(serviceOncePrice(x)) + '</span></div>'; }).join("") +
-      '<div><span>One-Time Total (Draft)</span><span>' + money(total) + '</span></div>' +
+      '<div><span>One-Time Total</span><span>' + money(total) + '</span></div>' +
       '<div><span>Preferred Dates</span><span>' + esc(bk.dates) + '</span></div>' +
       '<div><span>Contact</span><span>' + esc(bk.phone) + ' · ' + esc(bk.email) + '</span></div></div></div>' +
-      '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>We will confirm availability by phone or email within one business day.</li><li>No card is charged in this prototype.</li><li>Want ongoing care instead? Memberships start at $139/Month.</li></ol></div>' +
+      '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>We will confirm availability by phone or email within one business day.</li><li>No card is charged until we confirm your booking.</li><li>Want ongoing care instead? Memberships start at $139/Month.</li></ol></div>' +
       '<div class="btn-row"><button class="btn btn-primary btn-big mw-hover" data-act="toQuote" type="button">See Memberships</button><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
-  function signup() {
-    var p = price(), su = S.signup || {}, t = totals();
-    var addr = su.address || (S.answers.zip && S.answers.zip !== "unsure" ? S.answers.zip : "");
-    var add = addonsAnnual();
-    var platDisc = Math.max(round(p.platinum * (1 - P.platinumAnnualDiscount)), P.minAnnual || 1668);
-    var listed = p[S.tier];
-    var twoPrepaid = listed * 2 + add * 2;
-    var planOpts = [];
-    /* Order Form Details Deck (Max 19:33 ICT Oct 15): Save 10% option first, named "Pay Yearly" (04, 09); prepay only, no quarterly/monthly card (13);
-       big price stays per month (02); 2-year option named "Pay 2 Years Get 30 Months" (20). */
-    if (S.tier === "platinum") planOpts.push(["annual", "Pay Yearly", platDisc + add, "annualDiscount", "Save 10%"]);
-    else planOpts.push(["annual", "Pay Yearly", listed + add, "annual"]);
-    planOpts.push(["biennial", "Pay 2 Years Get 30 Months", twoPrepaid, "biennial"]);
-    var planHtml = '<div class="opts">' + planOpts.map(function (o) {
-      var s = S.plan === o[0];
-      var extra = o[4] ? ' <span class="pay-save">' + o[4] + '</span>' : "";
-      return '<button type="button" class="opt mw-hover' + (s ? " sel" : "") + '" data-plan="' + o[0] + '"><span class="chk">' + (s ? "&#10003;" : "") + '</span><span><strong>' + o[1] + extra + '</strong>' + priceBlock(o[2], o[3]) + '</span></button>';
-    }).join("") + '</div>' + offerTermsShort();
-    var addonSummary = selectedAddons().length
-      ? selectedAddons().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + addMo(x) + '</span></div>'; }).join("")
-      : '<div><span>Add-ons</span><span>None selected</span></div>';
-    var lmSummary = selectedLastMinute().length
-      ? selectedLastMinute().map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + ' <span class="tag-1x">One-Time</span></span><span>' + money(x.price) + ', with next visit</span></div>'; }).join("")
-      : '';
-    /* Order Form Deck (Max, 19:28 ICT Oct 15): summary at top (08) with each extra on its own line (13), running total only here (15), yard sign near the total (14);
-       short recap of home details (17) with an edit link back to the questions (02); full name first (03), name and phone stacked (16); referral behind "Have a Code?" (11);
-       agreement and waiver in open scroll boxes (04), signed once for both (06); errors under each field (07); plain form, no badges (12); one long page (10); 4-step rail kept (18);
-       button words only (05) "Join <Plan>" (19) with the cancel-anytime line next to it (09). Michigan notice placement left as is (card 20 skipped). */
-    var recap = Q.map(function (q) { return QSHORT[q.id] + ': ' + answerText(q); }).join(' · ');
-    var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
-    function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
-    return backBtn() + stepRail(4) + '<h1>Sign Up for ' + P.tiers[S.tier].label + '</h1>' +
-      '<form id="suF" novalidate class="stack">' +
-      '<div class="card su-sum-top"><h3>Your Plan</h3>' +
-      '<div class="summary-price">' + priceBlock(t.year, t.billKind) + '</div>' +
-      '<p class="small su-start">Membership Starts At Your First Visit</p>' +
-      '<div class="summary"><div><span>Plan</span><span>' + P.tiers[S.tier].label + ' (' + P.tiers[S.tier].visits + ' visits a year)</span></div><div><span>Payment</span><span>' + t.label + '</span></div>' +
-      (t.plan === "biennial" ? '<div><span>Term</span><span>24 Paid Months + 6 Free Months at the End (Once You Complete It)</span></div>' : "") +
-      (t.plan === "biennial" ? '<div><span>+6 Free Months Added At The End Of Your Term (Once You Complete It)</span><span>' + money(6 * monthlyOf(t.membershipAnnual)) + ' Value</span></div>' : t.save ? '<div><span>Annual Discount (Draft)</span><span>&minus;' + money(t.save) + '</span></div>' : "") +
-      ((S.referralCodeIn || "").trim() ? '<div><span>Referral Code Applied</span><span>' + esc((S.referralCodeIn || "").trim()) + ' · +1 Free Month</span></div>' : "") +
-      addonSummary + lmSummary +
-      '<div class="su-due2"><div><span>Due Today</span><b>' + money(t.today) + '</b></div><div><span>Per Month</span><b>' + money(t.today / (t.plan === "biennial" ? 24 : 12)) + '</b><small>over ' + (t.plan === "biennial" ? "24 paid months" : "12 months") + '</small></div></div></div>' +
-      '<label class="checkrow yard-sign"><input type="checkbox" id="sYardSign"' + (su.yardSignOk ? " checked" : "") + '><span>Yard Sign OK? Free Detector Battery Swap</span></label>' +
-      '<div class="su-recap small"><strong>Your Home:</strong> ' + recap + ' <button type="button" class="link mw-hover" data-edit="0">Edit Home Details</button></div></div>' +
-      '<div class="card"><h3>Your Details</h3>' +
-      '<label class="fl sr-only" for="sName">Full Name</label>' + fe("sName") + '<input id="sName" placeholder="Full name" type="text" autocomplete="name" value="' + esc(su.name || (S.visit && S.visit.name) || "") + '">' +
-      '<label class="fl sr-only" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" placeholder="Phone" type="tel" autocomplete="tel" value="' + esc(su.phone || (S.visit && S.visit.phone) || "") + '">' +
-      '<label class="fl sr-only" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" placeholder="Email" type="email" autocomplete="email" value="' + esc(su.email || (S.visit && S.visit.email) || "") + '">' +
-      '<label class="fl sr-only" for="sAddr">Service Address</label>' + fe("sAddr") + '<input id="sAddr" placeholder="Service address" type="text" autocomplete="street-address" value="' + esc(addr) + '">' +
-      '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have a Code?</button></p>' +
-      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Referral Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
-      extrasRow() +
-      cancelPolicyCard(S.tier) +
-      '<div class="card"><h3>Membership Agreement and Liability Waiver</h3>' +
-      '<div class="legal open-box" tabindex="0" aria-label="Membership Agreement">' + agreementHtml() + '</div><div class="rd-bar" aria-hidden="true"><i></i></div>' +
-      '<div class="legal open-box" tabindex="0" aria-label="Liability Waiver" style="margin-top:.7rem">' + WAIVER + '</div><div class="rd-bar" aria-hidden="true"><i></i></div>' +
-      renewTerms() + '<label class="checkrow"><input type="checkbox" id="agree"><span>I agree to the Membership Agreement and accept the Liability Waiver.</span></label>' + fe("agree") +
-      '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>I agree Smart Upkeep may charge me <strong>' + money(t.today) + '</strong> at the secure payment step, and that my membership <strong>renews automatically</strong> as described above until I cancel.</span></label>' + fe("chargeOk") +
-      '<p class="fl">Signature (Signs Both)</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
-      '<div class="card"><h3>Payment Plan</h3>' + planHtml + '</div>' +
-      '<p class="small muted su-paynext">' + I("shield", "xs") + ' Next: Secure Payment</p>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit">Join ' + P.tiers[S.tier].label + '</button><p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
-  }
-
-  /* Order Form Details Deck 17 (Max 19:33 ICT Oct 15): payment is its own secure step after the form. DEMO ONLY: card fields are disabled,
-     never read and nothing is charged. Demo labels hidden for testers (06). */
-  /* Order Form Details Deck 05, 10, 12, 14, 15, 16 (Max 19:33 ICT Oct 15): short command errors; 2-year free months shown as dollar value (6 x plan monthly, annual / 12); "Membership Starts At Your First Visit" note; offer terms stay fold-out; no phone example; referral line "+1 Free Month". */
-  function payStep() {
-    var t = (S.signup && S.signup.totals) || totals();
-    return backBtn() + stepRail(4) + '<h1>Secure Payment</h1>' +
-      '<div class="card su-sum-top"><h3>' + P.tiers[S.tier].label + ' · ' + esc(t.label) + '</h3>' +
-      '<div class="summary-price">' + priceBlock(t.year, t.billKind) + '</div>' +
-      '<div class="summary"><div class="su-due"><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div></div></div>' +
-      '<form id="payF" class="card paybox" novalidate><h3>' + I("shield", "xs") + ' Card Details</h3>' +
-      '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit" style="margin-top:.8rem">Pay Securely</button><p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
-  }
-  function bindPay() {
-    var f = document.getElementById("payF"); if (!f) return;
-    f.addEventListener("submit", function (e) { e.preventDefault(); /* demo: no card data read or sent */ S.signup = Object.assign({}, S.signup, { paidDemoAt: new Date().toISOString() }); try { window.SUEvents && SUEvents.emit("signup.completed", "site", { member: (S.signup.name || "New member") + " (demo)", payload: { plan: P.tiers[S.tier].label, payment: S.plan, addons: (S.addons || []).length, yardSign: !!S.signup.yardSignOk } }); } catch (x) {} go("confirm"); });
-  }
-  /* Order Form Details Deck 01, 03, 07 + Max's note on 11 (19:33 ICT Oct 15): no last-extra pop-up; a small "Add Extras" row on the form.
-     Shows the add-ons members are likeliest to add first (P.likelyAddons), each with Skip / Add To My Plan. Monthly = annual / 12. */
-  var XR = { skipped: [], all: false };
-  function extrasRow() {
-    var have = (S.addons || []);
-    var ids = XR.all ? (P.addons || []).map(function (a) { return a.id; }) : (P.likelyAddons || []);
-    var list = ids.map(function (id) { return (P.addons || []).filter(function (a) { return a.id === id; })[0]; }).filter(function (a) { return a && XR.skipped.indexOf(a.id) < 0; });
-    return '<div class="card xr"><h3>Add Extras</h3><div class="xr-list">' + (list.length ? list.map(function (a) {
-      var on = have.indexOf(a.id) > -1;
-      return '<div class="xr-item' + (on ? ' sel' : '') + '">' + I(XT_ICO[a.id] || "wrench", "sm") + '<span class="xr-t"><strong>' + esc(a.label) + '</strong><small>' + addMo(a) + '</small></span>' +
-        (on ? '<span class="xr-added">&#10003; Added</span><button type="button" class="link mw-hover" data-xr-remove="' + a.id + '">Remove</button>'
-            : '<span class="xr-btns"><button type="button" class="btn btn-outline mw-hover" data-xr-skip="' + a.id + '">Skip</button><button type="button" class="btn btn-primary mw-hover" data-xr-add="' + a.id + '">Add To My Plan</button></span>') + '</div>';
-    }).join("") : '<p class="small muted" style="margin:0">No more extras to show.</p>') + '</div>' +
-      (XR.all ? '' : '<button type="button" class="link mw-hover" data-xr-all="1">See All Extras</button>') + '</div>';
-  }
   function confirm() {
-    /* After-accept lock (Machan Oct 28): next-steps list incl. how to log in;
-       welcome message fires on first account login — NOT Messages greeting right after pay. */
-    var su = S.signup || {}, t = su.totals || totals();
-    var next = S.visit ? "We confirm your tech visit by text" : S.photosComplete ? "We review your photos and lock the final price" : "We confirm your final price before visit one";
+    /* After Accept (Machan Oct 28 lock, updated Nov 11): next steps incl. how to log in. The start date was picked before Accept, so it is shown, not asked. */
+    var su = S.signup || {}, t = su.totals || {}, fv = su.firstVisit || S.firstVisit || "";
     var email = su.email || "";
     try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
-    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re in' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
-      '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what to do next — including how to log in.</p>' +
-      '<div class="card qa-next"><h3>Next steps</h3><ol class="qa-steps">' +
-      '<li><strong>Log in to your member app</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' (<strong>' + esc(email) + '</strong>)' : '') + ' and the password from your welcome email (prototype: any password works on the sample login).</span></li>' +
-      '<li><strong>Read your welcome message</strong><span>The first time you sign in, Ask Anything will open with a welcome from your care team.</span></li>' +
-      '<li><strong>' + next + '</strong><span>We book visit one once the estimate is final.</span></li>' +
-      '<li><strong>Finish equipment photos</strong><span>So techs bring the right parts — start from Home after login.</span></li>' +
+    var paid = ['Paid Today', money(t.today || 0)];
+    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
+      '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what happens next, including how to log in.</p>' +
+      '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
+      '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' (<strong>' + esc(email) + '</strong>)' : '') + ' and the password from your welcome email.</span></li>' +
+      '<li><strong>Read Your Welcome Message</strong><span>The first time you sign in, Ask Anything opens with a welcome from your care team.</span></li>' +
+      '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We confirm the time by text. ' + FIRST_VISIT_BLURB + '</span></li>' +
+      '<li><strong>Add Access Details</strong><span>Lockbox or door codes go in your member app.</span></li>' +
       '</ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Summary</h3>' +
-      '<div class="summary-price">' + priceBlock(t.year, t.billKind || (t.plan === "quarterly" ? "quarterly" : (S.tier === "platinum" && t.plan === "annual" ? "annualDiscount" : "annual"))) + '</div>' +
-      '<div class="summary"><div><span>Membership</span><span>' + P.tiers[S.tier].label + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Payment</span><span>' + esc(t.label) + '</span></div>' +
+      '<div class="summary"><div><span>Membership</span><span>' + esc(su.planTag || planTag()) + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Billing</span><span>' + esc(t.label || "") + '</span></div>' +
       (function () {
         var ids = t.addonIds || S.addons || [];
         var list = (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
-        var lmIds = t.lastMinuteIds || S.lastMinute || [];
-        var lm = (P.lastMinute || []).filter(function (a) { return lmIds.indexOf(a.id) > -1; });
-        var html = list.length ? list.map(function (x) { return '<div><span>Add-on: ' + esc(x.label) + '</span><span>' + addMo(x) + '</span></div>'; }).join("") : '<div><span>Add-ons</span><span>None</span></div>';
-        if (lm.length) html += lm.map(function (x) { return '<div><span>Last-minute: ' + esc(x.label) + '</span><span>' + money(x.price) + '</span></div>'; }).join("");
-        return html;
+        return list.map(function (x) { return '<div><span>Add-On: ' + esc(x.label) + '</span><span>' + aoPrice(x) + '</span></div>'; }).join("");
       })() +
-      '<div><span>Due At Sign Up</span><span>' + money(t.today) + '</span></div><div><span>Signed</span><span>Agreement and Waiver</span></div></div></div>' +
+      '<div><span>' + paid[0] + '</span><span>' + paid[1] + '</span></div><div><span>Signed</span><span>Member Agreement</span></div></div></div>' +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
-        var shareText = "Join Smart Upkeep with my code " + code + " — we both get a free month after your first payment clears, added at the end of our terms once completed. " + (location.origin + location.pathname);
+        var shareText = "Join Smart Upkeep with my code " + code + ". We each get a free month once your first payment goes through. " + (location.origin + location.pathname);
         return '<div class="card referral-card" style="margin-top:1rem">' +
-          '<h3>Refer a Neighbor</h3>' +
-          '<p class="muted">You Both Get a Month Free, Added at the End of Your Term Once You Complete It</p>' +
+          '<h3>Refer A Neighbor</h3>' +
+          '<p class="muted">You both get a month free when your neighbor makes their first payment. Free months have no cash value.</p>' +
           '<p class="ref-code" id="myRefCode">' + esc(code) + '</p>' +
           '<div class="btn-row">' +
           '<button type="button" class="btn btn-primary mw-hover" data-copy-ref="1">Copy Code</button>' +
@@ -1514,8 +1219,8 @@
           '<p class="small muted" style="margin:.6rem 0 0" id="refCopyMsg"></p>' +
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
-      myHomeCard(su) + firstVisitCard() +
-      '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open member login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
+      myHomeCard(su) +
+      '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open Member Login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
   /* Plans & Pricing Deck note (Oct 14): a picture of the member's house after sign-up. Placeholder drawing for now; real street or satellite photo from the address is a follow-up. */
@@ -1524,19 +1229,6 @@
       '<div class="mh-pic" role="img" aria-label="Your home picture (placeholder)"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#D4A017" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#D4A017"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
       '<p style="margin:.6rem 0 0"><strong>' + esc(su.address || "Your Address") + '</strong></p><p class="small muted" style="margin:.2rem 0 0">A photo of your home from street view appears here soon.</p></div>';
   }
-  /* Funnel Deck (Oct 14): after sign-up, book the first visit on a calendar right away. Saved on this device until booking goes live. */
-  function firstVisitCard() {
-    var fv = S.firstVisit || "", min = new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10);
-    return '<div class="card first-visit" style="margin-top:1rem"><h3>Book Your First Visit</h3>' +
-      '<label class="fl" for="fvDate">Pick a Day</label><input id="fvDate" type="date" min="' + min + '" value="' + esc(fv) + '" style="width:100%;min-height:48px;font-size:16px">' +
-      '<button class="btn btn-primary btn-big mw-hover" type="button" data-fv="1" style="margin-top:.6rem">' + (fv ? "Change Day" : "Book This Day") + '</button>' +
-      '<p class="small muted" id="fvMsg" style="margin:.5rem 0 0">' + (fv ? "Requested: " + esc(fv) + ". We confirm by text." : "We confirm the time by text.") + '</p></div>';
-  }
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest("[data-fv]"); if (!b) return;
-    var d = document.getElementById("fvDate"), m = document.getElementById("fvMsg"); if (!d || !d.value) { if (m) m.textContent = "Pick a day first."; return; }
-    S.firstVisit = d.value; save(); if (m) m.textContent = "Requested: " + d.value + ". We confirm by text."; b.textContent = "Change Day";
-  });
 
   /* Add-on event log: placeholder until real analytics. Local only, capped at 500 events. */
   var EVKEY = "smartUpkeep.addonEvents";
@@ -1591,149 +1283,31 @@
       });
     });
     app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
-    app.querySelectorAll("[data-sys]").forEach(function (b) { b.addEventListener("click", function () {
-      var k = b.getAttribute("data-sys"), on = b.getAttribute("data-on") === "1";
-      var have = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], gone = Array.isArray(S.sysRemoved) ? S.sysRemoved.slice() : [];
-      if (on) { have = have.filter(function (x) { return x !== k; }); if (gone.indexOf(k) < 0) gone.push(k); }
-      else { gone = gone.filter(function (x) { return x !== k; }); if (have.indexOf(k) < 0) have.push(k); }
-      S.answers.extras = have; S.sysRemoved = gone; save(); render(); }); });
     var s = S.screen;
-    app.querySelectorAll("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { go("q" + b.getAttribute("data-edit")); }); });
-    if (/^q\d$/.test(s)) bindQ(Number(s.slice(1)));
-    var pc = app.querySelector("[data-plan-chip]"), pl = app.querySelector("#qfPlans");
-    if (pc && pl) {
-      pc.addEventListener("click", function () { var o = pl.hidden; pl.hidden = !o; pc.setAttribute("aria-expanded", String(o)); });
-      app.querySelectorAll("[data-plan-pick]").forEach(function (b) { b.addEventListener("click", function () { S.tier = b.getAttribute("data-plan-pick"); save(); render(); }); });
-    }
-    document.body.classList.toggle("on-qf", /^q\d$/.test(s) || s === "choice");
+    document.body.classList.toggle("on-qf", isOb(s));
+    document.body.classList.toggle("on-ob", isOb(s));
     var tb = document.querySelector(".topbar"); if (tb) document.documentElement.style.setProperty("--tb", tb.offsetHeight + "px");
-    if (s === "quote" && lastScreen !== "quote") { try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
-    if (s === "quote") revealPrices(); else lastScreen = s;
-    if (s === "quote" || s === "alacarte") {
-      var seen = []; app.querySelectorAll("[data-addon],[data-lastminute],[data-alacarte]").forEach(function (b) { seen.push(b.getAttribute("data-addon") || b.getAttribute("data-lastminute") || b.getAttribute("data-alacarte")); });
+    if (isOb(s)) bindOb(s);
+    if (s === "alacarte") {
+      var seen = []; app.querySelectorAll("[data-alacarte]").forEach(function (b) { seen.push(b.getAttribute("data-alacarte")); });
       if (!bind._viewed) bind._viewed = {};
       if (!bind._viewed[s]) { bind._viewed[s] = 1; logAddon("view", seen, s); }
+      bindAlacarte();
     }
-    if (s === "accept") {
-      var pf = app.querySelector("[data-promo]");
-      if (pf) pf.addEventListener("submit", function (e) { e.preventDefault(); var v = pf.querySelector("input").value; if (PROMO_CODES.indexOf(promoNorm(v)) >= 0) { S.promo = v.trim(); S.promoErr = 0; S.promoTry = ""; S.promoOpt = S.promoOpt || "A"; } else { S.promo = ""; S.promoErr = 1; S.promoTry = v; } save(); render(); });
-      app.querySelectorAll("[data-promo-opt]").forEach(function (b) { b.addEventListener("click", function () { S.promoOpt = b.getAttribute("data-promo-opt"); save(); render(); }); });
-      var pcx = app.querySelector("[data-promo-clear]"); if (pcx) pcx.addEventListener("click", function () { S.promo = ""; S.promoErr = 0; S.promoTry = ""; save(); render(); });
-      app.querySelectorAll("[data-detail]").forEach(function (b) {
-        b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
-      });
-    }
-    if (s === "quote" || s === "extras") {
-      var xs = app.querySelector(".xt-sheet");
-      function xtSet(o) { XT.open = o; if (xs) xs.hidden = !o; document.body.classList.toggle("xt-lock", o); }
-      app.querySelectorAll("[data-xt-open]").forEach(function (b) { b.addEventListener("click", function () { xtSet(true); logAddon("view", (P.addons || []).map(function (a) { return a.id; }), "extras-sheet"); }); });
-      app.querySelectorAll("[data-xt-close]").forEach(function (b) { b.addEventListener("click", function () { XT.pick = null; xtSet(false); render(); }); });
-      if (xs) xs.addEventListener("click", function (e) { if (e.target === xs) { XT.pick = null; xtSet(false); render(); } });
-      app.querySelectorAll("[data-xt]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-xt"); XT.pick = XT.pick === v ? null : v; render(); var d = app.querySelector(".xt-detail"); if (d) d.scrollIntoView({ block: "nearest" }); }); });
-      document.body.classList.toggle("xt-lock", XT.open);
-      app.querySelectorAll("[data-tier]").forEach(function (c) {
-        function pick(e) {
-          if (e && e.target.closest("[data-act], [data-detail], [data-addon], [data-lastminute]")) return;
-          var k = c.getAttribute("data-tier");
-          var wasOpen = S.quoteExpand === k;
-          S.tier = k;
-          /* Expand-on-tap: selecting a tier opens its detail; tapping the open one collapses. */
-          S.quoteExpand = wasOpen ? null : k;
-          save(); var y = window.scrollY; render(); window.scrollTo(0, y);
-        }
-        c.addEventListener("click", pick);
-        c.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
-      });
-      app.querySelectorAll("[data-addon]").forEach(function (b) {
-        b.addEventListener("click", function (e) {
-          e.stopPropagation();
-          var id = b.getAttribute("data-addon");
-          S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
-          var ix = S.addons.indexOf(id);
-          if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "data-addon");
-          save();
-          var y = window.scrollY; render(); window.scrollTo(0, y);
-        });
-      });
-      app.querySelectorAll("[data-lastminute]").forEach(function (b) {
-        b.addEventListener("click", function (e) {
-          e.stopPropagation();
-          var id = b.getAttribute("data-lastminute");
-          S.lastMinute = Array.isArray(S.lastMinute) ? S.lastMinute.slice() : [];
-          var ix = S.lastMinute.indexOf(id);
-          if (ix > -1) S.lastMinute.splice(ix, 1); else S.lastMinute.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "data-lastminute");
-          save();
-          var y = window.scrollY; render(); window.scrollTo(0, y);
-        });
-      });
-      app.querySelectorAll("[data-detail]").forEach(function (b) {
-        b.addEventListener("click", function (e) { e.stopPropagation(); e.preventDefault(); openPriceDetail(b.getAttribute("data-detail")); });
-      });
-    }
-    if (s === "alacarte") bindAlacarte();
-    if (s === "photos" || /^q\d$/.test(s)) app.querySelectorAll("[data-photo]").forEach(function (inp) {
-      inp.addEventListener("change", function () {
-        var id = inp.getAttribute("data-photo"); photoMem[id] = photoMem[id] || [];
-        Array.prototype.forEach.call(inp.files || [], function (f) { if (/^image\//.test(f.type)) photoMem[id].push(URL.createObjectURL(f)); });
-        S.photos[id] = photoMem[id].length; save(); render();
-      });
-    });
-    if (s === "visit") bindVisit();
-    if (s === "signup") bindSignup();
-    if (s === "pay") bindPay();
     if (s === "confirm") bindReferralShare();
   }
   function act(a) {
     if (a === "back") return back();
     if (a === "home") return go("home");
-    if (a === "dismissResume") { S = fresh(); photoMem = {}; save(); render(); return; }
-    if (a === "startOver") { S = fresh(); photoMem = {}; save(); return go("q0"); }
-    if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : "q0"); }
+    if (a === "dismissResume") { S = fresh(); save(); render(); return; }
+    if (a === "startOver") { S = fresh(); save(); return go(OB[0]); }
+    if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : OB[0]); }
     if (a === "start") { try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {} }
-    if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go("q0"); }
+    if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go(OB[0]); }
     if (a === "watch") return openVideo(true);
-    if (a === "q0") return go("q0");
-    if (a === "photos") return go("photos");
-    if (a === "visit") return go("visit");
-    if (a === "toQuote") return go("quote");
-    if (a === "accept") return go("accept");
-    if (a === "extras") return go("extras");
-    if (a === "signup") { if (S.plan !== "biennial") S.plan = "annual"; return go("signup"); }
+    if (a === "toQuote") return go(OB[0]);
     if (a === "alacarte") return go("alacarte");
-    if (a === "photosDone") { var c = photoCards(); S.photosComplete = c.every(function (x) { return (S.photos[x[0]] || 0) > 0; }); return go("quote"); }
-    if (a === "restart") { S = fresh(); S.resume = null; photoMem = {}; save(); render(); window.scrollTo(0, 0); }
-  }
-  function bindQ(i) {
-    var q = Q[i], nextB = app.querySelector('[data-act="next"]') || document.createElement("button");
-    function refresh() { nextB.disabled = !isAnswered(q); save(); }
-    nextB.removeAttribute("data-act");
-    nextB.addEventListener("click", function () {
-      if (q.type === "zip" && S.answers.zip !== "unsure") {
-        var z = zipOf(S.answers.zip), err = document.getElementById("zipErr");
-        if (!z) { err.textContent = "Please include a 5-digit ZIP code, or tap Unsure."; return; }
-        if (!inArea(z) && !S._zipOk) { S._zipOk = true; err.textContent = "ZIP " + z + " looks outside metro Detroit. You can still get an estimate; tap Next again to continue."; return; }
-      }
-      go(i + 1 < Q.length ? "q" + (i + 1) : "choice");
-    });
-    var zip = document.getElementById("zip");
-    if (zip) zip.addEventListener("input", function () { S.answers.zip = zip.value; S._zipOk = false; document.getElementById("zipErr").textContent = ""; app.querySelector("[data-unsure]").classList.remove("sel"); refresh(); });
-    function nextQ() { go(i + 1 < Q.length ? "q" + (i + 1) : "choice"); }
-    /* Tap to auto-advance: brief selected flash, then the next step. */
-    /* Pick, Then Next (Info Gather Deck): a tap selects; the Next button advances. */
-    function whReady() { var c = S.answers.waterHeaters, t = S.answers.whType; return c !== undefined && c !== "unsure" && t && t !== "unsure"; }
-    app.querySelectorAll("[data-single]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers[q.id] = b.getAttribute("data-single"); save(); render(); }); });
-    app.querySelectorAll("[data-wh]").forEach(function (b) { b.addEventListener("click", function () { if (app.classList.contains("qf-busy")) return; S.answers.whType = b.getAttribute("data-wh"); if (S.answers.waterHeaters === "unsure") delete S.answers.waterHeaters; save(); render(); }); });
-    if (zip) zip.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (!nextB.disabled) nextB.click(); } });
-    app.querySelectorAll("[data-multi]").forEach(function (b) { b.addEventListener("click", function () {
-      var k = b.getAttribute("data-multi"), cur = Array.isArray(S.answers[q.id]) ? S.answers[q.id] : [];
-      if (k === "none") S.answers[q.id] = "none"; else { var ix = cur.indexOf(k); if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers[q.id] = cur.length ? cur : undefined; }
-      save(); render(); }); });
-    var u = app.querySelector("[data-unsure]");
-    if (u) u.addEventListener("click", function () {
-      S.answers[q.id] = "unsure"; if (q.type === "wh" && !S.answers.whType) S.answers.whType = "unsure";
-      if (zip) zip.value = "";
-      save(); if (q.type === "multi") render(); else go(i + 1 < Q.length ? "q" + (i + 1) : "choice");
-    });
+    if (a === "restart") { S = fresh(); S.resume = null; save(); render(); window.scrollTo(0, 0); }
   }
   function bindAlacarte() {
     app.querySelectorAll("[data-alacarte]").forEach(function (b) {
@@ -1769,19 +1343,6 @@
       logAddon("purchase", S.alacarte || [], "alacarte"); S.alacarteBooking = b; save(); go("alacarteConfirm");
     });
   }
-  function bindVisit() {
-    var v = S.visit ? Object.assign({}, S.visit) : { windows: [] };
-    app.querySelectorAll("[data-win]").forEach(function (b) { b.addEventListener("click", function () {
-      var t = b.getAttribute("data-win"), ix = v.windows.indexOf(t); if (ix > -1) v.windows.splice(ix, 1); else v.windows.push(t);
-      b.classList.toggle("sel", ix < 0); b.querySelector(".chk").innerHTML = ix < 0 ? "&#10003;" : ""; }); });
-    document.getElementById("visitF").addEventListener("submit", function (e) {
-      e.preventDefault();
-      v.date = val("vDate"); v.name = val("vName"); v.phone = val("vPhone"); v.email = val("vEmail");
-      var err = !v.date ? "Pick a preferred date." : !v.windows.length ? "Pick at least one time window." : !v.name ? "Enter your name." : !/\d{3}.*\d{3}.*\d{4}/.test(v.phone) ? "Enter phone number." : !/^\S+@\S+\.\S+$/.test(v.email) ? "Enter email." : "";
-      if (err) { document.getElementById("vErr").textContent = err; return; }
-      v.requestedAt = new Date().toISOString(); v.completed = false; S.visit = v; go("quote");
-    });
-  }
   function fmtDate(d) { var t = new Date(d + "T12:00:00"); return isNaN(t) ? d : t.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }); }
   function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
 
@@ -1799,128 +1360,6 @@
       c.classList.toggle("hide", mode !== "draw"); typed.classList.toggle("hide", mode !== "type"); if (mode === "draw") size(); else typed.focus(); }); });
     root.querySelector("[data-sigclear]").addEventListener("click", function () { if (mode === "draw") size(); else typed.value = ""; });
     return { valid: function () { return mode === "draw" ? has : typed.value.trim().length >= 2; }, value: function () { return mode === "draw" ? "drawn" : "typed: " + typed.value.trim(); } };
-  }
-  function bindSignup() {
-    var sigs = {}; app.querySelectorAll("[data-sig]").forEach(function (r) { sigs[r.getAttribute("data-sig")] = setupSig(r); });
-    app.querySelectorAll("[data-plan]").forEach(function (b) { b.addEventListener("click", function () { keepFields(); S.plan = b.getAttribute("data-plan"); save(); var y = window.scrollY; render(); window.scrollTo(0, y); }); });
-    function keepFields() {
-      var ref = val("sRef");
-      S.referralCodeIn = ref;
-      S.signup = Object.assign({}, S.signup, { address: val("sAddr"), name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, yardSignOk: !!(document.getElementById("sYardSign") || {}).checked });
-    }
-    /* Sign-Up Form deck 04 (Max 17:10 ICT Oct 17): thin bar shows how far you have read each agreement box */
-    app.querySelectorAll(".legal.open-box").forEach(function (b) { var bar = b.nextElementSibling; if (!bar || !bar.classList.contains("rd-bar")) return; var f = bar.firstChild; function up() { var m = b.scrollHeight - b.clientHeight; f.style.width = (m > 0 ? Math.min(100, Math.round(b.scrollTop / m * 100)) : 100) + "%"; } b.addEventListener("scroll", up, { passive: true }); up(); });
-    var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); var w = document.getElementById("refWrap"); w.hidden = false; document.getElementById("sRef").focus(); });
-    /* Sign Up Policies deck 03: check the referral code right away (format only; the real check happens on our side). */
-    (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right. +1 free month once your first payment clears." : "Codes look like SU-HOME-1234."; o.className = "small ref-check " + (ok ? "ok" : "bad"); r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
-    ["sAddr", "sName", "sPhone", "sEmail", "sRef", "sYardSign"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keepFields(); save(); }); });
-    document.getElementById("suF").addEventListener("submit", function (e) {
-      e.preventDefault(); keepFields();
-      var s = S.signup, errs = [
-        ["sName", !s.name ? "Enter full name." : ""],
-        ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter phone number." : ""],
-        ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter email." : ""],
-        ["sAddr", s.address.length < 5 ? "Enter service address." : ""],
-        ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
-        ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
-        ["agreeSig", !sigs.agreeSig.valid() ? "Sign once to sign both." : ""]];
-      var first = null;
-      errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
-      if (first) { first.scrollIntoView({ block: "center" }); return; }
-      var form = this;
-      s.agreementSignature = sigs.agreeSig.value(); s.waiverSignature = s.agreementSignature; s.signedAt = new Date().toISOString(); s.tier = S.tier; s.totals = totals(); s.referralCodeIn = S.referralCodeIn || s.referralCodeIn || ""; logAddon("purchase", (S.addons || []).concat(S.lastMinute || []), "signup:" + S.tier);
-      if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
-      go("pay");
-    });
-    app.querySelectorAll("[data-xr-add],[data-xr-skip],[data-xr-remove],[data-xr-all]").forEach(function (b) { b.addEventListener("click", function () {
-      keepFields(); save();
-      var add = b.getAttribute("data-xr-add"), skip = b.getAttribute("data-xr-skip"), rm = b.getAttribute("data-xr-remove");
-      S.addons = Array.isArray(S.addons) ? S.addons.slice() : [];
-      if (add) { if (S.addons.indexOf(add) < 0) S.addons.push(add); logAddon("offer_accepted", add, "extras-row"); }
-      else if (skip) { XR.skipped.push(skip); logAddon("offer_declined", skip, "extras-row"); }
-      else if (rm) S.addons = S.addons.filter(function (x) { return x !== rm; });
-      else XR.all = true;
-      save(); var y = window.scrollY; render(); window.scrollTo(0, y);
-    }); });
-  }
-
-  /* ---------- Detailed pricing modal ---------- */
-  function ensurePriceModal() {
-    var m = document.getElementById("priceModal");
-    if (m) return m;
-    m = document.createElement("div");
-    m.id = "priceModal";
-    m.className = "modal";
-    m.setAttribute("role", "dialog");
-    m.setAttribute("aria-modal", "true");
-    m.setAttribute("aria-label", "Detailed pricing");
-    m.hidden = true;
-    m.innerHTML = '<div class="modal-inner"><button type="button" class="modal-x mw-hover" data-price-close="1" aria-label="Close">&times;</button><div id="priceModalBody"></div></div>';
-    document.body.appendChild(m);
-    m.addEventListener("click", function (e) {
-      if (e.target === m || e.target.getAttribute("data-price-close")) closePriceDetail();
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !m.hidden) closePriceDetail();
-    });
-    return m;
-  }
-  function openPriceDetail(tier) {
-    var bd = breakdown(tier), t = P.tiers[tier];
-    var memLines = bd.lines.filter(function (L) { return L.kind !== "lastMinute"; });
-    var lmLines = bd.lines.filter(function (L) { return L.kind === "lastMinute"; });
-    var rows = memLines.map(function (L) {
-      var right = L.amt === 0 ? "Included" : money(L.amt);
-      return '<li><span>' + esc(L.label) + (L.est ? ' <span class="est">Estimated</span>' : "") + '</span><span>' + right + '</span></li>';
-    }).join("");
-    if (bd.floorLine) {
-      rows += '<li class="sub"><span>' + esc(bd.floorLine.label) + '</span><span>+' + money(bd.floorLine.amt) + '</span></li>';
-    }
-    if (bd.discLine) {
-      rows += '<li class="sub"><span>' + esc(bd.discLine.label) + '</span><span>&minus;' + money(Math.abs(bd.discLine.amt)) + '</span></li>';
-    }
-    if (bd.offerLine) {
-      rows += '<li class="sub"><span>' + esc(bd.offerLine.label) + '</span><span>No Charge</span></li>';
-      rows += '<li class="sub"><span>Prepaid for 24 months at listed price (floor honored)</span><span>' + money(bd.membership) + '</span></li>';
-    }
-    rows += '<li class="total"><span>' + (bd.termMonths === 30 ? "Prepaid total (30-month term)" : "Annual membership total") + '</span><span>' + money(bd.year) + '</span></li>';
-    rows += '<li class="total"><span>' + "Monthly price" + '</span><span>' + money(bd.monthly) + '/Month</span></li>';
-    if (bd.termMonths === 30) {
-      rows += '<li class="sub"><span>Referral free months (if any)</span><span>Credited after neighbor\'s first payment clears · added at the end of your term, once you complete it · $0 refund value</span></li>';
-    }
-    if (lmLines.length) {
-      rows += lmLines.map(function (L) {
-        return '<li class="sub"><span>' + esc(L.label) + ' <span class="est">Next Visit</span></span><span>' + money(L.amt) + '</span></li>';
-      }).join("");
-      rows += '<li class="total"><span>Last-minute due with next visit</span><span>' + money(bd.lastMinute) + '</span></li>';
-    }
-    var bill = billLine(S.plan === "biennial" ? "biennial" : (tier === "platinum" && S.plan === "annual" ? "annualDiscount" : (tier === "platinum" && S.plan === "quarterly" ? "quarterly" : "annual")), bd.year);
-    var extrasNote = [];
-    if (bd.addons) extrasNote.push("selected add-ons");
-    if (bd.lastMinute) extrasNote.push("last-minute extras");
-    var body = '<p class="eyebrow">Detailed Pricing · Draft</p><h2>' + t.label + '</h2>' +
-      '<p class="small muted">Here is exactly what goes into your ' + t.label + ' estimate, based on your answers' + (extrasNote.length ? " and " + extrasNote.join(" and ") : "") + '.</p>' +
-      '<ul class="bd-list">' + rows + '</ul>' +
-      '<p class="price-bill">' + bill + '</p>' +
-      (bd.lastMinute ? '<p class="small muted">Last-minute extras are one-time with your next visit and are not part of the monthly membership figure.</p>' : "") +
-      '<p class="small muted bd-foot">Lines marked Estimated came from an Unsure answer; we used a typical metro Detroit home for those. Prices are draft.</p>' +
-      '<p class="cancel-link-wrap"><button type="button" class="detail-link" data-open-cancel="1">*Cancellation and Refund Policy</button></p>' +
-      '<div id="cancelInModal" class="cancel-inline hide">' + cancelPolicyCard(tier) + '</div>' +
-      '<button type="button" class="btn btn-primary btn-big mw-hover" data-price-close="1">Close</button>';
-    var m = ensurePriceModal();
-    document.getElementById("priceModalBody").innerHTML = body;
-    var openCancel = document.querySelector("#priceModalBody [data-open-cancel]");
-    if (openCancel) openCancel.addEventListener("click", function () {
-      var box = document.getElementById("cancelInModal");
-      if (box) { box.classList.toggle("hide"); var d = box.querySelector("details"); if (d) d.open = true; }
-    });
-    m.hidden = false;
-    document.body.style.overflow = "hidden";
-  }
-  function closePriceDetail() {
-    var m = document.getElementById("priceModal");
-    if (m) m.hidden = true;
-    document.body.style.overflow = "";
   }
 
   /* ---------- Video modal ---------- */
@@ -1963,7 +1402,7 @@
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
     var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
-    if (S.screen === "quote" || S.screen === "accept" || S.screen === "signup" || S.screen === "confirm") text += " Memberships start at $139/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
+    if (S.screen === "plan" || S.screen === "billing" || S.screen === "accept" || S.screen === "confirm") text += " Memberships start at $139/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + " " + url).then(done, fallbackCopy); else fallbackCopy();
@@ -1976,9 +1415,11 @@
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
   if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); }
   window.addEventListener("hashchange", function () { if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); } });
-  if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (S.screen !== "q0") go("q0"); }
+  if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (!isOb(S.screen)) go(OB[0]); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
+  /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
+  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob1"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
