@@ -166,3 +166,7 @@ html.mm-embed .eyebrow,
 html.mm-embed main.wrap > h1{
   display: none;
 }
+
+.faq ul,.faq ol{margin:0 0 .55rem;padding-left:1.15rem;font-size:.92rem;line-height:1.4}
+.faq li{margin:.28rem 0}
+.faq .fq-note{margin:0 0 .55rem;font-size:12px;color:#737373;line-height:1.4}
