@@ -29,7 +29,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .sys-row{display:flex;align-items:center;gap:.65rem;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.55rem .7rem;box-shadow:0 1px 3px rgba(10,10,10,.05);min-height:64px}
 .ob .sys-row .sys-ic{flex:none;width:2.6rem;height:2.6rem;border-radius:.7rem;display:grid;place-items:center}
 .ob .sys-row .sys-ic .su-ico{width:1.55rem;height:1.55rem}
-.ob .sys-ic.t0{background:rgba(193,80,46,.13)}.ob .sys-ic.t1{background:rgba(5,102,141,.12)}.ob .sys-ic.t2{background:rgba(212,160,23,.17)}
+.ob .sys-ic.t0{background:rgba(193,80,46,.13)}.ob .sys-ic.t1{background:rgba(5,102,141,.12)}.ob .sys-ic.t2{background:rgba(5,102,141,.12)}
 .ob .sys-meta{flex:1;min-width:0}
 .ob .sys-name{display:flex;align-items:center;flex-wrap:wrap;gap:.15rem;font:600 1.05rem/1.15 var(--mw-font-heading);letter-spacing:.01em;color:#0a0a0a}
 .ob .sys-sub{margin:.15rem 0 0;font:500 .75rem/1.25 var(--mw-font-body);color:#737373}
@@ -198,3 +198,9 @@ body:not(.on-home) .topbar{overflow-x:clip}
 .ob .plan-cta.filled{background:#A8431F;border:1.5px solid #A8431F;color:#fff}
 .ob .plan-cta.outline{background:#fff;border:1.5px solid var(--plan-c,#0B6E4F);color:var(--plan-c,#0B6E4F)}
 .ob .plus-tag, .ob .badge-found, .ob .seg-badge, .ob .plan-card .ribbon, .ob .qf-hero .badge{white-space:nowrap}
+
+/* Swatch overnight Nov 11: no gold icon tiles in the funnel (Step 3 Your Systems, Step 6 Billing, Water Heater, Steps 1–6 icon accents). Same lagoon tint as PR49 F16. */
+.ob .qf-art.t2,.ob .qf-done-art .t2{background:rgba(5,102,141,.12)}
+.ob .su-ico .f-s{fill:#05668D}
+.ob .ob-ao-h{margin:.85rem 0 .35rem;font:700 1.05rem/1.15 var(--mw-font-heading);letter-spacing:.01em;color:#0a0a0a}
+.ob .ob-ao-groups .ob-ao-h:first-child{margin-top:0}

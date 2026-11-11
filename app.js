@@ -31,6 +31,71 @@
   function addonsAnnual() {
     return selectedAddons().reduce(function (sum, a) { return sum + (a.quoteRequired ? 0 : (a.annual || 0)); }, 0); /* quoteRequired items are priced by quote, not in totals */
   }
+  /* System extras that also appear as monthly add-ons (Irrigation, Sump Pump, Humidifier).
+     One shared selection, priced once in buildLines() via S.answers.extras. */
+  function sharedExtraMap() {
+    var map = {};
+    monthlyAddonCatalog().forEach(function (a) {
+      if (a && a.fromExtras && a.id && a.id.indexOf("x_") === 0) map[a.id.slice(2)] = a.id;
+    });
+    return map;
+  }
+  function extrasAnnual() {
+    var ex = Array.isArray((S.answers || {}).extras) ? S.answers.extras : [];
+    return ex.reduce(function (sum, k) {
+      var e = P.extras && P.extras[k];
+      return sum + (e && e.all > 0 ? e.all : 0);
+    }, 0);
+  }
+  function addonsNoteMonthly() {
+    var n = 0;
+    var ex = Array.isArray((S.answers || {}).extras) ? S.answers.extras : [];
+    ex.forEach(function (k) {
+      var e = P.extras && P.extras[k];
+      if (e && e.all > 0) n += monthlyOf(e.all);
+    });
+    selectedAddons().forEach(function (a) {
+      if (!a || a.quoteRequired || !(a.annual > 0)) return;
+      n += monthlyOf(a.annual);
+    });
+    return n;
+  }
+  function selectedFunnelAddons() {
+    var ids = Array.isArray(S.addons) ? S.addons : [];
+    var seen = {}, out = [];
+    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) {
+      if (a && ids.indexOf(a.id) > -1 && !seen[a.id]) { seen[a.id] = 1; out.push(a); }
+    });
+    return out;
+  }
+  function syncSharedExtras(from) {
+    if (!S.answers) S.answers = {};
+    var extras = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [];
+    var addons = Array.isArray(S.addons) ? S.addons.slice() : [];
+    var map = sharedExtraMap();
+    Object.keys(map).forEach(function (k) {
+      var id = map[k], on = (from === "extras") ? extras.indexOf(k) > -1 : addons.indexOf(id) > -1;
+      var ixE = extras.indexOf(k), ixA = addons.indexOf(id);
+      if (on) { if (ixE < 0) extras.push(k); if (ixA < 0) addons.push(id); }
+      else { if (ixE > -1) extras.splice(ixE, 1); if (ixA > -1) addons.splice(ixA, 1); }
+    });
+    S.answers.extras = extras;
+    S.addons = addons;
+  }
+  function healSharedExtras() {
+    if (!S.answers) S.answers = {};
+    var extras = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [];
+    var addons = Array.isArray(S.addons) ? S.addons.slice() : [];
+    var map = sharedExtraMap();
+    Object.keys(map).forEach(function (k) {
+      var id = map[k], on = extras.indexOf(k) > -1 || addons.indexOf(id) > -1;
+      var ixE = extras.indexOf(k), ixA = addons.indexOf(id);
+      if (on) { if (ixE < 0) extras.push(k); if (ixA < 0) addons.push(id); }
+      else { if (ixE > -1) extras.splice(ixE, 1); if (ixA > -1) addons.splice(ixA, 1); }
+    });
+    S.answers.extras = extras;
+    S.addons = addons;
+  }
   function selectedLastMinute() {
     var ids = Array.isArray(S.lastMinute) ? S.lastMinute : [];
     return (P.lastMinute || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
@@ -91,9 +156,13 @@
     var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; o.draft=true; return o; });
     var pool=lm.concat(P.addons||[]);
     var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
-    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(a.fromLastMinute||a.draft){ a.quoteRequired=true; a.price=null; } });
+    var monthlyIds={};
+    monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once"; if(a.fromLastMinute||a.draft){ a.quoteRequired=true; a.price=null; } });
     return rows;
   }
+
+  healSharedExtras();
 
     function findService(id) {
     var a = (P.addons || []).find(function (x) { return x.id === id; });
@@ -943,7 +1012,7 @@
     var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
     var tiles = Object.keys(P.extras).map(function (k, j) {
       var e = P.extras[k], on = ex.indexOf(k) > -1, sub = e.all > 0 ? moLabel(e.all) : "Included On Plus And Up";
-      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(e.label.replace("Whole-House ", "")) + '<small>' + sub + '</small></span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
+      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + '<small>' + sub + '</small></span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
     }).join("");
     var body = '<div class="sys-list">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh, wh ? '<div class="ob-whs">' + whx + '</div>' : '') + '</div>' +
       '<p class="blk-lab" style="margin-top:.9rem">Do You Have Any Of These?</p><div class="qt-grid two" data-ptr-ignore>' + tiles + '</div>';
@@ -962,17 +1031,23 @@
     return QUOTE_LABEL;
   }
   function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return d + (a.quoteRequired ? " We'll follow up with a price." : ""); }
+  function aoIco(a) {
+    var id = a && a.id || "";
+    return XT_ICO[id] || XICO[id.indexOf("x_") === 0 ? id.slice(2) : id] || "wrench";
+  }
+  function aoRow(a, sel) {
+    var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
+    return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(aoIco(a), "sm") +
+      '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
+      '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button></div>' +
+      (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
+  }
   function obAddons() {
     var sel = S.addons || [];
-    var rows = monthlyAddonCatalog().concat(onceAddonCatalog()).map(function (a) {
-      var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
-      return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(XT_ICO[a.id] || "wrench", "sm") +
-        '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
-        '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button></div>' +
-        (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
-    }).join("");
-    var add = addonsAnnual();
-    var body = '<ul class="ob-ao-list">' + rows + '</ul>' + (add ? '<p class="priced-note">Your add-ons: ' + moLabel(add) + '</p>' : '');
+    var monthly = monthlyAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
+    var once = onceAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
+    var addMoSum = addonsNoteMonthly();
+    var body = '<div class="ob-ao-groups"><h3 class="ob-ao-h">Monthly Add-Ons</h3><ul class="ob-ao-list">' + monthly + '</ul><h3 class="ob-ao-h">One-Time Add-Ons</h3><ul class="ob-ao-list">' + once + '</ul></div>' + (addMoSum ? '<p class="priced-note">Your add-ons: +' + money(addMoSum) + '/mo</p>' : '');
     return obShell("addons", "wrench", 3, "Add-Ons", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
   }
 
@@ -1065,11 +1140,13 @@
     var start = S.firstVisit ? longDate(S.firstVisit) : "";
     var billTxt = b.plan === "monthly" ? "Monthly" : "Annual · Founding 2-For-1";
     var dueK = "Due Today", dueV = money(b.today);
-    var adds = selectedAddons();
+    var adds = selectedFunnelAddons();
     var recap;
     if (OB_STYLE.accept === "B") {
-      var rows = [["Plan", esc(t.label) + " · " + money(b.monthly) + "/mo"], ["Tag", esc(planTag())], ["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]];
-      if (adds.length) rows.push(["Add-Ons", adds.map(function (x) { return esc(x.label) + " " + aoPrice(x); }).join("<br>")]);
+      var rows = [["Plan", esc(t.label) + " · " + money(b.monthly) + "/mo"]];
+      var aoBits = extraTags().concat(adds.map(function (x) { return esc(x.label) + " " + aoPrice(x); }));
+      if (aoBits.length) rows.push(["Add-Ons", aoBits.join("<br>")]);
+      rows.push(["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]);
       rows.push([dueK, dueV]);
       recap = '<div class="item-card">' + rows.map(function (r, i) { return '<div class="item-row' + (i === rows.length - 1 ? " total" : "") + (String(r[1]).length > 28 ? " stack" : "") + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>'; }).join("") +
         '<p class="price-confirm">' + PRICE_CONFIRM + '</p></div>';
@@ -1154,14 +1231,14 @@
         var kv = b.getAttribute("data-ob-wh").split(":"), t = whTypes(); t[Number(kv[0])] = kv[1]; S.answers.whTypes = t; rer(); }); });
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
-        if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; rer(); }); });
+        if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
       if (nx) nx.addEventListener("click", function () { if (S.tailor) { S.tailor = false; go("plan"); } else go("addons"); });
       return;
     }
     if (s === "addons") {
       app.querySelectorAll("[data-ob-ao]").forEach(function (b) { b.addEventListener("click", function () {
         var id = b.getAttribute("data-ob-ao"); S.addons = Array.isArray(S.addons) ? S.addons.slice() : []; var ix = S.addons.indexOf(id);
-        if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
+        if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); syncSharedExtras("addons"); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
       app.querySelectorAll("[data-ob-ao-open]").forEach(function (b) { b.addEventListener("click", function () { var id = b.getAttribute("data-ob-ao-open"); S._aoOpen = S._aoOpen === id ? null : id; rer(); }); });
     }
     if (s === "plan") {
@@ -1515,7 +1592,7 @@
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
-  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob5"; document.head.appendChild(l); })();
+  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob6"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
