@@ -277,3 +277,25 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 .ob .ex-card .ex-incl{margin:var(--sp-4) 0 var(--sp-2);font:600 14px/19px var(--mw-font-body);color:#525252}
 /* #12 picked extra: soft jungle fill (~7%), check kept, no heavy outline */
 .ob .ex-card .qt.sel{border-color:rgba(11,110,79,.35);box-shadow:none;background:rgba(11,110,79,.07)}
+
+/* ===== Funnel deck build D2 (Nov 12 2026): Flow + Finish picks ===== */
+/* #15 one thin progress bar (same label; the nine spans render as one continuous fill) */
+.ob .qf-segs.nine{gap:0;height:4px;border-radius:99px;background:#ece6dc;overflow:hidden}
+.ob .qf-segs.nine span{height:4px;border-radius:0;background:transparent}
+.ob .qf-segs.nine span.done,.ob .qf-segs.nine span.cur{background:var(--mw-terracotta)}
+/* #11 + #17 sticky part: Back left, Next right in a sticky bottom bar */
+.ob .ob-bar{position:sticky;bottom:0;z-index:15;display:flex;align-items:center;gap:var(--sp-3);margin:var(--sp-5) calc(-1 * min(var(--sp-4), (100vw - 100%) / 2)) 0;padding:var(--sp-2) var(--sp-4) calc(var(--sp-2) + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.97);border-top:1px solid var(--mw-border)}
+.ob .ob-bar .back-pill{flex:none;margin:0;min-height:44px}
+.ob .ob-bar .btn-big{flex:1;min-height:52px;margin:0}
+.ob .qf-foot .qf-navbar .nav-pills{justify-content:flex-end}
+/* #14 One-Time tab: Legal's expandable line for quote-only services */
+.ob .ob-more-li{list-style:none}
+.ob .ob-more{margin-top:var(--sp-3);background:#fff;border:1px dashed #cfc6b4;border-radius:.75rem}
+.ob .ob-more summary{min-height:44px;padding:var(--sp-3);cursor:pointer;font:600 14px/19px var(--mw-font-body);color:#1a1a1a;list-style:none}
+.ob .ob-more summary::-webkit-details-marker{display:none}
+.ob .ob-more summary::after{content:"";display:inline-block;width:7px;height:7px;margin-left:8px;border:solid #525252;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px)}
+.ob .ob-more[open] summary::after{transform:rotate(-135deg)}
+.ob .ob-more-list{margin:0;padding:0 var(--sp-3) var(--sp-3) calc(var(--sp-3) + 16px);font:500 13px/20px var(--mw-font-body);color:#525252}
+/* #19 Payment box muted until sign-up opens */
+.ob .paybox-soon{opacity:.7;background:#FAFAF8}
+.ob .paybox-soon h3{color:#525252}
