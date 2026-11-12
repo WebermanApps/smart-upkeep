@@ -1619,3 +1619,10 @@ body.on-home .hm-search{background:transparent}
 body.on-home .su-ico :is(path,circle,rect,line,polyline,polygon,ellipse){vector-effect:non-scaling-stroke;stroke-width:2px}
 /* D1: the 3-column desktop waitlist row is for Home only; in the funnel column the email field keeps its width */
 @media(min-width:900px){.ob .hm-wait-f{grid-template-columns:1fr 2fr}.ob .hm-wait-f .btn{grid-column:1/-1}}
+
+/* Nov 12 2026 (Machan 7:16 PM): Home section jumps land just below the sticky header, same offset for every title.
+   --su-hdr-h is the real header height (JS sets it from .topbar, which already includes the safe-area padding); the CSS fallback adds env(safe-area-inset-top).
+   The 12px gap is keyed off the title (h2 / summary), not the section box, so padding on a row does not shift that title. */
+:root{--su-hdr-h:calc(72px + env(safe-area-inset-top,0px));--su-jump-gap:12px}
+@media(min-width:900px){:root{--su-hdr-h:calc(80px + env(safe-area-inset-top,0px))}}
+body.on-home .hm section[id] h2,body.on-home .hm details[id] > summary,body.on-home .hm [data-jump-target] h2,body.on-home .hm [data-jump-target] > summary{scroll-margin-top:calc(var(--su-hdr-h) + var(--su-jump-gap))!important}
