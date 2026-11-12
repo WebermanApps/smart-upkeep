@@ -202,5 +202,5 @@ body:not(.on-home) .topbar{overflow-x:clip}
 /* Swatch overnight Nov 11: no gold icon tiles in the funnel (Step 3 Your Systems, Step 6 Billing, Water Heater, Steps 1–6 icon accents). Same lagoon tint as PR49 F16. */
 .ob .qf-art.t2,.ob .qf-done-art .t2{background:rgba(5,102,141,.12)}
 .ob .su-ico .f-s{fill:#05668D}
-.ob .ob-ao-h{margin:.85rem 0 .35rem;font:700 1.05rem/1.15 var(--mw-font-heading);letter-spacing:.01em;color:#0a0a0a}
-.ob .ob-ao-groups .ob-ao-h:first-child{margin-top:0}
+/* Add-Ons step: Monthly / One-Time tabs reuse the billing segmented pill (.seg-toggle). */
+.ob .ob-ao-tabs{margin:0 0 .7rem}

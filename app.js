@@ -1044,10 +1044,15 @@
   }
   function obAddons() {
     var sel = S.addons || [];
+    var tab = S._aoTab === "once" ? "once" : "monthly";
     var monthly = monthlyAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
     var once = onceAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
     var addMoSum = addonsNoteMonthly();
-    var body = '<div class="ob-ao-groups"><h3 class="ob-ao-h">Monthly Add-Ons</h3><ul class="ob-ao-list">' + monthly + '</ul><h3 class="ob-ao-h">One-Time Add-Ons</h3><ul class="ob-ao-list">' + once + '</ul></div>' + (addMoSum ? '<p class="priced-note">Your add-ons: +' + money(addMoSum) + '/mo</p>' : '');
+    var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Add-Ons">' +
+      '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Monthly</button>' +
+      '<button type="button" role="tab" class="mw-hover' + (tab === "once" ? " on" : "") + '" id="ob-ao-tab-once" aria-selected="' + (tab === "once") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="once">One-Time</button></div>';
+    var list = '<ul class="ob-ao-list" id="ob-ao-panel" role="tabpanel" aria-labelledby="' + (tab === "once" ? "ob-ao-tab-once" : "ob-ao-tab-monthly") + '">' + (tab === "once" ? once : monthly) + '</ul>';
+    var body = '<div class="ob-ao-groups">' + tabs + list + '</div>' + (addMoSum ? '<p class="priced-note">Your add-ons: +' + money(addMoSum) + '/mo</p>' : '');
     return obShell("addons", "wrench", 3, "Add-Ons", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
   }
 
@@ -1236,6 +1241,8 @@
       return;
     }
     if (s === "addons") {
+      app.querySelectorAll("[data-ob-ao-tab]").forEach(function (b) { b.addEventListener("click", function () {
+        S._aoTab = b.getAttribute("data-ob-ao-tab"); rer(); }); });
       app.querySelectorAll("[data-ob-ao]").forEach(function (b) { b.addEventListener("click", function () {
         var id = b.getAttribute("data-ob-ao"); S.addons = Array.isArray(S.addons) ? S.addons.slice() : []; var ix = S.addons.indexOf(id);
         if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); syncSharedExtras("addons"); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
@@ -1592,7 +1599,7 @@
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
-  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob6"; document.head.appendChild(l); })();
+  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob7"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
