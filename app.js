@@ -1223,8 +1223,8 @@
       last = off;
       var f = document.activeElement;
       if (off && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
-        var r = f.getBoundingClientRect(), top = vv.offsetTop + 8, bottom = vv.offsetTop + vv.height - bar.offsetHeight - 8;
-        if (r.bottom > bottom) window.scrollBy(0, r.bottom - bottom); else if (r.top < top) window.scrollBy(0, r.top - top);
+        var r = f.getBoundingClientRect(), top = vv.offsetTop + 8, bottom = vv.offsetTop + vv.height - bar.getBoundingClientRect().height - 10;
+        if (r.bottom > bottom) window.scrollBy(0, Math.ceil(r.bottom - bottom)); else if (r.top < top) window.scrollBy(0, Math.floor(r.top - top));
       }
     }
     function queue() { if (!queued) { queued = true; (window.requestAnimationFrame || setTimeout)(kb); } }
