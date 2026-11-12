@@ -1151,6 +1151,8 @@
     var onceAll = onceAddonCatalog(), oncePriced = onceAll.filter(function (a) { return hasRealOncePrice(a) && !needsSiteVisit(a.label); }), onceQuote = onceAll.filter(function (a) { return oncePriced.indexOf(a) < 0; });
     /* quote-only one-time rows are no longer offered here (they stay on À La Carte); drop any old picks of them so nothing hidden rides along */
     var hid = onceQuote.map(function (a) { return a.id; }); if (sel.some(function (id) { return hid.indexOf(id) > -1; })) { S.addons = sel = sel.filter(function (id) { return hid.indexOf(id) < 0; }); save(); }
+    /* Legal Nov 12: every plan includes a Furnace Tune-Up and an AC Tune-Up, so the sign-up flow can't offer them as extras. They stay on Shop À La Carte. */
+    onceQuote = onceQuote.filter(function (a) { return !/^(furnace|ac) tune up$/.test(suNorm(a.label)); });
     var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
       (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
     var addMoSum = addonsNoteMonthly();
