@@ -1740,7 +1740,6 @@
         return list.map(function (x) { return '<div><span>Add-On: ' + esc(x.label) + '</span><span>' + aoPrice(x) + '</span></div>'; }).join("");
       })() +
       '<div><span>' + paid[0] + '</span><span>' + paid[1] + '</span></div><div><span>Signed</span><span>Member Agreement</span></div></div></div>' +
-      myHomeCard(su) +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
@@ -1756,7 +1755,7 @@
           '<p class="small muted" style="margin:.6rem 0 0" id="refCopyMsg"></p>' +
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
-      /* Your Home uses the brand house illustration and the member's address. Street View photo stays held until the fetch improves (item 37). Card order (item 38): Next Steps, Summary, Your Home, Refer A Neighbor. */
+      /* Your Home card is off again (hotfix after #94). myHomeCard stays in the file but is not rendered. Street View photo stays held. Card order: Next Steps, Summary, Refer A Neighbor. */
       '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open Member Login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
