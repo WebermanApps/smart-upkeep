@@ -154,8 +154,12 @@
       if(found){
         var out={}; for(var k in found) out[k]=found[k];
         out.label=suTitle(label);
-        if(once && (out.price==null || out.quoteRequired) && out.quoteRequired!==false && out.price==null) out.quoteRequired=true;
-        if(once && out.price==null) out.quoteRequired=true;
+        /* Item 50: keep pricing-config low/high ranges (Radon, Extra Gutter) off the Quote path. Explicit quoteRequired rows stay Quote. */
+        var keepRange = once && !found.quoteRequired && !found.draft && hasConfigRange(out) && !(+out.price>0);
+        if (!keepRange) {
+          if(once && (out.price==null || out.quoteRequired) && out.quoteRequired!==false && out.price==null) out.quoteRequired=true;
+          if(once && out.price==null) out.quoteRequired=true;
+        }
         return out;
       }
       return {id:(once?"q_o_":"q_m_")+suNorm(label).replace(/ /g,"_"), label:suTitle(label), quoteRequired:true, desc:""};
@@ -188,7 +192,12 @@
     var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
     var monthlyIds={};
     monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
-    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once"; if(a.draft||a.quoteRequired||!(+a.price>0)){ a.quoteRequired=true; a.price=null; } }); /* B1: fixed, non-draft pricing-config prices show; everything else stays Quote */
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once";
+      /* Item 50 (Machan Nov 12): Radon Test and Extra Gutter Cleaning show their pricing-config low–high range instead of Quote. Other quoteRequired rows stay Quote. pricing-config.js is not edited. */
+      var ranged = !a.draft && !a.quoteRequired && !(+a.price>0) && hasConfigRange(a);
+      if (ranged) { a.priceRange = true; a.price = null; }
+      else if (a.draft || a.quoteRequired || !(+a.price>0)) { a.quoteRequired = true; a.price = null; }
+    }); /* B1: fixed, non-draft pricing-config prices show; ranged low/high show as a range; everything else stays Quote */
     return rows;
   }
 
@@ -213,6 +222,14 @@
   }
   function hasRealOncePrice(a){
     return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && isFinite(+a.price) && +a.price>0);
+  }
+  function hasConfigRange(a){
+    return !!(a && a.low != null && a.high != null && isFinite(+a.low) && isFinite(+a.high) && +a.low > 0 && +a.high > 0);
+  }
+  function rangePriceLabel(a){
+    var lo = +a.low, hi = +a.high;
+    if (lo === hi) return money(lo);
+    return money(Math.min(lo, hi)) + "\u2013" + money(Math.max(lo, hi));
   }
   function needsSiteVisit(label){
     var n=String(label||"").toLowerCase();
@@ -857,7 +874,7 @@
         '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRedo()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
@@ -1043,7 +1060,7 @@
     var idx = [];
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
     monthlyAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + addMo(a), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
-    onceAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + " one time"), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
+    onceAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + onceListPrice(a), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
     var inp = root.querySelector(".hm-search input"), res = root.querySelector(".hm-results");
     if (!inp || !res) return; /* search lives in future My Home area */
     inp.addEventListener("input", function () {
@@ -1616,9 +1633,17 @@
   }
   function oncePriceLabel(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
-    if (a.quoteRequired || !hasRealOncePrice(a)) return QUOTE_LABEL;
-    if (a.price != null) return money(a.price);
-    return money(a.annual) + (a.unit === "season" ? "/Season" : "");
+    if (hasRealOncePrice(a)) {
+      if (a.price != null) return money(a.price);
+      return money(a.annual) + (a.unit === "season" ? "/Season" : "");
+    }
+    if (a && !a.quoteRequired && hasConfigRange(a)) return rangePriceLabel(a);
+    return QUOTE_LABEL;
+  }
+  function onceListPrice(a) {
+    var lab = oncePriceLabel(a);
+    if (lab === QUOTE_LABEL || lab === "Needs A Site Visit") return lab;
+    return lab + " one time";
   }
   /* B1/B2: monthly services show their +$X/mo (Irrigation +$19, Sump +$6, Humidifier +$6); one-time rows show a fixed price or Quote. Only fixed one-time prices are totaled. */
   function acItemPrice(a) { return (a && (a.fromExtras || a.gutter)) ? addMo(a) : oncePriceLabel(a); }
