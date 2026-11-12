@@ -950,8 +950,8 @@ body.on-qf main{padding-bottom:0}
 .hm-resume{display:inline-flex;align-items:center;gap:.35rem;margin-top:.5rem;font-weight:600;color:var(--mw-lagoon,#05668D)}
 .hm-resume .su-ico{width:1rem;height:1rem}
 /* Oct 14: What We Take Care Of, Direction A: swipeable category carousel */
-#row-services .ww{margin:0 -1rem}
-.ca-row{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.15rem 1rem .35rem;scrollbar-width:none;scroll-padding:0 1rem}
+#row-services .ww{margin:0 -.85rem}
+.ca-row{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.15rem .85rem .35rem;scrollbar-width:none;scroll-padding:0 .85rem}
 .ca-row::-webkit-scrollbar{display:none}
 .ca-card{flex:0 0 78%;scroll-snap-align:start;display:flex;gap:.6rem;background:#fff;border:1px solid #e5e0d8;border-radius:14px;padding:.55rem .6rem;box-shadow:0 2px 8px rgba(10,10,10,.06);min-height:96px;box-sizing:border-box}
 .ca-art{position:relative;flex:0 0 72px;border-radius:10px;background:#FAF3EB}
@@ -1601,3 +1601,21 @@ body.on-accept .topbar{border-bottom-color:transparent}
 .beta-pay-notice{margin:0 0 .85rem;padding:.7rem .8rem;background:#fff;border:1px solid var(--mw-border);border-left:4px solid #05668D}
 .beta-pay-notice h3{margin:0 0 .3rem;font-size:1rem;color:#05668D}
 .beta-pay-notice p{margin:0;font-size:.92rem;line-height:1.45}
+
+/* Funnel fix-now PR B (Nov 12 2026) */
+/* B3/D13: plain Built by Machan footer (no link) on Home and every funnel screen */
+.foot .built-by{margin:0;font:500 13px/17px var(--mw-font-body);color:#525252;letter-spacing:0;text-transform:none}
+body.on-home .foot{display:block;background:transparent;border-top:0}
+/* D4: Home background, cards stay white */
+body.on-home{background:#F8F2E9}
+body.on-home .hm-search{background:transparent}
+/* Plan card top borders follow plan colors (was lagoon on all three) */
+.hm-plan.pc[data-tier="silver"]{border-top-color:#0B6E4F!important}
+.hm-plan.pc[data-tier="gold"]{border-top-color:#A8431F!important}
+.hm-plan.pc[data-tier="platinum"]{border-top-color:#05668D!important}
+/* Close icon replaces the Arial times glyph */
+.x-ico{display:block;margin:auto;width:20px;height:20px;pointer-events:none}
+/* D19: Home icon strokes render at 2px */
+body.on-home .su-ico :is(path,circle,rect,line,polyline,polygon,ellipse){vector-effect:non-scaling-stroke;stroke-width:2px}
+/* D1: the 3-column desktop waitlist row is for Home only; in the funnel column the email field keeps its width */
+@media(min-width:900px){.ob .hm-wait-f{grid-template-columns:1fr 2fr}.ob .hm-wait-f .btn{grid-column:1/-1}}
