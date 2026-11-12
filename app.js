@@ -425,17 +425,11 @@
   /* Legal (Max 20:10 ICT Oct 17): the 3-day Home Solicitation notice is for OFFLINE sign-ups only (home/door, event, outbound phone).
      It is NOT shown on the online form. Offline wording lives in forms/in-person/ (printable) and the ops phone script. */
   function cancelPage() {
-    return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>No phone call needed. Cancel anytime, no fee. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded what they prepaid minus the itemized price of services already done, and monthly members stop being charged and keep service until their next billing date.</p>' +
-      '<form id="cxF" novalidate><label class="fl" for="cxEmail">Email On Your Membership</label><input id="cxEmail" type="email" autocomplete="email"><p class="small fe" id="e-cxEmail" aria-live="polite"></p>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit">Cancel My Membership</button></form><p class="small muted" id="cxDone" aria-live="polite"></p>' +
+    return backBtn() + '<div class="card"><h1>Cancel Membership</h1><p>Cancel in one step in the member app under Profile &amp; Account. You\'ll see your cancellation date and confirmation number right away.</p>' +
+      '<a class="btn btn-primary btn-big mw-hover" href="/login/?next=/member/cancel/">Sign In To Cancel</a>' +
       '</div>';
   }
-  function bindCancel() {
-    var f = document.getElementById("cxF"); if (!f) return;
-    f.addEventListener("submit", function (e) { e.preventDefault(); var v = document.getElementById("cxEmail").value.trim(), er = document.getElementById("e-cxEmail");
-      if (!/^\S+@\S+\.\S+$/.test(v)) { er.textContent = "Enter email."; return; } er.textContent = ""; f.hidden = true;
-      document.getElementById("cxDone").textContent = "Cancellation received."; });
-  }
+  function bindCancel() { /* Email form removed (Legal Nov 12): cancel completes in the member app after sign-in. */ }
 
   /* ---------- Home: phone-first shopping-app layout ---------- */
   var ADDON_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmLeakSensors: "bell", lmSumpBackup: "meter", lmHoodFilter: "spray", lmBathFan: "duct", lmThermostat: "furnace" };
@@ -697,7 +691,7 @@
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
-    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Refund = prepaid minus work done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
+    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
     trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "guttersExtra", "deck", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -731,7 +725,7 @@
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
       hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Refund = Prepaid Minus Work Done", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
+      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund What\'s Paid For But Not Yet Done", "Refunds Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Photos Required?</h4><p>No. They lock your price.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
@@ -917,8 +911,23 @@
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
   function obCls() { return Object.keys(OB_STYLE).map(function (k) { return "ob-" + k + "-" + OB_STYLE[k].toLowerCase(); }).join(" "); }
   /* Founding 50 (Machan Nov 11): 2 years for the price of 1 is shown and preselected automatically while founding spots last; no code needed.
-     Set open to false when the 50 spots are gone. There is no other annual offer (Machan 4:02 PM ICT Nov 11: no 10% annual discount), so only Monthly is offered then. */
+     Set open to false when the 50 spots are gone. After the fill, a full-price annual option (12 x monthly quote less 10%) is offered when FOUNDING_FULL is true.
+     FOUNDING_FULL stays false today so the annual path is built and tested but not shown. */
   var FOUNDING = { open: true };
+  var FOUNDING_FULL = false;
+  var PAYMENTS_LIVE = false;
+  function foundingFull() { return !!(FOUNDING_FULL || (P && (P.FOUNDING_FULL || P.foundingFull))); }
+  function paymentsLive() { return !!(PAYMENTS_LIVE || (P && (P.PAYMENTS_LIVE || P.paymentsLive))); }
+  function foundingOpen() { return FOUNDING.open && !foundingFull(); }
+  /* Legal copy constants (Nov 12). Placeholders {monthly}, {price} and {amount} are filled from the live quote. Easy to swap when Legal updates wording. */
+  var AFTER_FOUNDING_LINE = "After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.";
+  var AFTER_FOUNDING_PRICE = "{monthly}/mo, or prepay 12 months for {price} (10% off monthly).";
+  var BETA_PAY_TITLE = "Payments During Beta";
+  var BETA_PAY_BODY = "Your first payment is due when you sign up. During our beta, our team collects payment personally. Right after you sign up, we'll follow up with a secure way to pay. Please don't send card numbers in chat.";
+  var MONTHLY_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
+  var MONTHLY_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
+  var ANNUAL_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
+  var ANNUAL_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
@@ -954,14 +963,52 @@
   }
   function planTag(k) { return [P.tiers[k || S.tier].label].concat(extraTags()).join(" · "); }
   function moLabel(annual) { return "+" + money(monthlyOf(annual)) + "/mo"; }
-  /* Billing (Machan Nov 11, updated 4:02 PM ICT): founding = pay 1 year of plan + add-ons, get 2 years (add-ons included in the 2-for-1).
-     monthly = plan + add-ons each month, first charge today at sign-up, then on that date each month. No 10% annual path. */
-  function obPlan() { var p = S.plan; if (p === "monthly" || !FOUNDING.open) return "monthly"; return "founding"; }
+  /* Billing (Machan Nov 11, updated Nov 12): founding = pay 1 year of plan + add-ons, get 2 years (add-ons included in the 2-for-1).
+     monthly = plan + add-ons each month, first charge due at sign-up, then on that date each month.
+     After the Founding 50 fill (FOUNDING_FULL): full-price annual = round(monthly incl add-ons x 12 x (1 - annualDiscount)). Never stack with platinumAnnualDiscount. */
+  function annualDiscountRate() {
+    var d = P && P.annualDiscount;
+    if (d == null || !isFinite(+d)) return 0;
+    return +d;
+  }
+  function annualPrepaidOf(monthly) {
+    /* Uses only annualDiscount. platinumAnnualDiscount is an unused DRAFT and must never be applied on top. */
+    return Math.round(Number(monthly) * 12 * (1 - annualDiscountRate()));
+  }
+  function liveMonthly(tier) {
+    var prev = S.plan;
+    S.plan = "monthly";
+    var r = obBill(tier);
+    S.plan = prev;
+    return r.perCharge;
+  }
+  function fillAmt(tpl, amount) { return String(tpl).replace(/\{amount\}/g, money(amount)); }
+  function afterFoundingPriceLine(monthly) {
+    return AFTER_FOUNDING_PRICE.replace("{monthly}", money(monthly)).replace("{price}", money(annualPrepaidOf(monthly)));
+  }
+  function afterFoundingBlock(monthly) {
+    return '<div class="after-founding" data-after-founding><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div>';
+  }
+  function monthlyConsent(amount) { return fillAmt(paymentsLive() ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, amount); }
+  function annualConsent(amount) { return fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
+  function obPlan() {
+    if (foundingFull()) return S.plan === "annual" ? "annual" : "monthly";
+    var p = S.plan;
+    if (p === "monthly" || p === "annual" || !foundingOpen()) return "monthly";
+    return "founding";
+  }
   function obBill(tier) {
     tier = tier || S.tier;
     var mem = price()[tier], add = addonsAnnual(), plan = obPlan();
     var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(add) };
     if (plan === "founding") { r.label = "Annual · Founding 2-For-1"; r.long = "Founding Member: 2 Years For The Price Of 1"; r.today = mem + add; r.termMonths = 24; }
+    else if (plan === "annual") {
+      r.perCharge = r.monthly + r.addonsMonthly;
+      r.today = annualPrepaidOf(r.perCharge);
+      r.label = "Annual · 10% Off";
+      r.long = "Prepay 12 Months (10% Off Monthly)";
+      r.termMonths = 12;
+    }
     else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge; r.termMonths = 12; }
     return r;
   }
@@ -1104,7 +1151,7 @@
         (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
     }).join("");
-    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>', nextBtn("Continue To Billing", true));
+    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>' + (foundingOpen() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Continue To Billing", true));
   }
 
   /* 6. Billing: founding 2-for-1 annual preselected vs monthly. Deck card 3: A segmented control, B stacked cards. */
@@ -1114,7 +1161,7 @@
     var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
     var aSel = plan === "founding";
     var annualCopy = "Pay one year of your " + esc(t.label) + " plan" + (an.addonsAnnual ? " and add-ons" : "") + ", get two years of care.";
-    var monthlyCopy = "First charge today, then on this date each month." + (FOUNDING.open ? " Switch to annual and get 2 years for the price of 1." : "");
+    var monthlyCopy = "First charge today, then on this date each month." + (foundingOpen() ? " Switch to annual and get 2 years for the price of 1." : (foundingFull() ? " Or prepay 12 months at 10% off your monthly price." : ""));
     var addNote = an.addonsAnnual ? " Includes add-ons " + money(an.addonsAnnual) + "/yr, also 2 years for the price of 1." : "";
     function annualCard(sel, withDue) {
       return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="founding"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="badge-found">Founding 2-For-1</span></div>' +
@@ -1124,10 +1171,26 @@
     function monthlyCard(sel) {
       return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="monthly"' : '') + '><div class="bill-top"><p class="bill-name">Monthly</p><span class="bill-amt">' + money(mo.perCharge) + '/mo</span></div><p class="bill-copy">' + monthlyCopy + '</p></div>';
     }
+    var yr = (function () { var s = S.plan; S.plan = "annual"; var r = obBill(); S.plan = s; return r; })();
+    var ySel = plan === "annual";
+    function annualPrepayCard(sel, withDue) {
+      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="annual"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="bill-amt">' + money(yr.today) + '</span></div>' +
+        '<p class="bill-lead">Prepay 12 Months (10% Off Monthly)</p><p class="bill-copy">Pay ' + money(yr.today) + ' today for 12 months, 10% off your monthly price of ' + money(yr.perCharge) + '/mo.</p>' +
+        (withDue ? '<div class="due-box in"><span class="k">Due Today</span><span class="v">' + money(yr.today) + '</span></div>' : '') + '</div>';
+    }
     var moDue = '<div class="due-box"><span class="k">Due Today</span><span class="v">' + money(mo.perCharge) + '</span></div>';
     var body;
-    if (!FOUNDING.open) {
-      /* Founding spots gone: Monthly is the only way to pay (no annual option). */
+    if (foundingFull()) {
+      /* Founding 50 filled: monthly or 10% annual prepay. Hidden today (FOUNDING_FULL=false). */
+      var aOn = ySel;
+      if (OB_STYLE.billing === "B") {
+        body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualPrepayCard(aOn, true) + monthlyCard(!aOn) + '</div>';
+      } else {
+        body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aOn ? " on" : "") + '" aria-checked="' + aOn + '" data-ob-bill="annual">Annual<span class="seg-badge">10% Off</span></button><button type="button" role="radio" class="mw-hover' + (!aOn ? " on" : "") + '" aria-checked="' + !aOn + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
+          (aOn ? annualPrepayCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(yr.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
+      }
+    } else if (!foundingOpen()) {
+      /* Founding closed without FOUNDING_FULL: monthly only. */
       body = monthlyCard(true) + '<div class="gap-md"></div>' + moDue;
     } else if (OB_STYLE.billing === "B") {
       body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualCard(aSel, true) + monthlyCard(!aSel) + '</div>';
@@ -1135,9 +1198,11 @@
       body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aSel ? " on" : "") + '" aria-checked="' + aSel + '" data-ob-bill="founding">Annual<span class="seg-badge">Limited Offer</span></button><button type="button" role="radio" class="mw-hover' + (!aSel ? " on" : "") + '" aria-checked="' + !aSel + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
         (aSel ? annualCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
     }
-    body += '<p class="due-note">' + (aSel ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." + addNote + " Monthly is the other choice, charged today and then each month."
+    body += '<p class="due-note">' + (foundingFull() && ySel ? ("Prepay 12 months for " + money(yr.today) + " (10% off your monthly price of " + money(yr.perCharge) + "/mo).")
+      : aSel ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." + addNote + " Monthly is the other choice, charged today and then each month."
       : "Charged today, then on this date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
-    var help = FOUNDING.open ? "Founding members get two years for the price of one, while spots last. " + (aSel ? "Annual is selected." : "Monthly is selected.") : "Pay monthly. Your first charge is today.";
+    var help = foundingOpen() ? "Founding members get two years for the price of one, while spots last. " + (aSel ? "Annual is selected." : "Monthly is selected.") : (foundingFull() ? (ySel ? "Annual is selected." : "Monthly is selected.") : "Pay monthly. Your first charge is today.");
+    if (foundingOpen()) body += afterFoundingBlock(mo.perCharge);
     return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Access", true));
   }
 
@@ -1167,7 +1232,7 @@
   function obAccept() {
     var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
     var start = S.firstVisit ? longDate(S.firstVisit) : "";
-    var billTxt = b.plan === "monthly" ? "Monthly" : "Annual · Founding 2-For-1";
+    var billTxt = b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual · 10% Off" : "Annual · Founding 2-For-1");
     var dueK = "Due Today", dueV = money(b.today);
     var adds = selectedFunnelAddons();
     var recap;
@@ -1185,10 +1250,10 @@
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
-    /* Charge-consent text, verbatim. Founding: Legal review Nov 11. Monthly (charged at sign-up): Legal approved 4:03 PM ICT Nov 11. */
-    var consent = b.plan === "monthly"
-      ? 'I agree Smart Upkeep may charge me <strong>' + money(b.perCharge) + '</strong> today and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days\' notice of any price change. I can cancel anytime in the app under Profile &amp; Account.'
-      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.';
+    /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
+    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
+      : (b.plan === "annual" ? annualConsent(b.today)
+      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.');
     /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
     var open = !!AGREEMENT.url;
     var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
@@ -1203,12 +1268,13 @@
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
       '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
       '<div class="card"><h3>Member Agreement</h3><p class="small">' + agreeLink + '</p>' +
+      (paymentsLive() ? '' : ('<div class="beta-pay-notice" data-beta-pay><h3>' + BETA_PAY_TITLE + '</h3><p>' + BETA_PAY_BODY + '</p></div>')) +
       '<label class="checkrow"><input type="checkbox" id="agree"><span>I have read and agree to the Smart Upkeep Member Agreement, including the arbitration agreement and class action waiver. I can opt out of arbitration within 30 days.</span></label>' + fe("agree") +
       '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>' + consent + '</span></label>' + fe("chargeOk") +
       '<p class="fl">Signature</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
-      '<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
-      '<fieldset disabled style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>' +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + "Accept And Pay " + money(b.today) + '</button>' +
+      (paymentsLive() ? ('<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
+      '<fieldset style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>') : '') +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Join Now") + '</button>' +
       (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
     return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan, billing and start date.", body, "");
@@ -1571,7 +1637,7 @@
   /* V7 official (= V6.2, Max 10:49 ICT Oct 16, 50.5s). Rollback to V6: v7 -> v6 (and ?v=v7a -> ?v=v6a) here and in the poster line below (V6 and V5 files kept). */
   function vSrc() { return suPortrait() ? "video/explainer-v7-9x16.mp4?v=v7a" : "video/explainer-v7-16x9.mp4?v=v7a"; } /* Max Oct 15 19:03: 9:16 on phones/narrow/portrait, 16:9 on big screens; player shaped by .portrait */ /* V5 official (Max OK Oct 15). Rollback to V4: video/explainer-v4-9x16.mp4 / explainer-v4-16x9.mp4 */
   /* Browsers block unmuted autoplay, so the video starts muted (speaker button + Sound arrow in video-pause.js). */
-  function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + saffron arrow live in video-pause.js */
+  function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + jungle arrow live in video-pause.js */
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
   function openVideo(userAsked) {
     var src = vSrc();
@@ -1623,7 +1689,19 @@
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
-  (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob7"; document.head.appendChild(l); })();
+  window.SUFunnel = {
+    annualPrepaidOf: annualPrepaidOf,
+    liveMonthly: liveMonthly,
+    afterFoundingPriceLine: afterFoundingPriceLine,
+    monthlyConsent: monthlyConsent,
+    annualConsent: annualConsent,
+    setFlags: function (o) {
+      if (o && "FOUNDING_FULL" in o) FOUNDING_FULL = !!o.FOUNDING_FULL;
+      if (o && "PAYMENTS_LIVE" in o) PAYMENTS_LIVE = !!o.PAYMENTS_LIVE;
+      if (o && "foundingOpen" in o) FOUNDING.open = !!o.foundingOpen;
+    }
+  };
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob7"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}

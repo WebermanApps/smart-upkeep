@@ -54,7 +54,8 @@ window.SMART_UPKEEP_PRICING = {
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
   platinumRoofInspection: 318,
-  platinumAnnualDiscount: 0.10, // DRAFT
+  platinumAnnualDiscount: 0.10, // DRAFT — unused in the funnel; do not apply alongside annualDiscount (never stack)
+  annualDiscount: 0.10, // Full-price annual after Founding 50: 12 x monthly quote less 10%, Machan Nov 12 2026
   unsureDefaults: { sqft: 4000, furnaces: 2, acs: 2, waterHeaters: 1, whType: "tank", stories: 2 },
   /* Plans shown, in order. Remove a key (e.g. "platinum") to show 2 tiers; layouts adapt. */
   /* Final pop-up offer shown once, right before sign-up Submit (beta test).
