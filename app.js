@@ -368,8 +368,8 @@
   window.SmartUpkeepPrice = price; // exposed for testing
 
   /* ---------- Navigation ---------- */
-  function go(screen) { if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
-  function back() { var p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
+  function go(screen) { if (typeof obSkip === "function" && obSkip(screen)) screen = obNextOf(screen); if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
+  function back() { var p = S.path.pop(); while (p && obSkip(p)) p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
   /* B7: after You're In there is no Back into Accept; only the Home pill. */
   function homePill() { return '<span class="nav-pills">' + backBtn().replace(/^<span class="nav-pills">/, "").replace(/<button class="back back-pill[\s\S]*?<\/button>/, ""); }
   function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2" stroke-linejoin="round"/></svg></button></span>'; }
@@ -379,6 +379,7 @@
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
+    if (obSkip(S.screen)) S.screen = obNextOf(S.screen); if (obSkip(S.resume)) S.resume = obNextOf(S.resume);
     var s = S.screen, html;
     app.classList.remove("wide");
     if (s === "home") html = home();
@@ -494,12 +495,19 @@
   function hsArrow(target, label) { return '<button type="button" class="hs-arrow mw-hover" data-hs-go="' + target + '"><span class="hs-arrow-lab">' + label + '</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'; }
   /* Four Sections 05 note (Machan: "with the more space we could show more lines, and not have to use the 'and more' so early on"): Home plan cards show more lines before And More. Legal-approved copy, Nov 12 2026 night (LEGAL-FINAL-COPY section 4). Home cards only; pricing-config.js keyPoints (also read by /member/ pages) stay unchanged. */
   var HOME_KEYPOINTS = {
-    silver: ["Furnace/AC Tune-Up", "Furnace Filter Check and Change", "Roof Drone Inspection Once a Year", "Mold and Moisture Scan", "Water Heater Flush or Descale", "Dryer Vent Cleaning", "Downloadable Visit Record", "And More"],
-    gold: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Garage Door Tune-Up", "Salt in Water Softener", "Fridge Water Filter Changes", "Roof Drone Inspection Twice a Year", "And More"],
-    platinum: ["Everything in Plus, and:", "Monthly Visits", "After-Storm Checks, Up To 4 A Year", "Vent and Ice Dam Clearing After Storms", "Drone Roof Check After Storms", "And More"]
+    silver: ["Furnace/AC Tune-Up", "Furnace Filter Check and Change", "Roof Drone Inspection Once a Year", "Mold and Moisture Scan", "Water Heater Flush or Descale", "Dryer Vent Cleaning", "Downloadable Visit Record", "Smoke and CO Checks and Battery Swap", "Drone Gutter Check", "Thermostat Battery and Settings Check"],
+    gold: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Garage Door Tune-Up", "Salt in Water Softener", "Fridge Water Filter Changes", "Roof Drone Inspection Twice a Year"],
+    platinum: ["Everything in Plus, and:", "Monthly Visits", "After-Storm Checks, Up To 4 A Year", "Vent and Ice Dam Clearing After Storms", "Drone Roof Check After Storms"]
   };
+  /* Late build Nov 12 (Fill The Sections 02, Swatch pick B): existing lines only. 390: Essentials 10, Plus 5, Complete 4 (+ lead). 360x640: Essentials 4, Plus/Complete lead + 4. 1280+: Essentials 9. Always ends in And More. */
+  function hsSmall() { return window.innerWidth <= 400 && window.innerHeight <= 700; }
+  function homeKeypoints(k) {
+    var src = HOME_KEYPOINTS[k] || [], lead = src.filter(function (s) { return /Plus:$|and:$/.test(s); }), rest = src.filter(function (s) { return lead.indexOf(s) < 0; });
+    var n = hsSmall() ? 4 : (window.innerWidth >= 700 && k === "silver") ? 9 : rest.length;
+    return lead.concat(rest.slice(0, n)).concat(["And More"]);
+  }
   function hmAcc(id, icon, title, body) {
-    return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
+    return '<details class="acc hm-acc" id="acc-' + id + '"' + (arguments[4] ? " open" : "") + '><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
@@ -524,7 +532,7 @@
       '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
   }
   function planCard(k, ord) {
-    var t = P.tiers[k], inc = HOME_KEYPOINTS[k] ? HOME_KEYPOINTS[k] : t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
+    var t = P.tiers[k], inc = HOME_KEYPOINTS[k] ? homeKeypoints(k) : t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
@@ -535,11 +543,13 @@
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
+  /* Late build Nov 12: phone hero box is ~335x449 (3:4) with object-fit: cover. A later 4-scene cut is a one-line swap here. */
+  var HERO_PHONE = { src: "video/teaser-v7-phone-5svc-3x4.mp4?v=f3", poster: "assets/teaser-v7-phone-3x4-poster.jpg?v=p3", wh: 'width="1080" height="1440"' };
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
     var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (port) { /* Oct 17 08:00: phone hero loops word-free in-home work scenes (V7 9:16 24.5-25.9 fridge filter, 26.6-28.4 furnace filter, 29.0-30.9 moisture scan) */ tsrc = "video/teaser-v7-phone-5svc-1x1.mp4?v=f2"; poster = "assets/teaser-v7-phone-1x1-poster.jpg?v=p1"; wh = 'width="720" height="720"'; }
+    if (port) { /* Oct 17 08:00: phone hero loops word-free in-home work scenes (V7 9:16 24.5-25.9 fridge filter, 26.6-28.4 furnace filter, 29.0-30.9 moisture scan) */ tsrc = HERO_PHONE.src; poster = HERO_PHONE.poster; wh = HERO_PHONE.wh; }
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     var hold = port && !window.__suFirst; /* Oct 17: phone holds the van-at-house poster until first interaction */
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
@@ -620,10 +630,10 @@
   /* Compact Polish picks (Max 21:32 ICT Oct 17): Water first, short name 'Moisture Scan', plain list (no tap, Max 22:09), rows tighter, two icons, 52px icon box, See All under the cards. */
   /* Fresh Look picks (Max 21:58 ICT Oct 17; 02-05 dropped, no click for more info per Max 22:09): 06 card face held (unchanged); 07 plan chips = lowest plan that covers the item, from pricing-config.js tier features; 08 fade-up + See All arrow nudge (off with reduced motion). */
   var WW_CATS = [
-    ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"]], "l"],
-    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filter Check and Change", "Essentials"]], "t"],
-    ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"]], "s"],
-    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof Drone Inspection", "Essentials"], [6, "Drone Gutter Check", "Essentials"]], "j"]];
+    ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"], [6, "Water Softener Salt Top-Off", "Plus"], [6, "Fridge Water Filter Changes", "Plus"]], "l"],
+    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filter Check and Change", "Essentials"], [0, "Thermostat Battery and Settings Check", "Essentials"]], "t"],
+    ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"], [5, "Main Water Shut-Off Tag", "Essentials"]], "s"],
+    ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof Drone Inspection", "Essentials"], [6, "Drone Gutter Check", "Essentials"], [6, "Garage Door Tune-Up", "Plus"], [6, "After-Storm Checks, Up To 4 A Year", "Complete"], [6, "Vent and Ice Dam Clearing After Storms", "Complete"]], "j"]];
   /* Card Colours And Finish picks (Max, Oct 18): 01B every card its own colour (Water lagoon, Heating terracotta, Air mustard, Outside jungle), 02A flat white face, 03B thin colour band on top, 04B fine line icons in the card colour, 05B deeper lifted shadow, 06A See All link kept, 07 header unchanged (skipped), 08A soft filled chips kept, 09B warm cream band behind the cards, 10B active dot in the colour of the card in view. */
   var WW_WI = [
     ["clock", "Visits", "Seasonal visits on a set schedule", [["2 Seasonal Visits a Year", "Essentials"], ["4 Visits a Year, One Per Quarter", "Plus"], ["12 Visits a Year, Monthly Check-Ins", "Complete"]]],
@@ -649,7 +659,7 @@
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
-        c[2].map(function (s) { return '<li><span>' + s[1] + '</span><em class="ca-pl pl-' + s[2] + '" title="Included from ' + s[2] + ' up">' + s[2] + '</em></li>'; }).join("") + '</ul></div></article>';
+        c[2].slice(0, hsSmall() && c[0] === "Outside" ? 5 : c[2].length).map(function (s) { return '<li><span>' + s[1] + '</span><em class="ca-pl pl-' + s[2] + '" title="Included from ' + s[2] + ' up">' + s[2] + '</em></li>'; }).join("") + '</ul></div></article>';
     }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b class="d-' + c[3] + (i ? "" : " on") + '"></b>'; }).join("") + '</div></div>';
   }
 
@@ -855,7 +865,7 @@
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
-        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -874,14 +884,14 @@
         '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRedo()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>', true) +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
-      '<nav class="hm-tabs" aria-label="Page Sections">' +
-        [["home", "Home", "hs-top"], ["plans", "Plans", "hs-plans"], ["included", "What\'s Included", "hs-ww"], ["details", "Details", "hs-details"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '"><span>' + t[1] + '</span></button>'; }).join("") +
+      '<nav class="hm-tabs" aria-label="Page Sections">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
+        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["included", "What\'s Included", "hs-ww", "grid"], ["details", "Details", "hs-details", "doc"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
         '<button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started</button>' +
-      '</nav>' +
+      '</div></nav>' +
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
@@ -1030,6 +1040,101 @@
     hmJumpSec(el);
   }
   window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
+  /* Late build Nov 12: bar hidden on the top section only, always shown after it; arrow guard hides Get Started only.
+     Every section is one screen (innerHeight - header); the bar (with the resume strip when shown) is subtracted, and the main block fills what is left. */
+  function hsBarSync() {
+    var tabs = document.querySelector(".hm-tabs"), pl = document.getElementById("hs-plans"), hdr = document.querySelector(".topbar");
+    if (!tabs || !pl || !document.body.classList.contains("on-home")) return;
+    var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
+    document.body.classList.toggle("hs-bar-off", pl.getBoundingClientRect().top > line + window.innerHeight * 0.35);
+    var cta = tabs.querySelector(".hm-tab-cta"), hit = false;
+    if (cta && !document.body.classList.contains("hs-bar-off")) { var c = cta.getBoundingClientRect();
+      document.querySelectorAll(".hs-arrow").forEach(function (a) { var r = a.getBoundingClientRect(); if (r.bottom > c.top && r.top < c.bottom && r.right > c.left && r.left < c.right) hit = true; }); }
+    tabs.classList.toggle("arrow-off", hit);
+  }
+  function hsBarFill(root) {
+    var tabs = root.querySelector(".hm-tabs"), z = zoomFactor();
+    if (!tabs) return;
+    var off = document.body.classList.contains("hs-bar-off"); document.body.classList.remove("hs-bar-off");
+    var tr = tabs.getBoundingClientRect(), reserve = Math.ceil((window.innerHeight - tr.top) / z) + 12;
+    if (off) document.body.classList.add("hs-bar-off");
+    document.documentElement.style.setProperty("--su-sec-pb", reserve + "px");
+    function budget(sec) {
+      var arrow = sec.querySelector(":scope > .hs-arrow");
+      var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
+      var ah = arrow ? arrow.getBoundingClientRect().height / z : 0;
+      return Math.max(80, sec.clientHeight - pb - ah - 8);
+    }
+    function setH(els, h) { els.forEach(function (e) { e.style.height = h + "px"; e.style.minHeight = h + "px"; e.style.maxHeight = h + "px"; }); }
+    /* Top: keep the 3:4 box (~335x449 at 390). Only shrink at tight 360 if the section overflows. */
+    (function () {
+      var sec = document.getElementById("hs-top"), thumb = sec && sec.querySelector(".hm-thumb");
+      if (!thumb) return;
+      thumb.style.height = ""; thumb.style.maxHeight = ""; thumb.style.minHeight = "";
+      if (window.matchMedia("(max-width:480px)").matches && !hsSmall()) {
+        var w = Math.min(335, thumb.getBoundingClientRect().width);
+        thumb.style.width = w + "px";
+        thumb.style.height = Math.round(w * 4 / 3) + "px";
+        thumb.style.aspectRatio = "3 / 4";
+      }
+      if (sec.scrollHeight > sec.clientHeight + 1) {
+        var over = sec.scrollHeight - sec.clientHeight + 2;
+        var h = Math.max(hsSmall() ? 180 : 240, thumb.getBoundingClientRect().height / z - over);
+        thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto";
+      }
+    })();
+    /* Plans: stretch the cards to the leftover height, same height each. */
+    (function () {
+      var sec = document.getElementById("hs-plans"); if (!sec) return;
+      var cards = [].slice.call(sec.querySelectorAll(".hm-plan"));
+      cards.forEach(function (c) { c.style.height = ""; c.style.minHeight = ""; c.style.maxHeight = ""; });
+      var row = sec.querySelector("#row-plans") || sec.querySelector(".hm-row");
+      var used = row ? row.getBoundingClientRect().height / z : 0;
+      var room = budget(sec) - used;
+      if (cards.length && room > 8) {
+        var h = cards[0].getBoundingClientRect().height / z + room;
+        setH(cards, Math.floor(h));
+      }
+    })();
+    /* What We Take Care Of: equal, taller tiles that fill leftover (~480x283 at 390). */
+    (function () {
+      var sec = document.getElementById("hs-ww"); if (!sec) return;
+      var cards = [].slice.call(sec.querySelectorAll(".ca-card"));
+      cards.forEach(function (c) { c.style.height = ""; c.style.minHeight = ""; c.style.maxHeight = ""; });
+      var head = sec.querySelector(".hm-row-h"), dots = sec.querySelector(".ca-dots"), all = sec.querySelector(".ww-all");
+      var other = (head ? head.getBoundingClientRect().height / z : 0) + (dots ? dots.getBoundingClientRect().height / z + 12 : 0) + (all ? all.getBoundingClientRect().height / z + 8 : 0) + 8;
+      var h = Math.floor(budget(sec) - other);
+      var minH = hsSmall() ? 200 : (window.innerWidth >= 900 ? 240 : 280);
+      var maxH = hsSmall() ? 280 : 520;
+      h = Math.max(minH, Math.min(maxH, h));
+      setH(cards, h);
+      cards.forEach(function (c) {
+        c.style.display = "flex";
+        var body = c.querySelector(".ca-body"), ul = c.querySelector("ul");
+        if (body) { body.style.display = "flex"; body.style.flexDirection = "column"; body.style.flex = "1"; body.style.minHeight = "0"; }
+        if (ul) { ul.style.flex = "1"; ul.style.display = "flex"; ul.style.flexDirection = "column"; ul.style.justifyContent = "space-evenly"; }
+      });
+    })();
+    /* Details: only À La Carte box grows, and it is the only inner scroll. */
+    (function () {
+      var sec = document.getElementById("hs-details"), alc = sec && sec.querySelector("#acc-addons .alc-box");
+      if (!alc) return;
+      alc.style.height = ""; alc.style.maxHeight = "none"; alc.style.minHeight = "80px";
+      var used = 0;
+      [].forEach.call(sec.querySelectorAll(":scope > *"), function (el) {
+        if (el.classList.contains("hs-arrow")) return;
+        used += el.getBoundingClientRect().height / z;
+      });
+      /* alc height is already in used; replace it with leftover */
+      used -= alc.getBoundingClientRect().height / z;
+      var h = Math.floor(budget(sec) - used);
+      if (h < 80) h = 80;
+      alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; alc.style.overflowY = "auto";
+    })();
+    hsBarSync();
+  }
+  window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
+  window.addEventListener("resize", function () { var r = app.querySelector(".hm"); if (r) { hmHdrSync(); hsBarFill(r); } });
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     hmHdrSync();
@@ -1082,6 +1187,7 @@
       ["hs-top","hs-plans","hs-ww","hs-details"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
     }
     spyTabs();
+    hsBarFill(root);
     /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
     root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
     root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { hmJumpSec(document.getElementById(b.getAttribute("data-hs-go"))); }); });
@@ -1132,6 +1238,11 @@
   /* Coming back later: Resume Card (Info Gather Deck). */
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
   function hasResume() { return !!S.resume && isOb(S.resume); }
+  /* Machan 11:16 PM: resume strip docked on top of the bar. Existing label + " · Step X" (same numbering as the funnel). Tap = Resume, × = clear (dismissResume). */
+  function resumeStrip() {
+    return '<div class="hm-resume-strip"><button type="button" class="hm-resume-go mw-hover" data-act="resume">' + I("clock", "sm") + '<span>Pick Up Where You Left Off &middot; Step ' + obStepNo(S.resume) + '</span></button>' +
+      '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">' + X_SVG + '</button></div>';
+  }
   function resumeCard() {
     var done = Math.max(0, OB.indexOf(S.resume));
     return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' questions answered</small></div>' +
@@ -1300,9 +1411,9 @@
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
-    var i = OB.indexOf(tl ? "plan" : id);
-    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' of ' + OB.length + ' &middot; ' + OB_NAME[id]) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + OB.length + '" aria-label="Step ' + (i + 1) + ' of ' + OB.length + '">' +
-      OB.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
+    var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
+    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' of ' + SQ.length + ' &middot; ' + OB_NAME[id]) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' of ' + SQ.length + '">' +
+      SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
     return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
       '<div class="qf-hero stack compact"><div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div><h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
@@ -1368,6 +1479,15 @@
     return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn("Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
   /* 3b. Extras (#8 second short screen): #10 priced extras first with prices, included ones below their label; #13 in one white card with the heading. Stays synced with the Add-Ons Monthly tab. */
+  function sys2Keys() {
+    var aoShared = sharedExtraMap(), aoLabels = {};
+    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
+    return Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; });
+  }
+  /* Swatch PR97 residual 2: when every item on Do You Have Any Of These? is already in Extras or Add-Ons, the step is skipped. Numbering, progress bar, Back and Next follow obSeq(). */
+  function obSkip(s) { return s === "systems2" && !sys2Keys().length; }
+  function obSeq() { return OB.filter(function (s) { return !obSkip(s); }); }
+  function obStepNo(s) { var q = obSeq(), i = q.indexOf(s); return (i < 0 ? q.indexOf(obNextOf(s)) : i) + 1; }
   function obSystems2() {
     var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
     function tile(k, j, sub) {
@@ -1376,9 +1496,7 @@
     }
     /* Machan Nov 12 10:08 PM: skip any item here that's already offered on the Add-Ons step (Monthly or One-Time). Shared items keep one selection
        (S.answers.extras + S.addons via syncSharedExtras), so picking it on Add-Ons fills the same fields and prices as before. */
-    var aoShared = sharedExtraMap(), aoLabels = {};
-    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
-    var keys = Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; }), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
+    var keys = sys2Keys(), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
     var body = '<div class="ex-card">' + (priced.length ? '<div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' : '') +
       (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
       (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
@@ -1643,7 +1761,7 @@
     if (s === "details") return obDetails();
     return obAccept();
   }
-  function obNextOf(s) { var i = OB.indexOf(s); return OB[Math.min(OB.length - 1, i + 1)]; }
+  function obNextOf(s) { var i = OB.indexOf(s), n = OB[Math.min(OB.length - 1, i + 1)]; return (n !== s && obSkip(n)) ? obNextOf(n) : n; }
   function bindOb(s) {
     function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
     var nx = app.querySelector("[data-ob-next]");
@@ -1675,7 +1793,7 @@
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
-      if (nx) nx.addEventListener("click", function () { if (s === "systems") return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
         try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}

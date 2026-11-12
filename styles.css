@@ -1754,3 +1754,149 @@ body.on-ob .foot{display:none}
 .ob .det-hint{margin:.15rem 0 0;font:500 12px/1.3 Hind,sans-serif;color:#737373}
 .ob .ob-details-form .su-havecode{margin:.35rem 0 0}
 .ob .price-confirm.pc-plain{padding:0;border:0;background:none;border-radius:0;margin:.4rem 0 0;font:500 12.5px/1.4 Hind,sans-serif;color:#737373}
+
+/* ===== Late build Nov 12 2026 (Fill The Sections + Floating Bar + Log In decks; resume strip Machan 11:16 PM) ===== */
+/* Log In: plain text, no box, top right, same label. Share stays boxless top left. */
+body.on-home .topbar .top-login{
+  display:inline-flex;align-items:center;justify-content:center;
+  position:absolute;right:.6rem;top:50%;transform:translateY(-50%);z-index:2;
+  height:44px;min-height:44px;min-width:44px;padding:0 .2rem;
+  border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;
+  color:#0a0a0a;font:500 .85rem/1 Hind,sans-serif;text-decoration:none;white-space:nowrap;
+}
+body.on-home .topbar .top-login:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+
+/* What's Included title: 12px under the header, not vertically centered. */
+.hs-ww > #row-services{margin-top:0}
+#hs-ww > #row-services{margin-top:0;padding-top:0}
+#hs-ww > #row-services > .hm-row-h{margin:0;align-items:flex-start;padding-top:calc(12px / var(--su-zoom,1))}
+#hs-ww > #row-services > .hm-row-h h2{margin:0}
+#hs-details > .hm-accs{margin-top:0}
+#hs-details > .hm-accs > h2{margin-top:calc(12px / var(--su-zoom,1));margin-bottom:.4rem}
+
+/* One viewport tall; leftover space is filled by JS (hsFill). A La Carte is the only inner scroll. */
+.hs-sec{
+  height:var(--su-sec-h);
+  max-height:var(--su-sec-h);
+  min-height:var(--su-sec-h);
+  overflow:hidden;
+  padding-bottom:var(--su-sec-pb, calc(76px + env(safe-area-inset-bottom)));
+}
+.hs-sec.hs-top{padding-bottom:var(--su-top-pb, 24px)}
+body.on-home main{padding-bottom:0!important}
+
+/* Deeper-inset fuller pill (16–20px sides, ~16px bottom, radius ~28px / full pill). Solid white, soft shadow, no blur. */
+body.on-home .hm-tabs{
+  left:18px;right:18px;bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:auto;transform:none;
+  display:flex;flex-direction:column;align-items:stretch;
+  background:#fff;border:1px solid #E6E0D6;border-radius:28px;
+  box-shadow:0 8px 24px rgba(10,10,10,.12);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  padding:0;overflow:hidden;
+  transition:opacity .2s ease,transform .2s ease,visibility .2s;
+}
+body.on-home .hm-tabs-row{
+  display:flex;align-items:stretch;width:100%;padding:4px 6px 4px 4px;box-sizing:border-box;background:#fff;
+}
+body.on-home .hm-tabs button[data-hm-tab]{
+  flex:1 1 0;min-width:0;height:auto;min-height:52px;padding:.25rem .15rem .3rem;
+  border:0;border-top:0;border-radius:22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font:500 11px/1.1 Hind,var(--mw-font-body),sans-serif;color:#525252;letter-spacing:0;text-transform:none;
+}
+body.on-home .hm-tabs button[data-hm-tab] span{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+  white-space:normal;max-width:100%;text-align:center;font:inherit;color:inherit;line-height:1.1;
+}
+body.on-home .hm-tabs button[data-hm-tab]{font-size:10px;padding:.2rem .1rem .25rem}
+body.on-home .hm-tabs .hm-tab-cta{padding:.4rem .55rem;font-size:11px}
+body.on-home .hm-tabs button[data-hm-tab] .su-ico{
+  width:20px;height:20px;flex:none;stroke-width:2;color:#0a0a0a;
+}
+body.on-home .hm-tabs button[data-hm-tab].on{
+  color:#0a0a0a;font-weight:600;border-top-color:transparent;background:rgba(10,10,10,.04);
+}
+body.on-home .hm-tabs .hm-tab-cta{
+  flex:0 0 auto;align-self:center;margin:0 2px 0 4px;
+  min-height:40px;height:auto;padding:.45rem .75rem;
+  font:600 12px/1 Hind,var(--mw-font-body),sans-serif;white-space:nowrap;border-radius:999px;
+}
+/* Arrow guard: hide Get Started only, never the tabs. Keep its slot so the pill does not jump. */
+body.on-home .hm-tabs.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+
+/* Desktop floating pill from 1100px up: min(560px, 90vw), centered, bottom 1rem, border and shadow. */
+@media (min-width:1100px){
+  body.on-home .hm-tabs{
+    left:50%;right:auto;width:min(560px,90vw);bottom:1rem;
+    transform:translateX(-50%);
+    border:1px solid var(--mw-border,#E6E0D6);
+    box-shadow:0 8px 24px rgba(10,10,10,.1);
+    border-radius:28px;
+  }
+  body.on-home .hm-tabs button[data-hm-tab]{font-size:12px;min-height:56px}
+  body.on-home .hm-tabs button[data-hm-tab] span{white-space:nowrap}
+}
+
+/* Hidden on the top hero section only. Once past the hero, the bar stays. */
+body.on-home.hs-bar-off .hm-tabs{
+  opacity:0;visibility:hidden;pointer-events:none;
+  transform:translateY(calc(100% + 24px));
+}
+@media (min-width:1100px){
+  body.on-home.hs-bar-off .hm-tabs{transform:translateX(-50%) translateY(calc(100% + 24px))}
+}
+
+/* Resume strip docks on top of the pill when saved funnel progress exists. */
+.hm-resume-strip{
+  display:flex;align-items:center;position:relative;
+  height:32px;min-height:32px;box-sizing:border-box;
+  background:#FCF9F4;border-bottom:1px solid #E6E0D6;
+  padding:0 44px 0 12px;color:#0a0a0a;
+}
+.hm-resume-go{
+  flex:1;min-width:0;display:flex;align-items:center;gap:.4rem;
+  height:32px;margin:0;padding:0;border:0;background:transparent;cursor:pointer;
+  font:400 13px/1.2 Hind,sans-serif;color:#0a0a0a;text-align:left;letter-spacing:0;text-transform:none;
+}
+.hm-resume-go .su-ico{width:16px;height:16px;flex:none;color:#0a0a0a}
+.hm-resume-go span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-resume-strip .hm-resume-x{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;background:none;padding:0;cursor:pointer;color:#0a0a0a;
+}
+.hm-resume-strip .hm-resume-x:focus-visible,
+.hm-resume-go:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
+
+/* Top section: bigger photo and larger type. Short line stays "Home Care, On Schedule". */
+@media (max-width:480px){
+  .hm-hero h1{font-size:48px!important;line-height:1!important;color:#1a1a1a!important}
+  .hm-hero .hm-lead{font-size:18px!important;line-height:1.2!important;color:#3d3d3d!important;white-space:nowrap}
+}
+@media (max-width:480px) and (max-height:700px){
+  .hm-hero h1{font-size:42px!important}
+  .hm-hero .hm-lead{font-size:16.8px!important}
+}
+@media (min-width:900px){
+  body.on-home .hm-hero h1{font-size:62px;line-height:1.02;max-width:none}
+  body.on-home .hm-hero .hm-lead{font-size:1.28rem}
+}
+
+/* A La Carte: plain divided rows, no small icons. Names and prices unchanged. */
+#acc-addons .alc-box .ac-item > .su-ico{display:none}
+#acc-addons .alc-box .ac-item{justify-content:center;text-align:center}
+body.on-home .hm-acc > summary{min-height:54px}
+@media (min-width:390px){body.on-home .hm-acc > summary{min-height:66px;font-size:1.15rem}}
+@media (min-width:900px){body.on-home .hm-acc > summary{min-height:68px;font-size:1.25rem}}
+
+/* Phone hero media box: 3:4 (~335x449 at 390). Current 1:1 file uses object-fit:cover until the 3:4 cut lands (HERO_PHONE in app.js). */
+@media (max-width:480px){
+  body.on-home .hm-hero .hm-thumb{
+    aspect-ratio:3/4!important;width:min(335px,86vw)!important;max-width:335px;height:auto;
+    margin:0 auto!important;border-radius:18px!important;
+  }
+  body.on-home .hm-hero .hm-thumb img,
+  body.on-home .hm-hero .hm-thumb video{object-fit:cover!important;object-position:center;width:100%;height:100%;display:block}
+}
