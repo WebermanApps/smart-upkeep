@@ -407,3 +407,53 @@ body.on-qf.on-ob .foot{display:none}
   .ob .plan-card .ribbon{left:auto;right:12px}
 }
 
+
+/* ===== Swatch PR97 notes 1-3 (Nov 12 2026 10:32 PM) =====
+   1. Taller phones: no dead band above the bar. --tall is 0 on a 640px-tall phone and grows with the screen (164px at 390x844, capped at 220).
+      Fields, card rows, add-on rows, plan cards and the picture grow with it; whatever height is left is shared equally between
+      hero -> body, body -> Did You Know, and Did You Know -> bar (auto margins), so Did You Know no longer sits on the bar. No new content. */
+.ob{--tall:clamp(0px,calc(100vh - var(--tb,64px) - 616px),220px);--tall:clamp(0px,calc(100dvh - var(--tb,64px) - 616px),220px)}
+.ob .qf-body{flex:0 0 auto;margin-top:auto}
+.ob .qf-dyk{margin-top:auto}
+.ob .ob-bar,.ob .qf-dyk+.ob-bar,.ob .qf-body+.ob-bar{margin-top:auto}
+.ob .qf-hero.stack.compact .qf-art.mid{width:calc(2.5rem + var(--tall) * .12);height:calc(2.5rem + var(--tall) * .12)}
+.ob .qf-hero.stack.compact .qf-art.mid .su-ico{width:calc(1.65rem + var(--tall) * .07);height:calc(1.65rem + var(--tall) * .07)}
+.ob input[type=text],.ob input[type=tel],.ob input[type=email]{min-height:calc(48px + var(--tall) * .05)}
+.ob-address .ob-fields .ob-area{margin-top:calc(4px + var(--tall) * .02)}
+.ob-address .pick-card{margin-top:calc(12px + var(--tall) * .08)}
+.ob .pick-card .pick-step{padding:calc(6px + var(--tall) * .07) 12px}
+.ob .priced-note{margin-top:calc(4px + var(--tall) * .03)}
+.ob .sys-card .sys-row{min-height:calc(56px + var(--tall) * .1)}
+.ob .ob-ao-row{min-height:calc(44px + var(--tall) * .06)}
+.ob .ex-card .qt{min-height:calc(56px + var(--tall) * .12)}
+.ob-access .qt-grid .qt{min-height:calc(56px + var(--tall) * .1)}
+.ob .plan-stack{gap:calc(10px + var(--tall) * .05)}
+.ob .plan-card{padding-top:calc(10px + var(--tall) * .04);padding-bottom:calc(8px + var(--tall) * .04)}
+.ob .bill-card{padding:calc(12px + var(--tall) * .04) 12px}
+.ob-details .fl{margin-top:calc(6px + var(--tall) * .04)}
+/* 2. Disabled Next (and Join Now) is solid, so nothing shows through it, on every step */
+.ob .btn-primary:disabled,.ob .btn-primary[disabled],.ob .ob-bar .btn-big:disabled,.ob .ob-accept-form .btn-big:disabled{opacity:1;background:#E3B0A1;border-color:#E3B0A1;color:#fff}
+/* 3. Bar is solid white; 4. no transition on the keyboard offset (see obKb in app.js) */
+.ob .ob-bar{background:#FFFFFF;transition:none}
+.ob-start .qf-hero.stack.compact .qf-art.mid{width:2.5rem;height:2.5rem}
+.ob-start .qf-hero.stack.compact .qf-art.mid .su-ico{width:1.65rem;height:1.65rem}
+/* note 1, second pass: steps with the biggest spare height grow their own rows a little more */
+.ob-address input[type=text]{min-height:calc(48px + var(--tall) * .08)}
+.ob-address .pick-card .pick-step{padding:calc(6px + var(--tall) * .1) 12px}
+.ob .sys-card .sys-row{min-height:calc(56px + var(--tall) * .2)}
+.ob .ex-card .qt{min-height:calc(56px + var(--tall) * .3)}
+.ob .ex-card .ex-incl{margin-top:calc(16px + var(--tall) * .06)}
+.ob-access .qt-grid .qt{min-height:calc(56px + var(--tall) * .28)}
+.ob-access textarea{min-height:calc(88px + var(--tall) * .25)}
+.ob .bill-card{padding:calc(12px + var(--tall) * .1) 12px}
+.ob .seg-toggle button{min-height:calc(44px + var(--tall) * .05)}
+.ob .due-note{margin-top:calc(4px + var(--tall) * .08)}
+.ob-details input[type=text],.ob-details input[type=tel],.ob-details input[type=email]{min-height:calc(48px + var(--tall) * .12)}
+.ob-details .fl{margin-top:calc(6px + var(--tall) * .1)}
+.ob .plan-card{padding-top:calc(10px + var(--tall) * .08);padding-bottom:calc(8px + var(--tall) * .08)}
+.ob .ex-card .qt.chkt{min-height:calc(60px + var(--tall) * .3)!important}
+.ob-access .qt-grid .qt.chkt{min-height:calc(60px + var(--tall) * .28)!important}
+.ob.ob-details .ob-details-form input[type=text],.ob.ob-details .ob-details-form input[type=tel],.ob.ob-details .ob-details-form input[type=email]{height:calc(40px + var(--tall) * .1);min-height:calc(40px + var(--tall) * .1)}
+.ob-billing .gap-md{height:calc(12px + var(--tall) * .15)}
+.ob-billing .due-box:not(.in){padding:calc(11px + var(--tall) * .08) 14px}
+.ob-billing .seg-toggle button{min-height:calc(44px + var(--tall) * .1)}
