@@ -250,3 +250,30 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 /* D9: Accept screen Edit and Cancel Anytime links reach 44px */
 .ob .ob-addr .link{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
 .ob .su-cancel-line .link{min-height:44px;display:inline-flex;align-items:center}
+
+/* ===== Funnel deck build D1 (Nov 12 2026): Home Details + Systems picks ===== */
+/* #3 Title Case labels (Hind, a little bigger and darker) on every form step */
+.ob label.fl,.ob p.fl,.ob .fl{text-transform:none;letter-spacing:0;font:600 15px/20px var(--mw-font-body);color:#1a1a1a;margin:var(--sp-3) 0 var(--sp-2)}
+.ob .ob-fields .fl:first-child{margin-top:0}
+.ob .pick-step .k{text-transform:none;letter-spacing:0;font:600 14px/19px var(--mw-font-body);color:#525252}
+/* #2 short ZIP box (five digits) + service-area line under it */
+.ob input[type=text].ob-zip{width:8.5rem;max-width:100%;display:block}
+.ob .ob-area{margin:var(--sp-1) 0 0;color:#525252;font-size:13px;line-height:17px}
+/* #5 size and stories in one white card with a thin divider */
+.ob .pick-card{margin-top:var(--sp-4);background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .pick-card .pick-step{background:transparent;border:0;border-radius:0;box-shadow:none;padding:var(--sp-3) var(--sp-3)}
+.ob .pick-card .pick-step+.pick-step{border-top:1px solid var(--mw-border)}
+/* #13 counts share one white card with dividers */
+.ob .sys-card{gap:0;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05);overflow:hidden}
+.ob .sys-card .sys-row{background:transparent;border:0;border-radius:0;box-shadow:none;padding:var(--sp-3)}
+.ob .sys-card .sys-row+.sys-row{border-top:1px solid var(--mw-border)}
+/* #9 water heater type on its own full-width line under the count */
+.ob .ob-whs-line{margin:0;padding:0 var(--sp-3) var(--sp-3);gap:var(--sp-2)}
+.ob .ob-whs-line .ob-wh{justify-content:space-between}
+.ob .ob-whs-line .type-seg{flex:1;max-width:16rem}
+.ob .ob-whs-line .type-seg button{flex:1}
+/* #13 extras in a second white card; #10 included ones under their label */
+.ob .ex-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05);padding:var(--sp-3)}
+.ob .ex-card .ex-incl{margin:var(--sp-4) 0 var(--sp-2);font:600 14px/19px var(--mw-font-body);color:#525252}
+/* #12 picked extra: soft jungle fill (~7%), check kept, no heavy outline */
+.ob .ex-card .qt.sel{border-color:rgba(11,110,79,.35);box-shadow:none;background:rgba(11,110,79,.07)}
