@@ -1773,6 +1773,15 @@ body.on-home .topbar .top-login:focus-visible{outline:2px solid #05668D;outline-
 #hs-ww > #row-services > .hm-row-h h2{margin:0}
 #hs-details > .hm-accs{margin-top:0}
 #hs-details > .hm-accs > h2{margin-top:calc(12px / var(--su-zoom,1));margin-bottom:.4rem}
+@media (min-width:1100px){
+  /* Right column stacks Refund + FAQ beside the open À La Carte, which then grows to fill leftover height. */
+  #hs-details .hm-accs{grid-template-rows:auto auto 1fr}
+  #hs-details .hm-accs > h2{grid-column:1/-1;grid-row:1}
+  #hs-details .hm-accs > #acc-plans{grid-column:1/-1;grid-row:2}
+  #hs-details .hm-accs > #acc-addons{grid-column:1;grid-row:3}
+  #hs-details .hm-accs > #acc-refund,
+  #hs-details .hm-accs > #acc-faq{grid-column:2;grid-row:3;align-self:start}
+}
 
 /* One viewport tall; leftover space is filled by JS (hsFill). A La Carte is the only inner scroll. */
 .hs-sec{

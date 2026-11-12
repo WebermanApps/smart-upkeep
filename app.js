@@ -1066,10 +1066,14 @@
       return Math.max(80, sec.clientHeight - pb - ah - 8);
     }
     function setH(els, h) { els.forEach(function (e) { e.style.height = h + "px"; e.style.minHeight = h + "px"; e.style.maxHeight = h + "px"; }); }
-    /* Top: keep the 3:4 box (~335x449 at 390). Only shrink at tight 360 if the section overflows. */
+    /* Top: keep the 3:4 box (~335x449 at 390). Only shrink at tight 360 if the section overflows.
+       Leftover cream between the chips and See Plans is split as type room and even spacing. */
     (function () {
       var sec = document.getElementById("hs-top"), thumb = sec && sec.querySelector(".hm-thumb");
       if (!thumb) return;
+      var cta = sec.querySelector(".hm-cta-inline"), chips = sec.querySelector(".hm-hcw") || sec.querySelector(".hm-hchips");
+      if (cta) cta.style.removeProperty("margin-top");
+      if (chips) chips.style.removeProperty("margin-top");
       thumb.style.height = ""; thumb.style.maxHeight = ""; thumb.style.minHeight = "";
       if (window.matchMedia("(max-width:480px)").matches && !hsSmall()) {
         var w = Math.min(335, thumb.getBoundingClientRect().width);
@@ -1081,6 +1085,15 @@
         var over = sec.scrollHeight - sec.clientHeight + 2;
         var h = Math.max(hsSmall() ? 180 : 240, thumb.getBoundingClientRect().height / z - over);
         thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto";
+      }
+      var arrow = sec.querySelector(":scope > .hs-arrow");
+      if (chips && arrow && window.matchMedia("(max-width:480px)").matches) {
+        var leftover = (arrow.getBoundingClientRect().top - chips.getBoundingClientRect().bottom) / z;
+        if (leftover > 16) {
+          var a = Math.floor(leftover / 3), b = Math.floor(leftover / 3);
+          if (cta) cta.style.setProperty("margin-top", ((parseFloat(getComputedStyle(cta).marginTop) || 0) + a) + "px", "important");
+          if (chips) chips.style.setProperty("margin-top", ((parseFloat(getComputedStyle(chips).marginTop) || 0) + b) + "px", "important");
+        }
       }
     })();
     /* Plans: stretch the cards to the leftover height, same height each. */
@@ -1130,6 +1143,11 @@
       var h = Math.floor(budget(sec) - used);
       if (h < 80) h = 80;
       alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; alc.style.overflowY = "auto";
+      var refund = sec.querySelector("#acc-refund"), faq = sec.querySelector("#acc-faq");
+      if (faq) faq.style.marginTop = "";
+      if (refund && faq && window.matchMedia("(min-width:1100px)").matches) {
+        faq.style.marginTop = Math.round(refund.getBoundingClientRect().height / z + 10) + "px";
+      }
     })();
     hsBarSync();
   }
