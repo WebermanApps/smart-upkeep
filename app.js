@@ -1085,15 +1085,7 @@
     /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
     root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
     root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { hmJumpSec(document.getElementById(b.getAttribute("data-hs-go"))); }); });
-    /* Swatch QA F2 (Nov 12 9:25 PM), updated for the combined section bar: untransformed bar position, because the .off slide hides the real rect. */
-    function hsGuard(){
-      var st=document.querySelector('.hm-tabs'); if(!st) return;
-      var z=zoomFactor(), bot=(parseFloat(getComputedStyle(st).bottom)||0)*z;
-      var barH=st.offsetHeight*z, t=innerHeight-barH-bot, b=t+barH;
-      st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));
-    }
-    if (!window.__hsGuard) { window.__hsGuard = 1; addEventListener('scroll',hsGuard,{passive:true}); addEventListener('resize',hsGuard); }
-    hsGuard();
+    /* Arrows sit 15–21px above the tab bar at the snap points, so do not hide the bar while an arrow passes. Clearance is handled in CSS (section padding / floating-pill offset). */
     /* service tiles: tap opens a small card (never automatic) */
     var pop = root.querySelector(".hm-pop"), popTier = null, popFrom = null;
     function popClose() { if (!pop || pop.hidden) return; pop.hidden = true; document.documentElement.classList.remove("hm-pop-open"); if (popFrom) popFrom.focus(); }

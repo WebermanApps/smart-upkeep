@@ -443,7 +443,6 @@ body.on-home .foot{padding-bottom:8.5rem}
 .hm-tabs button[data-hm-tab] span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-width:100%;word-break:break-word}
 .hm-tabs button[data-hm-tab].on{color:#0a0a0a;border-top-color:#0a0a0a;font-weight:600}
 .hm-tabs .hm-tab-cta{flex:0 0 auto;align-self:center;margin:0 .45rem 0 .15rem;min-height:36px;height:auto;padding:.4rem .65rem;font:600 12px/1 Hind,var(--mw-font-body),sans-serif;white-space:nowrap;border-radius:4px}
-.hm-tabs.arrow-off{transform:translateY(120%);opacity:0;pointer-events:none}
 .hm-toast{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);z-index:40;background:#0a0a0a;color:#fff;padding:.5rem 1rem;font-size:.9rem}
 @media(min-width:700px){
   .hm-hero{grid-template-columns:1.1fr 1fr;align-items:center;padding:1.25rem}
@@ -456,6 +455,7 @@ body.on-home .foot{padding-bottom:8.5rem}
   .hm-accs h2{grid-column:1/-1}
   .hm-accs details.acc{margin-top:.6rem}
   .hm-sticky{display:none}
+  .hm-tabs{left:50%;right:auto;transform:translateX(-50%);width:min(560px,90vw);bottom:1rem;border:1px solid var(--mw-border);box-shadow:0 8px 24px rgba(10,10,10,.1)}
   body.on-home main{padding-bottom:6.5rem}body.on-home .foot{padding-bottom:6rem}
 }
 body.on-home .topbar{position:static;background:#ffffff;border-bottom:0;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1640,7 +1640,7 @@ body.on-home.share-in .topbar .top-share{transition:opacity .45s ease,visibility
 html.su-boot .topbar .top-share{opacity:0;visibility:hidden}
 @media (prefers-reduced-motion:reduce){body.on-home.share-in .topbar .top-share{transition:none}}
 /* Swatch QA F2: hide the sticky Get Started bar only while it would cover a section arrow. */
-.hm-sticky.arrow-off,.hm-tabs.arrow-off{transform:translateY(120%);opacity:0;pointer-events:none}
+.hm-sticky.arrow-off{transform:translateY(120%);opacity:0;pointer-events:none}
 /* Swatch QA F3: center What We Take Care Of in its screen. */
 .hs-ww > #row-services{margin-top:auto}
 body.on-home .topbar .btn-share{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:transparent!important;background-image:none!important;border:0!important;border-radius:0;box-shadow:none!important;color:#0a0a0a!important}
@@ -1652,7 +1652,20 @@ body.on-home .topbar .top-login:focus-visible,body.on-home .topbar .btn-share:fo
 /* ===== Home Four Sections deck (Machan, receipt 2007): full-screen sections, bottom-center Title Case label + 2px chevron ===== */
 .hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:calc(100svh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:var(--su-sec-h);padding-bottom:calc(76px + env(safe-area-inset-bottom));scroll-margin-top:var(--su-hdr-h,72px)}
 @media (min-width:700px){.hs-sec{padding-bottom:80px}}
+@media (min-width:1100px){.hs-sec{padding-bottom:96px}} /* clear the floating 560px pill (bottom:1rem + bar height) so arrows never overlap it */
 body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-top:8px}
+/* 1c: keep flush section landings (peek 0); pull Plans / Details titles to 12px (visual) below the section top. */
+#hs-plans > .hm-row,
+#hs-details > .hm-row{margin-top:0;padding-top:0}
+#hs-plans > .hm-row > .hm-row-h,
+#hs-details > .hm-row > .hm-row-h{margin:0;align-items:flex-start;padding-top:calc(12px / var(--su-zoom,1))}
+#hs-plans > .hm-row > .hm-row-h h2,
+#hs-details > .hm-row > .hm-row-h h2{margin:0}
+@media (max-width:480px){
+  #hs-details > .hm-accs{margin-top:0;padding-top:0}
+  #hs-details > .hm-accs > h2{margin-top:calc(12px / var(--su-zoom,1));margin-bottom:.4rem}
+}
+#row-plans .hm-scroll{padding-top:4px}
 .hs-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin:auto auto 0;padding:.35rem 1rem;min-height:44px;min-width:44px;border:0;background:transparent;color:#A8431F;cursor:pointer;font:600 .92rem/1.2 Hind,sans-serif;letter-spacing:0;text-transform:none}
 .hs-arrow svg{display:block;margin-top:.1rem}
 .hs-sec > .hm-hero{flex:none}
