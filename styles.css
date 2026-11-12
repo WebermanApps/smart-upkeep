@@ -1571,3 +1571,14 @@ body.on-accept .topbar{border-bottom-color:transparent}
 .sr-off .sr-l b{color:#9a9287;text-decoration:line-through}
 .sr-btn{flex:none;font:600 .9rem Hind,sans-serif;padding:.35rem .8rem;border-radius:999px;border:1px solid #d9d1c4;background:#fff;color:#1f1b17;cursor:pointer;min-height:36px}
 .sr-off .sr-btn{border-color:#05668D;color:#05668D}
+
+/* Nov 12 2026 (Machan): one-time Home gold retirement. Trust chips, Air & Safety card, and tab icons to lagoon; Plus chip to terracotta. Scoped to Home so the funnel and other pages stay unchanged. */
+.hm-chip.t2{background:rgba(5,102,141,.1);color:var(--mw-lagoon,#05668D)}
+.hm-hchip.t2{background:rgba(5,102,141,.1);border-color:rgba(5,102,141,.2);color:var(--mw-lagoon,#05668D)}
+.ca-s .ca-art{background:rgba(5,102,141,.08)}
+.ca-s h3{color:#05668D}
+.ca-card.ca-s{--cc:#05668D}
+.ca-s .su-ico{color:#05668D}
+.ca-dots b.on.d-s{background:#05668D}
+.pl-Plus{background:rgba(168,67,31,.13);color:#A8431F}
+.hm-tabs .su-ico .f-s{fill:#05668D}
