@@ -222,3 +222,31 @@ body:not(.on-home) .topbar{overflow-x:clip}
 .qa-next .qa-steps .cf-email{display:inline-block;max-width:100%;overflow-wrap:anywhere;font-size:inherit;color:inherit}
 .qa-next .qa-steps .cf-email strong{display:inline;margin:0;font-size:inherit}
 .qa-next .qa-steps a.link{display:inline;min-height:0;padding:0}
+
+/* ===== Funnel fix-now C (Nov 12 2026): Swatch spacing-spec (4px scale, type floor 12px) + D3 + D7-D9 taps. Funnel only (.ob), no markup changes. ===== */
+.ob{--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px}
+/* rhythm: hero -> body 24, rows 12, body -> CTA 24, CTA stack 8 */
+.ob .qf-hero.stack.compact{gap:var(--sp-1);margin:var(--sp-2) 0 var(--sp-5)}
+.ob .gap-md{height:var(--sp-3)}
+.ob .qf-dyk{margin-top:var(--sp-4);padding:var(--sp-2) var(--sp-3);gap:var(--sp-2)}
+.ob .qf-foot{padding-top:var(--sp-5);gap:var(--sp-2)}
+/* type floor: nothing under 12px (step label, tagline, .k labels, plan kicker, ribbon, badges) */
+.ob .qf-step{font-size:12px;line-height:15px}
+.ob .qf-tagline{font-size:12px;line-height:15px}
+.ob .k,.ob .pick-step .k,.ob .due-box .k{font-size:12px;line-height:15px}
+.ob .ribbon,.ob .plan-card .ribbon{font-size:12px;line-height:1}
+.ob .badge-found{font-size:12px}
+.ob .seg-badge{font-size:12px;min-height:20px}
+/* D3: Visits A Year kicker in each plan's own color */
+.ob .plan-kicker{font-size:12px;line-height:15px;color:var(--plan-c,var(--mw-lagoon))}
+/* D7: 44px tap targets (steppers, Tank/Tankless, tabs and billing toggle, add-on switches) */
+.ob.ob-stepper-a .ob-step button,.ob .ob-stepper-a .ob-step button,.ob-stepper-a .ob .ob-step button{width:44px;height:44px}
+.ob .type-seg button{min-height:44px}
+.ob .seg-toggle button{min-height:44px}
+.ob .ob-sw{position:relative}
+.ob .ob-sw::after{content:"";position:absolute;inset:-7px -2px}
+/* D8: header Share 44px tall on funnel screens (Home keeps its 44px icon) */
+body:not(.on-home) .topbar .btn-share{min-height:44px}
+/* D9: Accept screen Edit and Cancel Anytime links reach 44px */
+.ob .ob-addr .link{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.ob .su-cancel-line .link{min-height:44px;display:inline-flex;align-items:center}
