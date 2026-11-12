@@ -1168,7 +1168,7 @@
       var tx = P.tiers[x], col = planAccent(x), rec = !!tx.recommended, sel = x === k;
       var cta = rec
         ? '<button type="button" class="plan-cta filled mw-hover"' + (sel ? ' data-ob-tailor="1"' : ' data-ob-tier="' + x + '"') + '>' + (sel ? "Tailor Your Plan" : "Choose Plus") + "</button>"
-        : '<button type="button" class="plan-cta outline mw-hover" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' + (sel ? "Tailor Your Plan" : ("Choose " + tx.label)) + "</button>";
+        : '<button type="button" class="plan-cta outline mw-hover"' + (sel ? ' data-ob-tailor="1"' : ' data-ob-tier="' + x + '"') + ' style="--plan-c:' + col + '">' + (sel ? "Tailor Your Plan" : ("Choose " + tx.label)) + "</button>"; /* Swatch: Tailor on a picked Essentials/Complete card opens tailor too */
       return '<div class="plan-card' + (sel ? " sel" : "") + (rec ? " is-popular" : "") + '" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' +
         (rec ? '<span class="ribbon">Most Popular</span>' : "") +
         '<p class="plan-kicker">' + tx.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(tx.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[x])) + '<small>/mo</small></p>' +
