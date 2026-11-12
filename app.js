@@ -359,6 +359,7 @@
     app.setAttribute("data-screen", s);
     bind();
     document.body.classList.toggle("on-home", s === "home");
+    document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
@@ -455,6 +456,14 @@
   /* Limits per a-la-carte item: only what pricing-config.js desc/unit already says. Missing = not in repo (reported as a gap). */
   var AC_LIMITS = { windows: "Outside glass only.", carpet: "One whole-home clean a year.", chimney: "Wood-burning chimneys.", lights: "One fall install and one take-down after the holidays.", radon: "One test for your home.", guttersExtra: "One extra cleaning.", lmLeakSensors: "Up to 3 sensors set up. Sensors included.", lmSumpBackup: "Homes with an existing sump pit.", lmHoodFilter: "One range hood.", lmBathFan: "Up to 3 bathroom fans.", lmThermostat: "One thermostat." };
   function priceRange(a) { if (needsSiteVisit(a && a.label)) return "Needs A Site Visit"; if (a.quoteRequired || a.low==null || a.high==null || a.low !== a.high) return QUOTE_LABEL; return money(a.low); }
+  /* Home Four Sections deck (Machan Nov 12 2026, receipt 2007): 01A simple 2px chevron, 02B Title Case label + chevron, 03A bottom center of the section it leaves, 04A full screen. Tap lands the next title ~12px under the header (hmJump). */
+  function hsArrow(target, label) { return '<button type="button" class="hs-arrow mw-hover" data-hs-go="' + target + '"><span class="hs-arrow-lab">' + label + '</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'; }
+  /* Four Sections 05 note (Machan: "with the more space we could show more lines, and not have to use the 'and more' so early on"): Home plan cards show more lines before And More. Legal-approved copy, Nov 12 2026 night (LEGAL-FINAL-COPY section 4). Home cards only; pricing-config.js keyPoints (also read by /member/ pages) stay unchanged. */
+  var HOME_KEYPOINTS = {
+    silver: ["Furnace/AC Tune-Up", "Furnace Filter Check and Change", "Roof Drone Inspection Once a Year", "Mold and Moisture Scan", "Water Heater Flush or Descale", "Dryer Vent Cleaning", "Downloadable Visit Record", "And More"],
+    gold: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Garage Door Tune-Up", "Salt in Water Softener", "Fridge Water Filter Changes", "Roof Drone Inspection Twice a Year", "And More"],
+    platinum: ["Everything in Plus, and:", "Monthly Visits", "After-Storm Checks, Up To 4 A Year", "Vent and Ice Dam Clearing After Storms", "Drone Roof Check After Storms", "And More"]
+  };
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -481,7 +490,7 @@
       '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
   }
   function planCard(k, ord) {
-    var t = P.tiers[k], inc = t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
+    var t = P.tiers[k], inc = HOME_KEYPOINTS[k] ? HOME_KEYPOINTS[k] : t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
@@ -719,7 +728,7 @@
       return '<section class="hm-row" id="row-' + id + '"><div class="hm-row-h"><h2>' + title + '</h2>' + (link || "") + '</div>' + (pre || "") + '<div class="hm-scroll">' + cards + '</div></section>';
     }
     return '<div class="hm">' +
-      '<section class="hm-hero">' +
+      '<section class="hs-sec hs-top" id="hs-top"><section class="hm-hero">' +
         '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
         /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
@@ -727,27 +736,27 @@
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
         '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
-      '<button type="button" class="hm-plans-cue mw-hover" data-plans-cue aria-label="Scroll to Plans"><span>Plans</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg></button>' +
+      hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') +
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("row-services", "See What We Take Care Of") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
-      '<section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
-        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' +
+      '<section class="hs-sec hs-ww" id="hs-ww"><section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
+        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' + hsArrow("hs-details", "See Details") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
-      '<section class="hm-row" id="row-trust"><div class="hm-row-h"><h2 class="hm-trust-h">Why Trust Us</h2><button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button></div>' +
+      '<section class="hs-sec hs-details" id="hs-details"><section class="hm-row" id="row-trust"><div class="hm-row-h"><h2 class="hm-trust-h">Why Trust Us</h2><button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button></div>' +
         '<div class="hm-chips">' + trust.map(function (s, i) { return '<span class="hm-chip t' + (i % 4) + '"><span>' + s[1] + '</span></span>'; }).join("") + '</div>' +
         '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
       hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
-      '</section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
+      '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
         [["home", "house", "Home"], ["plans", "star", "Plans"], ["faq", "faq", "FAQs"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
@@ -890,9 +899,16 @@
       if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
       else hmJump(document.getElementById("row-" + t));
     }); });
-    var cue = root.querySelector("[data-plans-cue]"); if (cue) cue.addEventListener("click", function () { hmJump(document.getElementById("row-plans")); });
+    /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
+    root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
+    root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { var el = document.getElementById(b.getAttribute("data-hs-go")); if (el && el.classList.contains("hs-sec")) { el = [].filter.call(el.querySelectorAll("h2"), function (h) { return h.offsetHeight > 4 && h.getClientRects().length; })[0] || el; } hmJump(el); }); });
     var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
     if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
+    /* Swatch QA F2 (Nov 12 9:25 PM): untransformed bar position, because the .off slide hides the real rect. */
+    function hsGuard(){var st=document.querySelector('.hm-sticky'); if(!st) return; var t=innerHeight-st.offsetHeight-parseFloat(getComputedStyle(st).bottom), b=t+st.offsetHeight;
+      st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));}
+    if (!window.__hsGuard) { window.__hsGuard = 1; addEventListener('scroll',hsGuard,{passive:true}); addEventListener('resize',hsGuard); }
+    hsGuard();
     /* service tiles: tap opens a small card (never automatic) */
     var pop = root.querySelector(".hm-pop"), popTier = null, popFrom = null;
     function popClose() { if (!pop || pop.hidden) return; pop.hidden = true; document.documentElement.classList.remove("hm-pop-open"); if (popFrom) popFrom.focus(); }
@@ -1814,6 +1830,9 @@
   var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   var done = false;
   var state = "out", maxY = 0;
+  /* Home Header deck (Machan Nov 12 2026): Share sits top left and fades in, in place, only after the van drives away (01A). Reduced motion or no van: shown at once, no animation. Its space is kept, so nothing jumps. */
+  function shareIn() { document.body.classList.add("share-in"); }
+  if (rm) shareIn();
   function place() {
     var bar = document.querySelector(".topbar"), b = bar && bar.querySelector(".brand"), sh = bar && bar.querySelector(".top-share");
     if (!b || !sh) return false;
@@ -1834,8 +1853,11 @@
     if (y > maxY) maxY = y;
     if (state === "out" && ready) { /* Oct 17 12:23: one smooth cross R->L, brief pull-up + wave near left, then off. No parking. */
       var bar = document.querySelector(".topbar");
-      if (!(window.SUVan ? window.SUVan.play(bar, bar.querySelector(".brand"), bar.querySelector(".top-share")) : place())) return;
+      if (!(window.SUVan ? window.SUVan.play(bar, bar.querySelector(".brand"), bar.querySelector(".top-share")) : place())) { shareIn(); return; }
       state = "gone"; done = true;
+      var vv = bar.querySelector(".hdr-van"), fin = false; function after() { if (fin) return; fin = true; shareIn(); }
+      if (vv) vv.addEventListener("animationend", function (e) { if (e.target === vv) after(); });
+      setTimeout(after, 4600);
     }
   }
   var rafQ = false; window.addEventListener("scroll", function () { if (rafQ) return; rafQ = true; requestAnimationFrame(function () { rafQ = false; check(); }); }, { passive: true });
@@ -1843,6 +1865,7 @@
   var ready = false;
   (function waitReady() {
     if (done || rm) return;
+    if (document.body.classList.contains("on-home") && !(window.SUVan || v)) { shareIn(); return; }
     if (document.hidden || document.body.classList.contains("gate-locked") || !document.body.classList.contains("on-home")) { setTimeout(waitReady, 200); return; }
     setTimeout(function () { ready = true; check(); }, 300);
   })();

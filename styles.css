@@ -1626,3 +1626,43 @@ body.on-home .su-ico :is(path,circle,rect,line,polyline,polygon,ellipse){vector-
 :root{--su-hdr-h:calc(72px + env(safe-area-inset-top,0px));--su-jump-gap:12px}
 @media(min-width:900px){:root{--su-hdr-h:calc(80px + env(safe-area-inset-top,0px))}}
 body.on-home .hm section[id] h2,body.on-home .hm details[id] > summary,body.on-home .hm [data-jump-target] h2,body.on-home .hm [data-jump-target] > summary{scroll-margin-top:calc(var(--su-hdr-h) + var(--su-jump-gap))!important}
+/* ===== Nov 12 2026 night: Home Header deck (Machan) ===== */
+/* 02A icon only, 03A light outline, 04 Machan Decides -> small outline Log In button (Swatch pick B). Share top left, Log In top right, logo centered. */
+body.on-home .topbar .top-share{left:.6rem;right:auto!important;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s}
+body.on-home.share-in .topbar .top-share{opacity:1;visibility:visible;transition:opacity .45s ease,visibility 0s}
+@media (prefers-reduced-motion:reduce){body.on-home .topbar .top-share,body.on-home.share-in .topbar .top-share{transition:none}}
+/* Swatch QA F1 (Nov 12 9:25 PM): no fade-out flash on load. Transition only on .share-in; hidden until the first render. */
+body.on-home .topbar .top-share{transition:none}
+body.on-home.share-in .topbar .top-share{transition:opacity .45s ease,visibility 0s}
+html.su-boot .topbar .top-share{opacity:0;visibility:hidden}
+@media (prefers-reduced-motion:reduce){body.on-home.share-in .topbar .top-share{transition:none}}
+/* Swatch QA F2: hide the sticky Get Started bar only while it would cover a section arrow. */
+.hm-sticky.arrow-off{transform:translateY(120%);opacity:0;pointer-events:none}
+/* Swatch QA F3: center What We Take Care Of in its screen. */
+.hs-ww > #row-services{margin-top:auto}
+body.on-home .topbar .btn-share{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff!important;background-image:none!important;border:1.5px solid #0a0a0a!important;border-radius:6px;color:#0a0a0a!important}
+body.on-home .topbar .btn-share svg{display:block}
+body.on-home .topbar .share-msg{left:48px;right:auto}
+.topbar .top-login{display:none}
+body.on-home .topbar .top-login{display:inline-flex;align-items:center;justify-content:center;position:absolute;right:.6rem;top:50%;transform:translateY(-50%);z-index:2;height:40px;min-height:40px;padding:0 .8rem;border:1.5px solid #0a0a0a;border-radius:6px;background:#fff;color:#0a0a0a;font:500 .85rem/1 Hind,sans-serif;text-decoration:none;white-space:nowrap}
+body.on-home .topbar .top-login:focus-visible,body.on-home .topbar .btn-share:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+/* ===== Home Four Sections deck (Machan, receipt 2007): full-screen sections, bottom-center Title Case label + 2px chevron ===== */
+.hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh - var(--su-hdr-h,72px));min-height:calc(100svh - var(--su-hdr-h,72px));padding-bottom:calc(132px + env(safe-area-inset-bottom))}
+@media (min-width:700px){.hs-sec{padding-bottom:96px}}
+body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-top:8px}
+.hs-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin:auto auto 0;padding:.35rem 1rem;min-height:44px;min-width:44px;border:0;background:transparent;color:#A8431F;cursor:pointer;font:600 .92rem/1.2 Hind,sans-serif;letter-spacing:0;text-transform:none}
+.hs-arrow svg{display:block;margin-top:.1rem}
+.hs-sec > .hm-hero{flex:none}
+.hs-arrow:focus-visible{outline:2px solid #05668D;outline-offset:2px;border-radius:6px}
+/* ===== Shop À La Carte Scroll deck (Machan): 01A about 4 rows, 02A fade at the bottom, centered divided rows (03 skipped, note "maybe centered?") ===== */
+#acc-addons .alc-box{background:#fff;border:1px solid #E6E0D6;border-radius:12px;padding:10px 12px;margin:0 0 .75rem;box-sizing:border-box;max-height:calc(4 * 64px + 20px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%)}
+#acc-addons .alc-box::-webkit-scrollbar{display:none}
+#acc-addons .alc-box.alc-end{-webkit-mask-image:none;mask-image:none}
+#acc-addons .alc-box:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+#acc-addons .alc-box .hm-prices{margin:0;padding:0;list-style:none;display:block}
+#acc-addons .alc-box .hm-prices li{border-bottom:1px solid #E6E0D6;padding:0;margin:0}
+#acc-addons .alc-box .hm-prices li:last-child{border-bottom:0}
+#acc-addons .alc-box .ac-item{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:.4rem;row-gap:.05rem;width:100%;min-height:52px;padding:.4rem .25rem;text-align:center;background:transparent;border:0}
+#acc-addons .alc-box .ac-item > span{flex:0 1 auto;font-family:Hind,sans-serif}
+#acc-addons .alc-box .ac-item > b{flex:0 0 100%;margin:0;text-align:center;font-family:Hind,sans-serif}
+@media (prefers-reduced-motion:reduce){.hs-arrow{transition:none}}
