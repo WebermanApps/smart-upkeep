@@ -928,6 +928,8 @@
   var MONTHLY_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
   var ANNUAL_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
   var ANNUAL_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
+  var FOUNDING_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
+  var FOUNDING_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
@@ -991,6 +993,7 @@
   }
   function monthlyConsent(amount) { return fillAmt(paymentsLive() ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, amount); }
   function annualConsent(amount) { return fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
+  function foundingConsent(amount) { return fillAmt(paymentsLive() ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA, amount); }
   function obPlan() {
     if (foundingFull()) return S.plan === "annual" ? "annual" : "monthly";
     var p = S.plan;
@@ -1253,7 +1256,7 @@
     /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
     var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
       : (b.plan === "annual" ? annualConsent(b.today)
-      : 'I agree Smart Upkeep may charge me <strong>' + money(b.today) + '</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days\' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.');
+      : foundingConsent(b.today));
     /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
     var open = !!AGREEMENT.url;
     var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
@@ -1695,6 +1698,7 @@
     afterFoundingPriceLine: afterFoundingPriceLine,
     monthlyConsent: monthlyConsent,
     annualConsent: annualConsent,
+    foundingConsent: foundingConsent,
     setFlags: function (o) {
       if (o && "FOUNDING_FULL" in o) FOUNDING_FULL = !!o.FOUNDING_FULL;
       if (o && "PAYMENTS_LIVE" in o) PAYMENTS_LIVE = !!o.PAYMENTS_LIVE;
