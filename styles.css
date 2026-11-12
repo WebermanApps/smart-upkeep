@@ -1666,3 +1666,60 @@ body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-t
 #acc-addons .alc-box .ac-item > span{flex:0 1 auto;font-family:Hind,sans-serif}
 #acc-addons .alc-box .ac-item > b{flex:0 0 100%;margin:0;text-align:center;font-family:Hind,sans-serif}
 @media (prefers-reduced-motion:reduce){.hs-arrow{transition:none}}
+
+/* What's Included Redo (Machan Nov 12 2026): 02A checklist cards with tabs under 768px, 01A comparison table at 768px and up. Light mode, Khand + Hind. */
+.wi-r{font-family:Hind,sans-serif;color:#0a0a0a;text-align:left}
+.wi-r *{box-sizing:border-box}
+.wi-r h4{font-family:Khand,sans-serif;font-weight:700;margin:0;color:#0a0a0a;letter-spacing:-.01em}
+.wi-visit{margin:0 0 .55rem;padding:.45rem .65rem;background:#F8F2E9;border-radius:10px;font:500 13px/1.4 Hind,sans-serif}
+.wi-visit p{margin:0}
+.wi-visit p+p{margin-top:.1rem}
+.wi-tabs{display:flex;border:1px solid #e5e5e5;border-radius:12px 12px 0 0;overflow:hidden;background:#fff}
+.wi-tab{flex:1;min-height:48px;border:0;background:#fafafa;font:700 16px/1.1 Khand,sans-serif;color:#525252;padding:.4rem .2rem;cursor:pointer}
+.wi-tab+.wi-tab{border-left:1px solid #e5e5e5}
+.wi-tab.on{background:#fff;color:#0a0a0a;box-shadow:inset 0 -3px 0 #0B6E4F}
+.wi-tab.wt-gold.on{box-shadow:inset 0 -3px 0 #A8431F}
+.wi-tab.wt-platinum.on{box-shadow:inset 0 -3px 0 #05668D}
+.wi-tab:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
+.wi-badge{display:block;margin:.18rem auto 0;width:max-content;background:#A8431F;color:#fff;font:700 12px/1 Hind,sans-serif;padding:.14rem .4rem;border-radius:99px}
+.wi-tabbody{background:#fff;border:1px solid #e5e5e5;border-top:0;border-radius:0 0 12px 12px;padding:.55rem .7rem .65rem}
+.wi-meta{margin:0 0 .45rem;font:600 13px/1.35 Hind,sans-serif}
+.wi-core{margin:0 0 .5rem;background:#fff;border:1px solid #e5e5e5;border-top:4px solid #0B6E4F;border-radius:12px;padding:.42rem .65rem .48rem}
+.wi-core h4{font-size:17px;line-height:1.15;margin:0 0 .18rem}
+.wi-core p{margin:0;font:500 13px/1.4 Hind,sans-serif}
+.wi-lead{margin:0 0 .25rem;font:700 13px/1.3 Hind,sans-serif;color:#A8431F}
+.wi-ul{list-style:none;margin:0;padding:0}
+.wi-ul li{display:flex;align-items:flex-start;gap:.45rem;padding:.3rem 0;font:500 13.5px/1.35 Hind,sans-serif}
+.wi-ul li+li{border-top:1px solid #f0ece6}
+.wi-ul li b{font-weight:600}
+.wi-ul li small,.wi-table th.lab small{display:block;margin-top:.1rem;font:500 12.5px/1.35 Hind,sans-serif;color:#525252}
+.wi-ck{flex:none;margin-top:2px;color:#0B6E4F}
+[data-wi-panel="gold"] .wi-ck{color:#A8431F}
+[data-wi-panel="platinum"] .wi-ck{color:#05668D}
+.wi-fn{margin:.45rem 0 0;font:500 12px/1.4 Hind,sans-serif;color:#525252}
+.wi-tablewrap{display:none}
+@media (min-width:768px){
+  .wi-tabsw{display:none}
+  .wi-visit{display:none}
+  .wi-tablewrap{display:block}
+  .wi-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;table-layout:fixed}
+  .wi-table th,.wi-table td{padding:.4rem .5rem;text-align:center;font:500 13px/1.35 Hind,sans-serif;vertical-align:middle}
+  .wi-table thead th{font:700 18px/1.1 Khand,sans-serif;border-top:4px solid #0B6E4F;border-bottom:1px solid #e5e5e5;padding:.5rem .4rem .45rem;vertical-align:bottom}
+  .wi-table thead th.th-gold{border-top-color:#A8431F}
+  .wi-table thead th.th-platinum{border-top-color:#05668D}
+  .wi-table thead th.lab{border-top-color:#e5e5e5}
+  .wi-table .wi-badge{display:block;margin:.25rem auto 0}
+  .wi-from{display:block;margin-top:.22rem;font:600 13px/1.2 Hind,sans-serif;color:#0a0a0a}
+  .wi-table th.lab{text-align:left;width:34%;font:500 13.5px/1.35 Hind,sans-serif}
+  .wi-table th.lab b{font-weight:600}
+  .wi-table td.txt{text-align:left;font-size:12.5px;color:#0a0a0a}
+  .wi-table tbody tr+tr>*{border-top:1px solid #eee}
+  .wi-table td .wi-ck{margin:0;display:inline-block}
+  .wi-table td.ck-gold .wi-ck{color:#A8431F}
+  .wi-table td.ck-platinum .wi-ck{color:#05668D}
+  .wi-table td.no{color:#b5b0a6;font-weight:700}
+  .wi-r .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+}
+@media (min-width:768px){.hm-accs>#acc-plans{grid-column:1/-1}.wi-table td[colspan]{text-align:center}}
+[data-wi-panel="gold"] .wi-core{border-top-color:#A8431F}
+[data-wi-panel="platinum"] .wi-core{border-top-color:#05668D}
