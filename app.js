@@ -943,6 +943,8 @@
   var AFTER_FOUNDING_LINE = "After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.";
   var AFTER_FOUNDING_PRICE = "{monthly}/mo, or prepay 12 months for {price} (10% off monthly).";
   var BETA_PAY_TITLE = "Payments During Beta";
+  /* Legal Nov 12 7:09 PM, word for word: One-Time tab expandable line for quote-only services (#14). */
+  var ONCE_MORE_LINE = "Need More? We'll Quote It After Your Visit. Nothing Extra Is Done Or Charged Without Your OK.";
   var BETA_PAY_BODY = "Your first payment is due when you sign up. During our beta, our team collects payment personally. Right after you sign up, we'll follow up with a secure way to pay. Please don't send card numbers in chat.";
   var MONTHLY_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
   var MONTHLY_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, and on this date <strong>each month</strong>. My membership runs in 12-month terms and <strong>renews automatically</strong> until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
@@ -1036,7 +1038,6 @@
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
-  function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
@@ -1046,7 +1047,13 @@
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
     return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
       '<div class="qf-hero stack compact"><div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div><h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
-      '<div class="qf-body">' + body + '</div>' + dyk + '<div class="qf-foot">' + foot + tagLine() + navBar() + startOverBtn() + '</div></section>';
+      '<div class="qf-body">' + body + '</div>' + dyk + obFoot(foot) + '</section>';
+  }
+  /* Funnel decks #11 + #17 (sticky part): Back left and Next right in a sticky bottom bar on every step. The rest of the footer (tagline, Home, Start Over, Built by Machan) stays; the Back-only footer layout is held for the Extras deck. */
+  function backOnly() { var m = backBtn().match(/<button class="back back-pill[\s\S]*?<\/button>/); return m ? m[0] : ""; }
+  function obFoot(foot) {
+    var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
+    return '<div class="ob-bar">' + backOnly() + nx + '</div>' + '<div class="qf-foot">' + rest + tagLine() + '<div class="qf-navbar">' + homePill() + '</div>' + startOverBtn() + '</div>';
   }
   function nextBtn(label, ok) { return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + '>' + label + '</button>'; }
 
@@ -1141,7 +1148,11 @@
     var sel = S.addons || [];
     var tab = S._aoTab === "once" ? "once" : "monthly";
     var monthly = monthlyAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
-    var once = onceAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
+    var onceAll = onceAddonCatalog(), oncePriced = onceAll.filter(function (a) { return hasRealOncePrice(a) && !needsSiteVisit(a.label); }), onceQuote = onceAll.filter(function (a) { return oncePriced.indexOf(a) < 0; });
+    /* quote-only one-time rows are no longer offered here (they stay on À La Carte); drop any old picks of them so nothing hidden rides along */
+    var hid = onceQuote.map(function (a) { return a.id; }); if (sel.some(function (id) { return hid.indexOf(id) > -1; })) { S.addons = sel = sel.filter(function (id) { return hid.indexOf(id) < 0; }); save(); }
+    var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
+      (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
     var addMoSum = addonsNoteMonthly();
     var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Add-Ons">' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Monthly</button>' +
@@ -1317,7 +1328,9 @@
       '<label class="checkrow"><input type="checkbox" id="chargeOk"><span>' + consent + '</span></label>' + fe("chargeOk") +
       '<p class="fl">Signature</p>' + sigBlock("agreeSig") + fe("agreeSig") + '</div>' +
       (paymentsLive() ? ('<div class="card paybox"><h3>' + I("shield", "xs") + ' Payment</h3>' +
-      '<fieldset style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>') : '') +
+      '<fieldset style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>') :
+        /* Finish deck #19: muted Payment box until sign-up opens (no card fields, per Legal's beta copy) */
+        '<div class="card paybox paybox-soon" aria-disabled="true"><h3>' + I("shield", "xs") + ' Payment</h3><p class="small muted">Opens Soon</p></div>') +
       '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Join Now") + '</button>' +
       (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
@@ -1750,7 +1763,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob10"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob11"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
