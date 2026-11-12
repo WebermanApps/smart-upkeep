@@ -1193,6 +1193,36 @@
   var AGREEMENT = { id: "member-agreement-draft", rev: "54e4f1d", url: "" };
 
   function isOb(s) { return OB.indexOf(s) > -1; }
+  /* One Screen At A Time (Machan Nov 12 10:07 PM): each step fills the space under the header (--tb, set in bind). With the phone keyboard open,
+     the Back/Next bar rides above the keyboard (visualViewport) and the focused field scrolls into the space above the bar. */
+  /* Keyboard lift (Swatch PR97 note 4). How it behaves:
+     - Only window.visualViewport is read. offset = innerHeight - (vv.height + vv.offsetTop), clamped to >= 0. It's the strip of the
+       layout viewport hidden under the keyboard (iOS Safari, and Chrome Android without interactive-widget=resizes-content).
+     - Offsets under 80px are treated as 0, so the browser toolbar showing or hiding never moves the bar.
+     - visualViewport resize and scroll events, plus focusin and focusout, are throttled to one update per animation frame (rAF). The bar
+       gets translateY(-offset) with no CSS transition, so it doesn't lag or bounce while iOS animates the keyboard or pans the page.
+     - When the keyboard opens on a funnel field, the field is scrolled just enough to sit between the top of the visible area and the bar.
+     - When the keyboard closes (offset 0), the transform is cleared. On browsers that resize the page for the keyboard, the offset stays 0
+       and the sticky bar already sits above the keyboard. */
+  (function () {
+    var vv = window.visualViewport, queued = false, last = -1;
+    function kb() {
+      queued = false;
+      var bar = document.querySelector(".ob .ob-bar"); if (!bar || !vv) { last = -1; return; }
+      var off = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
+      if (off < 80) off = 0;
+      if (off !== last || bar.style.transform !== (off ? "translateY(-" + off + "px)" : "")) { bar.style.transform = off ? "translateY(-" + off + "px)" : ""; last = off; }
+      var f = document.activeElement;
+      if (off && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
+        var r = f.getBoundingClientRect(), top = vv.offsetTop + 8, bottom = vv.offsetTop + vv.height - bar.offsetHeight - 8;
+        if (r.bottom > bottom) window.scrollBy(0, r.bottom - bottom); else if (r.top < top) window.scrollBy(0, r.top - top);
+      }
+    }
+    function queue() { if (!queued) { queued = true; (window.requestAnimationFrame || setTimeout)(kb); } }
+    if (vv) { vv.addEventListener("resize", queue); vv.addEventListener("scroll", queue); }
+    document.addEventListener("focusin", function (e) { if (e.target && e.target.closest && e.target.closest(".ob")) queue(); });
+    document.addEventListener("focusout", queue);
+  })();
   /* Service area: metro Detroit ZIPs 480xx to 483xx (same check as before). */
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
   function localISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -1335,8 +1365,12 @@
       var e = P.extras[k], on = ex.indexOf(k) > -1;
       return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
     }
-    var keys = Object.keys(P.extras), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
-    var body = '<div class="ex-card"><div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' +
+    /* Machan Nov 12 10:08 PM: skip any item here that's already offered on the Add-Ons step (Monthly or One-Time). Shared items keep one selection
+       (S.answers.extras + S.addons via syncSharedExtras), so picking it on Add-Ons fills the same fields and prices as before. */
+    var aoShared = sharedExtraMap(), aoLabels = {};
+    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
+    var keys = Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; }), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
+    var body = '<div class="ex-card">' + (priced.length ? '<div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' : '') +
       (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
       (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
     return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
@@ -2026,7 +2060,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob12"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob14"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     hmHash();
