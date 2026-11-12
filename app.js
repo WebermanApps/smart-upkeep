@@ -344,6 +344,7 @@
   function render() {
     /* Nov 11 2026 onboarding redo: the old question screens, photos, free tech visit, compare, sign-up and pay screens are retired. Saved state on any of them lands on step 1. */
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
+    if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     var s = S.screen, html;
     app.classList.remove("wide");
@@ -922,8 +923,9 @@
   /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
      Address > Home Basics > Systems > Add-Ons > Plan > Billing > Access > Start Date > Accept.
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
-  var OB = ["address", "basics", "systems", "addons", "plan", "billing", "access", "start", "accept"];
-  var OB_NAME = { address: "Your Address", basics: "Home Basics", systems: "Your Systems", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", accept: "Accept" };
+  /* Funnel decks (Machan Nov 12, Home Details #1 + Systems #8): address, size and stories share one screen; Systems is two short screens (counts, then extras). Still 9 steps; every screen counts. */
+  var OB = ["address", "systems", "systems2", "addons", "plan", "billing", "access", "start", "accept"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -956,7 +958,7 @@
   /* Did You Know tips stay on the question screens (Machan Nov 11). */
   var DYK = {
     address: "Every visit ends with a written report saved to your Home Record.",
-    basics: "Plus includes gutter and downspout cleaning every spring and fall.",
+    systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We change your furnace filters during every visit, at no extra charge.",
     addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera."
   };
@@ -1037,7 +1039,7 @@
   function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function obShell(id, art, tint, title, help, body, foot) {
-    var tl = !!S.tailor && id === "systems"; /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
+    var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
     var i = OB.indexOf(tl ? "plan" : id);
     var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' of ' + OB.length + ' &middot; ' + OB_NAME[id]) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + OB.length + '" aria-label="Step ' + (i + 1) + ' of ' + OB.length + '">' +
       OB.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
@@ -1052,35 +1054,27 @@
   function addrOk() { var a = S.answers; return /\d+\s+\S+/.test(String(a.street || "").trim()) && /^\d{5}$/.test(String(a.zipcode || "")); }
   function obAddress() {
     var a = S.answers, out = S._outZip && S._outZip === a.zipcode;
-    var body = '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
-      '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '"></div>' +
-      '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "");
-    return obShell("address", "house", 0, "Where's Your Home?", "What's the address of the home you'd like us to take care of? We serve metro Detroit: Wayne, Oakland, Macomb and nearby.", body, nextBtn("Next", addrOk() && !out));
+    /* #4: size and stories start on the first option (existing SIZE_OPTS tiers only, no new prices) */
+    if (a.sqft == null || a.sqft === "unsure" || !SIZE_OPTS.some(function (o) { return o[0] === String(a.sqft); })) a.sqft = SIZE_OPTS[0][0];
+    if (a.stories == null || a.stories === "unsure") a.stories = STORY_OPTS[0][0];
+    var si = 0; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
+    var st = String(a.stories);
+    /* #2: ZIP first in a short box, service-area line under it; #3: Title Case labels */
+    var body = '<div class="ob-fields"><label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="next" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
+      '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p>' +
+      '<label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="go" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '"></div>' +
+      '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") +
+      /* #5: size and stories in one card with a divider */
+      '<div class="pick-card"><div class="pick-step"><div class="meta"><p class="k">Home Size</p><p class="v">' + SIZE_OPTS[si][1] + ' sq ft</p><p class="s">A rough range is fine</p></div>' + obStepper("sqft", null, si <= 0, si >= SIZE_OPTS.length - 1, "Home size") + '</div>' +
+      '<div class="pick-step"><div class="meta"><p class="k">Stories</p><p class="v">' + STORY_OPTS[Number(st) - 1][1] + '</p><p class="s">Sets gutter and ladder work</p></div>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div></div>' +
+      '<p class="priced-note">Size and stories are both priced into your plan.</p>';
+    return obShell("address", "house", 0, "Where's Your Home?", "What's the address of the home you'd like us to take care of?", body, nextBtn("Next", addrOk() && !out));
   }
   function waitlistCard(z) {
     return '<section class="hm-wait qt-wait ob-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon</h3><p class="small muted">We don\'t serve ZIP ' + esc(z) + ' yet. Join the waitlist and we\'ll email you when we\'re coming to your area. While founding spots last, founding members get 2 years for the price of 1.</p>' +
       '<form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join The Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
-  /* 2. Home Basics: size AND stories, both priced (Machan Nov 11). Deck card 5: A chips, B steppers. */
-  function obBasics() {
-    var a = S.answers, sz = a.sqft != null && a.sqft !== "unsure" ? String(a.sqft) : "", st = a.stories != null && a.stories !== "unsure" ? String(a.stories) : "";
-    var body;
-    if (OB_STYLE.basics === "B") {
-      var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === sz) si = k; });
-      body = '<div class="pick-step"><div class="meta"><p class="k">Home Size</p><p class="v">' + (si > -1 ? SIZE_OPTS[si][1] + " sq ft" : "Pick A Size") + '</p><p class="s">A rough range is fine</p></div>' + obStepper("sqft", null, si <= 0, si >= SIZE_OPTS.length - 1, "Home size") + '</div>' +
-        '<div class="gap-md"></div><div class="pick-step"><div class="meta"><p class="k">Stories</p><p class="v">' + (st ? STORY_OPTS[Number(st) - 1][1] : "Pick Stories") + '</p><p class="s">Sets gutter and ladder work</p></div>' + obStepper("stories", st || "–", !st || st === "1", st === "3", "Stories") + '</div>';
-    } else {
-      body = '<p class="blk-lab">Home Size</p><div class="size-grid" data-ptr-ignore>' + SIZE_OPTS.map(function (o, k) {
-          return '<button type="button" class="qt mw-hover t' + (k % 4) + ' sz' + k + (sz === o[0] ? " sel" : "") + '" data-ob-size="' + o[0] + '" aria-pressed="' + (sz === o[0]) + '"><span class="qt-ic">' + I("house", "sm") + '</span><span class="qt-lab"><b>' + o[1] + '</b><small>sq ft</small></span></button>';
-        }).join("") + '</div>' +
-        '<p class="blk-lab" style="margin-top:.8rem">Stories</p><div class="story-row" data-ptr-ignore>' + STORY_OPTS.map(function (o, k) {
-          return '<button type="button" class="qt mw-hover t' + ((k + 1) % 4) + (st === o[0] ? " sel" : "") + '" data-ob-story="' + o[0] + '" aria-pressed="' + (st === o[0]) + '"><span class="qt-ic">' + I("house", "sm") + '</span><span class="qt-lab"><b>' + o[1] + '</b>' + (o[2] ? '<small>' + o[2] + '</small>' : '') + '</span></button>';
-        }).join("") + '</div>';
-    }
-    body += '<p class="priced-note">Size and stories are both priced into your plan.</p>';
-    return obShell("basics", "house", 1, "About Your Home", "About how big is your home? How many stories is your home?", body, nextBtn("Next", !!(sz && st)));
-  }
   /* -/+ stepper. Deck card 1: A inline pill, B big circles (CSS only, see onboarding.css .ob-stepper-a / .ob-stepper-b). */
   function obStepper(key, n, noMinus, noPlus, label) {
     return '<div class="ob-step" role="group" aria-label="' + esc(label) + '"><button type="button" class="mw-hover" data-ob-step="' + key + ':-1" aria-label="Fewer"' + (noMinus ? " disabled" : "") + '>&minus;</button>' +
@@ -1102,14 +1096,21 @@
       return '<div class="ob-wh"><span>' + (wh > 1 ? "Water Heater " + (i + 1) : "Type") + '</span><div class="type-seg" role="group" aria-label="Water Heater ' + (i + 1) + ' type">' +
         [["tank", "Tank"], ["tankless", "Tankless"]].map(function (o) { return '<button type="button" class="mw-hover' + (t === o[0] ? " on" : "") + '" data-ob-wh="' + i + ':' + o[0] + '" aria-pressed="' + (t === o[0]) + '">' + o[1] + '</button>'; }).join("") + '</div></div>';
     }).join("");
+    /* #13: counts share one white card with dividers; #9: water heater type on its own full-width line under the count */
+    var body = '<div class="sys-list sys-card">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh) + (wh ? '<div class="ob-whs ob-whs-line">' + whx + '</div>' : '') + '</div>';
+    return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn("Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
+  }
+  /* 3b. Extras (#8 second short screen): #10 priced extras first with prices, included ones below their label; #13 in one white card with the heading. Stays synced with the Add-Ons Monthly tab. */
+  function obSystems2() {
     var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
-    var tiles = Object.keys(P.extras).map(function (k, j) {
-      var e = P.extras[k], on = ex.indexOf(k) > -1, sub = e.all > 0 ? moLabel(e.all) : "Included On Plus And Up";
-      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + '<small>' + sub + '</small></span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-    }).join("");
-    var body = '<div class="sys-list">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh, wh ? '<div class="ob-whs">' + whx + '</div>' : '') + '</div>' +
-      '<p class="blk-lab" style="margin-top:.9rem">Do You Have Any Of These?</p><div class="qt-grid two" data-ptr-ignore>' + tiles + '</div>';
-    return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
+    function tile(k, j, sub) {
+      var e = P.extras[k], on = ex.indexOf(k) > -1;
+      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
+    }
+    var keys = Object.keys(P.extras), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0); });
+    var body = '<div class="ex-card"><div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' +
+      (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') + '</div>';
+    return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
 
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
@@ -1325,7 +1326,7 @@
 
   function obRender(s) {
     if (s === "address") return obAddress();
-    if (s === "basics") return obBasics();
+    if (s === "systems2") return obSystems2();
     if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
     if (s === "addons") return obAddons();
     if (s === "plan") return obPlanScreen();
@@ -1343,25 +1344,21 @@
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
       function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); save(); }
       st.addEventListener("input", upd); zp.addEventListener("input", function () { upd(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
-      [st, zp].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === st) zp.focus(); else if (nx && !nx.disabled) nx.click(); } }); });
+      [st, zp].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === zp) st.focus(); else if (nx && !nx.disabled) nx.click(); } }); });
       if (nx) nx.addEventListener("click", function () {
         upd();
         if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
         if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
-        S._outZip = ""; go("basics");
+        S._outZip = ""; go("systems");
       });
-      return;
-    }
-    if (s === "basics") {
-      app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () { S.answers.sqft = b.getAttribute("data-ob-size"); rer(); }); });
-      app.querySelectorAll("[data-ob-story]").forEach(function (b) { b.addEventListener("click", function () { S.answers.stories = b.getAttribute("data-ob-story"); rer(); }); });
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-step").split(":"), d = Number(kv[1]);
         if (kv[0] === "sqft") { var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(S.answers.sqft)) si = k; }); si = si < 0 ? 0 : Math.max(0, Math.min(SIZE_OPTS.length - 1, si + d)); S.answers.sqft = SIZE_OPTS[si][0]; }
         else { var n = Number(S.answers.stories) || 0; n = n ? Math.max(1, Math.min(3, n + d)) : 1; S.answers.stories = String(n); }
         rer(); }); });
+      return;
     }
-    if (s === "systems") {
+    if (s === "systems" || s === "systems2") {
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-step").split(":"), n = Math.max(0, Math.min(SYS_MAX, cnt(kv[0]) + Number(kv[1])));
         S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); }); });
@@ -1370,7 +1367,7 @@
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
-      if (nx) nx.addEventListener("click", function () { if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (s === "systems") return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
         try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}
@@ -1753,7 +1750,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob9"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob10"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
