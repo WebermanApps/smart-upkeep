@@ -543,8 +543,8 @@
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
-  /* Late build Nov 12: phone hero box is ~335x449 (3:4) with object-fit: cover. Swap to the 3:4 cut from Video & Photo by editing this one line. */
-  var HERO_PHONE = { src: "video/teaser-v7-phone-5svc-1x1.mp4?v=f2", poster: "assets/teaser-v7-phone-1x1-poster.jpg?v=p1", wh: 'width="720" height="720"' };
+  /* Late build Nov 12: phone hero box is ~335x449 (3:4) with object-fit: cover. A later 4-scene cut is a one-line swap here. */
+  var HERO_PHONE = { src: "video/teaser-v7-phone-5svc-3x4.mp4?v=f3", poster: "assets/teaser-v7-phone-3x4-poster.jpg?v=p3", wh: 'width="1080" height="1440"' };
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
     var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
