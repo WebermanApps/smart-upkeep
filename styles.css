@@ -1582,3 +1582,6 @@ body.on-accept .topbar{border-bottom-color:transparent}
 .ca-dots b.on.d-s{background:#05668D}
 .pl-Plus{background:rgba(168,67,31,.13);color:#A8431F}
 .hm-tabs .su-ico .f-s{fill:#05668D}
+
+/* Nov 12 2026 (Machan): Details accordion icons (house door, wrench tip) from saffron to lagoon. Scoped to Home Details summaries so funnel and other pages stay unchanged. */
+.hm-accs .hm-acc > summary .su-ico .f-s{fill:#05668D}
