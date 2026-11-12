@@ -924,7 +924,7 @@
       c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
       c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
     });
-    root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { hmJump(root.querySelector("#row-plans")); }); });
+    root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { hmJumpSec(root.querySelector("#hs-plans") || root.querySelector("#row-plans")); }); });
   }
   function bindOffer(root) {
     var pop = root.querySelector(".hm-offer-pop"); if (!pop) return;
@@ -963,7 +963,21 @@
   }
   /* Nov 12 2026 (Machan 7:16 PM): one jump helper for every Home section/anchor jump (bottom bar, down arrow, See All, hash links).
      Lands the target's title just below the sticky header. The 12px gap is keyed off the title (h2 / summary), not the section box, so section padding does not shift Plans below FAQ / What's Included. */
-  function hmHdrSync() { var t = document.querySelector(".topbar"); if (t && t.offsetHeight) document.documentElement.style.setProperty("--su-hdr-h", t.offsetHeight + "px"); }
+  function zoomFactor() {
+    var z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-zoom"));
+    if (!z) z = parseFloat(getComputedStyle(document.documentElement).zoom);
+    return z && isFinite(z) && z > 0 ? z : 1;
+  }
+  function hmHdrSync() {
+    var t = document.querySelector(".topbar");
+    if (t && t.offsetHeight) document.documentElement.style.setProperty("--su-hdr-h", t.offsetHeight + "px");
+    /* Size each Home section to one visual screen after html zoom (1440+). Unzoomed 1280 stays 100svh - header. */
+    if (t) {
+      var z = zoomFactor();
+      var usable = (window.innerHeight - t.getBoundingClientRect().height) / z;
+      if (usable > 0) document.documentElement.style.setProperty("--su-sec-h", usable + "px");
+    }
+  }
   function hmJumpTitle(el) {
     if (!el) return el;
     if (el.matches && el.matches("h1,h2,h3,summary")) return el;
@@ -1000,9 +1014,20 @@
     }
     return el;
   }
+  /* Section jumps (bar, arrows, see-more) land the section box just under the header, the same as a natural scroll, so margin-top:auto centering stays and the next section does not peek in. */
+  function hmJumpSec(el, smooth) {
+    if (!el) return; hmHdrSync();
+    var sec = (el.classList && el.classList.contains("hs-sec")) ? el : (el.closest && el.closest(".hs-sec")) || el;
+    var hdr = document.querySelector(".topbar");
+    var off = hdr ? hdr.getBoundingClientRect().bottom : 0;
+    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* scrollY and getBoundingClientRect share a coordinate space, including when html { zoom } is on; do not divide by zoom. */
+    var top = Math.max(0, Math.round(window.scrollY + (sec.getBoundingClientRect().top - off)));
+    window.scrollTo({ top: top, behavior: rm || smooth === false ? "auto" : "smooth" });
+  }
   function jumpSec(id) {
     var el = document.getElementById(id); if (!el) return;
-    hmJump(firstSecTitle(el));
+    hmJumpSec(el);
   }
   window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
   function bindHome() {
@@ -1033,15 +1058,16 @@
       var id = b.getAttribute("data-hm-tab"), sec = b.getAttribute("data-hs-sec");
       markTab(id);
       if (id === "home") {
-        var top = document.getElementById("hs-top"), title = top && (top.querySelector("h1") || top);
-        if (title) hmJump(title); else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+        var top = document.getElementById("hs-top");
+        if (top) hmJumpSec(top); else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
       } else jumpSec(sec);
     }); });
     /* Scroll spy: which of the 4 sections is in view (black active tab, no gold). */
     function spyTabs() {
       var map = [["home","hs-top"],["plans","hs-plans"],["included","hs-ww"],["details","hs-details"]];
-      var hdr = (document.querySelector(".topbar") && document.querySelector(".topbar").offsetHeight) || 0;
-      var line = hdr + 12, best = "home", bestTop = -1e9;
+      var hdr = document.querySelector(".topbar");
+      var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
+      var best = "home", bestTop = -1e9;
       map.forEach(function (p) {
         var el = document.getElementById(p[1]); if (!el) return;
         var top = el.getBoundingClientRect().top;
@@ -1058,10 +1084,14 @@
     spyTabs();
     /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
     root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
-    root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { hmJump(firstSecTitle(document.getElementById(b.getAttribute("data-hs-go")))); }); });
+    root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { hmJumpSec(document.getElementById(b.getAttribute("data-hs-go"))); }); });
     /* Swatch QA F2 (Nov 12 9:25 PM), updated for the combined section bar: untransformed bar position, because the .off slide hides the real rect. */
-    function hsGuard(){var st=document.querySelector('.hm-tabs'); if(!st) return; var bot=parseFloat(getComputedStyle(st).bottom)||0; var t=innerHeight-st.offsetHeight-bot, b=t+st.offsetHeight;
-      st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));}
+    function hsGuard(){
+      var st=document.querySelector('.hm-tabs'); if(!st) return;
+      var z=zoomFactor(), bot=(parseFloat(getComputedStyle(st).bottom)||0)*z;
+      var barH=st.offsetHeight*z, t=innerHeight-barH-bot, b=t+barH;
+      st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));
+    }
     if (!window.__hsGuard) { window.__hsGuard = 1; addEventListener('scroll',hsGuard,{passive:true}); addEventListener('resize',hsGuard); }
     hsGuard();
     /* service tiles: tap opens a small card (never automatic) */
@@ -1960,7 +1990,7 @@
   document.getElementById("videoClose").addEventListener("click", closeVideo);
   document.getElementById("skipBtn").addEventListener("click", closeVideo);
   unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
-  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("row-plans"); if (pl) setTimeout(function () { hmJump(pl); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
+  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("hs-plans") || document.getElementById("row-plans"); if (pl) setTimeout(function () { hmJumpSec(pl); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
   modal.addEventListener("click", function (e) { if (e.target === modal) closeVideo(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
 

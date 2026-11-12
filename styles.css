@@ -1053,10 +1053,12 @@ body.on-qf main{padding-bottom:0}
   #row-plans .hm-plan{flex:none;min-width:0}
   #row-plans .pc-dots{display:none}
 }
-@media (min-width:1400px){html{zoom:1.1}}
-@media (min-width:1700px){html{zoom:1.25}}
-@media (min-width:2200px){html{zoom:1.5}}
-@media (min-width:2500px){html{zoom:1.7}}
+/* Keep zoom for type/layout at large desktops, but size full-screen sections against the zoomed viewport (1440x900 was 90px over). 1280 is un-zoomed and must not change. */
+:root{--su-zoom:1}
+@media (min-width:1400px){html{zoom:1.1}:root{--su-zoom:1.1}}
+@media (min-width:1700px){html{zoom:1.25}:root{--su-zoom:1.25}}
+@media (min-width:2200px){html{zoom:1.5}:root{--su-zoom:1.5}}
+@media (min-width:2500px){html{zoom:1.7}:root{--su-zoom:1.7}}
 
 /* ---- Info Gather Deck picks (Oct 14) ---- */
 .qf-top{justify-content:flex-end}
@@ -1648,7 +1650,7 @@ body.on-home .topbar .share-msg{left:48px;right:auto}
 body.on-home .topbar .top-login{display:inline-flex;align-items:center;justify-content:center;position:absolute;right:.6rem;top:50%;transform:translateY(-50%);z-index:2;height:40px;min-height:40px;padding:0 .8rem;border:1.5px solid #0a0a0a;border-radius:6px;background:#fff;color:#0a0a0a;font:500 .85rem/1 Hind,sans-serif;text-decoration:none;white-space:nowrap}
 body.on-home .topbar .top-login:focus-visible,body.on-home .topbar .btn-share:focus-visible{outline:2px solid #05668D;outline-offset:2px}
 /* ===== Home Four Sections deck (Machan, receipt 2007): full-screen sections, bottom-center Title Case label + 2px chevron ===== */
-.hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh - var(--su-hdr-h,72px));min-height:calc(100svh - var(--su-hdr-h,72px));padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:calc(100svh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:var(--su-sec-h);padding-bottom:calc(76px + env(safe-area-inset-bottom));scroll-margin-top:var(--su-hdr-h,72px)}
 @media (min-width:700px){.hs-sec{padding-bottom:80px}}
 body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-top:8px}
 .hs-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin:auto auto 0;padding:.35rem 1rem;min-height:44px;min-width:44px;border:0;background:transparent;color:#A8431F;cursor:pointer;font:600 .92rem/1.2 Hind,sans-serif;letter-spacing:0;text-transform:none}
