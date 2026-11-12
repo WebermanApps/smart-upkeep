@@ -299,3 +299,8 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 /* #19 Payment box muted until sign-up opens */
 .ob .paybox-soon{opacity:.7;background:#FAFAF8}
 .ob .paybox-soon h3{color:#525252}
+
+/* Swatch QA (#94): Email and other fields must clear the sticky Back/Next + Built by Machan bar when focused or scrolled to the end (360x640, 390, 1280). */
+.ob{--ob-bar-clear:calc(96px + env(safe-area-inset-bottom,0px))}
+.ob .qf-body{padding-bottom:48px}
+.ob input,.ob textarea,.ob .ob-details-form .su-havecode,.ob .det-hint{scroll-margin-bottom:var(--ob-bar-clear)}

@@ -1429,7 +1429,7 @@
     var d = S.firstVisit && S.firstVisit >= minStart() ? S.firstVisit : "";
     var body = '<p class="fl" id="obDateL">First Visit Date</p>' + obCalendar(d) +
       '<div class="price-confirm ob-blurb"><b>Your First Visit</b><br>' + FIRST_VISIT_BLURB + '</div>' +
-      '<p class="priced-note">Your membership starts on this visit.' + "" + ' We confirm the time by text.</p>';
+      '<p class="priced-note">Your membership starts on this visit.' + "" + ' We\'ll confirm the time with you before your visit.</p>';
     return obShell("start", "clock", 1, "When Should We Start?", "Pick the day for your first visit.", body, nextBtn("Next", !!d));
   }
 
@@ -1729,7 +1729,7 @@
       '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
       '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + ' and the password from your welcome email.</span></li>' +
       '<li><strong>Read Your Welcome Message</strong><span>The first time you sign in, Ask Anything opens with a welcome from your care team.</span></li>' +
-      '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We confirm the time by text. ' + FIRST_VISIT_BLURB + '</span></li>' +
+      '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We\'ll confirm the time with you before your visit. ' + FIRST_VISIT_BLURB + '</span></li>' +
       '<li><strong>Add Access Details</strong><span>Lockbox or door codes go in your member app.</span></li>' +
       '</ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Summary</h3>' +
@@ -1740,6 +1740,7 @@
         return list.map(function (x) { return '<div><span>Add-On: ' + esc(x.label) + '</span><span>' + aoPrice(x) + '</span></div>'; }).join("");
       })() +
       '<div><span>' + paid[0] + '</span><span>' + paid[1] + '</span></div><div><span>Signed</span><span>Member Agreement</span></div></div></div>' +
+      myHomeCard(su) +
       (function () {
         var code = (su.myReferralCode || makeReferralCode(su.name));
         if (!su.myReferralCode) { su.myReferralCode = code; S.signup = su; try { save(); } catch (e) {} }
@@ -1755,7 +1756,7 @@
           '<p class="small muted" style="margin:.6rem 0 0" id="refCopyMsg"></p>' +
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
-      /* Your Home card is OFF for now (Machan Nov 12, 8:20 PM): Street View photo waits until the photo fetch is improved. */
+      /* Your Home uses the brand house illustration and the member's address. Street View photo stays held until the fetch improves (item 37). Card order (item 38): Next Steps, Summary, Your Home, Refer A Neighbor. */
       '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open Member Login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
@@ -1972,7 +1973,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob11"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob12"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     hmHash();
