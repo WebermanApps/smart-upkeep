@@ -1,5 +1,5 @@
 /* Smart Upkeep hand-drawn line illustrations. Inline SVG, 48x48, stroke=currentColor.
-   Accent fills: .f-t terracotta, .f-l lagoon, .f-s saffron, .f-j jungle (used sparingly). */
+   Accent fills: .f-t terracotta, .f-l lagoon, .f-s lagoon, .f-j jungle (used sparingly). */
 (function () {
   var D = {
     furnace: '<path d="M12 6.5h24.5l-.4 35H11.6z"/><path d="M15 12h18M15 15.5h18"/><path d="M16 22h16v14H16z"/><g class="anim-flame"><path class="f-t" d="M24 34c-3.2 0-4.6-2.2-4-4.6.5-2 2.4-2.9 2.5-5.4 2 1.4 2.4 3 2.1 4.4 1-.5 1.6-1.4 1.8-2.4 1.6 1.8 2.3 3.6 1.8 5.1-.5 1.7-2 2.9-4.2 2.9z"/></g><path d="M14 41.5v2.5M34 41.5v2.5"/>',
