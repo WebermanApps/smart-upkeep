@@ -204,3 +204,21 @@ body:not(.on-home) .topbar{overflow-x:clip}
 .ob .su-ico .f-s{fill:#05668D}
 /* Add-Ons step: Monthly / One-Time tabs reuse the billing segmented pill (.seg-toggle). */
 .ob .ob-ao-tabs{margin:0 0 .7rem}
+
+/* Funnel fix-now PR A (Nov 12 2026): Sunday-first start-date calendar, Undo Changes, soft gray contact hints, confirm email wrap */
+.ob .ob-cal{background:#fff;border:1px solid var(--mw-border);border-radius:12px;padding:12px;margin:0 0 16px;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .cal-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.ob .cal-t{margin:0;font:700 20px/22px var(--mw-font-heading);color:#1A1A1A}
+.ob .cal-nav{width:44px;height:44px;border:1px solid #e6dfd1;border-radius:50%;background:#fff;display:grid;place-items:center;padding:0;cursor:pointer}
+.ob .cal-nav:disabled{opacity:.3;cursor:default}
+.ob .cal-wk,.ob .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.ob .cal-wk span{padding:4px 0;font:600 12px/15px var(--mw-font-body);letter-spacing:.06em;text-transform:uppercase;color:#525252}
+.ob .cal-d{min-height:44px;border:0;border-radius:10px;background:transparent;font:600 15px/1 var(--mw-font-body);color:#1A1A1A;cursor:pointer;padding:0}
+.ob .cal-d:disabled{color:#BDB6AA;cursor:default}
+.ob .cal-d.on{background:#A8431F;color:#fff}
+.ob .cal-pick{margin:8px 0 0;font:600 15px/22px var(--mw-font-body);color:#A8431F;text-align:center}
+.ob .ob-undo{display:block;margin:4px auto 0}
+.ob .ob-accept-form input::placeholder{color:#A3A3A3;opacity:1}
+.qa-next .qa-steps .cf-email{display:inline-block;max-width:100%;overflow-wrap:anywhere;font-size:inherit;color:inherit}
+.qa-next .qa-steps .cf-email strong{display:inline;margin:0;font-size:inherit}
+.qa-next .qa-steps a.link{display:inline;min-height:0;padding:0}

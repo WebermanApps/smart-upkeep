@@ -29,7 +29,9 @@
     return (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
   }
   function addonsAnnual() {
-    return selectedAddons().reduce(function (sum, a) { return sum + (a.quoteRequired ? 0 : (a.annual || 0)); }, 0); /* quoteRequired items are priced by quote, not in totals */
+    /* Nov 12 (B1): only priced monthly add-ons count here. One-time rows (Radon Test, Extra Gutter Cleaning, the fixed-price one-time jobs) and Quote rows never enter membership totals.
+       Shared extras and Gutter Cleaning (Essentials) are priced into the plan in planAmtFromBase. */
+    return selectedFunnelAddons().reduce(function (sum, a) { return sum + ((a.once || a.fromExtras || a.gutter || a.quoteRequired) ? 0 : (+a.annual || 0)); }, 0);
   }
   /* System extras that also appear as monthly add-ons (Irrigation, Sump Pump, Humidifier).
      One shared selection, priced once in buildLines() via S.answers.extras. */
@@ -54,8 +56,8 @@
       var e = P.extras && P.extras[k];
       if (e && e.all > 0) n += monthlyOf(e.all);
     });
-    selectedAddons().forEach(function (a) {
-      if (!a || a.quoteRequired || !(a.annual > 0)) return;
+    selectedFunnelAddons().forEach(function (a) {
+      if (!a || a.once || a.fromExtras || a.quoteRequired || !(a.annual > 0)) return;
       n += monthlyOf(a.annual);
     });
     return n;
@@ -64,7 +66,7 @@
     var ids = Array.isArray(S.addons) ? S.addons : [];
     var seen = {}, out = [];
     monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) {
-      if (a && ids.indexOf(a.id) > -1 && !seen[a.id]) { seen[a.id] = 1; out.push(a); }
+      if (a && ids.indexOf(a.id) > -1 && !seen[a.id] && !(a.gutter && gutterIncluded())) { seen[a.id] = 1; out.push(a); }
     });
     return out;
   }
@@ -150,15 +152,27 @@
       pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all, fromExtras:true});
     });
     pool=pool.concat(P.addons||[]);
-    return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false);
+    return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
+      /* Swatch D2 (Nov 12): Gutter Cleaning uses gutters2Cleanings by stories (Essentials only; Plus and up include it). */
+      if(a && a.id===GUTTER_ID){ var g=gutterAnnual(); a.gutter=true; a.annual=g||null; a.quoteRequired=!g; }
+      return a;
+    });
   }
+  var GUTTER_ID="q_m_gutter_cleaning";
+  function gutterAnnual(){
+    var an=S.answers||{}, st=Number(an.stories), sq=an.sqft;
+    if(!(st>=1) || sq==null || sq==="" || sq==="unsure") return 0;
+    return (P.gutters2Cleanings||{})[Math.min(3,st)]||0;
+  }
+  function gutterIncluded(tier){ return (tier||S.tier)!=="silver"; }
+  function gutterAddonMonthly(tier){ return (tier==="silver" && (S.addons||[]).indexOf(GUTTER_ID)>-1 && gutterAnnual()>0) ? monthlyOf(gutterAnnual()) : 0; }
   function onceAddonCatalog(){
-    var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; o.draft=true; return o; });
+    var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; return o; });
     var pool=lm.concat(P.addons||[]);
     var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
     var monthlyIds={};
     monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
-    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once"; if(a.fromLastMinute||a.draft){ a.quoteRequired=true; a.price=null; } });
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once"; if(a.draft||a.quoteRequired||!(+a.price>0)){ a.quoteRequired=true; a.price=null; } }); /* B1: fixed, non-draft pricing-config prices show; everything else stays Quote */
     return rows;
   }
 
@@ -172,15 +186,15 @@
     var all = monthlyAddonCatalog().concat(onceAddonCatalog());
     return all.find(function (x) { return x.id === id; }) || null;
   }
-  function serviceOncePrice(a) { if (a.quoteRequired) return 0; return a.price != null ? a.price : (a.annual || 0); }
+  function serviceOncePrice(a) { return (hasRealOncePrice(a) && !needsSiteVisit(a.label)) ? +a.price : 0; } /* B1: Quote rows (incl. Radon's annual figure) never count in totals */
   /* Oct 15 (Max 19:11-19:19 ICT): add-ons show ONLY the added monthly price. No add-on has its own monthly figure in pricing-config.js, so monthly = annual / 12, rounded (monthlyOf). */
   /* TODO(quoteRequired): ping-to-CC for quote requests is NOT built yet. Quote items stay in S.addons / S.lastMinute and ride the normal request/submit flow at $0; ops must follow up manually until a CC notification is wired. */
   var QUOTE_LABEL = "Quote";
   function hasRealMonthly(a){
-    return !!(a && a.fromExtras && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0 && !a.draft);
+    return !!(a && (a.fromExtras || a.gutter) && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0 && !a.draft);
   }
   function hasRealOncePrice(a){
-    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && !a.fromLastMinute && isFinite(+a.price) && +a.price>0);
+    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && isFinite(+a.price) && +a.price>0);
   }
   function needsSiteVisit(label){
     var n=String(label||"").toLowerCase();
@@ -228,7 +242,7 @@
      monthly = max(floor, rounded base monthly) + sum(add-on monthly). Annual is monthly * 12 so recap and Due Today match. */
   function planAmtFromBase(baseRaw, tier) {
     var fl = applyFloor(baseRaw, tier);
-    var mo = Math.max(tierFloorMonthly(tier), monthlyOf(fl.amt)) + extrasMonthlySum();
+    var mo = Math.max(tierFloorMonthly(tier), monthlyOf(fl.amt)) + extrasMonthlySum() + gutterAddonMonthly(tier);
     return { raw: fl.raw, amt: mo * 12, floored: fl.floored, monthly: mo };
   }
   function buildLines() {
@@ -321,6 +335,8 @@
   /* ---------- Navigation ---------- */
   function go(screen) { if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
   function back() { var p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
+  /* B7: after You're In there is no Back into Accept; only the Home pill. */
+  function homePill() { return '<span class="nav-pills">' + backBtn().replace(/^<span class="nav-pills">/, "").replace(/<button class="back back-pill[\s\S]*?<\/button>/, ""); }
   function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2" stroke-linejoin="round"/></svg></button></span>'; }
 
   function render() {
@@ -467,7 +483,7 @@
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
-      '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/Mo</span></div>' +
+      '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
       '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hm-see="' + k + '">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
       '<button class="btn btn-primary mw-hover pc-see" type="button" data-hm-see="' + k + '">See What\'s Included</button></div>';
@@ -795,7 +811,7 @@
     return '<div class="xt-sheet ac-pop" id="acPop" hidden role="dialog" aria-modal="true" aria-labelledby="acPopT"><div class="xt-inner">' +
       '<div class="xt-top"><h3 id="acPopT">Shop À La Carte</h3><button type="button" class="modal-x mw-hover" data-acpop-close="1" aria-label="Close">&times;</button></div>' +
       '<p class="lead-sm">One-time services, no membership needed. Tap Add on anything you want, then Book. <span class="draft">Draft prices</span></p>' +
-      '<h4 class="acp-h">Monthly Add-Ons</h4>' + renderAddonList(monthlyAddonCatalog(), sel, "acpop", function (x) { return oncePriceLabel(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
+      '<h4 class="acp-h">Monthly Add-Ons</h4>' + renderAddonList(monthlyAddonCatalog(), sel, "acpop", function (x) { return addMo(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
       '<h4 class="acp-h">One-Time Add-Ons</h4>' + renderAddonList(onceAddonCatalog(), sel, "acpop", function (x) { return oncePriceLabel(x) + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
       '<div class="acp-foot"><button type="button" class="btn btn-primary btn-big mw-hover" data-acpop-book="1">' + (sel.length ? "Book " + sel.length + " Selected" : "Book À La Carte") + '</button></div></div></div>';
   }
@@ -1015,12 +1031,13 @@
     else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge; r.termMonths = 12; }
     return r;
   }
-  function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored to Your Home &middot; Warranties Checked</p>'; }
+  function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
   function navBar() { return '<div class="qf-navbar">' + backBtn() + '</div>'; }
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
   function obShell(id, art, tint, title, help, body, foot) {
-    var i = OB.indexOf(id);
-    var prog = '<div class="qf-prog"><span class="qf-step">Step ' + (i + 1) + ' of ' + OB.length + ' &middot; ' + OB_NAME[id] + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + OB.length + '" aria-label="Step ' + (i + 1) + ' of ' + OB.length + '">' +
+    var tl = !!S.tailor && id === "systems"; /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
+    var i = OB.indexOf(tl ? "plan" : id);
+    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' of ' + OB.length + ' &middot; ' + OB_NAME[id]) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + OB.length + '" aria-label="Step ' + (i + 1) + ' of ' + OB.length + '">' +
       OB.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
     return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
@@ -1060,7 +1077,7 @@
         }).join("") + '</div>';
     }
     body += '<p class="priced-note">Size and stories are both priced into your plan.</p>';
-    return obShell("basics", "house", 1, "About Your Home", "About how big is your home? A rough range is fine. How many stories is your home?", body, nextBtn("Next", !!(sz && st)));
+    return obShell("basics", "house", 1, "About Your Home", "About how big is your home? How many stories is your home?", body, nextBtn("Next", !!(sz && st)));
   }
   /* -/+ stepper. Deck card 1: A inline pill, B big circles (CSS only, see onboarding.css .ob-stepper-a / .ob-stepper-b). */
   function obStepper(key, n, noMinus, noPlus, label) {
@@ -1090,12 +1107,13 @@
     }).join("");
     var body = '<div class="sys-list">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh, wh ? '<div class="ob-whs">' + whx + '</div>' : '') + '</div>' +
       '<p class="blk-lab" style="margin-top:.9rem">Do You Have Any Of These?</p><div class="qt-grid two" data-ptr-ignore>' + tiles + '</div>';
-    return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true));
+    return obShell("systems", "furnace", 2, "Your Systems", "How many of these does your home have? You can adjust this later under Tailor Your Plan.", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
 
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
   function aoPrice(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
+    if (a && a.gutter && gutterIncluded()) return "Included On Plus And Up";
     if (a && a.once) {
       if (hasRealOncePrice(a)) return money(+a.price);
       return QUOTE_LABEL;
@@ -1104,7 +1122,7 @@
     if (hasRealOncePrice(a)) return money(+a.price);
     return QUOTE_LABEL;
   }
-  function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return d + (a.quoteRequired ? " We'll follow up with a price." : ""); }
+  function aoDesc(a) { var d = String(a.desc || "").replace(/\s*Quote required\s*[—-]\s*we will follow up\.?/i, "").trim(); return a.quoteRequired ? (d ? d + " " : "") + "We'll follow up with a price." : d; }
   function aoIco(a) {
     var id = a && a.id || "";
     return XT_ICO[id] || XICO[id.indexOf("x_") === 0 ? id.slice(2) : id] || "wrench";
@@ -1113,7 +1131,7 @@
     var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
     return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(aoIco(a), "sm") +
       '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
-      '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button></div>' +
+      (a.gutter && gutterIncluded() ? '' : '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button>') + '</div>' +
       (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
   }
   function obAddons() {
@@ -1132,6 +1150,7 @@
 
   /* 5. Plan with tags: Essentials / Plus / Complete, Plus by default, one "Tailor Your Plan" control. Deck card 2: A tag chips, B checklist. */
   function obPlanScreen() {
+    S.tailor = false;
     var p = price(), k = S.tier, t = P.tiers[k], tags = extraTags();
     var detail = OB_STYLE.plan === "B"
       ? '<ul class="check-list"><li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(t.label + " · " + t.tagline) + '</li><li><span class="tick" aria-hidden="true">&#10003;</span>Standard Systems Included</li>' + tags.map(function (x) { return '<li><span class="tick" aria-hidden="true">&#10003;</span>' + esc(x) + '</li>'; }).join("") + '</ul>'
@@ -1224,10 +1243,29 @@
   /* 8. Start Date: date picker, earliest two days out, with the Legal-approved First Visit blurb. */
   function obStart() {
     var d = S.firstVisit && S.firstVisit >= minStart() ? S.firstVisit : "";
-    var body = '<label class="fl" for="obDate">First Visit Date</label><input id="obDate" type="date" min="' + minStart() + '" value="' + esc(d) + '">' +
+    var body = '<p class="fl" id="obDateL">First Visit Date</p>' + obCalendar(d) +
       '<div class="price-confirm ob-blurb"><b>Your First Visit</b><br>' + FIRST_VISIT_BLURB + '</div>' +
       '<p class="priced-note">Your membership starts on this visit.' + "" + ' We confirm the time by text.</p>';
     return obShell("start", "clock", 1, "When Should We Start?", "Pick the day for your first visit.", body, nextBtn("Next", !!d));
+  }
+
+  /* Sunday-first month calendar (Machan's standing rule), replacing the native date picker. Earliest day is minStart(); up to 12 months ahead. */
+  var CAL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function ymShift(ym, d) { var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + d; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + "-" + String(m + 1).padStart(2, "0"); }
+  function obCalendar(sel) {
+    var min = minStart(), minYm = min.slice(0, 7), maxYm = ymShift(minYm, 12);
+    var ym = /^\d{4}-\d{2}$/.test(S._calMonth || "") ? S._calMonth : (sel || min).slice(0, 7);
+    if (ym < minYm) ym = minYm; if (ym > maxYm) ym = maxYm;
+    var y = +ym.slice(0, 4), mo = +ym.slice(5, 7) - 1, lead = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate(), cells = "";
+    for (var i = 0; i < lead; i++) cells += '<span class="cal-x" aria-hidden="true"></span>';
+    for (var dd = 1; dd <= days; dd++) {
+      var iso = localISO(new Date(y, mo, dd)), dis = iso < min, on = iso === sel;
+      cells += '<button type="button" class="cal-d mw-hover' + (on ? " on" : "") + '" data-ob-day="' + iso + '" aria-label="' + esc(longDate(iso)) + '" aria-pressed="' + on + '"' + (dis ? " disabled" : "") + '>' + dd + '</button>';
+    }
+    function nav(d, lab, dis, path) { return '<button type="button" class="cal-nav mw-hover" data-ob-cal="' + d + '" aria-label="' + lab + '"' + (dis ? " disabled" : "") + '><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="' + path + '" fill="none" stroke="#A8431F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'; }
+    return '<div class="ob-cal" role="group" aria-labelledby="obDateL obCalT"><div class="cal-top">' + nav(-1, "Previous Month", ym <= minYm, "M15 5l-7 7 7 7") + '<p class="cal-t" id="obCalT">' + CAL_MONTHS[mo] + " " + y + '</p>' + nav(1, "Next Month", ym >= maxYm, "M9 5l7 7-7 7") + '</div>' +
+      '<div class="cal-wk" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="cal-grid">' + cells + '</div>' +
+      (sel ? '<p class="cal-pick" aria-live="polite">' + esc(longDate(sel)) + '</p>' : '') + '</div>';
   }
 
   /* 9. Accept: recap, contact, code, agreement, signature, payment. Deck card 4: A compact recap line, B itemized. */
@@ -1265,8 +1303,8 @@
       '<form id="obF" novalidate class="stack ob-accept-form">' +
       '<div class="card"><h3>Your Details</h3>' +
       '<label class="fl" for="sName">Full Name</label>' + fe("sName") + '<input id="sName" type="text" autocomplete="name" value="' + esc(su.name || "") + '">' +
-      '<label class="fl" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" type="tel" autocomplete="tel" value="' + esc(su.phone || "") + '">' +
-      '<label class="fl" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" type="email" autocomplete="email" value="' + esc(su.email || "") + '">' +
+      '<label class="fl" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" type="tel" autocomplete="tel" placeholder="Add Phone" value="' + esc(su.phone || "") + '">' +
+      '<label class="fl" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" type="email" autocomplete="email" placeholder="Add Email" value="' + esc(su.email || "") + '">' +
       '<p class="small ob-addr"><span>Service Address</span><b>' + esc((a.street || "") + ", " + (a.zipcode || "")) + '</b><button type="button" class="link mw-hover" data-ob-go="address">Edit</button></p>' +
       '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
       '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
@@ -1330,7 +1368,12 @@
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
-      if (nx) nx.addEventListener("click", function () { if (S.tailor) { S.tailor = false; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      var un = app.querySelector("[data-ob-undo]");
+      if (un) un.addEventListener("click", function () {
+        try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}
+        S.tailor = false; S._tailorSnap = null; go("plan");
+      });
       return;
     }
     if (s === "addons") {
@@ -1343,7 +1386,7 @@
     }
     if (s === "plan") {
       app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function () { S.tier = b.getAttribute("data-ob-tier"); rer(); }); });
-      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { S.tailor = true; go("systems"); });
+      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
       if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     }
     if (s === "billing") {
@@ -1357,8 +1400,8 @@
       var nt = document.getElementById("obAccessNote"); if (nt) nt.addEventListener("input", function () { S.access = Object.assign({}, S.access, { note: nt.value }); save(); });
     }
     if (s === "start") {
-      var dt = document.getElementById("obDate");
-      if (dt) dt.addEventListener("input", function () { S.firstVisit = dt.value && dt.value >= minStart() ? dt.value : ""; if (nx) nx.disabled = !S.firstVisit; save(); });
+      app.querySelectorAll("[data-ob-day]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-ob-day"); if (v < minStart()) return; S.firstVisit = v; S._calMonth = v.slice(0, 7); rer(); }); });
+      app.querySelectorAll("[data-ob-cal]").forEach(function (b) { b.addEventListener("click", function () { var base = /^\d{4}-\d{2}$/.test(S._calMonth || "") ? S._calMonth : (S.firstVisit || minStart()).slice(0, 7); S._calMonth = ymShift(base, Number(b.getAttribute("data-ob-cal"))); rer(); }); });
     }
     if (s === "accept") { bindAccept(); return; }
     if (nx) nx.addEventListener("click", function () { go(obNextOf(s)); });
@@ -1415,12 +1458,14 @@
     if (a.price != null) return money(a.price);
     return money(a.annual) + (a.unit === "season" ? "/Season" : "");
   }
+  /* B1/B2: monthly services show their +$X/mo (Irrigation +$19, Sump +$6, Humidifier +$6); one-time rows show a fixed price or Quote. Only fixed one-time prices are totaled. */
+  function acItemPrice(a) { return (a && (a.fromExtras || a.gutter)) ? addMo(a) : oncePriceLabel(a); }
   function alacarte() {
     var bk = S.alacarteBooking || {};
     var list = selectedAlacarte();
     var total = alacarteTotal();
     var picks = '<div class="addons"><h3>Services</h3>' +
-      renderAddonList(monthlyAddonCatalog(), S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>' +
+      renderAddonList(monthlyAddonCatalog(), S.alacarte || [], "alacarte", addMo, true) + '</div>' +
       '<div class="addons last-minute"><h3>Shop À La Carte: Quick Jobs</h3>' +
       
       renderAddonList(onceAddonCatalog(), S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
@@ -1428,7 +1473,7 @@
       
       picks +
       '<div class="running card"><h3>One-Time Total</h3>' +
-      (list.length ? '<div class="price">' + money(total) + '<small> one-time</small></div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + money(serviceOncePrice(x)) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Pick a Service</p>') +
+      (list.length ? '<div class="price">' + (total ? money(total) + '<small> one-time</small>' : QUOTE_LABEL) + '</div><ul class="feat">' + list.map(function (x) { return '<li>' + esc(x.label) + ' · ' + acItemPrice(x) + '</li>'; }).join("") + '</ul>' : '<p class="muted" style="margin:0">Pick a Service</p>') +
       '</div>' +
       '<form id="acF" novalidate class="stack">' +
       '<div class="card"><h3>Booking Request</h3>' +
@@ -1447,8 +1492,8 @@
     return '<div class="check-big" aria-hidden="true">&#10003;</div><p class="eyebrow">Request Received</p><h1>Thanks' + (bk.name ? ", " + esc(bk.name.split(" ")[0]) : "") + '. We Got Your Booking Request.</h1>' +
       '<div class="card"><h3>Summary</h3><div class="summary">' +
       '<div><span>Type</span><span>A La Carte (No Membership)</span></div>' +
-      list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + money(serviceOncePrice(x)) + '</span></div>'; }).join("") +
-      '<div><span>One-Time Total</span><span>' + money(total) + '</span></div>' +
+      list.map(function (x) { return '<div><span>' + esc(x.label) + '</span><span>' + acItemPrice(x) + '</span></div>'; }).join("") +
+      '<div><span>One-Time Total</span><span>' + (total ? money(total) : QUOTE_LABEL) + '</span></div>' +
       '<div><span>Preferred Dates</span><span>' + esc(bk.dates) + '</span></div>' +
       '<div><span>Contact</span><span>' + esc(bk.phone) + ' · ' + esc(bk.email) + '</span></div></div></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Next Steps</h3><ol class="feat"><li>We will confirm availability by phone or email within one business day.</li><li>No card is charged until we confirm your booking.</li><li>Want ongoing care instead? Memberships start at $139/Month.</li></ol></div>' +
@@ -1461,10 +1506,10 @@
     var email = su.email || "";
     try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
     var paid = ['Paid Today', money(t.today || 0)];
-    return backBtn() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
+    return homePill() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
       '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what happens next, including how to log in.</p>' +
       '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
-      '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' (<strong>' + esc(email) + '</strong>)' : '') + ' and the password from your welcome email.</span></li>' +
+      '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + ' and the password from your welcome email.</span></li>' +
       '<li><strong>Read Your Welcome Message</strong><span>The first time you sign in, Ask Anything opens with a welcome from your care team.</span></li>' +
       '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We confirm the time by text. ' + FIRST_VISIT_BLURB + '</span></li>' +
       '<li><strong>Add Access Details</strong><span>Lockbox or door codes go in your member app.</span></li>' +
@@ -1473,7 +1518,7 @@
       '<div class="summary"><div><span>Membership</span><span>' + esc(su.planTag || planTag()) + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Billing</span><span>' + esc(t.label || "") + '</span></div>' +
       (function () {
         var ids = t.addonIds || S.addons || [];
-        var list = (P.addons || []).filter(function (a) { return ids.indexOf(a.id) > -1; });
+        var list = monthlyAddonCatalog().concat(onceAddonCatalog()).filter(function (a) { return ids.indexOf(a.id) > -1 && !(a.gutter && gutterIncluded()); });
         return list.map(function (x) { return '<div><span>Add-On: ' + esc(x.label) + '</span><span>' + aoPrice(x) + '</span></div>'; }).join("");
       })() +
       '<div><span>' + paid[0] + '</span><span>' + paid[1] + '</span></div><div><span>Signed</span><span>Member Agreement</span></div></div></div>' +
@@ -1499,8 +1544,8 @@
   /* Plans & Pricing Deck note (Oct 14): a picture of the member's house after sign-up. Placeholder drawing for now; real street or satellite photo from the address is a follow-up. */
   function myHomeCard(su) {
     return '<div class="card my-home-card" style="margin-top:1rem"><h3>Your Home</h3>' +
-      '<div class="mh-pic" role="img" aria-label="Your home picture (placeholder)"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#A8431F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#A8431F"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
-      '<p style="margin:.6rem 0 0"><strong>' + esc(su.address || "Your Address") + '</strong></p><p class="small muted" style="margin:.2rem 0 0">A photo of your home from street view appears here soon.</p></div>';
+      '<div class="mh-pic" role="img" aria-label="Your home"><svg viewBox="0 0 320 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="160" fill="#EEF2E8"/><rect y="118" width="320" height="42" fill="#CFE0BF"/><path d="M0 132h320" stroke="#B8B2A7" stroke-width="10"/><path d="M110 118V74l50-36 50 36v44z" fill="#fff" stroke="#1f1b17" stroke-width="2"/><path d="M100 80l60-46 60 46" fill="none" stroke="#A8431F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="90" width="24" height="28" fill="#A8431F"/><rect x="122" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/><rect x="180" y="84" width="18" height="16" fill="#CFE6EE" stroke="#1f1b17"/></svg></div>' +
+      '<p style="margin:.6rem 0 0"><strong>' + esc(su.address || "Your Address") + '</strong></p></div>';
   }
 
   /* Add-on event log: placeholder until real analytics. Local only, capped at 500 events. */
@@ -1706,7 +1751,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob7"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob8"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
