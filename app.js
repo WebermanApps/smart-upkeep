@@ -1193,6 +1193,24 @@
   var AGREEMENT = { id: "member-agreement-draft", rev: "54e4f1d", url: "" };
 
   function isOb(s) { return OB.indexOf(s) > -1; }
+  /* One Screen At A Time (Machan Nov 12 10:07 PM): each step fills the space under the header (--tb, set in bind). With the phone keyboard open,
+     the Back/Next bar rides above the keyboard (visualViewport) and the focused field scrolls into the space above the bar. */
+  (function () {
+    var vv = window.visualViewport;
+    function kb() {
+      var bar = document.querySelector(".ob .ob-bar"); if (!bar || !vv) return;
+      var off = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      bar.style.transform = off > 80 ? "translateY(-" + off + "px)" : "";
+      var f = document.activeElement;
+      if (off > 80 && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
+        var r = f.getBoundingClientRect(), top = vv.offsetTop + 8, bottom = vv.offsetTop + vv.height - bar.offsetHeight - 8;
+        if (r.top < top || r.bottom > bottom) window.scrollBy(0, r.bottom > bottom ? r.bottom - bottom : r.top - top);
+      }
+    }
+    if (vv) { vv.addEventListener("resize", kb); vv.addEventListener("scroll", kb); }
+    document.addEventListener("focusin", function (e) { if (e.target && e.target.closest && e.target.closest(".ob")) setTimeout(kb, 250); });
+    document.addEventListener("focusout", function () { setTimeout(kb, 250); });
+  })();
   /* Service area: metro Detroit ZIPs 480xx to 483xx (same check as before). */
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
   function localISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -1335,8 +1353,12 @@
       var e = P.extras[k], on = ex.indexOf(k) > -1;
       return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
     }
-    var keys = Object.keys(P.extras), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
-    var body = '<div class="ex-card"><div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' +
+    /* Machan Nov 12 10:08 PM: skip any item here that's already offered on the Add-Ons step (Monthly or One-Time). Shared items keep one selection
+       (S.answers.extras + S.addons via syncSharedExtras), so picking it on Add-Ons fills the same fields and prices as before. */
+    var aoShared = sharedExtraMap(), aoLabels = {};
+    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
+    var keys = Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; }), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
+    var body = '<div class="ex-card">' + (priced.length ? '<div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' : '') +
       (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
       (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
     return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
@@ -2026,7 +2048,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob12"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob13"; document.head.appendChild(l); })();
   function bootApp() {
     render();
     hmHash();

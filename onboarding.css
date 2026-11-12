@@ -304,3 +304,106 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 .ob{--ob-bar-clear:calc(96px + env(safe-area-inset-bottom,0px))}
 .ob .qf-body{padding-bottom:48px}
 .ob input,.ob textarea,.ob .ob-details-form .su-havecode,.ob .det-hint{scroll-margin-bottom:var(--ob-bar-clear)}
+
+/* ===== One Screen At A Time (Machan Nov 12 10:07 PM: "we want everything to fit on one screen at a time" / "avoid scrolling unless they click something").
+   Funnel only (.ob). Spacing, sizes and layout only; no copy changes. Each step fills the space under the header exactly, with the Back/Next bar
+   pinned to the bottom. Start Over moves up to the step line; the site footer line is covered by the bar's own Built by Machan. ===== */
+body.on-ob main{padding-bottom:0!important}
+body.on-qf.on-ob .foot{display:none}
+.ob{position:relative;display:flex;flex-direction:column;min-height:calc(100vh - var(--tb,64px));min-height:calc(100dvh - var(--tb,64px))}
+.ob .qf-body{padding-bottom:0;justify-content:flex-start}
+.ob .ob-bar{margin-top:auto}
+.ob .qf-dyk+.ob-bar,.ob .qf-body+.ob-bar{margin-top:auto}
+.ob .qf-body{margin-bottom:var(--sp-3)}
+.ob .qf-prog{margin:var(--sp-2) 0 var(--sp-1);padding-right:6.5rem}
+.ob .qf-foot{position:absolute;top:0;right:0;margin:0;padding:var(--sp-1) 0 0;display:flex;flex-direction:row-reverse;align-items:center;gap:var(--sp-3)}
+.ob .qf-foot .qf-startover,.ob .qf-foot .ob-undo{margin:0;min-height:32px;padding:0;font-size:13px;line-height:32px}
+.ob .ex-card>.ex-incl:first-child{margin-top:0}
+.ob .ob-bar{flex-wrap:wrap;row-gap:2px;padding-top:var(--sp-2);padding-bottom:calc(var(--sp-1) + env(safe-area-inset-bottom,0px))}
+.ob .ob-bar .ob-built{flex-basis:100%;margin:0;text-align:center;font-size:12px;line-height:16px}
+.ob .ob-bar .btn-big{min-height:48px}
+@media (max-width:600px),(max-height:900px){
+  .ob .qf-prog{gap:var(--sp-1)}
+  .ob .qf-hero.stack.compact{display:grid;grid-template-columns:auto 1fr;column-gap:var(--sp-3);row-gap:var(--sp-1);align-items:center;text-align:left;margin:var(--sp-2) 0 var(--sp-3)}
+  .ob .qf-hero.stack.compact .qf-art.mid{width:2.75rem;height:2.75rem;border-radius:.8rem}
+  .ob .qf-hero.stack.compact .qf-art.mid .su-ico{width:1.65rem;height:1.65rem}
+  .ob .qf-hero.compact .qf-h{font-size:1.5rem;line-height:1.05;margin:0}
+  .ob .qf-hero.stack.compact .qf-help{grid-column:1/-1;font-size:14px;line-height:19px;margin:0}
+  .ob .qf-dyk{margin-top:0;margin-bottom:var(--sp-3);padding:6px var(--sp-3)}
+  .ob .qf-dyk p{font-size:12.5px;line-height:16px}
+  .ob label.fl,.ob p.fl,.ob .fl{margin:var(--sp-2) 0 var(--sp-1)}
+  /* Where's Your Home: ZIP and street side by side (ZIP still first), size and stories as tight rows */
+  .ob-address .ob-fields{display:grid;grid-template-columns:6.4rem minmax(0,1fr);grid-template-areas:"zl sl" "zi si" "ar ar";column-gap:var(--sp-2)}
+  .ob-address .ob-fields .fl{margin:0 0 var(--sp-1)}
+  .ob-address .ob-fields label[for=obZip]{grid-area:zl}
+  .ob-address .ob-fields #obZip{grid-area:zi;width:100%}
+  .ob-address .ob-fields label[for=obStreet]{grid-area:sl}
+  .ob-address .ob-fields #obStreet{grid-area:si}
+  .ob-address .ob-fields .ob-area{grid-area:ar;margin-top:var(--sp-1)}
+  .ob-address .pick-card{margin-top:var(--sp-3)}
+  .ob .pick-card .pick-step{padding:var(--sp-2) var(--sp-3)}
+  .ob .pick-step .v{font-size:1.15rem}
+  .ob .pick-step .s{font-size:12px;line-height:15px}
+  /* Systems, Extras, Access: tighter rows */
+  .ob .sys-card .sys-row{padding:var(--sp-2) var(--sp-3);min-height:56px}
+  .ob .ob-ao-tabs{margin-bottom:var(--sp-2)}
+  .ob .ob-ao-list{gap:6px}
+  .ob .ob-ao-top{padding-top:2px;padding-bottom:2px}
+  .ob .ob-ao-row{min-height:48px}
+  /* Your Plan: cards not picked sit on one row (name, price, Choose); the picked card keeps its checklist and Tailor button */
+  .ob .plan-stack{gap:var(--sp-3);padding-top:6px}
+  .ob .plan-card{display:grid;grid-template-columns:auto 1fr auto;column-gap:var(--sp-2);align-items:baseline;padding:var(--sp-3) var(--sp-3) var(--sp-2)}
+  .ob .plan-card>*{grid-column:1/-1}
+  .ob .plan-card .plan-kicker{grid-column:1/3;grid-row:1;margin:0}
+  .ob .plan-card .plan-name{grid-column:1;grid-row:2;font-size:1.4rem}
+  .ob .plan-card .plan-price{grid-column:2;grid-row:2;margin:0;font-size:1.4rem}
+  .ob .plan-card .plan-base{grid-row:3;margin:2px 0 0}
+  .ob .plan-card .check-list{margin:var(--sp-1) 0 0}
+  .ob .plan-card .plan-cta{margin-top:var(--sp-2);min-height:44px}
+  .ob .plan-card:not(.sel) .plan-cta{grid-column:3;grid-row:1/3;align-self:center;width:auto;margin:0;padding:.5rem .85rem;font-size:.85rem}
+  .ob .plan-card:not(.sel){padding-bottom:var(--sp-3)}
+  .ob .plan-card.is-popular{transform:none}
+  /* Billing */
+  .ob .bill-card{padding:var(--sp-3)}
+  .ob .due-note{margin-top:var(--sp-2)}
+  /* Start date: calendar keeps 44px day taps, less padding around them */
+  .ob .ob-cal{padding:var(--sp-2);margin:0 0 var(--sp-2)}
+  .ob .cal-top{margin:0 0 2px}
+  .ob .cal-wk span{padding:2px 0}
+  .ob .cal-wk,.ob .cal-grid{gap:2px}
+  .ob .cal-pick{margin-top:2px}
+  .ob .price-confirm{margin-top:var(--sp-2);padding:var(--sp-2) var(--sp-3);font-size:13.5px;line-height:1.35}
+  .ob-start .qf-body>.fl:first-child{margin-top:0}
+  /* second pass (360x640): rows and bars a little tighter, taps stay 44px */
+  .ob .ob-bar{padding-top:6px}
+  .ob .ob-bar .ob-built{line-height:14px}
+  .ob .qf-hero.stack.compact{margin-bottom:var(--sp-2)}
+  .ob .qf-hero.stack.compact .qf-art.mid{width:2.5rem;height:2.5rem}
+  .ob .qf-body{margin-bottom:var(--sp-2)}
+  .ob .qf-dyk{margin-bottom:var(--sp-2)}
+  .ob .pick-card .pick-step{padding:6px var(--sp-3)}
+  .ob .pick-step .k{font-size:13px;line-height:16px;margin:0}
+  .ob .pick-step .v{line-height:1.1}
+  .ob .priced-note,.ob .due-note{margin-top:var(--sp-1)}
+  .ob .ob-ao-top{padding-top:0;padding-bottom:0}
+  .ob .ob-ao-row{min-height:46px}
+  .ob .ob-ao-row .ob-ao-t small{margin-top:0}
+  .ob .seg-toggle{padding:2px}
+  .ob .plan-card .check-list li{line-height:1.25}
+  .ob .plan-card .check-list{gap:2px}
+  .ob-details .fl{margin:6px 0 2px}
+  .ob .det-hint{margin-top:2px}
+  .ob .qf-prog{margin-top:6px}
+  .ob .ob-ao-list{gap:4px}
+  .ob .ob-ao-row{min-height:44px}
+  .ob .qf-dyk{padding:6px 10px;gap:6px}
+  .ob .plan-stack{gap:10px}
+  .ob .plan-card{padding:10px 12px 8px}
+  .ob .plan-card:not(.sel){padding-bottom:10px}
+  .ob .plan-card .plan-cta{margin-top:6px}
+  .ob .plan-card .check-list{margin-top:2px}
+  .ob .plan-stack{padding-top:4px}
+  .ob .plan-card .plan-base{margin:0}
+  .ob .plan-card .ribbon{left:auto;right:12px}
+}
+
