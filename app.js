@@ -207,6 +207,30 @@
     var r = round(raw);
     return { raw: r, amt: Math.max(r, minA), floored: r < minA };
   }
+  function tierFloorMonthly(tier) {
+    var t = P.tiers && P.tiers[tier];
+    if (t && t.fromMonthly != null && isFinite(+t.fromMonthly)) return +t.fromMonthly;
+    return monthlyOf(tierMin(tier));
+  }
+  function extrasMonthlySum() {
+    var n = 0;
+    var ex = Array.isArray((S.answers || {}).extras) ? S.answers.extras : [];
+    ex.forEach(function (k) {
+      var e = P.extras && P.extras[k];
+      if (e && e.all > 0) n += monthlyOf(e.all);
+    });
+    return n;
+  }
+  function linesBaseRaw(lines) {
+    return lines.reduce(function (s, L) { return s + (L.kind === "system" ? 0 : (L.amt || 0)); }, 0);
+  }
+  /* Machan Nov 12 11:21 ICT: clamp the base plan to its monthly floor first, then add add-on monthlies.
+     monthly = max(floor, rounded base monthly) + sum(add-on monthly). Annual is monthly * 12 so recap and Due Today match. */
+  function planAmtFromBase(baseRaw, tier) {
+    var fl = applyFloor(baseRaw, tier);
+    var mo = Math.max(tierFloorMonthly(tier), monthlyOf(fl.amt)) + extrasMonthlySum();
+    return { raw: fl.raw, amt: mo * 12, floored: fl.floored, monthly: mo };
+  }
   function buildLines() {
     var a = S.answers, d = P.unsureDefaults;
     var sqft = num("sqft", d.sqft), f = num("furnaces", d.furnaces), ac = num("acs", d.acs), wh = num("waterHeaters", d.waterHeaters);
@@ -258,7 +282,7 @@
     linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
     linesPlat.push({ label: "Roof drone inspections after major storms, with vent and ice dam clearing", amt: P.platinumRoofInspection, est: false });
     var platRaw = linesPlat.reduce(function (s, L) { return s + L.amt; }, 0);
-    var sF = applyFloor(silverRaw, "silver"), gF = applyFloor(goldRaw, "gold"), pF = applyFloor(platRaw, "platinum");
+    var sF = planAmtFromBase(linesBaseRaw(linesSilver), "silver"), gF = planAmtFromBase(linesBaseRaw(linesGold), "gold"), pF = planAmtFromBase(linesBaseRaw(linesPlat), "platinum");
     return {
       sqft: sqft, seasonal: seasonal, checkIn: checkIn, silverV: silverV,
       silverRaw: sF.raw, goldRaw: gF.raw, platinumRaw: pF.raw,
