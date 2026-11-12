@@ -721,8 +721,9 @@
     return '<div class="hm">' +
       '<section class="hm-hero">' +
         '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
-        '<div class="hm-hero-txt"><h1>Your Home,<br class="hm-br"> Taken Care Of.</h1>' +
-        '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p><p class="start-at">Membership Starting at $139/Month</p>' +
+        /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
+        '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
+        '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
         '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
@@ -1733,7 +1734,7 @@
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
-    var text = "Smart Upkeep: home maintenance membership for metro Detroit.";
+    var text = "Preventive home maintenance for Metro Detroit. Starting at $139/mo.";
     if (S.screen === "plan" || S.screen === "billing" || S.screen === "accept" || S.screen === "confirm") text += " Memberships start at $139/Month. My estimate: Essentials " + money(monthlyOf(p.silver)) + "/Month, Plus " + money(monthlyOf(p.gold)) + "/Month, Complete " + money(monthlyOf(p.platinum)) + "/Month.";
     function copy() {
       var done = function () { msg.textContent = "Link Copied"; setTimeout(function () { msg.textContent = ""; }, 2500); };
