@@ -1723,3 +1723,18 @@ body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-t
 @media (min-width:768px){.hm-accs>#acc-plans{grid-column:1/-1}.wi-table td[colspan]{text-align:center}}
 [data-wi-panel="gold"] .wi-core{border-top-color:#A8431F}
 [data-wi-panel="platinum"] .wi-core{border-top-color:#05668D}
+
+/* Funnel Contact And Sign-Up + Funnel Extras decks (Machan Nov 12 2026) */
+.ob .ob-bar{flex-wrap:wrap;row-gap:2px}
+.ob .ob-built{flex:0 0 100%;margin:0;text-align:center;font:500 12px/1.3 Hind,sans-serif;color:#737373}
+body.on-ob .foot{display:none}
+.ob .det-card{padding:.75rem .85rem .6rem}
+.ob .det-addr{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem .5rem;margin:0 0 .45rem;padding:.45rem .65rem;border-radius:10px;background:rgba(5,102,141,.08);border:1px solid rgba(5,102,141,.22)}
+.ob .det-addr-k{flex:0 0 100%;font:600 12px/1.2 Hind,sans-serif;color:#05668D}
+.ob .det-addr b{flex:1;min-width:0;font:600 14px/1.3 Hind,sans-serif;color:#0a0a0a}
+.ob .det-addr .link{min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.ob .ob-details-form .fl{margin:.4rem 0 .15rem}
+.ob .ob-details-form input[type=text],.ob .ob-details-form input[type=tel],.ob .ob-details-form input[type=email]{height:40px;min-height:40px;padding:.3rem .7rem;font-size:16px}
+.ob .det-hint{margin:.15rem 0 0;font:500 12px/1.3 Hind,sans-serif;color:#737373}
+.ob .ob-details-form .su-havecode{margin:.35rem 0 0}
+.ob .price-confirm.pc-plain{padding:0;border:0;background:none;border-radius:0;margin:.4rem 0 0;font:500 12.5px/1.4 Hind,sans-serif;color:#737373}

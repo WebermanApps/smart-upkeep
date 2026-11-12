@@ -394,6 +394,7 @@
     document.body.classList.toggle("on-home", s === "home");
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
+    document.body.classList.toggle("on-ob", isOb(s));
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
     var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You're on the list. We'll email you when Smart Upkeep is coming to your area."; wf.reset(); });
@@ -1088,8 +1089,9 @@
      Address > Home Basics > Systems > Add-Ons > Plan > Billing > Access > Start Date > Accept.
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
   /* Funnel decks (Machan Nov 12, Home Details #1 + Systems #8): address, size and stories share one screen; Systems is two short screens (counts, then extras). Still 9 steps; every screen counts. */
-  var OB = ["address", "systems", "systems2", "addons", "plan", "billing", "access", "start", "accept"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", accept: "Accept" };
+  /* Funnel Contact And Sign-Up deck 01 B (Machan Nov 12): Your Details is its own step before Accept. It stays after Your Plan (step 5), so the price shows before contact info is asked. */
+  var OB = ["address", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -1217,7 +1219,8 @@
   function backOnly() { var m = backBtn().match(/<button class="back back-pill[\s\S]*?<\/button>/); return m ? m[0] : ""; }
   function obFoot(foot) {
     var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
-    return '<div class="ob-bar">' + backOnly() + nx + '</div>' + '<div class="qf-foot">' + rest + tagLine() + '<div class="qf-navbar">' + homePill() + '</div>' + startOverBtn() + '</div>';
+    /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps. */
+    return '<div class="ob-bar">' + backOnly() + nx + '<p class="ob-built">Built by Machan</p></div>' + '<div class="qf-foot">' + rest + startOverBtn() + '</div>';
   }
   function nextBtn(label, ok) { return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + '>' + label + '</button>'; }
 
@@ -1449,7 +1452,41 @@
       (sel ? '<p class="cal-pick" aria-live="polite">' + esc(longDate(sel)) + '</p>' : '') + '</div>';
   }
 
-  /* 9. Accept: recap, contact, code, agreement, signature, payment. Deck card 4: A compact recap line, B itemized. */
+
+  /* 9. Your Details (Contact And Sign-Up deck, Machan Nov 12): 02 A all three in one card, 03 A Full Name, Phone, Email, 04 B Service Address highlighted at the top with Edit,
+     05 A "Have A Code?" link, 08 B compact 40px fields. Funnel Extras 01 A hint lines (no info icons), 02 B no contact chips. */
+  var DETAIL_HINTS = { sName: "Your first and last name." }; /* Legal Nov 12 night: Full Name hint only; no Phone or Email hint. */
+  function obDetails() {
+    var su = S.signup || {}, a = S.answers, hasRef = !!(S.referralCodeIn || su.referralCodeIn);
+    function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
+    function fld(id, lab, type, ac, ph, v) { return '<label class="fl" for="' + id + '">' + lab + '</label>' + fe(id) + '<input id="' + id + '" type="' + type + '" autocomplete="' + ac + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (DETAIL_HINTS[id] ? ' aria-describedby="h-' + id + '"' : '') + ' value="' + esc(v || "") + '">' + (DETAIL_HINTS[id] ? '<p class="det-hint" id="h-' + id + '">' + DETAIL_HINTS[id] + '</p>' : ''); }
+    var body = '<form id="obDF" novalidate class="ob-details-form"><div class="card det-card">' +
+      '<div class="det-addr"><span class="det-addr-k">Service Address</span><b>' + esc((a.street || "") + ", " + (a.zipcode || "")) + '</b><button type="button" class="link mw-hover" data-ob-go="address">Edit</button></div>' +
+      fld("sName", "Full Name", "text", "name", "", su.name) +
+      fld("sPhone", "Phone", "tel", "tel", "Add Phone", su.phone) +
+      fld("sEmail", "Email", "email", "email", "Add Email", su.email) +
+      '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
+      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div>' +
+      '</div></form>';
+    return obShell("details", "user", 2, "Your Details", "", body, nextBtn("Next", true));
+  }
+  function detailErrs(s) { return [["sName", !s.name ? "Enter full name." : ""], ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone || "") ? "Enter phone number." : ""], ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email || "") ? "Enter email." : ""]]; }
+  function bindDetails() {
+    function keep() { var ref = val("sRef"); S.referralCodeIn = ref; S.signup = Object.assign({}, S.signup, { name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, address: (S.answers.street || "") + ", " + (S.answers.zipcode || "") }); }
+    var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); document.getElementById("refWrap").hidden = false; document.getElementById("sRef").focus(); });
+    (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right" : "Codes look like SU-HOME-1234"; r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
+    ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
+    function next() {
+      keep(); save();
+      var first = null;
+      detailErrs(S.signup).forEach(function (x) { var el = document.getElementById("e-" + x[0]), f = document.getElementById(x[0]); if (el) el.textContent = x[1]; if (f) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = f; });
+      if (first) { first.focus(); return; }
+      go("accept");
+    }
+    var f = document.getElementById("obDF"); if (f) f.addEventListener("submit", function (e) { e.preventDefault(); next(); });
+    var nx = app.querySelector("[data-ob-next]"); if (nx) nx.addEventListener("click", next);
+  }
+  /* 10. Accept: recap, agreement, signature, payment (contact moved to Your Details). Deck card 4: A compact recap line, B itemized. */
   function accessLabel() { var a = (S.access || {}).how; var o = ACCESS_OPTS.filter(function (x) { return x[0] === a; })[0]; return o ? (a === "home" ? "Home For Visits" : o[1] + " Access") : ""; }
   function obAccept() {
     var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
@@ -1465,10 +1502,10 @@
       rows.push(["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]);
       rows.push([dueK, dueV]);
       recap = '<div class="item-card">' + rows.map(function (r, i) { return '<div class="item-row' + (i === rows.length - 1 ? " total" : "") + (String(r[1]).length > 28 ? " stack" : "") + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>'; }).join("") +
-        '<p class="price-confirm">' + PRICE_CONFIRM + '</p></div>';
+        '<p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     } else {
       var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : "", esc(accessLabel())].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
-      recap = '<div class="accept-compact"><p class="accept-line">' + bits.join(" · ") + '</p><p class="accept-due"><span>' + dueK + '</span><b>' + dueV + '</b></p><p class="price-confirm">' + PRICE_CONFIRM + '</p></div>';
+      recap = '<div class="accept-compact"><p class="accept-line">' + bits.join(" · ") + '</p><p class="accept-due"><span>' + dueK + '</span><b>' + dueV + '</b></p><p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
@@ -1482,13 +1519,6 @@
       : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">Member Agreement · Link Coming Soon</span>';
     var body = recap +
       '<form id="obF" novalidate class="stack ob-accept-form">' +
-      '<div class="card"><h3>Your Details</h3>' +
-      '<label class="fl" for="sName">Full Name</label>' + fe("sName") + '<input id="sName" type="text" autocomplete="name" value="' + esc(su.name || "") + '">' +
-      '<label class="fl" for="sPhone">Phone</label>' + fe("sPhone") + '<input id="sPhone" type="tel" autocomplete="tel" placeholder="Add Phone" value="' + esc(su.phone || "") + '">' +
-      '<label class="fl" for="sEmail">Email</label>' + fe("sEmail") + '<input id="sEmail" type="email" autocomplete="email" placeholder="Add Email" value="' + esc(su.email || "") + '">' +
-      '<p class="small ob-addr"><span>Service Address</span><b>' + esc((a.street || "") + ", " + (a.zipcode || "")) + '</b><button type="button" class="link mw-hover" data-ob-go="address">Edit</button></p>' +
-      '<p class="su-havecode"><button type="button" class="link mw-hover" id="haveCode" aria-expanded="' + hasRef + '"' + (hasRef ? ' hidden' : '') + '>Have A Code?</button></p>' +
-      '<div id="refWrap"' + (hasRef ? '' : ' hidden') + '><label class="fl" for="sRef">Refer A Neighbor Code</label><input id="sRef" type="text" autocomplete="off" autocapitalize="characters" placeholder="SU-HOME-1234" value="' + esc(S.referralCodeIn || su.referralCodeIn || "") + '"><p class="small ref-check" id="refCheck" aria-live="polite"></p></div></div>' +
       '<div class="card"><h3>Member Agreement</h3><p class="small">' + agreeLink + '</p>' +
       (paymentsLive() ? '' : ('<div class="beta-pay-notice" data-beta-pay><h3>' + BETA_PAY_TITLE + '</h3><p>' + BETA_PAY_BODY + '</p></div>')) +
       '<label class="checkrow"><input type="checkbox" id="agree"><span>I have read and agree to the Smart Upkeep Member Agreement, including the arbitration agreement and class action waiver. I can opt out of arbitration within 30 days.</span></label>' + fe("agree") +
@@ -1513,6 +1543,7 @@
     if (s === "billing") return obBilling();
     if (s === "access") return obAccess();
     if (s === "start") return obStart();
+    if (s === "details") return obDetails();
     return obAccept();
   }
   function obNextOf(s) { var i = OB.indexOf(s); return OB[Math.min(OB.length - 1, i + 1)]; }
@@ -1583,11 +1614,12 @@
       app.querySelectorAll("[data-ob-cal]").forEach(function (b) { b.addEventListener("click", function () { var base = /^\d{4}-\d{2}$/.test(S._calMonth || "") ? S._calMonth : (S.firstVisit || minStart()).slice(0, 7); S._calMonth = ymShift(base, Number(b.getAttribute("data-ob-cal"))); rer(); }); });
     }
     if (s === "accept") { bindAccept(); return; }
+    if (s === "details") { bindDetails(); return; }
     if (nx) nx.addEventListener("click", function () { go(obNextOf(s)); });
   }
   function bindAccept() {
     var sigs = {}; app.querySelectorAll("[data-sig]").forEach(function (r) { sigs[r.getAttribute("data-sig")] = setupSig(r); });
-    function keep() { var ref = val("sRef"); S.referralCodeIn = ref; S.signup = Object.assign({}, S.signup, { name: val("sName"), phone: val("sPhone"), email: val("sEmail"), referralCodeIn: ref, address: (S.answers.street || "") + ", " + (S.answers.zipcode || "") }); }
+    function keep() { S.signup = Object.assign({}, S.signup, { address: (S.answers.street || "") + ", " + (S.answers.zipcode || "") }); }
     var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); document.getElementById("refWrap").hidden = false; document.getElementById("sRef").focus(); });
     /* Refer A Neighbor codes only. Format check here; the real check happens on our side. Reward lands at the neighbor's first payment (Machan Nov 11). */
     (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right. You and your neighbor each get 1 free month once your first payment goes through. Free months have no cash value." : "Codes look like SU-HOME-1234."; o.className = "small ref-check " + (ok ? "ok" : "bad"); r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
@@ -1595,10 +1627,9 @@
     document.getElementById("obF").addEventListener("submit", function (e) {
       e.preventDefault(); keep();
       if (!AGREEMENT.url) return;
-      var s = S.signup, errs = [
-        ["sName", !s.name ? "Enter full name." : ""],
-        ["sPhone", !/\d{3}.*\d{3}.*\d{4}/.test(s.phone) ? "Enter phone number." : ""],
-        ["sEmail", !/^\S+@\S+\.\S+$/.test(s.email) ? "Enter email." : ""],
+      var s = S.signup;
+      if (detailErrs(s).some(function (x) { return x[1]; })) { go("details"); return; }
+      var errs = [
         ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
         ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
         ["agreeSig", !sigs.agreeSig.valid() ? "Sign to accept." : ""]];
@@ -1724,7 +1755,7 @@
           '<p class="small muted" style="margin:.6rem 0 0" id="refCopyMsg"></p>' +
           '<p class="hide" id="refShareText">' + esc(shareText) + '</p></div>';
       })() +
-      myHomeCard(su) +
+      /* Your Home card is OFF for now (Machan Nov 12, 8:20 PM): Street View photo waits until the photo fetch is improved. */
       '<div class="btn-row"><a class="btn btn-primary btn-big mw-hover" href="member/">Open Member Login</a><button class="btn btn-outline mw-hover" data-act="restart" type="button">Start Over</button></div>';
   }
 
