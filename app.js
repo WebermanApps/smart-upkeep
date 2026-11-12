@@ -1200,9 +1200,9 @@
        layout viewport hidden under the keyboard (iOS Safari, and Chrome Android without interactive-widget=resizes-content).
      - Offsets under 80px are treated as 0, so the browser toolbar showing or hiding never moves the bar.
      - visualViewport resize and scroll events, plus focusin and focusout, are throttled to one update per animation frame (rAF). The bar
-       gets translateY(-offset) with no CSS transition, so it doesn't lag or bounce while iOS animates the keyboard or pans the page.
+       gets sticky bottom: offset (plus a same-height spacer after it) with no CSS transition, so it doesn't lag or bounce while iOS animates the keyboard or pans the page.
      - When the keyboard opens on a funnel field, the field is scrolled just enough to sit between the top of the visible area and the bar.
-     - When the keyboard closes (offset 0), the transform is cleared. On browsers that resize the page for the keyboard, the offset stays 0
+     - When the keyboard closes (offset 0), the offset and spacer are cleared. On browsers that resize the page for the keyboard, the offset stays 0
        and the sticky bar already sits above the keyboard. */
   (function () {
     var vv = window.visualViewport, queued = false, last = -1;
@@ -1211,7 +1211,16 @@
       var bar = document.querySelector(".ob .ob-bar"); if (!bar || !vv) { last = -1; return; }
       var off = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
       if (off < 80) off = 0;
-      if (off !== last || bar.style.transform !== (off ? "translateY(-" + off + "px)" : "")) { bar.style.transform = off ? "translateY(-" + off + "px)" : ""; last = off; }
+      /* Swatch PR97 follow-up: the bar sticks `off` px up (sticky bottom), and a spacer of the same height goes after it, so a one-screen step
+         gains room to scroll the focused field above the bar instead of the bar covering it. */
+      if (bar.style.transform) bar.style.transform = "";
+      var pad = bar.nextElementSibling && bar.nextElementSibling.classList.contains("ob-kb-pad") ? bar.nextElementSibling : null;
+      if (off) {
+        bar.style.bottom = off + "px";
+        if (!pad) { pad = document.createElement("div"); pad.className = "ob-kb-pad"; pad.setAttribute("aria-hidden", "true"); bar.parentNode.insertBefore(pad, bar.nextSibling); }
+        pad.style.height = off + "px";
+      } else { bar.style.bottom = ""; if (pad) pad.remove(); }
+      last = off;
       var f = document.activeElement;
       if (off && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
         var r = f.getBoundingClientRect(), top = vv.offsetTop + 8, bottom = vv.offsetTop + vv.height - bar.offsetHeight - 8;
