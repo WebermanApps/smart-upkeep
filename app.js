@@ -531,8 +531,7 @@
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
-      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hm-see="' + k + '">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
-      '<button class="btn btn-primary mw-hover pc-see" type="button" data-hm-see="' + k + '">See What\'s Included</button></div>';
+      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hs-next="hs-ww">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul></div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
@@ -854,7 +853,7 @@
         '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
         /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
-        '<p class="hm-lead"><span class="hm-lead-l">Catch small problems before they&rsquo;re big ones.</span><span class="hm-lead-s">Catch small problems early.</span></p>' +
+        '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
         '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div>' + (hasResume() ? resumeCard() : '') + '</div>' +
       '</section>' +
@@ -865,7 +864,7 @@
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       '<section class="hs-sec hs-ww" id="hs-ww"><section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
-        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hm-open="plans">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' + hsArrow("hs-details", "See Details") + '</section>' +
+        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hs-next="hs-details">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' + hsArrow("hs-details", "See Details") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
@@ -879,10 +878,10 @@
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
       hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
-      '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
-      '<nav class="hm-tabs" aria-label="App Sections">' +
-        [["home", "house", "Home"], ["plans", "star", "Plans"], ["faq", "faq", "FAQs"], ["myhome", "clipboard", "My Home"], ["account", "user", "Account"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '">' + I(t[1], "xs") + '<span>' + t[2] + '</span></button>'; }).join("") +
-      '</nav><div class="hm-toast" role="status" aria-live="polite" hidden></div>' +
+      '<nav class="hm-tabs" aria-label="Page Sections">' +
+        [["home", "Home", "hs-top"], ["plans", "Plans", "hs-plans"], ["included", "What\'s Included", "hs-ww"], ["details", "Details", "hs-details"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '"><span>' + t[1] + '</span></button>'; }).join("") +
+        '<button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started</button>' +
+      '</nav>' +
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
@@ -922,15 +921,9 @@
       if (window.matchMedia("(max-width:600px)").matches) sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft), behavior: smooth });
     }
     cards.forEach(function (c) {
-      c.addEventListener("click", function (e) { if (e.target.closest(".pc-see")) return; pick(c); });
+      c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
       c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
     });
-    root.querySelectorAll("[data-hm-see]").forEach(function (b) { b.addEventListener("click", function () {
-      var g = document.getElementById("acc-plans"); if (!g) return;
-      wiSelect(g, b.getAttribute("data-hm-see"));
-      if (!g.open) g.querySelector("summary").click();
-      setTimeout(function () { hmJump(g); }, 340);
-    }); });
     root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { hmJump(root.querySelector("#row-plans")); }); });
   }
   function bindOffer(root) {
@@ -990,6 +983,27 @@
     var top = Math.max(0, Math.round(title.getBoundingClientRect().top + window.scrollY - off));
     window.scrollTo({ top: top, behavior: rm || smooth === false ? "auto" : "smooth" });
   }
+  /* Skip visually hidden titles (e.g. phone "Why Trust Us" is clipped to 1px in #row-trust .hm-row-h). */
+  function titleVisible(h) {
+    if (!h || !h.getClientRects().length) return false;
+    var r = h.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8) return false;
+    for (var p = h, i = 0; p && i < 6; i++, p = p.parentElement) {
+      if (p.offsetWidth <= 2 && p.offsetHeight <= 2) return false;
+    }
+    return true;
+  }
+  function firstSecTitle(el) {
+    if (!el) return el;
+    if (el.classList.contains("hs-sec") || el.classList.contains("hm-row")) {
+      el = [].filter.call(el.querySelectorAll("h1,h2"), titleVisible)[0] || el;
+    }
+    return el;
+  }
+  function jumpSec(id) {
+    var el = document.getElementById(id); if (!el) return;
+    hmJump(firstSecTitle(el));
+  }
   window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
@@ -1013,22 +1027,40 @@
     }
     accs.forEach(function (d) { d.querySelector("summary").addEventListener("click", function (e) { e.preventDefault(); if (d.open) setOpen(d, false); else openAcc(d, false); }); });
     root.querySelectorAll("[data-hm-open]").forEach(function (b) { b.addEventListener("click", function () { var d = document.getElementById("acc-" + b.getAttribute("data-hm-open")); if (d) openAcc(d, true); }); });
-    var toast = root.querySelector(".hm-toast"), tt;
+    root.querySelectorAll("[data-hs-next]").forEach(function (b) { b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); jumpSec(b.getAttribute("data-hs-next")); }); });
+    function markTab(id) { root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o.getAttribute("data-hm-tab") === id); }); }
     root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
-      var t = b.getAttribute("data-hm-tab");
-      if (t === "faq") { var fq = document.getElementById("acc-faq"); if (fq) openAcc(fq, true); return; }
-      if (t === "myhome" || t === "account") { toast.textContent = (t === "myhome" ? "My Home" : "Account") + " Is Coming Soon"; toast.hidden = false; clearTimeout(tt); tt = setTimeout(function () { toast.hidden = true; }, 2200); return; }
-      root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o === b); });
-      if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-      else hmJump(document.getElementById("row-" + t));
+      var id = b.getAttribute("data-hm-tab"), sec = b.getAttribute("data-hs-sec");
+      markTab(id);
+      if (id === "home") {
+        var top = document.getElementById("hs-top"), title = top && (top.querySelector("h1") || top);
+        if (title) hmJump(title); else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      } else jumpSec(sec);
     }); });
+    /* Scroll spy: which of the 4 sections is in view (black active tab, no gold). */
+    function spyTabs() {
+      var map = [["home","hs-top"],["plans","hs-plans"],["included","hs-ww"],["details","hs-details"]];
+      var hdr = (document.querySelector(".topbar") && document.querySelector(".topbar").offsetHeight) || 0;
+      var line = hdr + 12, best = "home", bestTop = -1e9;
+      map.forEach(function (p) {
+        var el = document.getElementById(p[1]); if (!el) return;
+        var top = el.getBoundingClientRect().top;
+        if (top <= line + 1 && top >= bestTop) { bestTop = top; best = p[0]; }
+      });
+      markTab(best);
+    }
+    addEventListener("scroll", spyTabs, { passive: true });
+    addEventListener("resize", spyTabs);
+    if (window.IntersectionObserver) {
+      var io = new IntersectionObserver(function () { spyTabs(); }, { threshold: [0, .15, .4, .7, 1] });
+      ["hs-top","hs-plans","hs-ww","hs-details"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
+    }
+    spyTabs();
     /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
     root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
-    root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { var el = document.getElementById(b.getAttribute("data-hs-go")); if (el && el.classList.contains("hs-sec")) { el = [].filter.call(el.querySelectorAll("h2"), function (h) { return h.offsetHeight > 4 && h.getClientRects().length; })[0] || el; } hmJump(el); }); });
-    var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
-    if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
-    /* Swatch QA F2 (Nov 12 9:25 PM): untransformed bar position, because the .off slide hides the real rect. */
-    function hsGuard(){var st=document.querySelector('.hm-sticky'); if(!st) return; var t=innerHeight-st.offsetHeight-parseFloat(getComputedStyle(st).bottom), b=t+st.offsetHeight;
+    root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { hmJump(firstSecTitle(document.getElementById(b.getAttribute("data-hs-go")))); }); });
+    /* Swatch QA F2 (Nov 12 9:25 PM), updated for the combined section bar: untransformed bar position, because the .off slide hides the real rect. */
+    function hsGuard(){var st=document.querySelector('.hm-tabs'); if(!st) return; var bot=parseFloat(getComputedStyle(st).bottom)||0; var t=innerHeight-st.offsetHeight-bot, b=t+st.offsetHeight;
       st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));}
     if (!window.__hsGuard) { window.__hsGuard = 1; addEventListener('scroll',hsGuard,{passive:true}); addEventListener('resize',hsGuard); }
     hsGuard();
