@@ -1631,6 +1631,15 @@ body.on-home .hm section[id] h2,body.on-home .hm details[id] > summary,body.on-h
 body.on-home .topbar .top-share{left:.6rem;right:auto!important;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s}
 body.on-home.share-in .topbar .top-share{opacity:1;visibility:visible;transition:opacity .45s ease,visibility 0s}
 @media (prefers-reduced-motion:reduce){body.on-home .topbar .top-share,body.on-home.share-in .topbar .top-share{transition:none}}
+/* Swatch QA F1 (Nov 12 9:25 PM): no fade-out flash on load. Transition only on .share-in; hidden until the first render. */
+body.on-home .topbar .top-share{transition:none}
+body.on-home.share-in .topbar .top-share{transition:opacity .45s ease,visibility 0s}
+html.su-boot .topbar .top-share{opacity:0;visibility:hidden}
+@media (prefers-reduced-motion:reduce){body.on-home.share-in .topbar .top-share{transition:none}}
+/* Swatch QA F2: hide the sticky Get Started bar only while it would cover a section arrow. */
+.hm-sticky.arrow-off{transform:translateY(120%);opacity:0;pointer-events:none}
+/* Swatch QA F3: center What We Take Care Of in its screen. */
+.hs-ww > #row-services{margin-top:auto}
 body.on-home .topbar .btn-share{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:#fff!important;background-image:none!important;border:1.5px solid #0a0a0a!important;border-radius:6px;color:#0a0a0a!important}
 body.on-home .topbar .btn-share svg{display:block}
 body.on-home .topbar .share-msg{left:48px;right:auto}
@@ -1646,7 +1655,7 @@ body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-t
 .hs-sec > .hm-hero{flex:none}
 .hs-arrow:focus-visible{outline:2px solid #05668D;outline-offset:2px;border-radius:6px}
 /* ===== Shop À La Carte Scroll deck (Machan): 01A about 4 rows, 02A fade at the bottom, centered divided rows (03 skipped, note "maybe centered?") ===== */
-#acc-addons .alc-box{background:#fff;border:1px solid #E6E0D6;border-radius:12px;padding:10px 12px;margin:0 0 .75rem;box-sizing:border-box;max-height:calc(4 * 52px + 20px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%)}
+#acc-addons .alc-box{background:#fff;border:1px solid #E6E0D6;border-radius:12px;padding:10px 12px;margin:0 0 .75rem;box-sizing:border-box;max-height:calc(4 * 64px + 20px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 78%,transparent 100%)}
 #acc-addons .alc-box::-webkit-scrollbar{display:none}
 #acc-addons .alc-box.alc-end{-webkit-mask-image:none;mask-image:none}
 #acc-addons .alc-box:focus-visible{outline:2px solid #05668D;outline-offset:2px}

@@ -359,6 +359,7 @@
     app.setAttribute("data-screen", s);
     bind();
     document.body.classList.toggle("on-home", s === "home");
+    document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
@@ -903,6 +904,11 @@
     root.querySelectorAll("[data-hs-go]").forEach(function (b) { b.addEventListener("click", function () { var el = document.getElementById(b.getAttribute("data-hs-go")); if (el && el.classList.contains("hs-sec")) { el = [].filter.call(el.querySelectorAll("h2"), function (h) { return h.offsetHeight > 4 && h.getClientRects().length; })[0] || el; } hmJump(el); }); });
     var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
     if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
+    /* Swatch QA F2 (Nov 12 9:25 PM): untransformed bar position, because the .off slide hides the real rect. */
+    function hsGuard(){var st=document.querySelector('.hm-sticky'); if(!st) return; var t=innerHeight-st.offsetHeight-parseFloat(getComputedStyle(st).bottom), b=t+st.offsetHeight;
+      st.classList.toggle('arrow-off',[].some.call(document.querySelectorAll('.hs-arrow'),function(a){var r=a.getBoundingClientRect();return r.bottom>t&&r.top<b&&r.bottom>0&&r.top<innerHeight;}));}
+    if (!window.__hsGuard) { window.__hsGuard = 1; addEventListener('scroll',hsGuard,{passive:true}); addEventListener('resize',hsGuard); }
+    hsGuard();
     /* service tiles: tap opens a small card (never automatic) */
     var pop = root.querySelector(".hm-pop"), popTier = null, popFrom = null;
     function popClose() { if (!pop || pop.hidden) return; pop.hidden = true; document.documentElement.classList.remove("hm-pop-open"); if (popFrom) popFrom.focus(); }
