@@ -795,9 +795,9 @@
     root.querySelectorAll("[data-hm-see]").forEach(function (b) { b.addEventListener("click", function () {
       var g = document.getElementById("acc-plans"); if (!g) return;
       if (!g.open) g.querySelector("summary").click();
-      setTimeout(function () { g.scrollIntoView({ behavior: smooth, block: "start" }); }, 340);
+      setTimeout(function () { hmJump(g); }, 340);
     }); });
-    root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { root.querySelector("#row-plans").scrollIntoView({ behavior: smooth, block: "start" }); }); });
+    root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { hmJump(root.querySelector("#row-plans")); }); });
   }
   function bindOffer(root) {
     var pop = root.querySelector(".hm-offer-pop"); if (!pop) return;
@@ -834,8 +834,32 @@
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
   }
+  /* Nov 12 2026 (Machan 7:16 PM): one jump helper for every Home section/anchor jump (bottom bar, down arrow, See All, hash links).
+     Lands the target's title just below the sticky header. The 12px gap is keyed off the title (h2 / summary), not the section box, so section padding does not shift Plans below FAQ / What's Included. */
+  function hmHdrSync() { var t = document.querySelector(".topbar"); if (t && t.offsetHeight) document.documentElement.style.setProperty("--su-hdr-h", t.offsetHeight + "px"); }
+  function hmJumpTitle(el) {
+    if (!el) return el;
+    if (el.matches && el.matches("h1,h2,h3,summary")) return el;
+    if (el.matches && el.matches(".hm-row-h")) return el.querySelector("h2,h1,h3") || el;
+    return el.querySelector(":scope > summary, :scope > .hm-row-h h2, .hm-row-h h2, :scope > h2, h2, summary") || el;
+  }
+  function hmJump(el, smooth) {
+    if (!el) return; hmHdrSync();
+    var title = hmJumpTitle(el);
+    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var off = parseFloat(getComputedStyle(title).scrollMarginTop);
+    if (!off) {
+      var hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-hdr-h")) || 0;
+      var gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-jump-gap")) || 12;
+      off = hdr + gap;
+    }
+    var top = Math.max(0, Math.round(title.getBoundingClientRect().top + window.scrollY - off));
+    window.scrollTo({ top: top, behavior: rm || smooth === false ? "auto" : "smooth" });
+  }
+  window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
+    hmHdrSync();
     bindPlanSwipe(root); bindOffer(root); bindInc(root);
     bindPlanSelect(root); bindAcPop(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
@@ -850,7 +874,8 @@
     function openAcc(d, scroll) {
       accs.forEach(function (o) { if (o !== d && o.open) setOpen(o, false); });
       if (!d.open) setOpen(d, true);
-      if (scroll) setTimeout(function () { d.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }, 60);
+      /* jump once the accordions finish animating, so the page height (and any collapsed panel above) is final */
+      if (scroll) setTimeout(function () { hmJump(d); }, reduce ? 0 : 320);
     }
     accs.forEach(function (d) { d.querySelector("summary").addEventListener("click", function (e) { e.preventDefault(); if (d.open) setOpen(d, false); else openAcc(d, false); }); });
     root.querySelectorAll("[data-hm-open]").forEach(function (b) { b.addEventListener("click", function () { var d = document.getElementById("acc-" + b.getAttribute("data-hm-open")); if (d) openAcc(d, true); }); });
@@ -861,9 +886,9 @@
       if (t === "myhome" || t === "account") { toast.textContent = (t === "myhome" ? "My Home" : "Account") + " Is Coming Soon"; toast.hidden = false; clearTimeout(tt); tt = setTimeout(function () { toast.hidden = true; }, 2200); return; }
       root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o === b); });
       if (t === "home") window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-      else document.getElementById("row-" + t).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      else hmJump(document.getElementById("row-" + t));
     }); });
-    var cue = root.querySelector("[data-plans-cue]"); if (cue) cue.addEventListener("click", function () { var t = document.getElementById("row-plans"); if (!t) return; var top = t.getBoundingClientRect().top + window.scrollY - ((document.querySelector(".topbar") || {}).offsetHeight || 0) - 8; window.scrollTo({ top: top, behavior: reduce ? "auto" : "smooth" }); });
+    var cue = root.querySelector("[data-plans-cue]"); if (cue) cue.addEventListener("click", function () { hmJump(document.getElementById("row-plans")); });
     var stick = root.querySelector(".hm-sticky"), inl = root.querySelector(".hm-cta-inline");
     if (window.IntersectionObserver && stick && inl) { stick.classList.add("off"); new IntersectionObserver(function (e) { stick.classList.toggle("off", e[0].isIntersecting); }).observe(inl); }
     /* service tiles: tap opens a small card (never automatic) */
@@ -1712,7 +1737,7 @@
   document.getElementById("videoClose").addEventListener("click", closeVideo);
   document.getElementById("skipBtn").addEventListener("click", closeVideo);
   unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
-  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("row-plans"); if (pl) setTimeout(function () { pl.scrollIntoView({ behavior: "smooth", block: "start" }); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
+  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("row-plans"); if (pl) setTimeout(function () { hmJump(pl); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
   modal.addEventListener("click", function (e) { if (e.target === modal) closeVideo(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
 
@@ -1735,6 +1760,9 @@
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
   if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); }
   window.addEventListener("hashchange", function () { if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); } });
+  /* Home section hash links (e.g. /#row-plans, /#acc-faq): jump with the same header offset once Home is rendered */
+  function hmHash() { var h = location.hash.slice(1); if (!h || S.screen !== "home" || !/^[\w-]+$/.test(h)) return; var el = document.getElementById(h); if (!el || !el.closest(".hm")) return; if (el.tagName === "DETAILS") el.open = true; setTimeout(function () { hmJump(el, false); }, 50); }
+  window.addEventListener("hashchange", hmHash);
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (!isOb(S.screen)) go(OB[0]); }
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
@@ -1756,6 +1784,7 @@
     (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob9"; document.head.appendChild(l); })();
   function bootApp() {
     render();
+    hmHash();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
     if (!dismissed && S.screen === "home") openVideo(false);
   }
