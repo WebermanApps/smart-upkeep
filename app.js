@@ -106,7 +106,23 @@
     return selectedLastMinute().reduce(function (sum, a) { return sum + (a.quoteRequired ? 0 : (a.price || 0)); }, 0);
   }
 
-  var SU_MONTHLY_ADDONS = ["Flat Roof Inspection And Clean","Irrigation System","Gutter Cleaning","Sump Pump","Chimney Sweep","Generator Annual Service","Whole-House Humidifier"];
+  /* What's Included Redo 04A (Machan Nov 12 2026): Sump Pump and Whole-House Humidifier stay included in every plan, so their +$6/mo add-ons are removed (5 monthly add-ons). */
+  var SU_MONTHLY_ADDONS = ["Flat Roof Inspection And Clean","Irrigation System","Gutter Cleaning","Chimney Sweep","Generator Annual Service"];
+  var INCLUDED_EXTRAS = { sump: 1, humidifier: 1 };
+  /* MONEY CHANGE (flagged for Machan): on this page the sump and humidifier extras no longer add their $76/yr (about $6/mo) to plan quotes. pricing-config.js is not edited; /member/ pages still read the config. */
+  /* Storm cap (Machan Nov 12: Complete storm checks "4 A Year"; Legal Nov 12 night). pricing-config.js is read-only without Machan's OK, so this page overrides its
+     plan text at load, the same way HOME_KEYPOINTS does. /member/ pages still read pricing-config.js directly. */
+  (function () {
+    function swap(arr, from, to) { return (arr || []).map(function (x) { return x === from ? to : x; }); }
+    var s = P && P.tiers && P.tiers.silver, pl = P && P.tiers && P.tiers.platinum;
+    if (s) s.keyPoints = swap(s.keyPoints, "Roof Drone Inspection", "Roof Drone Inspection Once a Year");
+    if (pl) {
+      pl.keyPoints = swap(pl.keyPoints, "Storm Checks After Major Storms", "After-Storm Checks, Up To 4 A Year");
+      pl.features = swap(pl.features, "Storm checks after major storms", "After-storm checks after major storms, up to 4 a year").map(function (f) {
+        return f.indexOf("Roof Drone Inspection twice a year and after major storms:") === 0 ? "Roof Drone Inspection twice a year, plus a drone roof check with each After-Storm Check:" + f.slice(f.indexOf(":") + 1) : f; });
+    }
+  })();
+  Object.keys(INCLUDED_EXTRAS).forEach(function (k) { if (P && P.extras && P.extras[k]) P.extras[k] = { label: P.extras[k].label, all: 0, included: true, note: "Included in every plan" }; });
   var SU_ONCE_ADDONS = ["Furnace Tune-Up","AC Tune-Up","Exterior Window Washing","Christmas Lights Up And Down","Extra Gutter Cleaning","Extra Flat Roof Cleaning","Irrigation System Startup Or Shutdown","Chimney Sweep","Radon Test","Water Leak Sensor Setup","Sump Pump Battery Backup","Bath Fan Clean And Check","Smart Thermostat Install","Lawn Mower Winterizing","Snowblower Tune-Up","Hose Bib Freeze Covers","Video Doorbell Install","Appliance Deep Clean","Lead And Water Test"];
   function suNorm(s){return String(s||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();}
   function suTitle(s){
@@ -138,8 +154,12 @@
       if(found){
         var out={}; for(var k in found) out[k]=found[k];
         out.label=suTitle(label);
-        if(once && (out.price==null || out.quoteRequired) && out.quoteRequired!==false && out.price==null) out.quoteRequired=true;
-        if(once && out.price==null) out.quoteRequired=true;
+        /* Item 50: keep pricing-config low/high ranges (Radon, Extra Gutter) off the Quote path. Explicit quoteRequired rows stay Quote. */
+        var keepRange = once && !found.quoteRequired && !found.draft && hasConfigRange(out) && !(+out.price>0);
+        if (!keepRange) {
+          if(once && (out.price==null || out.quoteRequired) && out.quoteRequired!==false && out.price==null) out.quoteRequired=true;
+          if(once && out.price==null) out.quoteRequired=true;
+        }
         return out;
       }
       return {id:(once?"q_o_":"q_m_")+suNorm(label).replace(/ /g,"_"), label:suTitle(label), quoteRequired:true, desc:""};
@@ -172,7 +192,12 @@
     var rows=suCatalogByLabels(SU_ONCE_ADDONS, pool, true);
     var monthlyIds={};
     monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
-    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once"; if(a.draft||a.quoteRequired||!(+a.price>0)){ a.quoteRequired=true; a.price=null; } }); /* B1: fixed, non-draft pricing-config prices show; everything else stays Quote */
+    rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once";
+      /* Item 50 (Machan Nov 12): Radon Test and Extra Gutter Cleaning show their pricing-config low–high range instead of Quote. Other quoteRequired rows stay Quote. pricing-config.js is not edited. */
+      var ranged = !a.draft && !a.quoteRequired && !(+a.price>0) && hasConfigRange(a);
+      if (ranged) { a.priceRange = true; a.price = null; }
+      else if (a.draft || a.quoteRequired || !(+a.price>0)) { a.quoteRequired = true; a.price = null; }
+    }); /* B1: fixed, non-draft pricing-config prices show; ranged low/high show as a range; everything else stays Quote */
     return rows;
   }
 
@@ -197,6 +222,14 @@
   }
   function hasRealOncePrice(a){
     return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && isFinite(+a.price) && +a.price>0);
+  }
+  function hasConfigRange(a){
+    return !!(a && a.low != null && a.high != null && isFinite(+a.low) && isFinite(+a.high) && +a.low > 0 && +a.high > 0);
+  }
+  function rangePriceLabel(a){
+    var lo = +a.low, hi = +a.high;
+    if (lo === hi) return money(lo);
+    return money(Math.min(lo, hi)) + "\u2013" + money(Math.max(lo, hi));
   }
   function needsSiteVisit(label){
     var n=String(label||"").toLowerCase();
@@ -273,7 +306,7 @@
     var linesSilver = [];
     linesSilver.push({ label: "2 seasonal visits × " + money(silverV) + " each", amt: 2 * silverV, est: uSqft });
     linesSilver = linesSilver.concat(hvacLines());
-    linesSilver.push({ label: "Furnace filter changes during visits", amt: 0, est: false, note: "Included" });
+    linesSilver.push({ label: "We check your furnace filter every visit and change it when it's due.", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Smoke and CO detector checks", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Whole-Home Mold and Moisture Scan (moisture meter and thermal camera, saved to your Home Record)", amt: 0, est: false, note: "Included" });
     linesSilver.push({ label: "Roof drone inspection with drone gutter check and roof photos (once a year)", amt: 0, est: false, note: "Included" });
@@ -296,7 +329,7 @@
     var goldRaw = linesGold.reduce(function (s, L) { return s + L.amt; }, 0);
     var linesPlat = linesGold.slice();
     linesPlat.push({ label: "8 monthly check-ins × " + money(checkIn) + " each", amt: 8 * checkIn, est: uSqft });
-    linesPlat.push({ label: "Roof drone inspections after major storms, with vent and ice dam clearing", amt: P.platinumRoofInspection, est: false });
+    linesPlat.push({ label: "Roof drone inspections after major storms (up to 4 a year), with vent and ice dam clearing", amt: P.platinumRoofInspection, est: false });
     var platRaw = linesPlat.reduce(function (s, L) { return s + L.amt; }, 0);
     var sF = planAmtFromBase(linesBaseRaw(linesSilver), "silver"), gF = planAmtFromBase(linesBaseRaw(linesGold), "gold"), pF = planAmtFromBase(linesBaseRaw(linesPlat), "platinum");
     return {
@@ -588,7 +621,7 @@
   /* Fresh Look picks (Max 21:58 ICT Oct 17; 02-05 dropped, no click for more info per Max 22:09): 06 card face held (unchanged); 07 plan chips = lowest plan that covers the item, from pricing-config.js tier features; 08 fade-up + See All arrow nudge (off with reduced motion). */
   var WW_CATS = [
     ["Water", ["waterheater", "meter"], [[2, "Water Heater", "Essentials"], [5, "Moisture Scan", "Essentials"], [6, "Gutters", "Plus"]], "l"],
-    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filters", "Essentials"]], "t"],
+    ["Heating & Cooling", ["furnace", "ac"], [[0, "Furnace", "Essentials"], [1, "AC", "Essentials"], [0, "Furnace Filter Check and Change", "Essentials"]], "t"],
     ["Air & Safety", ["detector", "dryer"], [[4, "Smoke/CO", "Essentials"], [3, "Dryer Vent", "Essentials"], [5, "Moisture Readings", "Essentials"]], "s"],
     ["Outside", ["gutter", "chimney"], [[6, "Gutters", "Plus"], [7, "Roof Drone Inspection", "Essentials"], [6, "Drone Gutter Check", "Essentials"]], "j"]];
   /* Card Colours And Finish picks (Max, Oct 18): 01B every card its own colour (Water lagoon, Heating terracotta, Air mustard, Outside jungle), 02A flat white face, 03B thin colour band on top, 04B fine line icons in the card colour, 05B deeper lifted shadow, 06A See All link kept, 07 header unchanged (skipped), 08A soft filled chips kept, 09B warm cream band behind the cards, 10B active dot in the colour of the card in view. */
@@ -598,7 +631,7 @@
     ["waterheater", "Water", "Less sediment, longer life", [["Water Heater Flush or Tankless Descale", "Essentials"], ["Water Softener Salt Top-Off", "Plus"], ["Fridge Water Filter Changes", "Plus"]]],
     ["detector", "Air & Safety", "Alarms that work when it counts", [["Dryer Vent Cleaning", "Essentials"], ["Smoke and CO Checks and Battery Swap", "Essentials"], ["Main Water Shut-Off Tag", "Essentials"]]],
     ["meter", "Mold and Moisture Scan", "Every visit, whole home", [["Moisture Meter and Thermal Camera Check", "Essentials"], ["Damp Spots Flagged With Photos", "Essentials"], ["Readings Saved to Your Home Record", "Essentials"]]],
-    ["gutter", "Outside", "Gutters, roof and winter prep", [["Roof Drone Inspection", "Essentials"], ["Drone Gutter Check", "Essentials"], ["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Tune-Up", "Plus"], ["Storm Checks After Major Storms", "Complete"], ["Vent and Ice Dam Clearing After Storms", "Complete"]]],
+    ["gutter", "Outside", "Gutters, roof and winter prep", [["Roof Drone Inspection", "Essentials"], ["Drone Gutter Check", "Essentials"], ["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Tune-Up", "Plus"], ["After-Storm Checks, Up To 4 A Year", "Complete"], ["Vent and Ice Dam Clearing After Storms", "Complete"]]],
     ["clipboard", "Records", "Records for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Downloadable Visit Record", "Essentials"], ["Recall Monitoring", "Essentials"], ["Warranties Checked Badge", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
   function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
   var FS_ART = {
@@ -612,12 +645,100 @@
     { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge on Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
-    { id: "storm", art: "storm", title: "Storm Checks", hook: "Checked After Major Storms.", popTitle: "Storm Checks", popText: "On Complete, we check your home after major storms, with a drone roof check and vent and ice dam clearing, so problems get caught fast.", cta: "Free Quote in Minutes" }];
+    { id: "storm", art: "storm", title: "Storm Checks", hook: "After-Storm Checks, Up To 4 A Year.", popTitle: "Storm Checks", popText: "On Complete, we check your home after major storms, up to 4 a year, with a drone roof check and vent and ice dam clearing.", cta: "Free Quote in Minutes" }];
   function wwCarousel() {
     return '<div class="ww"><div class="ca-row" data-ptr-ignore>' + WW_CATS.map(function (c) {
       return '<article class="ca-card ca-' + c[3] + '"><div class="ca-art" aria-hidden="true">' + wwIco(c[1][0]) + wwIco(c[1][1], "ca-b") + '</div><div class="ca-body"><h3>' + c[0] + '</h3><ul>' +
         c[2].map(function (s) { return '<li><span>' + s[1] + '</span><em class="ca-pl pl-' + s[2] + '" title="Included from ' + s[2] + ' up">' + s[2] + '</em></li>'; }).join("") + '</ul></div></article>';
     }).join("") + '</div><div class="ca-dots" aria-hidden="true">' + WW_CATS.map(function (c, i) { return '<b class="d-' + c[3] + (i ? "" : " on") + '"></b>'; }).join("") + '</div></div>';
+  }
+
+  /* What's Included Redo deck (Machan Nov 12 2026, receipt 2018): 01A plan comparison table + 02A checklist cards with tabs (Swatch resolution: tabs under 768px, full table at 768px and up), 03B plans only (no Not Included list), 04A sump and humidifier stay included (their +$6/mo add-ons are removed), 05B no Starter Visit line.
+     Every sentence below is Legal's, word for word (LEGAL-WHATS-INCLUDED.md FINAL + Legal 8:20 PM, LEGAL-FINAL-COPY-20261112-night.md). Item labels follow pricing-config.js tier features. */
+  var WI_FILTER = "Furnace Filter Check and Change";
+  var WI_LINES = {
+    visits: { silver: "Essentials: 2 visits a year, spring and fall.", gold: "Plus: 4 visits a year, one each season.", platinum: "Complete: 12 visits a year, one each month." },
+    filterEP: "We check your furnace filter every visit and change it when it's due.",
+    filterC: "We check your furnace filter every visit and change it when it's due, and test your smoke and CO detectors at every visit.",
+    smokeEP: "We test your smoke and CO detectors at every visit.",
+    tuneup: "Furnace tune-up each fall and AC tune-up each spring, one for every unit.",
+    drone: { silver: "Roof Drone Inspection once a year. Nobody walks on your roof.", gold: "Roof Drone Inspection twice a year. Nobody walks on your roof.", platinum: "Roof Drone Inspection twice a year, plus a drone roof check with each After-Storm Check. Nobody walks on your roof." },
+    mold: "A moisture meter and thermal camera check for damp spots where mold can grow. It's not a lab mold test and doesn't diagnose or rule out mold.",
+    gutters: "Gutter and downspout cleaning in spring and fall, done on your seasonal visits. Your plan price reflects how many stories your home has.",
+    stormTile: "After-Storm Checks, Up To 4 A Year",
+    storm: "After a major storm, we check your home, including a drone roof check and vent and ice dam clearing. Up to 4 a year, on top of your 12 visits.",
+    stormNote: "A major storm means the National Weather Service issued a severe thunderstorm, tornado, high wind or winter storm warning for your area. We schedule your check as soon as it's safe. Unused checks don't roll over.",
+    equip: "Items that need equipment are done only if your home has it. Your price is based on the equipment you tell us about."
+  };
+  /* [label, detail (string or per-plan map), lowest plan] */
+  var WI_ITEMS = [
+    ["Furnace And AC Tune-Ups", WI_LINES.tuneup, "silver"],
+    ["Smoke And CO Detector Checks", { silver: WI_LINES.smokeEP, gold: WI_LINES.smokeEP, platinum: "" }, "silver"],
+    ["Roof Drone Inspection", WI_LINES.drone, "silver"],
+    ["Mold and Moisture Scan, Every Visit", WI_LINES.mold, "silver"],
+    ["Water Heater Flush Or Tankless Descale", "", "silver"],
+    ["Dryer Vent Cleaning", "", "silver"],
+    ["Main Water Shut-Off Found, Tested And Tagged", "", "silver"],
+    ["Winter Freeze Prep", "", "silver"],
+    ["Sump Pump Test Before Spring Thaw (if you have a sump pump)", "", "silver"],
+    ["Humidifier Pad Swap And Service", "", "silver"],
+    ["Written Report After Every Visit", "", "silver"],
+    ["Downloadable Visit Record", "", "silver"],
+    ["Gutter And Downspout Cleaning", WI_LINES.gutters, "gold"],
+    ["Garage Door Tune-Up", "", "gold"],
+    ["Water Softener Salt Top-Off, each visit (if you have a softener)", "", "gold"],
+    ["Fridge Water Filter Changes During Visits", "", "gold"],
+    ["Pool or Hot Tub Visual Check, each visit (if you have one)", "", "gold"],
+    [WI_LINES.stormTile, WI_LINES.storm, "platinum"]];
+  var WI_RANK = { silver: 0, gold: 1, platinum: 2 };
+  /* 06A: Home À La Carte hides items every plan already includes (Furnace and AC tune-ups). */
+  var WI_EVERY_PLAN = ["Furnace Tune-Up", "AC Tune-Up"];
+  var WI_CK = '<svg class="wi-ck" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 12 9 17 20 6"/></svg>';
+  function wiDetail(it, k) { var d = it[1]; return typeof d === "string" ? d : (d[k] || ""); }
+  function wiTabPanel(k) {
+    var ks = tierKeys(), r = WI_RANK[k], prev = ks[r - 1], t = P.tiers[k];
+    var items = WI_ITEMS.filter(function (it) { return WI_RANK[it[2]] === r || (r > 0 && it[0] === "Roof Drone Inspection"); });
+    var li = items.map(function (it) { var d = wiDetail(it, k); return '<li>' + WI_CK + '<span><b>' + it[0] + '</b>' + (d ? '<small>' + d + '</small>' : '') + '</span></li>'; }).join("");
+    return '<div class="wi-panel" role="tabpanel" id="wiP-' + k + '" aria-labelledby="wiT-' + k + '" data-wi-panel="' + k + '"' + (t.recommended ? '' : ' hidden') + '>' +
+      '<p class="wi-meta">From ' + money(t.fromMonthly) + '/Mo · ' + WI_LINES.visits[k] + '</p>' +
+      '<div class="wi-core"><h4>' + WI_FILTER + '</h4><p>' + (k === "platinum" ? WI_LINES.filterC : WI_LINES.filterEP) + '</p></div>' +
+      (prev ? '<p class="wi-lead">Everything In ' + P.tiers[prev].label + ', And:</p>' : '') +
+      '<ul class="wi-ul">' + li + '</ul>' +
+      (k === "platinum" ? '<p class="wi-fn">' + WI_LINES.stormNote + '</p>' : '') + '</div>';
+  }
+  function wiTable() {
+    var ks = tierKeys();
+    function cell(it, k) { if (WI_RANK[k] < WI_RANK[it[2]]) return '<td class="no" aria-label="Not included">&ndash;</td>'; return '<td class="ck-' + k + '" aria-label="Included">' + WI_CK + '</td>'; }
+    var head = '<tr><th class="lab" scope="col"><span class="sr">Item</span></th>' + ks.map(function (k) { var t = P.tiers[k]; return '<th scope="col" class="th-' + k + '">' + t.label + (t.recommended ? '<span class="wi-badge">Most Popular</span>' : '') + '<span class="wi-from">From ' + money(t.fromMonthly) + '/Mo</span></th>'; }).join("") + '</tr>';
+    var rows = '<tr><th scope="row" class="lab"><b>Visits</b></th>' + ks.map(function (k) { return '<td class="txt">' + WI_LINES.visits[k] + '</td>'; }).join("") + '</tr>';
+    rows += '<tr><th scope="row" class="lab"><b>' + WI_FILTER + '</b></th>' + ks.map(function (k) { return '<td class="txt">' + (k === "platinum" ? WI_LINES.filterC : WI_LINES.filterEP) + '</td>'; }).join("") + '</tr>';
+    rows += WI_ITEMS.map(function (it) {
+      if (typeof it[1] !== "string") return '<tr><th scope="row" class="lab"><b>' + it[0] + '</b></th>' + ks.map(function (k) { var d = wiDetail(it, k); return d ? '<td class="txt">' + d + '</td>' : cell(it, k); }).join("") + '</tr>';
+      return '<tr><th scope="row" class="lab"><b>' + it[0] + '</b>' + (it[1] ? '<small>' + it[1] + '</small>' : '') + '</th>' + ks.map(function (k) { return cell(it, k); }).join("") + '</tr>';
+    }).join("");
+    /* Same sentence in neighbouring plans: one cell across both columns. */
+    rows = rows.replace(/(<td class="txt">([^<]*)<\/td>)(<td class="txt">\2<\/td>)/g, '<td class="txt" colspan="2">$2</td>');
+    return '<div class="wi-tablewrap"><table class="wi-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table><p class="wi-fn">' + WI_LINES.stormNote + '</p></div>';
+  }
+  function wiRedo() {
+    var ks = tierKeys(), sel = ks.filter(function (k) { return P.tiers[k].recommended; })[0] || ks[0];
+    return '<div class="wi-r">' +
+      '<div class="wi-visit">' + ks.map(function (k) { return '<p>' + WI_LINES.visits[k] + '</p>'; }).join("") + '</div>' +
+      '<div class="wi-tabsw"><div class="wi-tabs" role="tablist" aria-label="Plans">' + ks.map(function (k) { var t = P.tiers[k], on = k === sel; return '<button type="button" role="tab" class="wi-tab wt-' + k + (on ? ' on' : '') + '" id="wiT-' + k + '" aria-controls="wiP-' + k + '" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-wi-tab="' + k + '">' + t.label + (t.recommended ? '<span class="wi-badge">Most Popular</span>' : '') + '</button>'; }).join("") + '</div>' +
+      '<div class="wi-tabbody">' + ks.map(wiTabPanel).join("") + '</div></div>' +
+      wiTable() +
+      '<p class="wi-fn wi-equip">' + WI_LINES.equip + '</p></div>';
+  }
+  function wiSelect(root, k) {
+    root.querySelectorAll("[data-wi-tab]").forEach(function (b) { var on = b.getAttribute("data-wi-tab") === k; b.classList.toggle("on", on); b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
+    root.querySelectorAll("[data-wi-panel]").forEach(function (p) { p.hidden = p.getAttribute("data-wi-panel") !== k; });
+  }
+  function bindWiRedo(root) {
+    var tabs = [].slice.call(root.querySelectorAll("[data-wi-tab]"));
+    tabs.forEach(function (b, i) {
+      b.addEventListener("click", function () { wiSelect(root, b.getAttribute("data-wi-tab")); });
+      b.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (!d) return; e.preventDefault(); var n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); n.click(); });
+    });
   }
   function wiRow() {
     return '<div class="wi-row va" data-ptr-ignore>' + WW_WI.map(function (g, i) { return '<button type="button" class="mw-hover" data-wi="' + i + '" aria-haspopup="dialog"><span class="wt-i">' + wwIco(g[0]) + '</span><strong>' + g[1] + '</strong><small>' + g[3].length + ' Included &rsaquo;</small></button>'; }).join("") + '</div>' +
@@ -668,14 +789,14 @@
     return '<div class="ic-pop" role="dialog" aria-modal="true" aria-labelledby="icT" data-ptr-ignore hidden><div class="ic-bg" data-ic-close></div><div class="ic-sheet"><span class="ic-grab" aria-hidden="true"></span><button type="button" class="hm-pop-x ic-x mw-hover" data-ic-close aria-label="Close">' + X_SVG + '</button><h3 id="icT"></h3><p class="ic-lead2"></p><ul class="ic-list"></ul><button type="button" class="btn btn-primary mw-hover ic-go" data-act="start">Get Started</button></div></div>';
   }
   function bindInc(root) {
-    var row = root.querySelector(".ic-row"), pop = root.querySelector(".ic-pop"); if (!row || !pop) return;
-    var cards = [].slice.call(row.querySelectorAll(".ic-card")), dots = [].slice.call(root.querySelectorAll(".ic-dots b")), sheet = pop.querySelector(".ic-sheet"), last = null;
+    var row = root.querySelector(".ic-row"), pop = root.querySelector(".ic-pop"); if (!pop) return;
+    var cards = row ? [].slice.call(row.querySelectorAll(".ic-card")) : [], dots = [].slice.call(root.querySelectorAll(".ic-dots b")), sheet = pop.querySelector(".ic-sheet"), last = null;
     function idx() { var w = cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : 1, i = Math.round(row.scrollLeft / w); if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 4) i = cards.length - 1; return i; }
     function sync() { var i = idx(); dots.forEach(function (d, k) { d.classList.toggle("on", k === i); }); }
-    row.addEventListener("scroll", sync, { passive: true }); sync();
+    if (row) { row.addEventListener("scroll", sync, { passive: true }); sync();
     function go(d) { var i = Math.max(0, Math.min(cards.length - 1, idx() + d)); row.scrollTo({ left: cards[i].offsetLeft - cards[0].offsetLeft, behavior: "smooth" }); }
     root.querySelector(".ic-prev").addEventListener("click", function () { go(-1); });
-    root.querySelector(".ic-next").addEventListener("click", function () { go(1); });
+    root.querySelector(".ic-next").addEventListener("click", function () { go(1); }); }
     function open(k, from) { var t = P.tiers[k], f = t.features.slice(), lead = "";
       if (/^Everything in/.test(f[0])) lead = f.shift();
       show(t.label + " · What's Included", lead, f.map(function (x) { var i = x.indexOf(":"); return '<li>' + I(FICO(x), "xs") + '<span>' + (i > 0 ? '<b>' + x.slice(0, i) + '</b>: ' + x.slice(i + 1).trim() : x) + '</span></li>'; }).join(""), "Get Started", from); }
@@ -707,7 +828,7 @@
   }
   function home() {
     var svc = [
-      ["furnace", "Furnace", "furnace", "Fall tune-up on every furnace, with filter changes during visits.", "silver"],
+      ["furnace", "Furnace", "furnace", "Fall tune-up on every furnace. We check your furnace filter every visit and change it when it's due.", "silver"],
       ["ac", "AC", "ac", "Spring tune-up on every AC unit so it is ready before the heat.", "silver"],
       ["waterheater", "Water Heater", "waterheater", "Yearly flush, or descale for tankless, to cut sediment and extend its life.", "silver"],
       ["dryer", "Dryer Vent", "dryer", "Dryer vent cleaned to lower fire risk and speed up drying.", "silver"],
@@ -752,10 +873,10 @@
         '<div class="hm-chips">' + trust.map(function (s, i) { return '<span class="hm-chip t' + (i % 4) + '"><span>' + s[1] + '</span></span>'; }).join("") + '</div>' +
         '</section>' +
       '<section class="hm-accs"><h2>Details</h2>' +
-      hmAcc("plans", "house", "What's Included", wiRow() + incCarousel()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + ' one time') + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
+      hmAcc("plans", "house", "What's Included", wiRedo()) +
+      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog">' + I(ADDON_ICO[a.id] || "wrench", "xs") + '<span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>') +
       hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
-      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>Every 1 to 3 months. Every plan includes Furnace Filters.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
+      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       '<div class="hm-sticky"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button></div>' +
       '<nav class="hm-tabs" aria-label="App Sections">' +
@@ -805,6 +926,7 @@
     });
     root.querySelectorAll("[data-hm-see]").forEach(function (b) { b.addEventListener("click", function () {
       var g = document.getElementById("acc-plans"); if (!g) return;
+      wiSelect(g, b.getAttribute("data-hm-see"));
       if (!g.open) g.querySelector("summary").click();
       setTimeout(function () { hmJump(g); }, 340);
     }); });
@@ -871,7 +993,7 @@
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     hmHdrSync();
-    bindPlanSwipe(root); bindOffer(root); bindInc(root);
+    bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -938,7 +1060,7 @@
     var idx = [];
     accs.forEach(function (d) { var title = d.querySelector("summary span").textContent; idx.push({ t: title, k: (title + " " + d.querySelector(".acc-body").textContent).toLowerCase(), acc: d }); });
     monthlyAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + addMo(a), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
-    onceAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + (a.quoteRequired || a.price==null ? QUOTE_LABEL : money(a.price) + " one time"), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
+    onceAddonCatalog().forEach(function (a) { idx.push({ t: a.label + " · " + onceListPrice(a), k: (a.label + " " + (a.desc||"")).toLowerCase(), acc: document.getElementById("acc-addons") }); });
     var inp = root.querySelector(".hm-search input"), res = root.querySelector(".hm-results");
     if (!inp || !res) return; /* search lives in future My Home area */
     inp.addEventListener("input", function () {
@@ -1003,7 +1125,7 @@
   var DYK = {
     address: "Every visit ends with a written report saved to your Home Record.",
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
-    systems: "We change your furnace filters during every visit, at no extra charge.",
+    systems: "We check your furnace filter every visit and change it when it's due.",
     addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera."
   };
   /* Legal-approved First Visit blurb. Keep word for word. */
@@ -1156,9 +1278,10 @@
       var e = P.extras[k], on = ex.indexOf(k) > -1;
       return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
     }
-    var keys = Object.keys(P.extras), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0); });
+    var keys = Object.keys(P.extras), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
     var body = '<div class="ex-card"><div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' +
-      (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') + '</div>';
+      (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
+      (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
     return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
 
@@ -1510,9 +1633,17 @@
   }
   function oncePriceLabel(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
-    if (a.quoteRequired || !hasRealOncePrice(a)) return QUOTE_LABEL;
-    if (a.price != null) return money(a.price);
-    return money(a.annual) + (a.unit === "season" ? "/Season" : "");
+    if (hasRealOncePrice(a)) {
+      if (a.price != null) return money(a.price);
+      return money(a.annual) + (a.unit === "season" ? "/Season" : "");
+    }
+    if (a && !a.quoteRequired && hasConfigRange(a)) return rangePriceLabel(a);
+    return QUOTE_LABEL;
+  }
+  function onceListPrice(a) {
+    var lab = oncePriceLabel(a);
+    if (lab === QUOTE_LABEL || lab === "Needs A Site Visit") return lab;
+    return lab + " one time";
   }
   /* B1/B2: monthly services show their +$X/mo (Irrigation +$19, Sump +$6, Humidifier +$6); one-time rows show a fixed price or Quote. Only fixed one-time prices are totaled. */
   function acItemPrice(a) { return (a && (a.fromExtras || a.gutter)) ? addMo(a) : oncePriceLabel(a); }
