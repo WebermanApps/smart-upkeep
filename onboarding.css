@@ -682,9 +682,16 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   body.ob-kb-open .ob-address.qf{max-height:none}
 }
 
-/* footer-mascot-1113: Built by Machan mascot on the onboarding bar (same mark as /member/). No link-out. */
-.ob .ob-bar .ob-built.machan-ft{display:flex;justify-content:center;align-items:center;gap:0;text-align:center}
-.ob .ob-bar .ob-built .mw-machan{font:inherit;color:inherit}
+/* footer-mascot-1113: Built by Machan mascot on the onboarding bar (same mark as /member/). No link-out.
+   r2: lock the Built row to main's 20px box so the sticky bar does not grow. */
+.ob .ob-bar .ob-built.machan-ft{
+  display:flex;justify-content:center;align-items:center;gap:0;text-align:center;
+  padding-top:4px;line-height:16px;height:20px;box-sizing:border-box;overflow:visible;
+}
+.ob .ob-bar .ob-built .uk-built-a,
+.ob .ob-bar .ob-built .mw-machan{
+  display:inline-flex;align-items:center;height:16px;line-height:16px;font:inherit;color:inherit;
+}
 .ob .ob-bar .ob-built .mw-machan-mark{width:16px;height:16px;transition:transform 295ms ease;flex:none}
 .ob .ob-bar .ob-built .uk-wink-l{opacity:0}
 .ob .ob-bar .ob-built:hover .mw-machan-mark,.ob .ob-bar .ob-built:focus-within .mw-machan-mark{transform:rotate(-8deg)}
