@@ -147,7 +147,7 @@
   }
   function sync(st) {
     var slot = document.querySelector(".ob .ob-hb-slot");
-    if (!st || !slot) { if (band && band.parentNode) band.parentNode.removeChild(band); last = null; lastScreen = st ? st.screen : null; document.documentElement.classList.remove("ob-hb-on", "ob-hb-mini", "ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"); document.documentElement.removeAttribute("data-hb-fit"); return; }
+    if (!st || !slot) { if (band && band.parentNode) band.parentNode.removeChild(band); last = null; lastScreen = st ? st.screen : null; document.documentElement.classList.remove("ob-hb-on", "ob-hb-mini", "ob-hb-t", "ob-hb-noart", "ob-hb-nodyk", "ob-hb-t2"); document.documentElement.removeAttribute("data-hb-fit"); return; }
     if (!band) build();
     var fresh = !last;
     if (band.parentNode !== slot) slot.appendChild(band);
@@ -187,7 +187,9 @@
      The house band is never shrunk. Measured with the full 120px band (the keyboard mini strip is ignored) and 8px of air above the Back/Next bar.
      Runs from sync() (before app.js binds the step) and again after bind, on font load and on resize. Reads layout only, no state. */
   /* Tried in order; the first that fits wins. The icon goes before Did You Know, but comes back if Did You Know has to drop anyway and there's room. */
-  var LV = ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"], TRY = [[], ["ob-hb-t"], ["ob-hb-t", "ob-hb-noart"], ["ob-hb-t", "ob-hb-nodyk"], ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"]];
+  /* ob-hb-t2 is a last, deeper tightening for the few carts that still don't fit with every other cut (big homes on Plan, the heaviest Review). */
+  var LV = ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk", "ob-hb-t2"], TRY = [[], ["ob-hb-t"], ["ob-hb-t", "ob-hb-noart"], ["ob-hb-t", "ob-hb-nodyk"], ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"],
+    ["ob-hb-t", "ob-hb-nodyk", "ob-hb-t2"], ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk", "ob-hb-t2"]];
   function setLv(on) { LV.forEach(function (c) { document.documentElement.classList.toggle(c, on.indexOf(c) >= 0); }); }
   var LEAF = /^(BUTTON|INPUT|SELECT|TEXTAREA|P|H1|H2|H3|LABEL|LI|IMG|svg)$/;
   function vis(c) { return !!c && c !== "transparent" && !/rgba\([^)]*,\s*0\)$/.test(c); }
