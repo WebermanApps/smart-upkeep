@@ -524,8 +524,9 @@
     return lead.concat(rest.slice(0, n)).concat(["And More"]);
   }
   /* Home FAQ (Machan Nov 13 9:11 AM "we can do just an FAQ section"): the same five questions and answers the Details FAQ drop-down had, word for word. */
-  var HOME_FAQ = [["How Often Should I Change My Furnace Filter?", "It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due."],
-    ["Service Area?", "Metro Detroit: Wayne, Oakland, Macomb."], ["How Do You Vet Techs?", "State License Checked, Insured, Yearly Background Check."], ["Can I Cancel?", "Anytime, no fee. See Refund Promise."], ["Do I Need To Send Photos?", "No. No photos are needed to sign up."]];
+  /* Machan Nov 13 11:12 AM: every FAQ lives on Home, grouped by the /faq/ page's own categories and order. Questions and answers are copied
+     word for word from the live /faq/ page (main e8df4a2; PR #80's unmerged lines are not used). Format: [category, [[question, answer HTML, id]]]. */
+  var FAQ_ALL = [["Heating, Cooling And Furnace Filters", [["How Often Should I Change My Furnace Filter?", "<p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it&#x27;s due.</p>", "how-often-should-i-change-my-furnace-filter"], ["How Often Does a Furnace Need a Tune-Up?", "<p>Once a year, ideally in the fall before heating season. Every plan includes a fall furnace tune-up for every furnace.</p>", "how-often-does-a-furnace-need-a-tune-up"], ["How Often Should My AC Be Serviced?", "<p>Once a year in spring, before the first hot week. Every plan includes a spring AC tune-up for every AC unit.</p>", "how-often-should-my-ac-be-serviced"], ["Is Skipped Maintenance Really That Costly?", "<p>Often, yes. A clogged filter, a blocked dryer vent or an overflowing gutter can turn a small fix into a repair or a denied warranty claim. A plan keeps a dated record of every visit.</p>", "is-skipped-maintenance-really-that-costly"]]], ["Safety Checks", [["What Should I Do In An Emergency?", "<ul><li>Flooding or a burst pipe: shut off the main water valve, then give us a call or send a message in the app.</li><li>Electrical (sparks, burning smell, hot panel): if it&#x27;s safe to reach, switch off the main breaker, then give us a call or send a message in the app. If there&#x27;s fire or smoke, get out and call 911.</li><li>Carbon monoxide alarm: get everyone outside and call 911.</li></ul><p>If you smell gas (a rotten-egg or sulfur smell):</p><ol><li>Leave the home right away and get everyone out, pets too. Leave the door open behind you.</li><li>Don&#x27;t flip light switches, unplug anything, use the garage door, light a match, or start a car near the home.</li><li>Once you&#x27;re a safe distance away, call 911 and DTE Gas at 800-947-5000.</li><li>Then call us or send a message in the app. We&#x27;ll help with next steps once DTE says it&#x27;s safe.</li></ol><p>Please don&#x27;t try to shut off the gas meter yourself unless DTE or 911 tells you to. Never turn the gas back on yourself; DTE needs to do that.</p><p class=\"fq-note\">This is general safety information, not professional emergency advice. In any emergency, follow the directions of 911, your utility, and first responders. Smart Upkeep is not an emergency service and does not respond to gas leaks.</p>", "what-should-i-do-in-an-emergency"], ["How Often Should Smoke Detector Batteries Be Changed?", "<p>Test monthly and replace batteries at least once a year, unless the unit has a sealed 10-year battery. Every plan tests smoke and CO detectors at each visit.</p>", "how-often-should-smoke-detector-batteries-be-changed"], ["When Should Smoke and CO Detectors Be Replaced?", "<p>Smoke alarms at 10 years. CO alarms typically at 5 to 7 years, depending on the model; check the date on the back. We flag expired units during visits.</p>", "when-should-smoke-and-co-detectors-be-replaced"], ["How Risky Is a Clogged Dryer Vent?", "<p>Lint buildup is a leading cause of home dryer fires, and a clogged vent also makes drying slower. Clean it at least once a year. Every plan includes dryer vent cleaning.</p>", "how-risky-is-a-clogged-dryer-vent"]]], ["Water, Gutters And Michigan Winters", [["How Often Should Gutters Be Cleaned?", "<p>At least twice a year, spring and fall, and more under heavy trees. Plus and Complete include gutter and downspout cleaning, spring and fall.</p>", "how-often-should-gutters-be-cleaned"], ["How Is Gutter Cleaning Priced?", "<p>By how many stories your home has. Plus and Complete include gutter and downspout cleaning in spring and fall. If heavy trees need more, you can add an Extra Gutter Cleaning.</p>", "how-is-gutter-cleaning-priced"], ["Should I Flush My Water Heater?", "<p>Yes, about once a year, to clear sediment that shortens tank life. Tankless units need descaling. Every plan includes a water heater flush or tankless descale.</p>", "should-i-flush-my-water-heater"], ["How Often Should I Test My Sump Pump?", "<p>Every few months and before spring thaw: pour water into the pit and make sure it starts and drains. Every plan tests your sump pump before spring thaw.</p>", "how-often-should-i-test-my-sump-pump"], ["How Do I Prep My Home for a Michigan Winter?", "<p>Tune the furnace, clean gutters, shut off and drain outside spigots, blow out irrigation and check weatherstripping. Every plan includes Winter Freeze Prep; Complete adds vent and ice dam clearing after storms.</p>", "how-do-i-prep-my-home-for-a-michigan-winter"], ["What Is the Mold and Moisture Scan?", "<p>A pinless moisture meter and thermal camera check under bathrooms, windows, basement walls and sinks. It flags damp spots where mold can grow. It is not a lab mold test and doesn&#x27;t diagnose or rule out mold. Readings and photos go to your Home Record. It&#x27;s in every plan.</p>", "what-is-the-mold-and-moisture-scan"]]], ["Plans And Visits", [["What's Included, and How Many Visits Do I Get?", "<p>Essentials: 2 visits a year, with furnace and AC tune-ups. Plus: 4 visits a year, adding gutter cleaning and more. Complete: 12 visits a year, adding after-storm checks after major storms, up to 4 a year. Your Starter Visit counts as one of your yearly visits. See What&#x27;s Included on the home page for the full list.</p>", "what-is-included-in-each-plan"], ["Is Smart Upkeep a Home Warranty or Insurance?", "<p>No. Smart Upkeep is preventive maintenance that lowers the chance of breakdowns. It doesn&#x27;t pay for repairs or replacements when something breaks, so keep your homeowner&#x27;s insurance.</p>", "is-smart-upkeep-a-home-warranty-or-insurance"], ["What Do You Do on a Visit?", "<p>Every plan includes a fall furnace tune-up, a spring AC tune-up, furnace filter changes, a water heater flush or tankless descale, dryer vent cleaning, smoke and CO detector checks and battery swap, a whole-home mold and moisture scan, a drone roof inspection and gutter check, winter freeze prep, and a written report saved to your Home Record. Plus adds quarterly visits, gutter cleaning, a garage door tune-up, water softener salt, and fridge water filters. Complete visits monthly and adds after-storm checks after major storms, up to 4 a year, with vent and ice dam clearing.</p>", "what-do-you-do-on-a-visit"], ["What Does a Plan Cost?", "<p>Essentials from $139 a month, Plus from $209 a month, Complete from $379 a month. Your price depends on home size and equipment. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-does-a-plan-cost"], ["Why Is My Price Different From the Starting Price?", "<p>Every plan has a starting price: Essentials $139, Plus $209 and Complete $379 a month. Your plan price depends on your home&#x27;s size and equipment and never goes below that starting price. Any extras you add go on top.</p>", "why-is-my-price-different-from-the-starting-price"], ["What Is the First 50 Founding Offer?", "<p>The first 50 members get 2 years for the price of 1: prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care, while the 50 spots last. Offers do not stack. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-is-the-first-50-founding-offer"], ["Do I Need to Send Photos?", "<p>No. We don&#x27;t ask for photos to sign up. Your price is based on your answers, and your tech confirms your home&#x27;s systems at the first visit. If anything changes your price, we&#x27;ll send the new price within 7 days, and you can accept it or cancel with no fee. Photos from your visits are handled as described in our Privacy Policy.</p>", "do-i-need-to-send-photos"], ["What One-Time Services Can I Book?", "<p>With Shop \u00c0 La Carte, you can book one-time services, no membership needed. A radon test and an extra gutter cleaning show a price you can book. Chimney sweep, air duct cleaning and generator annual service are quote-only: we follow up with a price, and nothing is done or charged without your OK.</p>", "how-does-shop-a-la-carte-work"], ["Can I Add Extras After I Join?", "<p>Yes. In the member app you can tailor your plan or change it: turn extras on or off, add monthly extras, or request a one-time job. Nothing bills until the team confirms the change with you.</p>", "can-i-add-extras-after-i-join"], ["What If Something Breaks Between Visits?", "<p>Send us a message in the app or give us a call, and we&#x27;ll help with next steps and who to call. In an emergency, call 911 or your utility first. Smart Upkeep is not an emergency service.</p>", "what-if-something-breaks-between-visits"]]], ["Our Techs And Service Area", [["Where Do You Work?", "<p>Metro Detroit: Wayne, Oakland and Macomb counties. If your ZIP is outside our area today, join the waitlist and we&#x27;ll let you know when Smart Upkeep comes to your area.</p>", "where-do-you-work"], ["How Are Techs Vetted, Licensed and Insured?", "<p>Every tech is insured and background-checked each year by a third party. Licensed work (mechanical, plumbing, electrical and builder work) is done by partners with an active Michigan license you can check. We keep general liability and auto insurance certificates on file. Required certifications include EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.</p>", "how-are-techs-vetted"], ["What Do I Get After a Visit, and What Is the Home Record?", "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care. It also keeps mold and moisture readings, dated roof drone photos, recall monitoring, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>", "what-will-i-get-after-a-visit"], ["Who Sees Photos From My Visits?", "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing. Photos of private living spaces are never used in marketing without your written OK. You can opt out of marketing use anytime by messaging us in the app. Our Privacy Policy explains how we use and protect your information.</p>", "who-sees-photos-from-my-visits"]]], ["Billing, Cancel And Moving", [["Can I Cancel?", "<p>Yes, anytime, with no fee. Cancel online in the member app under Profile &amp; Account. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet. Services already done aren&#x27;t refunded. Founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge. Refunds go out within 14 days. Free months have no cash or refund value.</p>", "can-i-cancel"], ["Can I Pause My Plan?", "<p>Yes. You can pause for up to 3 months each membership year. Paused months aren&#x27;t billed, and your membership term and renewal date move back by the length of the pause. Message us in the app to pause.</p>", "can-i-pause-my-plan"], ["What Happens If I Move?", "<p>If you move within our area, your membership moves with you and we requote it for the new home. You can accept the new price or cancel with no fee. If you move out of the area, you can cancel. Your Home Record can transfer to your buyer, and you can gift them 3 months free.</p>", "what-happens-if-i-move"], ["Is There a Cancellation Right in Michigan?", "<p>Yes. If you sign up in person at your home, at an event, or on a sales call we start, you can cancel within 3 business days. This is in addition to the full refund before your first visit.</p>", "is-there-a-cancellation-right-in-michigan"]]]];
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"' + (arguments[4] ? " open" : "") + '><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -561,7 +562,7 @@
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
       /* And More expands this tile in place to the plan's full feature list from pricing-config.js P.tiers[k].features (text before any ":"), with Show Less (Machan 9:07 AM). */
       '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '' : (/Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
-      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + (t.features || []).map(function (f) { var x = pcTitle(String(f).split(":")[0]); return /^Everything in /i.test(x) ? '<li class="pc-lead">' + esc(x) + '</li>' : '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + pcGroupHtml(t.features) + '</ul>' +
       (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-controls="pc-all-' + k + '">And More</button></p>' : '') + '</div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
@@ -849,22 +850,24 @@
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
          Shop À La Carte drop-down, Refund Promise) are off the page; the À La Carte list moves into its own section with the same rows and prices. */
+      /* Machan Nov 13 11:11 AM + Swatch default: every à la carte service on Home, grouped under always-visible headers, no inner scroll and no link out.
+         Rows are buttons (aria-expanded) that open in place; one open at a time; scrollY unchanged. */
       '<section class="hs-sec hs-alc" id="hs-alc"><section class="hm-row" id="row-alc"><div class="hm-row-h"><h2>Shop À La Carte</h2></div>' +
-        '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div>' +
-        '<button class="btn btn-outline mw-hover alc-go" data-act="alacarte" type="button">Shop À La Carte</button></section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
+        alcGroupsHtml() + '</section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
+      /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
-        HOME_FAQ.map(function (f, k) { return hmAcc("faq" + k, "faq", f[0], '<p>' + f[1] + '</p>'); }).join("") +
-        '<a class="btn btn-outline mw-hover hm-faq-all" href="faq/">See All FAQs</a>' +
+        FAQ_ALL.map(function (g, gi) { return '<div class="sa-grp"><h3 class="sa-grp-h">' + esc(g[0]) + '</h3><div class="sa-list">' + g[1].map(function (q, qi) {
+          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1]); }).join("") + '</div></div>'; }).join("") +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
@@ -1100,41 +1103,145 @@
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
   window.addEventListener("resize", function () { var r = app.querySelector(".hm"); if (r) { hmHdrSync(); hsBarFill(r); } });
   /* Plan tile And More / Show Less: expands the tile in place, no jump; scroll position stays put. The one-screen Plans rule relaxes only while a tile is open. */
+  /* Machan Nov 13 11:09 AM: the expanded And More list is grouped under short Title Case headers. Real plan features only (pricing-config.js untouched);
+     a feature goes to the first group whose pattern matches; empty groups are left out. No icons yet (Swatch deck pending). */
+  var PC_GROUPS = [
+    ["Visits", /visits a year/i],
+    ["Heating And Cooling", /furnace|\bac\b|thermostat|humidifier/i],
+    ["Water And Plumbing", /water heater|pipe|sump|water shut-off|hose|toilet|caulk|water softener|water filter|freeze/i],
+    ["Roof And Outside (Drone)", /roof|drone|gutter|downspout|window well|grading|garage door|storm|ice dam/i],
+    ["Inside The Home", /dryer|smoke|mold|range hood|fridge coil|attic/i],
+    ["Records And Perks", /checklist|health score|contractor|recall|warrant|report|record|sell|gift/i]
+  ];
+  function pcGroupHtml(features) {
+    var lead = "", g = PC_GROUPS.map(function () { return []; }), rest = [];
+    (features || []).forEach(function (f) {
+      var x = pcTitle(String(f).split(":")[0]);
+      if (/^Everything in /i.test(x)) { lead += '<li class="pc-lead">' + esc(x) + '</li>'; return; }
+      for (var i = 0; i < PC_GROUPS.length; i++) { if (PC_GROUPS[i][1].test(x)) { g[i].push(x); return; } }
+      rest.push(x);
+    });
+    if (rest.length) g[g.length - 1] = g[g.length - 1].concat(rest); /* never drop a feature */
+    return lead + PC_GROUPS.map(function (G, i) {
+      if (!g[i].length) return "";
+      return '<li class="pc-grp"><p class="pc-grp-h">' + esc(G[0]) + '</p><ul class="pc-sub">' + g[i].map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></li>';
+    }).join("");
+  }
   /* Swatch QA (b): display-only Title Case for the expanded feature lists, matching the site's Title Case lines (every word capped, e.g. "Mold And Moisture Scan").
      Caps the first letter after a start, space, hyphen, slash, quote or "("; all-caps tokens (AC, CO) and numbers are left as they are. pricing-config.js is untouched. */
   function pcTitle(x) { x = String(x); return x.replace(/(^|[\s\-\/("])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
+  /* Shared in-place accordion row (À La Carte rows and Home FAQ): a real button with aria-expanded/aria-controls, so Enter and Space work. */
+  function saItem(id, headHtml, bodyHtml) {
+    return '<div class="sa-item"><button type="button" class="sa-q mw-hover" id="' + id + '-b" aria-expanded="false" aria-controls="' + id + '">' + headHtml +
+      '<svg class="sa-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<div class="sa-a" id="' + id + '" role="region" aria-labelledby="' + id + '-b" hidden>' + bodyHtml + '</div></div>';
+  }
+  /* À La Carte groups: same names and order as the plan lists, plus one À La Carte-only group. Items are the full monthly and one-time catalogs
+     (the same rows as the À La Carte page); names, descs and prices come from pricing-config via the existing catalog code. */
+  var ALC_GROUPS = [
+    ["Heating And Cooling", /furnace|\bac\b|thermostat|chimney/i],
+    ["Water And Plumbing", /water|sump|hose bib|irrigation/i],
+    ["Roof And Outside", /roof|gutter|window wash|christmas/i],
+    ["Inside The Home", /bath fan|radon|appliance|doorbell/i],
+    ["Seasonal Equipment", /generator|mower|snowblower/i]
+  ];
+  function alcDetail(a, monthly) {
+    var d = [];
+    if (a.desc) d.push('<p>' + esc(a.desc) + '</p>');
+    if (a.note) d.push('<p>' + esc(a.note) + '</p>');
+    var cfg = (P.addons || []).concat(P.lastMinute || []).filter(function (x) { return x.id === a.id || x.id + "_once" === a.id; })[0];
+    var lk = cfg ? cfg.id : (/window/i.test(a.label) ? "windows" : /christmas/i.test(a.label) ? "lights" : "");
+    if (lk && AC_LIMITS[lk]) d.push('<p>' + esc(AC_LIMITS[lk]) + '</p>');
+    var pl = monthly ? addMo(a) : oncePriceLabel(a);
+    if (!/quote required/i.test(a.desc || "") && pl === QUOTE_LABEL) d.push('<p>Quote required. Add it to your request and we will follow up with a price.</p>');
+    if (monthly && /^\+\$/.test(pl)) d.push('<p>' + esc(pl + " added to your membership. It is the yearly price divided by 12, rounded, and the yearly price is set at the midpoint of metro Detroit market pricing research.") + '</p>');
+    return d.join("");
+  }
+  function alcGroupsHtml() {
+    var rows = monthlyAddonCatalog().map(function (a) { return { a: a, m: true }; }).concat(onceAddonCatalog().map(function (a) { return { a: a, m: false }; }));
+    var g = ALC_GROUPS.map(function () { return []; }), other = [];
+    rows.forEach(function (r) { for (var i = 0; i < ALC_GROUPS.length; i++) { if (ALC_GROUPS[i][1].test(r.a.label)) { g[i].push(r); return; } } other.push(r); });
+    var groups = ALC_GROUPS.map(function (G, i) { return [G[0], g[i]]; }); if (other.length) groups.push(["More Services", other]);
+    var n = 0;
+    return '<div class="sa-groups alc-groups">' + groups.map(function (G) {
+      if (!G[1].length) return "";
+      return '<div class="sa-grp"><h3 class="sa-grp-h">' + esc(G[0]) + '</h3><div class="sa-list">' + G[1].map(function (r) {
+        var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
+        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + '<small>' + (r.m ? "Monthly Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+      }).join("") + '</div></div>';
+    }).join("") + '</div>';
+  }
+  function bindSaRows(root) {
+    root.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest(".sa-q"); if (!b || !root.contains(b)) return;
+      var y = window.scrollY, open = b.getAttribute("aria-expanded") !== "true", sec = b.closest(".hs-sec") || root;
+      sec.querySelectorAll('.sa-q[aria-expanded="true"]').forEach(function (o) { if (o !== b) { o.setAttribute("aria-expanded", "false"); var p = document.getElementById(o.getAttribute("aria-controls")); if (p) p.hidden = true; } });
+      b.setAttribute("aria-expanded", String(open)); var pnl = document.getElementById(b.getAttribute("aria-controls")); if (pnl) pnl.hidden = !open;
+      pcScroll(y);
+    });
+  }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
   function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
   function bindPlanMore(root) {
     var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, sec = document.getElementById("hs-plans");
+    /* Open or close one tile in place (height animation unless reduced motion; instant when asked). */
+    function pcSet(card, open, instant) {
+      var b = card.querySelector("[data-pc-more]"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)");
+      if (!b || !all || (b.getAttribute("aria-expanded") === "true") === open) return;
+      var h0 = card.getBoundingClientRect().height;
+      if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
+      all.hidden = !open; if (keys) keys.hidden = open;
+      b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show Less" : "And More";
+      card.classList.toggle("pc-open", open);
+      if (sec) sec.classList.toggle("pc-expanded", !!root.querySelector(".hm-plan.pc-open"));
+      if (open) { card.style.height = "auto"; card.style.maxHeight = "none"; } else { card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; }
+      var h1 = card.getBoundingClientRect().height;
+      if (!reduce && !instant && Math.abs(h1 - h0) > 2) {
+        card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
+        card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); card.style.height = (b.getAttribute("aria-expanded") === "true") ? "auto" : card.dataset.fixedH; }, { once: true });
+      }
+    }
+    /* Swatch QA F2: no page jump. If Plans is (about) pinned under the header, keep it pinned exactly; otherwise keep scrollY.
+       After a collapse that leaves the tile above the header, pin Plans so the tile stays in view. */
+    function pcKeep(y, pinned, card, open) {
+      var hbN = pcHdr(), pinT = sec ? sec.getBoundingClientRect().top - hbN : 0;
+      if (sec && (pinned || (!open && card && card.getBoundingClientRect().top < hbN))) pcScroll(window.scrollY + pinT); else pcScroll(y);
+    }
+    function pcPinned() { return !!sec && Math.abs(sec.getBoundingClientRect().top - pcHdr()) < window.innerHeight * 0.35; }
     root.querySelectorAll("[data-pc-more]").forEach(function (b) {
       ["pointerdown", "keydown"].forEach(function (ev) { b.addEventListener(ev, function (e) { e.stopPropagation(); }); });
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
-        var card = b.closest(".hm-plan"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)"), open = b.getAttribute("aria-expanded") !== "true", y = window.scrollY;
-        var hb0 = pcHdr(), pinned = !!sec && Math.abs(sec.getBoundingClientRect().top - hb0) < window.innerHeight * 0.35;
-        var h0 = card.getBoundingClientRect().height;
-        if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
-        all.hidden = !open; if (keys) keys.hidden = open;
-        b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show Less" : "And More";
-        card.classList.toggle("pc-open", open);
-        if (sec) sec.classList.toggle("pc-expanded", !!root.querySelector(".hm-plan.pc-open"));
-        if (open) { card.style.height = "auto"; card.style.maxHeight = "none"; } else { card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; }
-        var h1 = card.getBoundingClientRect().height;
-        if (!reduce && Math.abs(h1 - h0) > 2) {
-          card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
-          card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); card.style.height = open ? "auto" : card.dataset.fixedH; }, { once: true });
-        }
-        /* Swatch QA F2: no page jump on And More / Show Less for any tile. If Plans is (about) pinned under the header, keep it pinned exactly;
-           otherwise keep scrollY. Show Less from deep in a long list pins Plans so the tile stays in view. */
-        var hbN = pcHdr(), pinT = sec ? sec.getBoundingClientRect().top - hbN : 0;
-        if (sec && (pinned || (!open && card.getBoundingClientRect().top < hbN))) pcScroll(window.scrollY + pinT); else pcScroll(y);
+        var card = b.closest(".hm-plan"), open = b.getAttribute("aria-expanded") !== "true", y = window.scrollY, pinned = pcPinned();
+        /* Machan Nov 13 11:10 AM: only one tile open at a time (desktop shows all three side by side). */
+        if (open) root.querySelectorAll(".hm-plan.pc-open").forEach(function (c) { if (c !== card) pcSet(c, false, true); });
+        pcSet(card, open, false);
+        pcKeep(y, pinned, card, open);
       });
     });
+    /* Machan Nov 13 11:10 AM: swipe the plan carousel to a neighbor and the open tile closes by itself. Fires only once the open tile is
+       less than half visible in the carousel and the swipe has settled (scrollend, or 160ms after the last scroll), so small nudges do nothing. */
+    var scroller = sec && sec.querySelector(".hm-scroll");
+    if (scroller) {
+      var settleT = null;
+      var settle = function () {
+        clearTimeout(settleT); settleT = null;
+        var openC = root.querySelectorAll(".hm-plan.pc-open"); if (!openC.length) return;
+        var sr = scroller.getBoundingClientRect(), y = window.scrollY, pinned = pcPinned(), changed = false;
+        openC.forEach(function (c) {
+          var r = c.getBoundingClientRect(), w = Math.max(1, r.width), shown = Math.max(0, Math.min(r.right, sr.right) - Math.max(r.left, sr.left)) / w;
+          if (shown < 0.5) { pcSet(c, false, true); changed = c; }
+        });
+        if (changed) pcKeep(y, pinned, changed, false);
+      };
+      scroller.addEventListener("scroll", function () { clearTimeout(settleT); settleT = setTimeout(settle, 160); }, { passive: true });
+      scroller.addEventListener("scrollend", settle, { passive: true });
+    }
   }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanMore(root);
+    bindSaRows(root);
     /* Badge carousel: pause while touched (hover pause is CSS). */
     root.querySelectorAll(".hm-hchips").forEach(function (c) { var t = null;
       c.addEventListener("touchstart", function () { clearTimeout(t); c.classList.add("hold"); }, { passive: true });
