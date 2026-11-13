@@ -2837,6 +2837,10 @@
     if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { location.href = "sms:?&body=" + encodeURIComponent(text + " " + url); setTimeout(copy, 600); return; }
     copy();
   }
+  /* Hotfix Nov 13 2026 (Machan 10:26 PM): a fresh visit always opens on Home at the top. Saved sign-up progress never auto-opens;
+     it resumes only through the resume strip / menu dot (S.resume keeps the step). */
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  if (S.screen !== "home") { if (isOb(S.screen)) S.resume = S.screen; S.screen = "home"; S.path = []; save(); }
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
   if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); }
   window.addEventListener("hashchange", function () { if (location.hash === "#cancel") { history.replaceState(null, "", location.pathname); go("cancel"); } });
@@ -2865,7 +2869,10 @@
   };
     (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9a8"; document.head.appendChild(l); })();
   function bootApp() {
+    var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
+    if (h0 && /^#[\w-]+$/.test(h0) && !location.hash) { try { history.replaceState(history.state, "", location.pathname + location.search + h0); } catch (e) {} }
+    if (!h0) window.scrollTo(0, 0);
     hmHash();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
     if (!dismissed && S.screen === "home") openVideo(false);
