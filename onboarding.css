@@ -563,3 +563,119 @@ body.on-qf.on-ob .foot{display:none}
 .ob-start .qf-body>.fl:first-child{margin:0 0 2px!important}
 .ob-start .ob-cal{margin-bottom:6px!important}
 .ob-start .ob-cal{padding-top:6px!important;padding-bottom:6px!important}
+
+/* ===== Funnel step 1 calm layout (Machan Nov 13 11:13, Swatch spec) ===== */
+/* Header on every funnel step: Share left, logo center, Home right. Soft matching 44px pills. */
+.top-home{display:none}
+body.on-ob .topbar{position:sticky;top:0;min-height:60px;padding:.5rem 1rem;background:#FCF9F4}
+body.on-ob .topbar .brand{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;z-index:1}
+body.on-ob .topbar .brand img{height:40px;width:auto}
+body.on-ob .topbar .top-share{position:absolute;left:.6rem;right:auto;top:50%;transform:translateY(-50%);z-index:2;margin:0;display:flex}
+body.on-ob .topbar .share-msg{left:52px;right:auto}
+body.on-ob .top-home{display:inline-flex;align-items:center;justify-content:center;gap:6px;position:absolute;right:.6rem;top:50%;transform:translateY(-50%);z-index:2;text-decoration:none;color:#1a1a1a;box-sizing:border-box}
+body.on-ob .topbar .btn-share,
+body.on-ob .topbar .top-home{height:44px;min-height:44px;min-width:44px;border:0!important;border-radius:999px;background:#F3EEE4;color:#1a1a1a;box-shadow:none;padding:0 12px;font:600 14px/1 Hind,var(--mw-font-body),sans-serif}
+body.on-ob .topbar .btn-share{width:44px;padding:0}
+body.on-ob .topbar .btn-share:focus-visible,
+body.on-ob .topbar .top-home:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+body.on-ob .topbar .top-home svg{display:block;flex:none}
+
+/* Progress: 'Step 1 Of 10' Title Case, no uppercase eyebrow, full-width bar (Start Over left the header). */
+.ob .qf-step{text-transform:none;letter-spacing:0;font:600 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}
+.ob .qf-prog{padding-right:0;margin:var(--sp-2) 0 var(--sp-2)}
+.ob:has(.qf-foot .ob-undo) .qf-prog{padding-right:6.5rem}
+
+/* Start Over is a quiet text link under Next, inside the bar. */
+.ob .ob-bar{display:grid;grid-template-columns:auto 1fr;column-gap:var(--sp-3);row-gap:var(--sp-2);align-items:center;padding-top:var(--sp-2);padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.ob .ob-bar .back-pill{grid-column:1;grid-row:1;margin:0}
+.ob .ob-bar .btn-big{grid-column:2;grid-row:1;margin:0;min-height:48px}
+.ob .ob-bar .qf-startover{grid-column:2;grid-row:2;justify-self:center;margin:0;min-height:32px;padding:0;background:none;border:0;color:#737373;font:500 13px/32px Hind,var(--mw-font-body),sans-serif;text-decoration:underline;cursor:pointer}
+.ob .ob-bar .qf-startover[hidden]{display:none}
+.ob .ob-bar .ob-built{grid-column:1/-1;grid-row:3;flex-basis:auto;margin:0;padding-top:4px;text-align:center;font:500 12px/16px Hind,var(--mw-font-body),sans-serif;color:#737373}
+
+/* Step 1: no icon tile, no subline, 24px between groups / 8px within. */
+.ob-address .qf-hero.stack.compact,
+.ob-address .qf-hero.qf-hero-plain{display:block;text-align:left;margin:var(--sp-2) 0 var(--sp-5);gap:0}
+.ob-address .qf-hero .qf-art{display:none}
+.ob-address .qf-hero.compact .qf-h,
+.ob-address .qf-h{margin:0;font:700 28px/1.1 Khand,var(--mw-font-heading),sans-serif;color:#1a1a1a;letter-spacing:0;text-transform:none}
+.ob-address .ob-home-form{display:flex;flex-direction:column;gap:var(--sp-5)}
+.ob-address .ob-fields{display:block}
+.ob-address .ob-fields .fl{display:block;margin:var(--sp-2) 0 var(--sp-2)}
+.ob-address .ob-fields .fl:first-child{margin-top:0}
+.ob-address .ob-fields #obStreet{width:100%;min-height:44px;height:auto}
+.ob-address .ob-fields #obZip,
+.ob-address input[type=text].ob-zip{width:50%;max-width:50%;min-width:8.5rem;min-height:44px;height:auto;display:block}
+.ob-address .ob-area{margin:var(--sp-1) 0 0;color:#737373;font:500 13px/17px Hind,var(--mw-font-body),sans-serif}
+.ob-address .ferr{margin:0}
+.ob-address .ferr:empty{display:none;margin:0}
+.ob-address .ob-size .meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--sp-2);margin:0 0 var(--sp-2)}
+.ob-address .ob-size .k,
+.ob-address .ob-stories .k{margin:0;font:600 15px/20px Hind,var(--mw-font-body),sans-serif;color:#1a1a1a;text-transform:none;letter-spacing:0}
+.ob-address .ob-size .s,
+.ob-address .ob-stories .s{margin:0;font:500 13px/17px Hind,var(--mw-font-body),sans-serif;color:#737373}
+.ob-address .size-chips{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
+.ob-address .size-chip{min-height:44px;height:auto;padding:8px 10px;white-space:normal;font:600 14px/1.2 Hind,var(--mw-font-body),sans-serif}
+.ob-address .ob-stories-row{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);min-height:44px}
+.ob-address .ob-stories .s{margin-top:var(--sp-2)}
+.ob-address .ob-stories .priced-note{margin:var(--sp-2) 0 0;font:500 13px/17px Hind,var(--mw-font-body),sans-serif;color:#737373}
+
+/* Undo (tailor) can still sit on the progress row; Start Over does not. */
+.ob .qf-foot{position:absolute;top:0;right:0;margin:0;padding:var(--sp-1) 0 0;display:flex;flex-direction:row-reverse;align-items:center;gap:var(--sp-3)}
+.ob .qf-foot:empty{display:none}
+
+/* .qf adds 0.9rem padding-bottom; the sticky bar already has safe-area padding, so drop it or the step overflows the phone. */
+.ob.qf{padding-bottom:0}
+
+/* Kill leftover header van/road on funnel screens so they can't sit on the logo. */
+body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
+
+/* Short phones: keep 44px taps, tighten to the 4/8/12/16 scale so the step fits one screen. */
+@media (max-height:700px){
+  body.on-ob .topbar{min-height:56px;padding:6px 12px}
+  body.on-ob .topbar .brand img{height:36px}
+  .ob-address .qf-prog{margin:4px 0 8px!important}
+  .ob-address .qf-hero.stack.compact,
+  .ob-address .qf-hero.qf-hero-plain{margin:4px 0 8px!important}
+  .ob-address .qf-h,
+  .ob-address .qf-hero.compact .qf-h{font-size:24px!important;line-height:1.1!important}
+  .ob-address .qf-body{margin-bottom:0!important;padding-bottom:0!important}
+  .ob-address .ob-home-form{gap:8px}
+  .ob-address .ob-fields .fl{margin:8px 0 4px}
+  .ob-address .ob-fields .fl:first-child{margin-top:0}
+  .ob-address .ob-fields input,
+  .ob-address .ob-fields #obStreet,
+  .ob-address .ob-fields #obZip,
+  .ob-address input[type=text].ob-zip{min-height:44px!important;height:44px!important;padding-top:8px!important;padding-bottom:8px!important}
+  .ob-address .ob-area{margin-top:4px;font-size:12px;line-height:15px}
+  .ob-address .ob-size .meta{margin-bottom:4px;gap:8px}
+  .ob-address .size-chips{gap:8px!important}
+  .ob-address .size-chip{min-height:44px!important;height:44px!important;padding:6px 8px!important}
+  .ob-address .ob-stories-row{min-height:44px}
+  .ob-address .ob-stories .s{margin-top:4px}
+  .ob-address .ob-stories .priced-note{margin-top:4px}
+  .ob-address .ob-bar{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));row-gap:4px}
+  .ob-address .ob-bar .btn-big{min-height:44px}
+  .ob-address .ob-bar .ob-built{padding-top:0;line-height:14px}
+  .ob-address .pick-card{margin:0;border:0;background:transparent;box-shadow:none}
+}
+@media (max-height:667px){
+  .ob-address .ob-fields .fl{margin:4px 0 4px}
+  .ob-address .ob-fields .fl:first-child{margin-top:0}
+  .ob-address .ob-stories-row,
+  .ob-address .ob-stories .ob-step{min-height:44px;height:44px}
+  .ob-address.ob-stepper-a .ob-step{padding:0}
+  .ob-address.ob-stepper-a .ob-step button{width:44px;height:44px}
+  .ob-address .qf-prog{margin:4px 0 4px!important}
+  .ob-address .qf-hero.stack.compact,
+  .ob-address .qf-hero.qf-hero-plain{margin:4px 0 4px!important}
+  .ob-address .ob-bar{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-height:640px){
+  .ob-address .qf-h,
+  .ob-address .qf-hero.compact .qf-h{font-size:22px!important}
+  .ob-address .ob-home-form{gap:8px}
+  .ob-address .qf-prog{margin:0 0 4px!important}
+  body.on-ob .topbar{min-height:56px}
+  .ob-address.qf{min-height:calc(100dvh - var(--tb,56px));max-height:calc(100dvh - var(--tb,56px))}
+}
