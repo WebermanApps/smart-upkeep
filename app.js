@@ -473,7 +473,7 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
-    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ if (window.suBandSync) window.suBandSync();
+    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -619,7 +619,7 @@
     var t = P.tiers[k];
     return '<ul class="pd-list">' + t.features.map(function (f) { var i = f.indexOf(":"), h = i > 0 ? f.slice(0, i) : f, rest = i > 0 ? f.slice(i + 1).trim() : "";
       return '<li>' + I(FICO(f), "xs") + (rest ? '<details class="pd-more"><summary>' + h + '</summary><p class="small muted">' + rest + '</p></details>' : '<span>' + h + '</span>') + '</li>'; }).join("") + '</ul>' +
-      '<p class="small muted">Visits Per Year: ' + t.visits + '</p>' +
+      '<p class="small muted">Visits / Year: ' + t.visits + '</p>' +
       '<div class="pd-cta"><button class="btn btn-primary btn-big mw-hover" data-act="start" type="button">Get Started</button><button class="link mw-hover pd-back" type="button" data-hm-back="1">Back to Plans</button></div>';
   }
   function planCard(k, ord) {
@@ -960,8 +960,8 @@
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
-      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill"><div class="hm-tabs-row">' +
-        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "Tailor Your Plan", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
+      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill"><div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
+        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "Tailor Your Plan", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '"' + (i === 0 ? ' aria-current="page"' : "") + '><span class="hm-tab-core">' + I(t[3], "sm") + '<span>' + t[1] + '</span></span></button>'; }).join("") +
       '</div></div></nav>' +
       '</div>';
   }
@@ -1076,18 +1076,96 @@
     if (el.matches && el.matches(".hm-row-h")) return el.querySelector("h2,h1,h3") || el;
     return el.querySelector(":scope > summary, :scope > .hm-row-h h2, .hm-row-h h2, :scope > h2, h2, summary") || el;
   }
-  function hmJump(el, smooth) {
-    if (!el) return; hmHdrSync();
-    var title = hmJumpTitle(el);
-    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var off = parseFloat(getComputedStyle(title).scrollMarginTop);
-    if (!off) {
-      var hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-hdr-h")) || 0;
-      var gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-jump-gap")) || 12;
-      off = hdr + gap;
+  /* One Home scroll path (PR home-scroll-polish-1113): a single 520ms ease-in-out cubic glide,
+     cancelled on user input, with scroll-snap disabled for the duration so the browser cannot re-snap.
+     Reduced motion is an instant jump to the same flush point (section top = header bottom). */
+  var hmGlide = { raf: 0, lock: false, tab: null, ignoreUntil: 0, gen: 0, onEnd: null };
+  function hmReduced() {
+    return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function hmSnapHold(off) {
+    document.documentElement.classList.toggle("su-glide", !!off);
+  }
+  function hmTabIdFor(el) {
+    var sec = el && el.id ? el : (el && el.closest && el.closest(".hs-sec"));
+    return ({ "hs-top": "home", "hs-plans": "plans", "hs-alc": "alacarte", "hs-faq": "faq" })[(sec && sec.id) || ""] || null;
+  }
+  function hmEaseInOutCubic(tt) {
+    return tt < 0.5 ? 4 * tt * tt * tt : 1 - Math.pow(-2 * tt + 2, 3) / 2;
+  }
+  function hmGlideStop(keepTab) {
+    if (hmGlide.raf) { cancelAnimationFrame(hmGlide.raf); hmGlide.raf = 0; }
+    if (hmGlide.onEnd) {
+      window.removeEventListener("scrollend", hmGlide.onEnd);
+      hmGlide.onEnd = null;
     }
-    var top = Math.max(0, Math.round(title.getBoundingClientRect().top + window.scrollY - off));
-    window.scrollTo({ top: top, behavior: rm || smooth === false ? "auto" : "smooth" });
+    hmGlide.gen += 1;
+    hmSnapHold(false);
+    hmGlide.lock = false;
+    if (!keepTab) hmGlide.tab = null;
+  }
+  function hmOnUserScroll(e) {
+    if (!hmGlide.lock) return;
+    if (performance.now() < hmGlide.ignoreUntil) return;
+    if (e && e.target && e.target.closest && e.target.closest(".hm-dock, .hs-arrow, [data-hs-go], [data-hs-next], [data-hm-tab]")) return;
+    hmGlideStop(true);
+  }
+  function hmGlideTo(top, tabId) {
+    top = Math.max(0, Math.round(top));
+    if (tabId) {
+      hmGlide.tab = tabId;
+      if (typeof window.suMarkTab === "function") window.suMarkTab(tabId, true);
+    }
+    hmGlideStop(true);
+    var gen = hmGlide.gen;
+    var from = window.scrollY || 0;
+    if (hmReduced() || Math.abs(from - top) < 1) {
+      if (tabId) hmGlide.tab = tabId;
+      window.scrollTo(0, top);
+      hmSnapHold(false);
+      hmGlide.lock = false;
+      setTimeout(function () { if (gen === hmGlide.gen && !hmGlide.lock) hmGlide.tab = null; }, 80);
+      return;
+    }
+    hmGlide.lock = true;
+    hmSnapHold(true);
+    hmGlide.ignoreUntil = performance.now() + 80;
+    var dist = top - from, t0 = performance.now(), dur = 560;
+    function step(now) {
+      if (gen !== hmGlide.gen) return;
+      var tt = Math.min(1, (now - t0) / dur);
+      window.scrollTo(0, from + dist * hmEaseInOutCubic(tt));
+      if (tt < 1) { hmGlide.raf = requestAnimationFrame(step); return; }
+      window.scrollTo(0, top);
+      hmGlide.raf = 0;
+      function done() {
+        if (gen !== hmGlide.gen) return;
+        if (hmGlide.onEnd) {
+          window.removeEventListener("scrollend", hmGlide.onEnd);
+          hmGlide.onEnd = null;
+        }
+        hmGlideStop(true);
+        if (tabId && typeof window.suMarkTab === "function") window.suMarkTab(tabId, true);
+        setTimeout(function () { if (gen === hmGlide.gen && !hmGlide.lock) hmGlide.tab = null; }, 80);
+      }
+      if ("onscrollend" in window) {
+        hmGlide.onEnd = done;
+        window.addEventListener("scrollend", done, { once: true });
+      } else setTimeout(done, 32);
+    }
+    hmGlide.raf = requestAnimationFrame(step);
+  }
+  function hmJump(el, smooth) {
+    if (!el) return;
+    var sec = el.closest && el.closest(".hs-sec");
+    if (sec) { hmJumpSec(sec, smooth); return; }
+    hmHdrSync();
+    var title = hmJumpTitle(el);
+    var hdr = document.querySelector(".topbar");
+    var off = hdr ? hdr.getBoundingClientRect().bottom : 0;
+    var top = Math.max(0, Math.round(window.scrollY + (title.getBoundingClientRect().top - off)));
+    if (smooth === false || hmReduced()) window.scrollTo(0, top);
+    else hmGlideTo(top, hmTabIdFor(el));
   }
   /* Skip visually hidden titles (e.g. phone "Why Trust Us" is clipped to 1px in #row-trust .hm-row-h). */
   function titleVisible(h) {
@@ -1112,10 +1190,15 @@
     var sec = (el.classList && el.classList.contains("hs-sec")) ? el : (el.closest && el.closest(".hs-sec")) || el;
     var hdr = document.querySelector(".topbar");
     var off = hdr ? hdr.getBoundingClientRect().bottom : 0;
-    var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     /* scrollY and getBoundingClientRect share a coordinate space, including when html { zoom } is on; do not divide by zoom. */
     var top = Math.max(0, Math.round(window.scrollY + (sec.getBoundingClientRect().top - off)));
-    window.scrollTo({ top: top, behavior: rm || smooth === false ? "auto" : "smooth" });
+    var tabId = hmTabIdFor(sec);
+    if (smooth === false || hmReduced()) {
+      if (tabId && typeof window.suMarkTab === "function") window.suMarkTab(tabId, true);
+      window.scrollTo(0, top);
+      return;
+    }
+    hmGlideTo(top, tabId);
   }
   function jumpSec(id) {
     var el = document.getElementById(id); if (!el) return;
@@ -1138,16 +1221,28 @@
     var tabs = root.querySelector(".hm-tabs"), z = zoomFactor();
     if (!tabs) return;
     var off = document.body.classList.contains("hs-bar-off"); document.body.classList.remove("hs-bar-off");
-    var tr = tabs.getBoundingClientRect(), reserve = Math.ceil((window.innerHeight - tr.top) / z) + 8; /* Machan Nov 13 1:25 PM: 8px over the bar (was 12) gives the hero video a little more room */
+    var tr = tabs.getBoundingClientRect(), reserve = Math.ceil((window.innerHeight - tr.top) / z) + 8; /* 8px air above the bar. Used for last-page clearance only, not as a per-section spacer. */
     if (off) document.body.classList.add("hs-bar-off");
     document.documentElement.style.setProperty("--su-sec-pb", reserve + "px");
+    function barTop() {
+      var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+      return dock ? dock.getBoundingClientRect().top / z : (window.innerHeight / z);
+    }
+    function viewRoom() {
+      var hdr = document.querySelector(".topbar");
+      var top = hdr ? hdr.getBoundingClientRect().bottom / z : 0;
+      return Math.max(80, barTop() - 8 - top);
+    }
     function budget(sec) {
       var arrow = sec.querySelector(":scope > .hs-arrow");
-      var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
       var ah = arrow ? arrow.getBoundingClientRect().height / z : 0;
-      return Math.max(80, sec.clientHeight - pb - ah - 8);
+      return Math.max(80, viewRoom() - ah);
     }
-    function setH(els, h) { els.forEach(function (e) { e.style.height = h + "px"; e.style.minHeight = h + "px"; e.style.maxHeight = h + "px"; }); }
+    /* Continuous page (Machan 10:16): do not stretch sections to a header-sized min-height or bar-reserve padding. */
+    ["hs-top","hs-plans","hs-alc","hs-faq"].forEach(function (id) {
+      var s = document.getElementById(id); if (!s) return;
+      s.style.height = ""; s.style.minHeight = ""; s.style.maxHeight = "";
+    });
     /* Top (Machan Nov 13 9:03-9:12 AM): eyebrow, price, line, video and badge carousel on one screen above See Plans, which sits 12px over the bar stack.
        Phones: the video takes every pixel left over (3:4 up to the full content width; below that it keeps the width and crops top/bottom white space),
        and the text starts over the video's empty floor (--hero-ov). Gaps come from the --hs-* scale. */
@@ -1163,8 +1258,8 @@
       function apply(h) { h = Math.min(H, Math.round(h)); var ov = Math.round(Math.min(96, h * 0.2)); root.style.setProperty("--hero-ov", ov + "px"); root.style.setProperty("--hero-ov-pad", Math.max(gap, Math.round(ov * 0.4)) + "px"); thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto"; }
       apply(H);
       if (chips && arrow) {
-        /* the arrow is pinned to the section bottom (above the bar reserve); measure against that spot, not where an overflowing arrow got pushed */
-        var limit = function () { var r = sec.getBoundingClientRect(); return r.top / z + sec.clientHeight - (parseFloat(getComputedStyle(sec).paddingBottom) || 0) - arrow.getBoundingClientRect().height / z; };
+        /* Arrow sits 8px above the real bar top. Section is content-sized, so measure against the bar, not a padding spacer. */
+        var limit = function () { return barTop() - 8 - arrow.getBoundingClientRect().height / z; };
         for (var n = 0; n < 6; n++) {
           var slack = limit() - gap - chips.getBoundingClientRect().bottom / z, cur = thumb.getBoundingClientRect().height / z;
           if (slack >= 0 && (slack < 2 || cur >= H)) break;
@@ -1392,7 +1487,10 @@
     /* PR108 r3 (Swatch Nov 13 4:49 PM): title + chips + box (+ See arrow) are one block centered in the section. The box keeps its natural height when
        the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside.
        FAQ Rich Look: FAQ is top-aligned so leftover space sits under the list; reserve 8px above and below (16 total) and measure air to the dock. */
-    var cs = getComputedStyle(sec), inner = sec.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    var hdr = document.querySelector(".topbar"), dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    var topLine = hdr ? hdr.getBoundingClientRect().bottom / z : 0;
+    var botLine = dock ? dock.getBoundingClientRect().top / z : (window.innerHeight / z);
+    var inner = Math.max(80, botLine - 8 - topLine);
     var kids = [].filter.call(sec.children, function (c) { var k = getComputedStyle(c); return k.display !== "none" && k.position !== "absolute" && k.position !== "fixed"; });
     var total = kids.reduce(function (t, c) { var k = getComputedStyle(c); return t + c.getBoundingClientRect().height / z + (parseFloat(k.marginTop) || 0) + (parseFloat(k.marginBottom) || 0); }, 0);
     var nat = box.getBoundingClientRect().height / z, others = total - nat, gap = sec.id === "hs-faq" ? 16 : 32, room = Math.floor(inner - others - gap);
@@ -1781,35 +1879,83 @@
     accs.forEach(function (d) { d.querySelector("summary").addEventListener("click", function (e) { e.preventDefault(); if (d.open) setOpen(d, false); else openAcc(d, false); }); });
     root.querySelectorAll("[data-hm-open]").forEach(function (b) { b.addEventListener("click", function () { var d = document.getElementById("acc-" + b.getAttribute("data-hm-open")); if (d) openAcc(d, true); }); });
     root.querySelectorAll("[data-hs-next]").forEach(function (b) { b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); jumpSec(b.getAttribute("data-hs-next")); }); });
-    function markTab(id) { root.querySelectorAll("[data-hm-tab]").forEach(function (o) { o.classList.toggle("on", o.getAttribute("data-hm-tab") === id); }); }
+    function placeInd(id, instant) {
+      var row = root.querySelector(".hm-tabs-row"), ind = root.querySelector(".hm-tab-ind"), btn = root.querySelector('[data-hm-tab="' + id + '"]');
+      if (!row || !ind || !btn) return;
+      var rr = row.getBoundingClientRect(), br = btn.getBoundingClientRect();
+      var x = Math.round(br.left - rr.left + 6);
+      var w = Math.max(0, Math.round(br.width - 12));
+      var h = Math.max(0, Math.round(br.height - 8));
+      var first = !ind.dataset.ready;
+      if (instant || first || hmReduced()) ind.style.transition = "none";
+      else ind.style.transition = "";
+      ind.style.width = w + "px";
+      ind.style.height = h + "px";
+      ind.style.top = "4px";
+      ind.style.transform = "translate3d(" + x + "px,0,0)";
+      ind.dataset.ready = "1";
+      if (instant || first || hmReduced()) { void ind.offsetWidth; if (!hmReduced()) ind.style.transition = ""; }
+    }
+    function markTab(id, locked) {
+      if (locked) hmGlide.tab = id;
+      root.querySelectorAll("[data-hm-tab]").forEach(function (o) {
+        var on = o.getAttribute("data-hm-tab") === id;
+        o.classList.toggle("on", on);
+        if (on) o.setAttribute("aria-current", "page");
+        else o.removeAttribute("aria-current");
+      });
+      placeInd(id, !!locked && !root.querySelector(".hm-tab-ind").dataset.ready);
+    }
+    window.suMarkTab = markTab;
     root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
       var id = b.getAttribute("data-hm-tab"), sec = b.getAttribute("data-hs-sec");
-      markTab(id);
+      markTab(id, true);
       if (id === "home") {
         var top = document.getElementById("hs-top");
-        if (top) hmJumpSec(top); else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+        if (top) hmJumpSec(top); else hmGlideTo(0, "home");
       } else jumpSec(sec);
     }); });
-    /* Scroll spy: which of the 4 sections is in view (black active tab, no gold). */
+    /* Scroll spy: the section that occupies the most of the viewport below the header, with a 50% midline tie-break.
+       Frozen on the target tab for the whole programmatic glide so intermediate tabs never flash. */
+    var spyTick = false;
     function spyTabs() {
+      if (hmGlide.lock || hmGlide.tab) { if (hmGlide.tab) markTab(hmGlide.tab, true); return; }
       var map = [["home","hs-top"],["plans","hs-plans"],["alacarte","hs-alc"],["faq","hs-faq"]];
-      var hdr = document.querySelector(".topbar");
-      var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
-      var best = "home", bestTop = -1e9;
+      var hdr = document.querySelector(".topbar"), dock = document.querySelector(".hm-dock");
+      var topLine = hdr ? hdr.getBoundingClientRect().bottom : 0;
+      var botLine = dock ? dock.getBoundingClientRect().top : innerHeight;
+      var mid = (topLine + botLine) / 2, best = "home", bestArea = -1, midHit = null;
       map.forEach(function (p) {
         var el = document.getElementById(p[1]); if (!el) return;
-        var top = el.getBoundingClientRect().top;
-        if (top <= line + 1 && top >= bestTop) { bestTop = top; best = p[0]; }
+        var r = el.getBoundingClientRect();
+        var vis = Math.max(0, Math.min(r.bottom, botLine) - Math.max(r.top, topLine));
+        if (vis > bestArea) { bestArea = vis; best = p[0]; }
+        if (r.top <= mid && r.bottom >= mid) midHit = p[0];
       });
-      markTab(best);
+      markTab(midHit || best);
     }
-    addEventListener("scroll", spyTabs, { passive: true });
-    addEventListener("resize", spyTabs);
+    function spyRaf() { if (spyTick) return; spyTick = true; requestAnimationFrame(function () { spyTick = false; spyTabs(); }); }
+    if (window.__suHomeUnbind) window.__suHomeUnbind();
+    var io = null;
+    window.addEventListener("scroll", spyRaf, { passive: true });
+    window.addEventListener("resize", spyRaf);
+    window.addEventListener("wheel", hmOnUserScroll, { passive: true, capture: true });
+    window.addEventListener("touchstart", hmOnUserScroll, { passive: true, capture: true });
+    window.addEventListener("keydown", hmOnUserScroll, { capture: true, passive: true });
     if (window.IntersectionObserver) {
-      var io = new IntersectionObserver(function () { spyTabs(); }, { threshold: [0, .15, .4, .7, 1] });
+      io = new IntersectionObserver(function () { spyRaf(); }, { threshold: [0, .15, .4, .5, .7, 1] });
       ["hs-top","hs-plans","hs-alc","hs-faq"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
     }
+    window.__suHomeUnbind = function () {
+      window.removeEventListener("scroll", spyRaf, { passive: true });
+      window.removeEventListener("resize", spyRaf);
+      window.removeEventListener("wheel", hmOnUserScroll, { capture: true });
+      window.removeEventListener("touchstart", hmOnUserScroll, { capture: true });
+      window.removeEventListener("keydown", hmOnUserScroll, { capture: true, passive: true });
+      if (io) io.disconnect();
+    };
     spyTabs();
+    requestAnimationFrame(function () { placeInd((root.querySelector("[data-hm-tab].on") || {}).getAttribute ? root.querySelector("[data-hm-tab].on").getAttribute("data-hm-tab") : "home", true); });
     hsBarFill(root);
     /* Shop À La Carte Scroll deck (Machan Nov 12 2026): 01A about 4 rows, 02A fade at the bottom (clears at the end of the list), 03 skipped, note "maybe centered?" -> centered divided rows. */
     root.querySelectorAll(".alc-box").forEach(function (bx) { function f() { bx.classList.toggle("alc-end", bx.scrollTop + bx.clientHeight >= bx.scrollHeight - 2); } bx.addEventListener("scroll", f, { passive: true }); f(); var d = bx.closest("details"); if (d) d.addEventListener("toggle", f); });
@@ -3054,7 +3200,7 @@
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (!isOb(S.screen)) go(OB[0]); }
     var obHomeBtn = document.getElementById("obHomeBtn");
   if (obHomeBtn) obHomeBtn.addEventListener("click", function (e) { e.preventDefault(); save(); go("home"); });
-  document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
+  document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else { var top = document.getElementById("hs-top"); if (top) hmJumpSec(top); else hmGlideTo(0, "home"); } });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
   window.SUFunnel = {
