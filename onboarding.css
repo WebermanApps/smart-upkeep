@@ -191,7 +191,6 @@ body:not(.on-home) .topbar{overflow-x:clip}
 /* Machan plan colors (Nov 11 5:30 PM) + hero badge nowrap */
 .ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-left:3px solid var(--plan-c,#0B6E4F);border-radius:.85rem;padding:.95rem .9rem .7rem;box-shadow:0 1px 3px rgba(10,10,10,.05);position:relative}
 .ob .plan-card.sel{border-color:var(--plan-c,#0B6E4F);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--plan-c,#0B6E4F) 35%, transparent)}
-.ob .plan-card.is-popular{transform:translateY(-2px);box-shadow:0 8px 20px rgba(168,67,31,.14),0 1px 3px rgba(29,26,22,.06);border-left-color:#A8431F}
 .ob .plan-card .ribbon{white-space:nowrap;background:#F9EAE4;color:#A8431F;border:1px solid #A8431F}
 .ob .plan-price, .ob .plan-alt .amt{color:#1a1a1a}
 .ob .plan-cta{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:.7rem;padding:.55rem .8rem;border-radius:999px;font:700 .9rem/1 var(--mw-font-body);cursor:pointer}
@@ -362,7 +361,6 @@ body.on-qf.on-ob .foot{display:none}
   .ob .plan-card .plan-cta{margin-top:var(--sp-2);min-height:44px}
   .ob .plan-card:not(.sel) .plan-cta{grid-column:3;grid-row:1/3;align-self:center;width:auto;margin:0;padding:.5rem .85rem;font-size:.85rem}
   .ob .plan-card:not(.sel){padding-bottom:var(--sp-3)}
-  .ob .plan-card.is-popular{transform:none}
   /* Billing */
   .ob .bill-card{padding:var(--sp-3)}
   .ob .due-note{margin-top:var(--sp-2)}

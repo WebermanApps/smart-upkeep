@@ -556,14 +556,14 @@
   function planCard(k, ord) {
     var t = P.tiers[k], inc = (HOME_KEYPOINTS[k] || k === "silver" || k === "gold") ? homeKeypoints(k) : t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
     return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
-      '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong>' + (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '<span class="hm-badge pc-ph" aria-hidden="true">&nbsp;</span>') + '</div>' +
+      '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong></div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
-      '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
+      '<div class="pc-year"><svg class="pc-year-cal" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3.5v3.5M16 3.5v3.5M3.5 10h17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="pc-year-n">' + t.visits + '</span><span class="pc-year-l">Visits / Year</span></div>' +
             '<ul class="pc-inc">' + inc.filter(function (f) { return f !== "And More"; }).map(function (f, i) { return /Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li' + (k === "silver" ? ' data-i="' + i + '"' : '') + '>' + f + '</li>'; }).join("") + '</ul>' +
       /* Plans Expand: And More opens the full-screen sheet (bindPlanMore); the old in-tile list and inner scroll are gone. */
-      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-haspopup="dialog">And More</button></p>' : '') + '</div>';
+      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-haspopup="dialog">See More</button></p>' : '') + '</div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
@@ -577,18 +577,6 @@
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
     var hold = port && !window.__suFirst; /* Oct 17: phone holds the van-at-house poster until first interaction */
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
-  }
-
-  /* Hero Look Deck 4A Always-On Checks (Machan Nov 13): page overlay, not baked into the video.
-     Exact Title Case lines from pricing-config (Water Heater Flush/Descale, Furnace/AC Tune-Up, Dryer Vent Cleaning).
-     Hidden from AT (the button stays "Watch Video"); pointer-events none so taps still open the video.
-     Stays up with the poster under reduced motion, and after the explainer is dismissed. */
-  var HERO_CHECKS = ["Water Heater Flush/Descale", "Furnace/AC Tune-Up", "Dryer Vent Cleaning"];
-  function heroChecks() {
-    var tick = '<svg class="hm-checks-tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="7.25" fill="none" stroke="#0B6E4F" stroke-width="1.5"/><path d="M4.4 8.2l2.3 2.3 5-5" fill="none" stroke="#0B6E4F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    return '<div class="hm-checks" aria-hidden="true"><div class="hm-checks-plate"><ul class="hm-checks-list">' +
-      HERO_CHECKS.map(function (line) { return '<li>' + tick + '<span>' + line + '</span></li>'; }).join("") +
-      '</ul></div></div>';
   }
 
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
@@ -717,7 +705,7 @@
   function wiTable() {
     var ks = tierKeys();
     function cell(it, k) { if (WI_RANK[k] < WI_RANK[it[2]]) return '<td class="no" aria-label="Not included">&ndash;</td>'; return '<td class="ck-' + k + '" aria-label="Included">' + WI_CK + '</td>'; }
-    var head = '<tr><th class="lab" scope="col"><span class="sr">Item</span></th>' + ks.map(function (k) { var t = P.tiers[k]; return '<th scope="col" class="th-' + k + '">' + t.label + (t.recommended ? '<span class="wi-badge">Most Popular</span>' : '') + '<span class="wi-from">From ' + money(t.fromMonthly) + '/Mo</span></th>'; }).join("") + '</tr>';
+    var head = '<tr><th class="lab" scope="col"><span class="sr">Item</span></th>' + ks.map(function (k) { var t = P.tiers[k]; return '<th scope="col" class="th-' + k + '">' + t.label + '<span class="wi-from">From ' + money(t.fromMonthly) + '/Mo</span></th>'; }).join("") + '</tr>';
     var rows = '<tr><th scope="row" class="lab"><b>Visits</b></th>' + ks.map(function (k) { return '<td class="txt">' + WI_LINES.visits[k] + '</td>'; }).join("") + '</tr>';
     rows += '<tr><th scope="row" class="lab"><b>' + WI_FILTER + '</b></th>' + ks.map(function (k) { return '<td class="txt">' + (k === "platinum" ? WI_LINES.filterC : WI_LINES.filterEP) + '</td>'; }).join("") + '</tr>';
     rows += WI_ITEMS.map(function (it) {
@@ -732,7 +720,7 @@
     var ks = tierKeys(), sel = ks.filter(function (k) { return P.tiers[k].recommended; })[0] || ks[0];
     return '<div class="wi-r">' +
       '<div class="wi-visit">' + ks.map(function (k) { return '<p>' + WI_LINES.visits[k] + '</p>'; }).join("") + '</div>' +
-      '<div class="wi-tabsw"><div class="wi-tabs" role="tablist" aria-label="Plans">' + ks.map(function (k) { var t = P.tiers[k], on = k === sel; return '<button type="button" role="tab" class="wi-tab wt-' + k + (on ? ' on' : '') + '" id="wiT-' + k + '" aria-controls="wiP-' + k + '" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-wi-tab="' + k + '">' + t.label + (t.recommended ? '<span class="wi-badge">Most Popular</span>' : '') + '</button>'; }).join("") + '</div>' +
+      '<div class="wi-tabsw"><div class="wi-tabs" role="tablist" aria-label="Plans">' + ks.map(function (k) { var t = P.tiers[k], on = k === sel; return '<button type="button" role="tab" class="wi-tab wt-' + k + (on ? ' on' : '') + '" id="wiT-' + k + '" aria-controls="wiP-' + k + '" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-wi-tab="' + k + '">' + t.label + '</button>'; }).join("") + '</div>' +
       '<div class="wi-tabbody">' + ks.map(wiTabPanel).join("") + '</div></div>' +
       wiTable() +
       '<p class="wi-fn wi-equip">' + WI_LINES.equip + '</p></div>';
@@ -868,12 +856,12 @@
     }
     return '<div class="hm">' +
       '<section class="hs-sec hs-top" id="hs-top"><section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + heroChecks() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
+        '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
         /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         /* Machan Nov 13 9:12 AM: the bottom bar is always visible, so the hero's own CTA (Get Started on desktop, Free Quote In Minutes on phones) is removed. */
-        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="region" aria-live="polite" aria-label="Badge Details" hidden><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div></div></div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="dialog" aria-modal="true" aria-live="polite" aria-label="Badge Details" hidden><div class="hm-hc-scrim" data-hc-close="1"></div><div class="hm-hc-info-card"><span class="hm-hc-info-ico" aria-hidden="true"></span><div class="hm-hc-info-body"><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div><span class="hm-hc-info-caret" aria-hidden="true"></span></div></div></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -1095,7 +1083,7 @@
       var chips = sec.querySelector(".hm-hcw") || sec.querySelector(".hm-hchips"), arrow = sec.querySelector(":scope > .hs-arrow"), txt = sec.querySelector(".hm-hero-txt");
       thumb.style.height = ""; thumb.style.maxHeight = ""; thumb.style.minHeight = ""; thumb.style.width = ""; thumb.style.aspectRatio = "";
       if (!window.matchMedia("(max-width:480px)").matches) return;
-      var root = document.documentElement, gap = parseFloat(getComputedStyle(root).getPropertyValue("--hs-3")) || 12;
+      var root = document.documentElement, gap = parseFloat(getComputedStyle(root).getPropertyValue("--hs-4")) || 16; /* Machan Nov 13 10:06: at least 16px between badges and See Plans */
       var W = thumb.getBoundingClientRect().width / z, H = Math.round(W * 4 / 3);
       /* the bottom fifth of every scene is empty floor: the text block starts there (fade = 40% of it, text over the rest) */
       function apply(h) { h = Math.min(H, Math.round(h)); var ov = Math.round(Math.min(96, h * 0.2)); root.style.setProperty("--hero-ov", ov + "px"); root.style.setProperty("--hero-ov-pad", Math.max(gap, Math.round(ov * 0.4)) + "px"); thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto"; }
@@ -1385,7 +1373,6 @@
       wrap.innerHTML = '<div class="pc-sheet-bg" data-pc-close></div><div class="pc-sheet" tabindex="-1"><div class="pc-sheet-in">' +
         '<div class="pc-sheet-hd"><div class="pc-sheet-grab" aria-hidden="true"></div>' +
           '<button type="button" class="pc-sheet-x mw-hover" data-pc-close aria-label="Close">' + X_SVG + '</button>' +
-          (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '') +
           '<h3 id="pcSheetT" class="pc-name">' + esc(t.label) + '</h3><span class="pc-tag muted small">' + esc(t.tagline) + '</span>' +
           '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
           '<div class="pc-year">Visits Per Year: ' + t.visits + '</div></div>' +
@@ -1500,23 +1487,102 @@
   function bindBadgeInfo(c) {
     var wrapEl = c.closest(".hm-hcw"), panel = wrapEl && wrapEl.querySelector(".hm-hc-info");
     if (!panel || c.dataset.hcInfo) return; c.dataset.hcInfo = "1";
-    var tEl = panel.querySelector(".hm-hc-info-t"), xEl = panel.querySelector(".hm-hc-info-x"), cur = "", hideT = 0;
+    var tEl = panel.querySelector(".hm-hc-info-t"), xEl = panel.querySelector(".hm-hc-info-x");
+    var icoEl = panel.querySelector(".hm-hc-info-ico"), card = panel.querySelector(".hm-hc-info-card");
+    var caret = panel.querySelector(".hm-hc-info-caret"), scrim = panel.querySelector("[data-hc-close]");
+    var cur = "", hideT = 0, badgeEl = null;
     function chips(lbl) { return Array.prototype.slice.call(c.querySelectorAll(".hm-hchip")).filter(function (b) { return !lbl || b.getAttribute("data-hc-info") === lbl; }); }
+    function reducedMotion() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+    function chipIcon(lbl) {
+      for (var i = 0; i < HERO_CHIPS.length; i++) if (HERO_CHIPS[i][1] === lbl) return HERO_CHIPS[i][0];
+      return "shield";
+    }
+    function place() {
+      if (!card || !cur || !badgeEl) return;
+      var vw = innerWidth, vh = innerHeight, pad = 16, maxW = Math.min(260, vw - 32);
+      card.classList.remove("sheet");
+      card.style.maxWidth = maxW + "px";
+      card.style.left = pad + "px"; card.style.top = "0px";
+      var cw = Math.min(card.offsetWidth || maxW, maxW), ch = card.offsetHeight || 120;
+      var thumb = document.querySelector(".hm-hero .hm-thumb");
+      var arrow = document.querySelector("#hs-top > .hs-arrow");
+      var dock = document.querySelector(".hm-dock");
+      var vR = thumb && thumb.getBoundingClientRect();
+      var aR = arrow && arrow.getBoundingClientRect();
+      var dR = dock && dock.getBoundingClientRect();
+      var bR = badgeEl.getBoundingClientRect();
+      var minX = pad, maxX = vw - pad;
+      /* .hm-hero-txt is a tall fade box; measure the actual type lines. */
+      var typeTop = Infinity, typeBottom = 0;
+      [".hm-hero .hm-eb-t", ".hm-hero h1", ".hm-hero .hm-lead"].forEach(function (sel) {
+        var el = document.querySelector(sel);
+        if (!el) return;
+        var r = el.getBoundingClientRect();
+        if (r.height < 1) return;
+        if (r.top < typeTop) typeTop = r.top;
+        if (r.bottom > typeBottom) typeBottom = r.bottom;
+      });
+      var arrowTop = aR ? aR.top : (dR ? dR.top : vh);
+      var dockTop = dR && dR.height ? dR.top : vh;
+      var limitBottom = Math.min(vh - pad, arrowTop - 8, dockTop - 8);
+      if (typeTop !== Infinity) limitBottom = Math.min(limitBottom, typeTop - 8);
+      /* Prefer the clear video field above the eyebrow/price/tagline, never over See Plans. */
+      var minY = Math.max(pad, vR ? vR.top + 8 : pad);
+      var maxY = Math.min(limitBottom, vR ? Math.min(vR.bottom - 8, typeTop === Infinity ? vR.bottom - 8 : typeTop - 8) : limitBottom);
+      var left, top, sheet = false;
+      if (maxY - minY >= ch) {
+        top = minY + Math.max(0, (maxY - minY - ch) / 2);
+        left = bR.left + bR.width / 2 - cw / 2;
+      } else if (vR && (vR.bottom - Math.max(minY, vR.top + 8) >= ch) && (Math.max(minY, vR.top + 8) + ch <= limitBottom)) {
+        top = Math.max(minY, vR.top + 8);
+        left = bR.left + bR.width / 2 - cw / 2;
+      } else {
+        sheet = true;
+      }
+      if (sheet) {
+        card.classList.add("sheet");
+        cw = Math.min(vw - 32, Math.max(cw, Math.min(260, vw - 32)));
+        card.style.maxWidth = cw + "px";
+        ch = card.offsetHeight || ch;
+        top = Math.min(limitBottom, arrowTop - 8) - ch;
+        left = (vw - cw) / 2;
+        if (top < pad) top = pad;
+      }
+      if (left < minX) left = minX;
+      if (left + cw > maxX) left = maxX - cw;
+      if (top + ch > limitBottom) top = Math.max(pad, limitBottom - ch);
+      if (top < pad) top = pad;
+      left = Math.round(left); top = Math.round(top);
+      card.style.left = left + "px";
+      card.style.top = top + "px";
+      var ox = bR.left + bR.width / 2 - left, oy = bR.top + bR.height / 2 - top;
+      card.style.transformOrigin = ox + "px " + oy + "px";
+      if (caret) {
+        var cx = bR.left + bR.width / 2 - left - 6;
+        cx = Math.max(16, Math.min(cw - 22, cx));
+        var below = bR.top > top + ch / 2;
+        caret.classList.toggle("up", !below && !sheet);
+        caret.classList.toggle("down", below || sheet);
+        caret.style.left = Math.round(cx) + "px";
+        caret.style.right = "auto";
+      }
+    }
     function close(refocus) {
-      if (!cur) return; var was = cur; cur = "";
+      if (!cur) return; var was = cur; cur = ""; badgeEl = null;
       chips().forEach(function (b) { b.setAttribute("aria-expanded", "false"); b.classList.remove("on"); });
       c.classList.remove("hc-open"); panel.classList.remove("open");
-      clearTimeout(hideT); hideT = setTimeout(function () { if (!cur) panel.hidden = true; }, reducedMotion() ? 0 : 240);
+      clearTimeout(hideT); hideT = setTimeout(function () { if (!cur) panel.hidden = true; }, reducedMotion() ? 0 : 160);
       if (refocus) { var b = chips(was).filter(function (x) { return !x.closest("[aria-hidden]"); })[0]; if (b) b.focus({ preventScroll: true }); }
     }
-    function open(lbl) {
+    function open(lbl, from) {
       var txt = HERO_INFO[lbl]; if (!txt) return;
       chips().forEach(function (b) { var on = b.getAttribute("data-hc-info") === lbl; b.setAttribute("aria-expanded", on ? "true" : "false"); b.classList.toggle("on", on); });
-      tEl.textContent = lbl; xEl.textContent = txt; cur = lbl; clearTimeout(hideT);
-      panel.classList.remove("up"); panel.hidden = false;
-      /* open below the badge row unless it would run under the bottom bar; then open above it (still an overlay, hero height unchanged) */
-      var dock = document.querySelector(".hm-dock"), lim = dock && dock.getBoundingClientRect().height ? dock.getBoundingClientRect().top : innerHeight;
-      if (panel.getBoundingClientRect().bottom > lim - 8) panel.classList.add("up");
+      tEl.textContent = lbl; xEl.textContent = txt;
+      if (icoEl) icoEl.innerHTML = I(chipIcon(lbl));
+      cur = lbl; badgeEl = from || chips(lbl).filter(function (x) { return !x.closest("[aria-hidden]"); })[0];
+      clearTimeout(hideT);
+      panel.hidden = false; panel.classList.remove("open");
+      place();
       c.classList.add("hc-open"); void panel.offsetWidth; panel.classList.add("open");
     }
     function hit(e) {
@@ -1527,11 +1593,17 @@
     c.addEventListener("click", function (e) {
       if (performance.now() - (c._dragEnd || 0) < 350) return; /* a swipe is not a tap */
       var b = hit(e); if (!b) return;
-      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(false); else open(lbl);
+      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(false); else open(lbl, b);
     });
-    document.addEventListener("click", function (e) { if (cur && !c.contains(e.target) && !panel.contains(e.target)) close(false); });
+    if (scrim) scrim.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); close(false); });
+    panel.addEventListener("click", function (e) { if (e.target === panel) { e.preventDefault(); e.stopPropagation(); close(false); } });
+    document.addEventListener("click", function (e) {
+      if (!cur) return;
+      if (panel.contains(e.target) || (e.target.closest && e.target.closest(".hm-hchip") && c.contains(e.target))) return;
+      e.preventDefault(); e.stopPropagation(); close(false);
+    }, true); /* capture so the first outside tap cannot pass through to See Plans */
     document.addEventListener("keydown", function (e) { if (cur && e.key === "Escape") { e.preventDefault(); close(true); } });
-    function reducedMotion() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+    window.addEventListener("resize", function () { if (cur) place(); });
   }
   function bindBadgeStrip(c) {
     var track = c.querySelector(".hm-hc-track"), set = track && track.querySelector(".hm-hc-set");
@@ -2061,8 +2133,7 @@
       var cta = rec
         ? '<button type="button" class="plan-cta filled mw-hover"' + (sel ? ' data-ob-tailor="1"' : ' data-ob-tier="' + x + '"') + '>' + (sel ? "Tailor Your Plan" : "Choose Plus") + "</button>"
         : '<button type="button" class="plan-cta outline mw-hover"' + (sel ? ' data-ob-tailor="1"' : ' data-ob-tier="' + x + '"') + ' style="--plan-c:' + col + '">' + (sel ? "Tailor Your Plan" : ("Choose " + tx.label)) + "</button>"; /* Swatch: Tailor on a picked Essentials/Complete card opens tailor too */
-      return '<div class="plan-card' + (sel ? " sel" : "") + (rec ? " is-popular" : "") + '" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' +
-        (rec ? '<span class="ribbon">Most Popular</span>' : "") +
+      return '<div class="plan-card' + (sel ? " sel" : "") + '" data-ob-tier="' + x + '" style="--plan-c:' + col + '">' +
         '<p class="plan-kicker">' + tx.visits + ' Visits A Year</p><h2 class="plan-name">' + esc(tx.label) + '</h2><p class="plan-price">' + money(monthlyOf(p[x])) + '<small>/mo</small></p>' +
         (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
@@ -2830,7 +2901,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9b4"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9d2"; document.head.appendChild(l); })();
   function bootApp() {
     render(); suHist(S.screen, true);
     hmHash();
