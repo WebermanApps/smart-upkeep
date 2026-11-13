@@ -2062,12 +2062,8 @@
   var ANNUAL_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
   var FOUNDING_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
   var FOUNDING_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
-  /* Legal Nov 13 (PR123 review): when priced one-time services are in the total, the consent splits the amount into membership + one-time so it isn't read as all discounted.
-     Rest of each sentence unchanged. Without one-time items the lines above are used as-is. LIVE variants mirror the beta wording (not shown until PAYMENTS_LIVE). */
-  var ANNUAL_CONSENT_SPLIT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today: <strong>{membershipAmount}</strong> for <strong>12 months</strong> of membership (10% off 12 monthly payments), plus <strong>{oneTimeAmount}</strong> for one-time services. My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
-  var ANNUAL_CONSENT_SPLIT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today: <strong>{membershipAmount}</strong> for <strong>12 months</strong> of membership (10% off 12 monthly payments), plus <strong>{oneTimeAmount}</strong> for one-time services. My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
-  var FOUNDING_CONSENT_SPLIT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today: <strong>{membershipAmount}</strong> for <strong>24 months</strong> of membership (2-for-1 founding offer), plus <strong>{oneTimeAmount}</strong> for one-time services. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
-  var FOUNDING_CONSENT_SPLIT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today: <strong>{membershipAmount}</strong> for <strong>24 months</strong> of membership (2-for-1 founding offer), plus <strong>{oneTimeAmount}</strong> for one-time services. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
+  /* Legal Nov 13 (PR123 review r1 + follow-up): when one-time services or yearly flat add-ons are in Due Today, the consent itemizes the amount (each clause only when it
+     applies) so it isn't read as all discounted. The rest of each sentence (renewal and cancel) is the existing text above, unchanged. Builders: consentSplit() / monthlyConsent(). */
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
@@ -2178,11 +2174,37 @@
   function afterFoundingBlock(monthly) {
     return '<div class="after-founding" data-after-founding><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div>';
   }
-  function monthlyConsent(amount) { return fillAmt(paymentsLive() ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, amount); }
-  /* oneTime (optional): priced one-time services inside amount. > 0 picks the Legal split line; membership = amount - oneTime. */
-  function fillSplit(tpl, amount, oneTime) { return fillAmt(tpl, amount).replace(/\{membershipAmount\}/g, money(amount - oneTime)).replace(/\{oneTimeAmount\}/g, money(oneTime)); }
-  function annualConsent(amount, oneTime) { oneTime = +oneTime || 0; return oneTime > 0 ? fillSplit(paymentsLive() ? ANNUAL_CONSENT_SPLIT_LIVE : ANNUAL_CONSENT_SPLIT_BETA, amount, oneTime) : fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
-  function foundingConsent(amount, oneTime) { oneTime = +oneTime || 0; return oneTime > 0 ? fillSplit(paymentsLive() ? FOUNDING_CONSENT_SPLIT_LIVE : FOUNDING_CONSENT_SPLIT_BETA, amount, oneTime) : fillAmt(paymentsLive() ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA, amount); }
+  function consentTail(tpl, from) { return tpl.slice(tpl.indexOf(from)); } /* the unchanged rest of an existing consent line */
+  function sAmt(n) { return "<strong>" + money(n) + "</strong>"; }
+  function consentLead(live, amount) { return live ? "I agree Smart Upkeep may charge me " + sAmt(amount) + " today" : "I agree to pay Smart Upkeep " + sAmt(amount) + ", due today"; }
+  function consentSplit(live, amount, first, yearly, oneTime) {
+    var parts = [first];
+    if (yearly > 0) parts.push(sAmt(yearly) + " for yearly add-ons for the first year");
+    if (oneTime > 0) parts.push(sAmt(oneTime) + " for one-time services");
+    return consentLead(live, amount) + ": " + parts.join(", plus ") + ".";
+  }
+  /* Monthly (Legal follow-up A). amount = monthly charge (plan + monthly add-ons); yearly = /yr flats charged in full today (current build, pending Machan); oneTime = priced one-time services. */
+  function monthlyConsent(amount, yearly, oneTime) {
+    var live = paymentsLive(), tpl = live ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, tail = consentTail(tpl, " My membership");
+    yearly = +yearly || 0; oneTime = +oneTime || 0;
+    if (!(yearly > 0) && !(oneTime > 0)) return consentLead(live, amount) + ", and " + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
+    return consentSplit(live, amount + yearly + oneTime, sAmt(amount) + " for my first month of membership", yearly, oneTime) +
+      " After that, " + (live ? "Smart Upkeep may charge me " : "I agree to pay ") + sAmt(amount) + " on this date <strong>each month</strong>" + (yearly > 0 ? ", and " + sAmt(yearly) + " for yearly add-ons on this date <strong>each year</strong>" : "") + "." + tail;
+  }
+  /* Annual 10% (Legal follow-up B): /yr flats are NOT 10% off (obBill: today = annualPrepaidOf(perCharge) + flat), so they are split out of the membership amount. */
+  function annualConsent(amount, oneTime, yearly) {
+    var live = paymentsLive(), tpl = live ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA;
+    oneTime = +oneTime || 0; yearly = +yearly || 0;
+    if (!(oneTime > 0) && !(yearly > 0)) return fillAmt(tpl, amount);
+    return consentSplit(live, amount, sAmt(amount - oneTime - yearly) + " for <strong>12 months</strong> of membership (10% off 12 monthly payments)", yearly, oneTime) + consentTail(tpl, " My membership");
+  }
+  /* Founding: /yr flats are inside the 2-for-1 (obBill: today = mem + addonsAnnual(), which includes flats, for 24 months), so only one-time services are split out. */
+  function foundingConsent(amount, oneTime) {
+    var live = paymentsLive(), tpl = live ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA;
+    oneTime = +oneTime || 0;
+    if (!(oneTime > 0)) return fillAmt(tpl, amount);
+    return consentSplit(live, amount, sAmt(amount - oneTime) + " for <strong>24 months</strong> of membership (2-for-1 founding offer)", 0, oneTime) + consentTail(tpl, " After that");
+  }
   function obPlan() {
     if (foundingFull()) return S.plan === "annual" ? "annual" : "monthly";
     var p = S.plan;
@@ -2567,8 +2589,8 @@
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
     /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
-    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
-      : (b.plan === "annual" ? annualConsent(b.today, b.onceToday)
+    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge, b.addonsFlatAnnual, b.onceToday)
+      : (b.plan === "annual" ? annualConsent(b.today, b.onceToday, b.addonsFlatAnnual)
       : foundingConsent(b.today, b.onceToday));
     /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
        Accept only saves locally (no charge, no email); the checkbox and signature still apply. AGREEMENT.url still swaps in the real link when set. */
