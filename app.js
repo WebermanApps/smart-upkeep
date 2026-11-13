@@ -125,7 +125,7 @@
     }
   })();
   Object.keys(INCLUDED_EXTRAS).forEach(function (k) { if (P && P.extras && P.extras[k]) P.extras[k] = { label: P.extras[k].label, all: 0, included: true, note: "Included in every plan" }; });
-  var SU_ONCE_ADDONS = ["Furnace Tune-Up","AC Tune-Up","Exterior Window Washing","Christmas Lights Up And Down","Extra Gutter Cleaning","Extra Flat Roof Cleaning","Irrigation System Startup Or Shutdown","Chimney Sweep","Generator Annual Service","Radon Test","Water Leak Sensor Setup","Sump Pump Battery Backup","Bath Fan Clean And Check","Smart Thermostat Install","Lawn Mower Winterizing","Snowblower Tune-Up","Hose Bib Freeze Covers","Video Doorbell Install","Appliance Deep Clean","Lead And Water Test"];
+  var SU_ONCE_ADDONS = ["Furnace Tune-Up","AC Tune-Up","Exterior Window Washing","Christmas Lights Up And Down","Extra Gutter Cleaning","Extra Flat Roof Cleaning","Irrigation System Startup Or Shutdown","Chimney Sweep","Generator Annual Service","Radon Test","Water Leak Sensor Setup","Sump Pump Battery Backup","Bath Fans Clean And Check","Smart Thermostat Install","Lawn Mower Winterizing","Snowblower Tune-Up","Hose Bib Freeze Covers","Video Doorbell Install","Appliance Deep Clean","Lead And Water Test"];
   function suNorm(s){return String(s||"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();}
   function suTitle(s){
     s=String(s||"").replace(/\s+/g," ").trim();
@@ -176,7 +176,13 @@
     pool=pool.concat(P.addons||[]);
     return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
       /* Swatch D2 (Nov 12): Gutter Cleaning uses gutters2Cleanings by stories (Essentials only; Plus and up include it). */
-      if(a && a.id===GUTTER_ID){ var g=gutterAnnual(); a.gutter=true; a.annual=g||null; a.quoteRequired=!g; }
+      if(a && a.id===GUTTER_ID){ var g=gutterAnnual(); a.gutter=true; a.annual=g||null; a.quoteRequired=!g; a.label="Added Gutter Cleaning"; a.note="For homes with lots of trees and leaves."; }
+      var v = flatRoofPerVisit();
+      if(a && suClose(a.label, "Flat Roof Inspection And Clean")){
+        a.flatRoof=true;
+        if (v) { a.annual=2*v; a.quoteRequired=false; }
+        else { a.annual=null; a.quoteRequired=true; }
+      }
       return a;
     });
   }
@@ -188,6 +194,21 @@
   }
   function gutterIncluded(tier){ return (tier||S.tier)!=="silver"; }
   function gutterAddonMonthly(tier){ return (tier==="silver" && (S.addons||[]).indexOf(GUTTER_ID)>-1 && gutterAnnual()>0) ? monthlyOf(gutterAnnual()) : 0; }
+  function homeSqft(){
+    var sq=(S.answers||{}).sqft;
+    if (sq==null || sq==="" || sq==="unsure") return null;
+    var n=Number(sq);
+    return (isFinite(n) && n>0) ? n : null;
+  }
+  /* Machan Nov 13 9:00 PM: per visit = base {1:150, 2:195, 3:240} by stories + $0.02 × home sq ft. Quote only when stories or sq ft are unknown. */
+  function flatRoofPerVisit(){
+    var st=Number((S.answers||{}).stories), sq=homeSqft(), base, rate;
+    if (!(st>=1) || sq==null) return 0;
+    base=(P.flatRoofVisit||{1:150,2:195,3:240})[Math.min(3,st)];
+    rate=(P.flatRoofPerSqFt!=null && isFinite(+P.flatRoofPerSqFt)) ? +P.flatRoofPerSqFt : 0.02;
+    if (base==null || !isFinite(+base)) return 0;
+    return Math.round(+base + rate*sq);
+  }
   function onceAddonCatalog(){
     var lm=(P.lastMinute||[]).map(function(a){ var o={}; for(var k in a) o[k]=a[k]; o.fromLastMinute=true; return o; });
     var pool=lm.concat(P.addons||[]);
@@ -196,7 +217,11 @@
     monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
     rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once";
       /* Machan Nov 13 9:04-9:05 PM: every item with a set price is bookable and is not filed under We'll Quote. Only rows with no price stay quote-only (Air Duct Cleaning). */
-      if (+a.price > 0) { a.quoteRequired = false; }
+      if (suClose(a.label, "Extra Flat Roof Cleaning")) {
+        var fv = flatRoofPerVisit();
+        if (fv) { a.price = fv; a.quoteRequired = false; a.flatRoof = true; }
+        else { a.price = null; a.quoteRequired = true; a.flatRoof = true; }
+      } else if (+a.price > 0) { a.quoteRequired = false; }
       else if (hasConfigRange(a) && a.quoteRequired !== true) { a.priceRange = true; }
       else { a.quoteRequired = true; a.price = null; }
     }); /* B1: fixed, non-draft pricing-config prices show; ranged low/high show as a range; everything else stays Quote */
@@ -254,6 +279,7 @@
       return '<button type="button" class="addon mw-hover' + (on ? " sel" : "") + '" data-' + dataAttr + '="' + ad.id + '" aria-pressed="' + on + '">' +
         '<span class="chk" aria-hidden="true">' + (on ? "&#10003;" : "") + '</span>' +
         (compact ? I(XT_ICO[ad.id] || "wrench", "sm") : '') + '<span class="addon-body"><strong>' + esc(ad.label) + '</strong>' +
+        (ad.note ? '<p class="addon-note">' + esc(ad.note) + '</p>' : '') +
         (compact ? '' : '<p class="addon-desc">' + esc(ad.desc) + '</p>') +
         '<p class="addon-price">' + priceFn(ad) + '</p></span></button>';
     }).join("") + '</div>';
@@ -414,7 +440,7 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
-    document.body.classList.toggle("on-home", s === "home"); if (window.suBandSync) window.suBandSync();
+    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -587,7 +613,10 @@
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
-  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
+  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"], ["shield", "Warranties Checked"]]; /* Max-approved list, Oct 17; Warranties Checked added by Machan Nov 13 7:47 PM */
+  /* Hero badge explanations (Machan Nov 13 7:48 PM). Wording only from the live FAQ (How Are Techs Vetted / Can I Cancel / What Do I Get After a Visit /
+     What Is the Mold and Moisture Scan) and the Warranties Checked Featured Service pop-up. Pending copy check before merge. */
+  var HERO_INFO = {"Certified Techs": "Our techs hold the required certifications: EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.", "Cancel Anytime": "Cancel online anytime with no fee. Before your first visit, you get a full refund.", "Home Reports": "After every visit you get a written report with photos, saved to your Home Record.", "Background-Checked Yearly": "Every tech is background-checked each year by a third party.", "Moisture Scan Every Visit": "A moisture meter and thermal camera check for damp spots where mold can grow. It is not a lab mold test.", "Licensed & Insured": "Every tech is insured. Licensed work is done by partners with an active Michigan license you can check.", "Warranties Checked": "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record."};
   /* Trust Tags Theme deck 09 (Max note "Random order"): same 6 badges, shuffled once per page load; hero chips and Why Trust Us row share the order. */
   (function () { for (var i = HERO_CHIPS.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = HERO_CHIPS[i]; HERO_CHIPS[i] = HERO_CHIPS[j]; HERO_CHIPS[j] = t; } })();
   /* Hero trust chips (Max, Oct 17 list and per-load shuffle unchanged).
@@ -849,7 +878,7 @@
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
-    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit, then a refund for paid services not yet done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
+    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit, then a refund for paid services not yet done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."], ["shield", "Warranties Checked", "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record."]];
     trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "guttersExtra", "deck", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -864,7 +893,7 @@
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         /* Machan Nov 13 9:12 AM: the bottom bar is always visible, so the hero's own CTA (Get Started on desktop, Free Quote In Minutes on phones) is removed. */
-        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div></div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="region" aria-live="polite" aria-label="Badge Details" hidden><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -885,7 +914,7 @@
       /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
         saTabsHtml("faqg", "faq-groups", "FAQ Topics", FAQ_ALL.map(function (g, gi) { return [g[0], g[1].map(function (q, qi) {
-          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1]); }).join("")]; })) +
+          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1], q[2] === "what-should-i-do-in-an-emergency" ? "sa-emerg" : ""); }).join(""), FAQ_ICONS[gi]]; })) +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
@@ -952,12 +981,12 @@
       '<p class="lead-sm">One-time services, no membership needed. Tap Add on anything you want, then Book. <span class="draft">Draft prices</span></p>' +
       '<h4 class="acp-h">Plan Add-Ons</h4>' + renderAddonList(monthlyAddonCatalog(), sel, "acpop", function (x) { return addMo(x) + (x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : '') + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
       '<h4 class="acp-h">One-Time Add-Ons</h4>' + renderAddonList(onceAddonCatalog(), sel, "acpop", function (x) { return oncePriceLabel(x) + '<span class="acp-add">' + (sel.indexOf(x.id) > -1 ? "Added" : "Add") + '</span>'; }) +
-      '<div class="acp-foot"><button type="button" class="btn btn-primary btn-big mw-hover" data-acpop-book="1">' + (sel.length ? "Book " + sel.length + " Selected" : "Book À La Carte") + '</button></div></div></div>';
+      '<div class="acp-foot"><button type="button" class="btn btn-primary btn-big mw-hover" data-acpop-book="1">' + (sel.length ? "Book " + sel.length + " Selected" : "Book One-Time Services") + '</button></div></div></div>';
   }
   function bindAcPop(root) {
     var pop = root.querySelector("#acPop"); if (!pop) return; var from = null;
     function close() { if (pop.hidden) return; pop.hidden = true; document.body.classList.remove("xt-lock"); if (from) from.focus(); }
-    function foot() { var n = (S.alacarte || []).length; pop.querySelector("[data-acpop-book]").textContent = n ? "Book " + n + " Selected" : "Book À La Carte"; }
+    function foot() { var n = (S.alacarte || []).length; pop.querySelector("[data-acpop-book]").textContent = n ? "Book " + n + " Selected" : "Book One-Time Services"; }
     acPop.open = function (btn) { from = btn || null; pop.hidden = false; document.body.classList.add("xt-lock"); pop.querySelector(".xt-inner").scrollTop = 0; pop.querySelector(".modal-x").focus({ preventScroll: true });
       try { window.SUEvents && SUEvents.emit("alacarte_open", "site", { payload: { from: "bottom bar" } }); } catch (x) {} };
     pop.addEventListener("click", function (e) {
@@ -1163,8 +1192,8 @@
      Caps the first letter after a start, space, hyphen, slash, quote or "("; all-caps tokens (AC, CO) and numbers are left as they are. pricing-config.js is untouched. */
   function pcTitle(x) { x = String(x); return x.replace(/(^|[\s\-\/("])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
   /* Shared in-place accordion row (À La Carte rows and Home FAQ): a real button with aria-expanded/aria-controls, so Enter and Space work. */
-  function saItem(id, headHtml, bodyHtml) {
-    return '<div class="sa-item"><button type="button" class="sa-q mw-hover" id="' + id + '-b" aria-expanded="false" aria-controls="' + id + '">' + headHtml +
+  function saItem(id, headHtml, bodyHtml, cls) {
+    return '<div class="sa-item' + (cls ? " " + cls : "") + '"><button type="button" class="sa-q mw-hover" id="' + id + '-b" aria-expanded="false" aria-controls="' + id + '">' + headHtml +
       '<svg class="sa-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       '<div class="sa-a" id="' + id + '" role="region" aria-labelledby="' + id + '-b" hidden>' + bodyHtml + '</div></div>';
   }
@@ -1198,21 +1227,28 @@
     return saTabsHtml("alc", "alc-groups", "À La Carte Groups", groups.filter(function (G) { return G[1].length; }).map(function (G) {
       return [G[0], G[1].map(function (r) {
         var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
       }).join("")];
     }));
   }
+  /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM): topic icons on the six chips, not on each question. Live SUIcon set. */
+  var FAQ_ICONS = ["furnace", "shield", "gutter", "clipboard", "van", "tag"];
   /* Machan Nov 13 1:27 PM ("divided by section with the names of the sections at the top, and then if they click the section it shows the list of the items";
      "it all needs to fit in one screen"; "same with FAQ"): group names are a sideways chip row (role=tablist); only the chosen group's rows show below,
      in a box that scrolls inside itself only when that group is taller than the room left on the screen. First group is selected by default. */
   function saTabsHtml(pfx, cls, label, groups) {
+    var isFaq = cls === "faq-groups";
     return '<div class="sa-groups sa-tabbed ' + cls + '">' +
       '<div class="sa-tabs" role="tablist" aria-label="' + esc(label) + '" data-ptr-ignore>' + groups.map(function (G, i) {
-        return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '">' + esc(G[0]) + '</button>';
+        var ico = (isFaq && G[2]) ? '<span class="faq-ico" aria-hidden="true">' + I(G[2], "sm") + '</span>' : "";
+        return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '"' + (G[2] ? ' data-faq-ico="' + esc(G[2]) + '"' : "") + '>' + ico + esc(G[0]) + '</button>';
       }).join("") + '</div>' +
+      (isFaq ? '<div class="sa-faq-wrap">' : "") +
       '<div class="sa-box" data-ptr-ignore>' + groups.map(function (G, i) {
         return '<div class="sa-grp" role="tabpanel" id="' + pfx + '-p' + i + '" aria-labelledby="' + pfx + '-t' + i + '"' + (i ? " hidden" : "") + '><div class="sa-list">' + G[1] + '</div></div>';
-      }).join("") + '</div></div>';
+      }).join("") + '</div>' +
+      (isFaq ? '</div><div class="faq-contact" hidden><p>Give Us A Call Or Send A Message In The App.</p></div>' : "") +
+      '</div>';
   }
   function bindSaRows(root) {
     root.addEventListener("click", function (e) {
@@ -1254,6 +1290,8 @@
   function saFade(box) {
     var top = box.scrollTop > 2, more = box.scrollHeight - box.clientHeight - box.scrollTop > 2;
     box.classList.toggle("fade-t", top); box.classList.toggle("fade-b", more);
+    var wrap = box.parentElement;
+    if (wrap && wrap.classList.contains("sa-faq-wrap")) { wrap.classList.toggle("fade-t", top); wrap.classList.toggle("fade-b", more); }
   }
   function saIntoBox(box, item) {
     if (!item) return;
@@ -1268,17 +1306,39 @@
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
     var z = zoomFactor();
+    var contact = sec.id === "hs-faq" ? sec.querySelector(".faq-contact") : null;
+    if (contact) contact.hidden = true;
     var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.removeProperty("margin-top"); grp.style.removeProperty("margin-bottom"); }
     box.style.maxHeight = "none"; box.style.height = "";
     /* PR108 r3 (Swatch Nov 13 4:49 PM): title + chips + box (+ See arrow) are one block centered in the section. The box keeps its natural height when
-       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside. */
+       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside.
+       FAQ Rich Look: FAQ is top-aligned so leftover space sits under the list; reserve 8px above and below (16 total) and measure air to the dock. */
     var cs = getComputedStyle(sec), inner = sec.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
     var kids = [].filter.call(sec.children, function (c) { var k = getComputedStyle(c); return k.display !== "none" && k.position !== "absolute" && k.position !== "fixed"; });
     var total = kids.reduce(function (t, c) { var k = getComputedStyle(c); return t + c.getBoundingClientRect().height / z + (parseFloat(k.marginTop) || 0) + (parseFloat(k.marginBottom) || 0); }, 0);
-    var nat = box.getBoundingClientRect().height / z, others = total - nat, room = Math.floor(inner - others - 32);
+    var nat = box.getBoundingClientRect().height / z, others = total - nat, gap = sec.id === "hs-faq" ? 16 : 32, room = Math.floor(inner - others - gap);
     if (nat > room) box.style.maxHeight = Math.max(120, room) + "px";
     for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; var h = Math.max(120, box.getBoundingClientRect().height / z - over - 2); box.style.maxHeight = h + "px"; }
+    if (sec.id === "hs-faq") {
+      var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+      if (dock) {
+        var dockTop = dock.getBoundingClientRect().top, br = box.getBoundingClientRect(), overDock = (br.bottom - (dockTop - 8 * z)) / z;
+        if (overDock > 1) box.style.maxHeight = Math.max(120, br.height / z - overDock) + "px";
+      }
+      if (contact) saPlaceContact(sec, box, contact);
+    }
     saFade(box);
+  }
+  /* FAQ Rich Look 05: a small warm Contact Panel only when a short group leaves real empty space above the dock. No panel when the group fills the screen. Live line only; no phone number. */
+  function saPlaceContact(sec, box, contact) {
+    if (box.scrollHeight > box.clientHeight + 2) { contact.hidden = true; return; }
+    var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    if (!dock) { contact.hidden = true; return; }
+    var z = zoomFactor(), dockTop = dock.getBoundingClientRect().top, boxBottom = box.getBoundingClientRect().bottom;
+    contact.hidden = false;
+    var cr = contact.getBoundingClientRect(), need = cr.height / z + 8;
+    if ((dockTop - boxBottom) / z < need) { contact.hidden = true; return; }
+    if (dockTop - contact.getBoundingClientRect().bottom < 8 * z) contact.hidden = true;
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
   function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
@@ -1367,6 +1427,45 @@
      wheel/trackpad sideways, moves it by hand; about 1s after letting go it carries on from that spot. The offset wraps modulo one set width
      (two identical sets), so there is no jump in either direction. touch-action:pan-y keeps vertical page scroll; the page never scrolls sideways.
      Reduced motion: no auto-motion and the CSS native sideways scroll stays (manual only). */
+  /* Machan Nov 13 7:48 PM ICT: tapping any hero badge opens a short explanation (one shared overlay card under the badge row, so the hero never grows).
+     Copy lives in HERO_INFO (live FAQ + Warranties pop-up wording). Closes on a second tap, a tap outside or Esc; the strip pauses while open.
+     A tap right after a swipe drag is ignored. */
+  function bindBadgeInfo(c) {
+    var wrapEl = c.closest(".hm-hcw"), panel = wrapEl && wrapEl.querySelector(".hm-hc-info");
+    if (!panel || c.dataset.hcInfo) return; c.dataset.hcInfo = "1";
+    var tEl = panel.querySelector(".hm-hc-info-t"), xEl = panel.querySelector(".hm-hc-info-x"), cur = "", hideT = 0;
+    function chips(lbl) { return Array.prototype.slice.call(c.querySelectorAll(".hm-hchip")).filter(function (b) { return !lbl || b.getAttribute("data-hc-info") === lbl; }); }
+    function close(refocus) {
+      if (!cur) return; var was = cur; cur = "";
+      chips().forEach(function (b) { b.setAttribute("aria-expanded", "false"); b.classList.remove("on"); });
+      c.classList.remove("hc-open"); panel.classList.remove("open");
+      clearTimeout(hideT); hideT = setTimeout(function () { if (!cur) panel.hidden = true; }, reducedMotion() ? 0 : 240);
+      if (refocus) { var b = chips(was).filter(function (x) { return !x.closest("[aria-hidden]"); })[0]; if (b) b.focus({ preventScroll: true }); }
+    }
+    function open(lbl) {
+      var txt = HERO_INFO[lbl]; if (!txt) return;
+      chips().forEach(function (b) { var on = b.getAttribute("data-hc-info") === lbl; b.setAttribute("aria-expanded", on ? "true" : "false"); b.classList.toggle("on", on); });
+      tEl.textContent = lbl; xEl.textContent = txt; cur = lbl; clearTimeout(hideT);
+      panel.classList.remove("up"); panel.hidden = false;
+      /* open below the badge row unless it would run under the bottom bar; then open above it (still an overlay, hero height unchanged) */
+      var dock = document.querySelector(".hm-dock"), lim = dock && dock.getBoundingClientRect().height ? dock.getBoundingClientRect().top : innerHeight;
+      if (panel.getBoundingClientRect().bottom > lim - 8) panel.classList.add("up");
+      c.classList.add("hc-open"); void panel.offsetWidth; panel.classList.add("open");
+    }
+    function hit(e) {
+      var b = e.target.closest && e.target.closest(".hm-hchip"); if (b && c.contains(b)) return b;
+      var x = e.clientX, y = e.clientY; if (!x && !y) return null;
+      return chips().filter(function (k) { var r = k.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top - 4 && y <= r.bottom + 4; })[0] || null;
+    }
+    c.addEventListener("click", function (e) {
+      if (performance.now() - (c._dragEnd || 0) < 350) return; /* a swipe is not a tap */
+      var b = hit(e); if (!b) return;
+      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(false); else open(lbl);
+    });
+    document.addEventListener("click", function (e) { if (cur && !c.contains(e.target) && !panel.contains(e.target)) close(false); });
+    document.addEventListener("keydown", function (e) { if (cur && e.key === "Escape") { e.preventDefault(); close(true); } });
+    function reducedMotion() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  }
   function bindBadgeStrip(c) {
     var track = c.querySelector(".hm-hc-track"), set = track && track.querySelector(".hm-hc-set");
     if (!track || !set || c.dataset.mq) return;
@@ -1382,7 +1481,7 @@
       raf = requestAnimationFrame(frame);
       var dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
       if (!setW) measure();
-      if (!drag && !hover && t >= hold && !document.hidden && setW) { x += setW / dur * dt; wrap(); paint(); }
+      if (!drag && !hover && t >= hold && !document.hidden && setW && !c.classList.contains("hc-open")) { x += setW / dur * dt; wrap(); paint(); } /* paused while a badge explanation is open */
     }
     function pause(ms) { hold = performance.now() + ms; }
     measure(); paint(); raf = requestAnimationFrame(frame);
@@ -1402,7 +1501,7 @@
     });
     function end(e) {
       if (!drag || (e && e.pointerId !== drag.id)) return;
-      if (drag.moved) { dragEnd = performance.now(); hover = false; }
+      if (drag.moved) { dragEnd = performance.now(); c._dragEnd = dragEnd; hover = false; }
       drag = null; c.classList.remove("dragging"); pause(1000); last = 0;
     }
     ["pointerup", "pointercancel"].forEach(function (ev) { c.addEventListener(ev, end); });
@@ -1422,7 +1521,7 @@
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanMore(root);
     bindSaRows(root);
-    root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip);
+    root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip); root.querySelectorAll(".hm-hchips").forEach(bindBadgeInfo);
     hmHdrSync();
     bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
@@ -1543,7 +1642,7 @@
   /* Funnel Contact And Sign-Up deck 01 B (Machan Nov 12): Your Details is its own step before Accept. It stays after Your Plan (step 5), so the price shows before contact info is asked. */
   /* Home First Section Deck card 08 B (Machan Nov 13 1:34 PM): address and size split into two steps, so the funnel is Step X Of 11. */
   var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -1853,7 +1952,7 @@
   function aoRow(a, sel) {
     var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
     return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(aoIco(a), "sm") +
-      '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
+      '<span class="ob-ao-t"><b>' + esc(a.label) + '</b>' + (a.note ? '<span class="ob-ao-note">' + esc(a.note) + '</span>' : '') + '<small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
       (a.gutter && gutterIncluded() ? '' : '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button>') + '</div>' +
       (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
   }
@@ -1869,12 +1968,12 @@
     var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
       (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
     var addMoSum = addonsNoteMonthly();
-    var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Add-Ons">' +
+    var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Tailor Your Plan">' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Plan Add-Ons</button>' +
-      '<button type="button" role="tab" class="mw-hover' + (tab === "once" ? " on" : "") + '" id="ob-ao-tab-once" aria-selected="' + (tab === "once") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="once">One-Time</button></div>';
+      '<button type="button" role="tab" class="mw-hover' + (tab === "once" ? " on" : "") + '" id="ob-ao-tab-once" aria-selected="' + (tab === "once") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="once">One-Time Services</button></div>';
     var list = '<ul class="ob-ao-list" id="ob-ao-panel" role="tabpanel" aria-labelledby="' + (tab === "once" ? "ob-ao-tab-once" : "ob-ao-tab-monthly") + '">' + (tab === "once" ? once : monthly) + '</ul>';
     var body = '<div class="ob-ao-groups">' + tabs + list + '</div>' + (addMoSum ? '<p class="priced-note">Your add-ons: +' + money(addMoSum) + '/mo</p>' : '');
-    return obShell("addons", "wrench", 3, "Add-Ons", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
+    return obShell("addons", "wrench", 3, "Tailor Your Plan", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
   }
 
   /* 5. Plan with tags: Essentials / Plus / Complete, Plus by default, one "Tailor Your Plan" control. Deck card 2: A tag chips, B checklist. */
@@ -1986,7 +2085,7 @@
     var ym = /^\d{4}-\d{2}$/.test(S._calMonth || "") ? S._calMonth : (sel || min).slice(0, 7);
     if (ym < minYm) ym = minYm; if (ym > maxYm) ym = maxYm;
     var y = +ym.slice(0, 4), mo = +ym.slice(5, 7) - 1, lead = new Date(y, mo, 1).getDay(), days = new Date(y, mo + 1, 0).getDate(), cells = "";
-    var rows = Math.ceil((lead + days) / 7); /* PR111-compatible: .cal-6 shrinks 6-row months to the height of a 5-row month */
+    var rows = Math.ceil((lead + days) / 7); /* PR111 r3: .cal-6 lets short screens shrink cells so a 6-row month fits like a 5-row one */
     for (var i = 0; i < lead; i++) cells += '<span class="cal-x" aria-hidden="true"></span>';
     for (var dd = 1; dd <= days; dd++) {
       var iso = localISO(new Date(y, mo, dd)), dis = iso < min, on = iso === sel;
@@ -2627,22 +2726,21 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
-  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo always left on the content grid (Nov 13 7:30 PM, no scoot), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo centered at all times (Nov 13 7:46 PM, no slide), Share top left, Menu top right; also on every onboarding step (7:41 PM). Menu: Log In, Sign Up (funnel start). ---------- */
   (function () {
     var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
     var rmq = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null, ticking = false;
-    function skirt() { return parseFloat(getComputedStyle(root).getPropertyValue("--su-skirt")) || 0; }
+    function skirt() { return parseFloat(getComputedStyle(document.body).getPropertyValue("--su-skirt")) || 0; } /* body: 0 on onboarding steps */
     function sync() {
       ticking = false;
-      var onHome = document.body.classList.contains("on-home");
+      var onHome = document.body.classList.contains("su-band"); /* Home or an onboarding step (same header) */
       /* PR108 r4: warm shadow under the band once the skirt has scrolled away (band at its 56px/64px height). */
       document.body.classList.toggle("su-band-scrolled", onHome && (window.scrollY || 0) >= Math.max(1, skirt() - 0.5));
       if (!brand || !onHome) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
-      /* Machan Nov 13 7:30 PM ICT: "smart up keep logo should be on the left no centered." The logo is always left, on the content grid (no
-         center-to-left scoot). --su-lx only lines the logo up with the hero text's left edge (0 on phones, card padding on desktop); it never moves on scroll. */
-      var z = zoomFactor(), y = Math.max(0, window.scrollY || 0), tb = brand.offsetParent, ref = document.querySelector("main#app > .hm .hm-hero h1");
-      var lx = (ref && tb) ? Math.max(0, (ref.getBoundingClientRect().left - tb.getBoundingClientRect().left) / z - brand.offsetLeft) : 0;
-      var ly = (rmq && rmq.matches) ? 0 : Math.max(0, skirt() - y / z) / 2; /* vertical centring in the visible band, as live */
+      /* Machan Nov 13 7:46 PM ICT: logo centered at all times, no slide (CSS left:50% / translate -50%). Only the vertical centring in the visible band
+         (88px at the top on Home, 56px once scrolled) follows scroll, as live; reduced motion parks it in the 56px band. */
+      var z = zoomFactor(), y = Math.max(0, window.scrollY || 0), lx = 0;
+      var ly = (rmq && rmq.matches) ? 0 : Math.max(0, skirt() - y / z) / 2;
       root.style.setProperty("--su-lx", lx.toFixed(1) + "px"); root.style.setProperty("--su-ly", ly.toFixed(1) + "px");
     }
     function req() { if (!ticking) { ticking = true; requestAnimationFrame(sync); } }
@@ -2698,7 +2796,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h99z"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9a4"; document.head.appendChild(l); })();
   function bootApp() {
     render(); suHist(S.screen, true);
     hmHash();

@@ -310,7 +310,7 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
    pinned to the bottom. Start Over moves up to the step line; the site footer line is covered by the bar's own Built by Machan. ===== */
 body.on-ob main{padding-bottom:0!important}
 body.on-qf.on-ob .foot{display:none}
-.ob{position:relative;display:flex;flex-direction:column;min-height:calc(100vh - var(--tb,64px));min-height:calc(100dvh - var(--tb,64px))}
+.ob{position:relative;display:flex;flex-direction:column;min-height:calc(100vh - var(--tb,56px));min-height:calc(100dvh - var(--tb))}
 .ob .qf-body{padding-bottom:0;justify-content:flex-start}
 .ob .ob-bar{margin-top:auto}
 .ob .qf-dyk+.ob-bar,.ob .qf-body+.ob-bar{margin-top:auto}
@@ -624,8 +624,12 @@ body.on-ob .topbar .top-home svg{display:block;flex:none}
 .ob .qf-foot{position:absolute;top:0;right:0;margin:0;padding:var(--sp-1) 0 0;display:flex;flex-direction:row-reverse;align-items:center;gap:var(--sp-3)}
 .ob .qf-foot:empty{display:none}
 
-/* .qf adds 0.9rem padding-bottom; the sticky bar already has safe-area padding, so drop it or the step overflows the phone. */
-.ob.qf{padding-bottom:0}
+/* .qf adds 0.9rem padding-bottom; the sticky bar already has safe-area padding, so drop it or the step overflows the phone.
+   PR111 r4 (Swatch QA Nov 13 9:10 PM ICT): zero that under-bar padding on every step, set --tb to the real 56px/64px band,
+   and give every step min-height: calc(100dvh - var(--tb)) the way .ob-address already does, so the sticky bar sits flush. */
+body.on-ob{--tb:56px}
+@media (min-width:900px){body.on-ob{--tb:64px}}
+body.on-ob .qf,body.on-ob .ob.qf,.ob.qf{padding-bottom:0;min-height:calc(100dvh - var(--tb))}
 
 /* Kill leftover header van/road on funnel screens so they can't sit on the logo. */
 body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
@@ -813,3 +817,6 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   .ob-details .qf-dyk{margin-bottom:8px !important}
   .ob-start.sfit-start .sfit-row{min-height:40px !important;height:40px !important}
 }
+
+/* Gutter add-on subline under the title (Machan Nov 13 9:00 PM) */
+.ob-ao-t .ob-ao-note{display:block;margin:1px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}

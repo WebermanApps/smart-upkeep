@@ -44,6 +44,9 @@ window.SMART_UPKEEP_PRICING = {
   perUnit: { furnace: 184, ac: 178, tankWaterHeater: 140, tanklessWaterHeater: 318 },
   dryerVent: 171,                                // one per home, assumed
   gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
+  /* Machan Nov 13 9:00 PM: flat roof per visit = base by stories + $0.02 × home sq ft. Inspection is 2 visits/yr; Extra Flat Roof Cleaning is 1 visit. */
+  flatRoofVisit: { 1: 150, 2: 195, 3: 240 },
+  flatRoofPerSqFt: 0.02,
   /* Systems the member owns. Plan Services deck (Nov 2 2026): servicing them is an extra. If picked, it is added to ANY plan
      at the yearly price below (higher monthly price); the member can remove it on the Accept step. Draft prices unchanged. */
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
@@ -98,7 +101,7 @@ window.SMART_UPKEEP_PRICING = {
     { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 255, high: 255, unit: "service", annual: 255, price: 255 },
     { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years. Quote required — we will follow up.", quoteRequired: true, low: 271, high: 509, unit: "service", annual: 390 },
     { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up and service for a standby generator.", low: 275, high: 275, unit: "service", annual: 275, price: 275 },
-    { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
+    { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", price: 100, low: 100, high: 100, unit: "service", annual: 100 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
   ],
   /* Last-minute extras tacked onto an upcoming visit. Flat one-time prices (draft).
@@ -109,7 +112,7 @@ window.SMART_UPKEEP_PRICING = {
     /* Added Oct 18 (Max, Extras Ideas deck: 01 both, 05B, 06B, 07A). One-time prices are the example prices shown on the deck cards. Draft. home: also listed in the home Shop À La Carte list. */
     { id: "lmLeakSensors", label: "Water Leak Sensor Setup", desc: "Leak sensors under sinks, by the water heater and washer, linked to your phone.", price: 149, home: true },
     { id: "lmSumpBackup", label: "Sump Pump Battery Backup", desc: "A battery backup pump that keeps the basement dry when the power goes out.", price: 650, home: true },
-    { id: "lmBathFan", label: "Bath Fan Clean And Check", desc: "Clean bathroom exhaust fans and check they vent outside.", price: 95, home: true },
+    { id: "lmBathFan", label: "Bath Fans Clean And Check", desc: "Clean bathroom exhaust fans and check they vent outside.", price: 95, home: true },
     { id: "lmThermostat", label: "Smart Thermostat Install", desc: "Install and set up a smart thermostat you buy or we bring.", price: 175, home: true },
     /* Plan Services deck (Machan, Nov 2 2026): new extras. Prices are DRAFT estimates in line with the existing extras. */
     { id: "lmWeather", label: "Weatherproofing Refresh", desc: "Weatherstripping and door sweeps checked and replaced where worn. Parts included.", price: 145, home: true, draft: true },
@@ -128,7 +131,7 @@ window.SMART_UPKEEP_PRICING = {
     { id: "lmWaterShutoff", label: "Smart Water Shut-Off Valve", desc: "An auto shut-off that closes the main when it senses a leak. Installed by a licensed plumber from our network.", price: 695, home: true, draft: true },
     { id: "lmApplianceClean", label: "Appliance Deep Clean", desc: "Oven, fridge and dishwasher cleaned inside.", price: 195, home: true, draft: true },
     { id: "lmPatio", label: "Seasonal Patio Furniture Setup", desc: "Put out patio furniture in spring and store it in fall.", price: 110, home: true, draft: true },
-    { id: "lmLeadTest", label: "Lead And Water Test", desc: "Tap water tested for lead, useful in older Detroit homes.", price: 95, home: true, draft: true },
+    { id: "lmLeadTest", label: "Lead And Water Test", desc: "Tap water tested for lead, useful in older Detroit homes.", price: 95, home: true },
     { id: "lmHumInstall", label: "Whole-House Humidifier Install", desc: "A whole-house humidifier added to your furnace.", price: 650, home: true, draft: true }
   ]
 };
