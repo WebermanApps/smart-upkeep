@@ -406,7 +406,7 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
-    document.body.classList.toggle("on-home", s === "home"); if (window.suBandSync) window.suBandSync();
+    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -579,7 +579,10 @@
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
-  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"]]; /* Max-approved list, Oct 17 */
+  var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"], ["shield", "Warranties Checked"]]; /* Max-approved list, Oct 17; Warranties Checked added by Machan Nov 13 7:47 PM */
+  /* Hero badge explanations (Machan Nov 13 7:48 PM). Wording only from the live FAQ (How Are Techs Vetted / Can I Cancel / What Do I Get After a Visit /
+     What Is the Mold and Moisture Scan) and the Warranties Checked Featured Service pop-up. Pending copy check before merge. */
+  var HERO_INFO = {"Certified Techs": "Our techs hold the required certifications: EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.", "Cancel Anytime": "Cancel online anytime with no fee. Before your first visit, you get a full refund.", "Home Reports": "After every visit you get a written report with photos, saved to your Home Record.", "Background-Checked Yearly": "Every tech is background-checked each year by a third party.", "Moisture Scan Every Visit": "A moisture meter and thermal camera check for damp spots where mold can grow. It is not a lab mold test.", "Licensed & Insured": "Every tech is insured. Licensed work is done by partners with an active Michigan license you can check.", "Warranties Checked": "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record."};
   /* Trust Tags Theme deck 09 (Max note "Random order"): same 6 badges, shuffled once per page load; hero chips and Why Trust Us row share the order. */
   (function () { for (var i = HERO_CHIPS.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = HERO_CHIPS[i]; HERO_CHIPS[i] = HERO_CHIPS[j]; HERO_CHIPS[j] = t; } })();
   /* Hero trust chips (Max, Oct 17 list and per-load shuffle unchanged).
@@ -842,7 +845,7 @@
     var tiers = tierKeys();
     selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
-    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit, then a refund for paid services not yet done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."]];
+    var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit, then a refund for paid services not yet done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."], ["shield", "Warranties Checked", "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record."]];
     trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
     var popular = ["windows", "chimney", "ducts", "pressure", "radon", "guttersExtra", "deck", "lights"];
     var addons = popular.map(function (id) { return P.addons.filter(function (a) { return a.id === id; })[0]; }).filter(Boolean);
@@ -857,7 +860,7 @@
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         /* Machan Nov 13 9:12 AM: the bottom bar is always visible, so the hero's own CTA (Get Started on desktop, Free Quote In Minutes on phones) is removed. */
-        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div></div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="region" aria-live="polite" aria-label="Badge Details" hidden><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -1360,6 +1363,45 @@
      wheel/trackpad sideways, moves it by hand; about 1s after letting go it carries on from that spot. The offset wraps modulo one set width
      (two identical sets), so there is no jump in either direction. touch-action:pan-y keeps vertical page scroll; the page never scrolls sideways.
      Reduced motion: no auto-motion and the CSS native sideways scroll stays (manual only). */
+  /* Machan Nov 13 7:48 PM ICT: tapping any hero badge opens a short explanation (one shared overlay card under the badge row, so the hero never grows).
+     Copy lives in HERO_INFO (live FAQ + Warranties pop-up wording). Closes on a second tap, a tap outside or Esc; the strip pauses while open.
+     A tap right after a swipe drag is ignored. */
+  function bindBadgeInfo(c) {
+    var wrapEl = c.closest(".hm-hcw"), panel = wrapEl && wrapEl.querySelector(".hm-hc-info");
+    if (!panel || c.dataset.hcInfo) return; c.dataset.hcInfo = "1";
+    var tEl = panel.querySelector(".hm-hc-info-t"), xEl = panel.querySelector(".hm-hc-info-x"), cur = "", hideT = 0;
+    function chips(lbl) { return Array.prototype.slice.call(c.querySelectorAll(".hm-hchip")).filter(function (b) { return !lbl || b.getAttribute("data-hc-info") === lbl; }); }
+    function close(refocus) {
+      if (!cur) return; var was = cur; cur = "";
+      chips().forEach(function (b) { b.setAttribute("aria-expanded", "false"); b.classList.remove("on"); });
+      c.classList.remove("hc-open"); panel.classList.remove("open");
+      clearTimeout(hideT); hideT = setTimeout(function () { if (!cur) panel.hidden = true; }, reducedMotion() ? 0 : 240);
+      if (refocus) { var b = chips(was).filter(function (x) { return !x.closest("[aria-hidden]"); })[0]; if (b) b.focus({ preventScroll: true }); }
+    }
+    function open(lbl) {
+      var txt = HERO_INFO[lbl]; if (!txt) return;
+      chips().forEach(function (b) { var on = b.getAttribute("data-hc-info") === lbl; b.setAttribute("aria-expanded", on ? "true" : "false"); b.classList.toggle("on", on); });
+      tEl.textContent = lbl; xEl.textContent = txt; cur = lbl; clearTimeout(hideT);
+      panel.classList.remove("up"); panel.hidden = false;
+      /* open below the badge row unless it would run under the bottom bar; then open above it (still an overlay, hero height unchanged) */
+      var dock = document.querySelector(".hm-dock"), lim = dock && dock.getBoundingClientRect().height ? dock.getBoundingClientRect().top : innerHeight;
+      if (panel.getBoundingClientRect().bottom > lim - 8) panel.classList.add("up");
+      c.classList.add("hc-open"); void panel.offsetWidth; panel.classList.add("open");
+    }
+    function hit(e) {
+      var b = e.target.closest && e.target.closest(".hm-hchip"); if (b && c.contains(b)) return b;
+      var x = e.clientX, y = e.clientY; if (!x && !y) return null;
+      return chips().filter(function (k) { var r = k.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top - 4 && y <= r.bottom + 4; })[0] || null;
+    }
+    c.addEventListener("click", function (e) {
+      if (performance.now() - (c._dragEnd || 0) < 350) return; /* a swipe is not a tap */
+      var b = hit(e); if (!b) return;
+      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(false); else open(lbl);
+    });
+    document.addEventListener("click", function (e) { if (cur && !c.contains(e.target) && !panel.contains(e.target)) close(false); });
+    document.addEventListener("keydown", function (e) { if (cur && e.key === "Escape") { e.preventDefault(); close(true); } });
+    function reducedMotion() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  }
   function bindBadgeStrip(c) {
     var track = c.querySelector(".hm-hc-track"), set = track && track.querySelector(".hm-hc-set");
     if (!track || !set || c.dataset.mq) return;
@@ -1375,7 +1417,7 @@
       raf = requestAnimationFrame(frame);
       var dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
       if (!setW) measure();
-      if (!drag && !hover && t >= hold && !document.hidden && setW) { x += setW / dur * dt; wrap(); paint(); }
+      if (!drag && !hover && t >= hold && !document.hidden && setW && !c.classList.contains("hc-open")) { x += setW / dur * dt; wrap(); paint(); } /* paused while a badge explanation is open */
     }
     function pause(ms) { hold = performance.now() + ms; }
     measure(); paint(); raf = requestAnimationFrame(frame);
@@ -1395,7 +1437,7 @@
     });
     function end(e) {
       if (!drag || (e && e.pointerId !== drag.id)) return;
-      if (drag.moved) { dragEnd = performance.now(); hover = false; }
+      if (drag.moved) { dragEnd = performance.now(); c._dragEnd = dragEnd; hover = false; }
       drag = null; c.classList.remove("dragging"); pause(1000); last = 0;
     }
     ["pointerup", "pointercancel"].forEach(function (ev) { c.addEventListener(ev, end); });
@@ -1415,7 +1457,7 @@
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanMore(root);
     bindSaRows(root);
-    root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip);
+    root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip); root.querySelectorAll(".hm-hchips").forEach(bindBadgeInfo);
     hmHdrSync();
     bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
@@ -2586,22 +2628,21 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
-  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo always left on the content grid (Nov 13 7:30 PM, no scoot), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo centered at all times (Nov 13 7:46 PM, no slide), Share top left, Menu top right; also on every onboarding step (7:41 PM). Menu: Log In, Sign Up (funnel start). ---------- */
   (function () {
     var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
     var rmq = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null, ticking = false;
-    function skirt() { return parseFloat(getComputedStyle(root).getPropertyValue("--su-skirt")) || 0; }
+    function skirt() { return parseFloat(getComputedStyle(document.body).getPropertyValue("--su-skirt")) || 0; } /* body: 0 on onboarding steps */
     function sync() {
       ticking = false;
-      var onHome = document.body.classList.contains("on-home");
+      var onHome = document.body.classList.contains("su-band"); /* Home or an onboarding step (same header) */
       /* PR108 r4: warm shadow under the band once the skirt has scrolled away (band at its 56px/64px height). */
       document.body.classList.toggle("su-band-scrolled", onHome && (window.scrollY || 0) >= Math.max(1, skirt() - 0.5));
       if (!brand || !onHome) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
-      /* Machan Nov 13 7:30 PM ICT: "smart up keep logo should be on the left no centered." The logo is always left, on the content grid (no
-         center-to-left scoot). --su-lx only lines the logo up with the hero text's left edge (0 on phones, card padding on desktop); it never moves on scroll. */
-      var z = zoomFactor(), y = Math.max(0, window.scrollY || 0), tb = brand.offsetParent, ref = document.querySelector("main#app > .hm .hm-hero h1");
-      var lx = (ref && tb) ? Math.max(0, (ref.getBoundingClientRect().left - tb.getBoundingClientRect().left) / z - brand.offsetLeft) : 0;
-      var ly = (rmq && rmq.matches) ? 0 : Math.max(0, skirt() - y / z) / 2; /* vertical centring in the visible band, as live */
+      /* Machan Nov 13 7:46 PM ICT: logo centered at all times, no slide (CSS left:50% / translate -50%). Only the vertical centring in the visible band
+         (88px at the top on Home, 56px once scrolled) follows scroll, as live; reduced motion parks it in the 56px band. */
+      var z = zoomFactor(), y = Math.max(0, window.scrollY || 0), lx = 0;
+      var ly = (rmq && rmq.matches) ? 0 : Math.max(0, skirt() - y / z) / 2;
       root.style.setProperty("--su-lx", lx.toFixed(1) + "px"); root.style.setProperty("--su-ly", ly.toFixed(1) + "px");
     }
     function req() { if (!ticking) { ticking = true; requestAnimationFrame(sync); } }
