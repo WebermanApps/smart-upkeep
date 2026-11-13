@@ -2062,6 +2062,8 @@
   var ANNUAL_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
   var FOUNDING_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
   var FOUNDING_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
+  /* Legal Nov 13 (PR123 review r1 + follow-up): when one-time services or yearly flat add-ons are in Due Today, the consent itemizes the amount (each clause only when it
+     applies) so it isn't read as all discounted. The rest of each sentence (renewal and cancel) is the existing text above, unchanged. Builders: consentSplit() / monthlyConsent(). */
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
@@ -2172,9 +2174,37 @@
   function afterFoundingBlock(monthly) {
     return '<div class="after-founding" data-after-founding><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div>';
   }
-  function monthlyConsent(amount) { return fillAmt(paymentsLive() ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, amount); }
-  function annualConsent(amount) { return fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
-  function foundingConsent(amount) { return fillAmt(paymentsLive() ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA, amount); }
+  function consentTail(tpl, from) { return tpl.slice(tpl.indexOf(from)); } /* the unchanged rest of an existing consent line */
+  function sAmt(n) { return "<strong>" + money(n) + "</strong>"; }
+  function consentLead(live, amount) { return live ? "I agree Smart Upkeep may charge me " + sAmt(amount) + " today" : "I agree to pay Smart Upkeep " + sAmt(amount) + ", due today"; }
+  function consentSplit(live, amount, first, yearly, oneTime) {
+    var parts = [first];
+    if (yearly > 0) parts.push(sAmt(yearly) + " for yearly add-ons for the first year");
+    if (oneTime > 0) parts.push(sAmt(oneTime) + " for one-time services");
+    return consentLead(live, amount) + ": " + parts.join(", plus ") + ".";
+  }
+  /* Monthly (Legal follow-up A). amount = monthly charge (plan + monthly add-ons); yearly = /yr flats charged in full today (current build, pending Machan); oneTime = priced one-time services. */
+  function monthlyConsent(amount, yearly, oneTime) {
+    var live = paymentsLive(), tpl = live ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, tail = consentTail(tpl, " My membership");
+    yearly = +yearly || 0; oneTime = +oneTime || 0;
+    if (!(yearly > 0) && !(oneTime > 0)) return consentLead(live, amount) + ", and " + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
+    return consentSplit(live, amount + yearly + oneTime, sAmt(amount) + " for my first month of membership", yearly, oneTime) +
+      " After that, " + (live ? "Smart Upkeep may charge me " : "I agree to pay ") + sAmt(amount) + " on this date <strong>each month</strong>" + (yearly > 0 ? ", and " + sAmt(yearly) + " for yearly add-ons on this date <strong>each year</strong>" : "") + "." + tail;
+  }
+  /* Annual 10% (Legal follow-up B): /yr flats are NOT 10% off (obBill: today = annualPrepaidOf(perCharge) + flat), so they are split out of the membership amount. */
+  function annualConsent(amount, oneTime, yearly) {
+    var live = paymentsLive(), tpl = live ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA;
+    oneTime = +oneTime || 0; yearly = +yearly || 0;
+    if (!(oneTime > 0) && !(yearly > 0)) return fillAmt(tpl, amount);
+    return consentSplit(live, amount, sAmt(amount - oneTime - yearly) + " for <strong>12 months</strong> of membership (10% off 12 monthly payments)", yearly, oneTime) + consentTail(tpl, " My membership");
+  }
+  /* Founding: /yr flats are inside the 2-for-1 (obBill: today = mem + addonsAnnual(), which includes flats, for 24 months), so only one-time services are split out. */
+  function foundingConsent(amount, oneTime) {
+    var live = paymentsLive(), tpl = live ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA;
+    oneTime = +oneTime || 0;
+    if (!(oneTime > 0)) return fillAmt(tpl, amount);
+    return consentSplit(live, amount, sAmt(amount - oneTime) + " for <strong>24 months</strong> of membership (2-for-1 founding offer)", 0, oneTime) + consentTail(tpl, " After that");
+  }
   function obPlan() {
     if (foundingFull()) return S.plan === "annual" ? "annual" : "monthly";
     var p = S.plan;
@@ -2404,7 +2434,7 @@
      choose to pay show the 2 for 1 if they choose that". Order: plan, add-ons, payment choice, 2-for-1 (annual only), total. Every figure is the same value the
      Accept step shows (obBill(), aoPrice(), money()); nothing new is computed here. */
   function planColor(k) { var s = (k + " " + ((P.tiers[k] || {}).label || "")).toLowerCase(); return /platinum|complete/.test(s) ? "#05668D" : (/gold|plus/.test(s) ? "#A8431F" : "#0B6E4F"); }
-  function billChoiceTxt(b) { return b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual" : "Annual · Founding 2-For-1"); }
+  function billChoiceTxt(b) { return b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual · 10% Off" : "Annual · Founding 2-For-1"); }
   function proposalRows() {
     var b = obBill(), t = P.tiers[S.tier], tags = extraTags(), adds = selectedFunnelAddons(), rows = [];
     rows.push({ k: "plan", lab: '<b class="bd-plan" style="color:' + planColor(S.tier) + '">' + esc(t.label) + '</b><small>' + t.visits + ' Visits / Year' + (tags.length ? ' · ' + esc(tags.join(", ")) : '') + '</small>', v: money(b.monthly) + "/mo" });
@@ -2425,26 +2455,39 @@
   }
 
   /* 6b. Pay: "Pick How You'd Like To Pay". Deck picks: Choice Style B Selectable Cards, Founding Offer B Soft Cream Banner, Tone A Calm; Annual Saving skipped
-     ("only 2-for-1"), so no 10% copy here. The 2-for-1 badge opens a short explanation quoted from the FAQ "What Is the First 50 Founding Offer?". */
+     ("only 2-for-1") while founding spots last. The 2-for-1 badge opens a short explanation quoted from the FAQ "What Is the First 50 Founding Offer?".
+     Machan Nov 13 11:22 PM (option B): after the founding spots fill (foundingFull in pricing-config.js, false today), the Annual card is the 10% off annual
+     prepay (12 x monthly quote less annualDiscount, obBill "annual") instead of the 2-for-1. No 2-for-1 banner, badge or pop-up then. */
   var F2_POP = { t: "Founding 2-For-1", b: "Prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care. Offers do not stack." };
+  /* Annual card line 2 (Legal Nov 13, approved): amounts match the consent split. Neither -> no line. */
+  function payIncludesLine(yearly, oneTime) {
+    yearly = +yearly || 0; oneTime = +oneTime || 0;
+    if (yearly > 0 && oneTime > 0) return "Includes " + money(yearly) + " for yearly add-ons and " + money(oneTime) + " for one-time services, at full price.";
+    if (yearly > 0) return "Includes " + money(yearly) + " for yearly add-ons at full price.";
+    if (oneTime > 0) return "Includes " + money(oneTime) + " for one-time services at full price.";
+    return "";
+  }
   function obBilling() {
     var plan = obPlan(), t = P.tiers[S.tier], col = planColor(S.tier);
     var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
     var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
-    var fOpen = foundingOpen();
-    if (!fOpen && S.plan !== "monthly") { S.plan = "monthly"; plan = obPlan(); save(); } /* only 2-for-1 or monthly is offered (Annual Saving skipped), so the shown choice is always the charged one */
-    var aSel = fOpen && plan === "founding";
+    var fOpen = foundingOpen(), fFull = foundingFull();
+    var yr = fFull ? (function () { var s = S.plan; S.plan = "annual"; var r = obBill(); S.plan = s; return r; })() : null;
+    if (!fOpen && S.plan !== "monthly" && !(fFull && S.plan === "annual")) { S.plan = "monthly"; plan = obPlan(); save(); } /* only the offered choices (2-for-1 or monthly; after the fill, 10% annual or monthly) can be picked, so the shown choice is always the charged one */
+    var aSel = fOpen && plan === "founding", ySel = fFull && plan === "annual";
     var chk = '<span class="pay-ck" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
-    function card(key, sel, name, amt, copy, badge) {
+    function card(key, sel, name, amt, copy, badge, copy2) {
       return '<div class="pay-card' + (sel ? " sel" : "") + '" role="radio" tabindex="' + (sel ? "0" : "-1") + '" aria-checked="' + sel + '" data-ob-bill="' + key + '" style="--plan-c:' + col + '">' +
-        '<div class="pay-top"><span class="pay-name">' + name + '</span>' + (badge || '') + '<span class="pay-amt">' + amt + '</span>' + chk + '</div><p class="pay-copy">' + copy + '</p></div>';
+        '<div class="pay-top"><span class="pay-name">' + name + '</span>' + (badge || '') + '<span class="pay-amt">' + amt + '</span>' + chk + '</div><p class="pay-copy">' + copy + '</p>' + (copy2 ? '<p class="pay-copy pay-copy2">' + copy2 + '</p>' : '') + '</div>';
     }
     var badge = '<button type="button" class="f2-badge mw-hover" data-f2-open aria-expanded="false" aria-controls="f2Pop">2-For-1<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
     var banner = fOpen ? '<div class="f2-banner"><span class="f2-ic" aria-hidden="true">' + I("star", "xs") + '</span><p><b>Founding Member: 2 Years For The Price Of 1</b><br>Pay one year of your ' + esc(t.label) + ' plan' + (an.addonsAnnual ? ' and add-ons' : '') + ', get two years of care.</p></div>' : '';
     var cards = (fOpen ? card("founding", aSel, "Annual", money(an.today), "Paid today for 24 months of care.", badge) : '') +
-      card("monthly", !aSel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
+      (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>',
+        payIncludesLine(yr.addonsFlatAnnual, yr.onceToday)) : '') + /* Legal Nov 13: second line only when yearly flats and/or one-time items are in the total */
+      card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
     var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
-    var dueNow = aSel ? an.today : mo.today; /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
+    var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
     var body = banner + '<div class="pay-stack" role="radiogroup" aria-label="How to pay">' + cards + '</div>' +
       '<p class="pay-due" aria-live="polite"><span>Due Today</span><b>' + money(dueNow) + '</b></p>' + pop;
     return obShell("billing", "", 0, "Pick How You'd Like To Pay", "", body, nextBtn("Continue To Payment", true));
@@ -2554,9 +2597,9 @@
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
     /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
-    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
-      : (b.plan === "annual" ? annualConsent(b.today)
-      : foundingConsent(b.today));
+    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge, b.addonsFlatAnnual, b.onceToday)
+      : (b.plan === "annual" ? annualConsent(b.today, b.onceToday, b.addonsFlatAnnual)
+      : foundingConsent(b.today, b.onceToday));
     /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
        Accept only saves locally (no charge, no email); the checkbox and signature still apply. AGREEMENT.url still swaps in the real link when set. */
     var open = true;
@@ -3216,7 +3259,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9f3"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9h1"; document.head.appendChild(l); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
