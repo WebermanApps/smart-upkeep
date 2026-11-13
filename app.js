@@ -2869,8 +2869,10 @@
   };
     (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9a8"; document.head.appendChild(l); })();
   function bootApp() {
+    var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
-    if (!location.hash) window.scrollTo(0, 0);
+    if (h0 && /^#[\w-]+$/.test(h0) && !location.hash) { try { history.replaceState(history.state, "", location.pathname + location.search + h0); } catch (e) {} }
+    if (!h0) window.scrollTo(0, 0);
     hmHash();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
     if (!dismissed && S.screen === "home") openVideo(false);
