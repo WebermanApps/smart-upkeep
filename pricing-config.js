@@ -49,7 +49,6 @@ window.SMART_UPKEEP_PRICING = {
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
     irrigation:  { label: "Irrigation System", all: 229 },
     sump:        { label: "Sump Pump", all: 76 },
-    pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits" },
     humidifier:  { label: "Whole-House Humidifier", all: 76 },
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
@@ -112,7 +111,7 @@ window.SMART_UPKEEP_PRICING = {
     /* Added Oct 18 (Max, Extras Ideas deck: 01 both, 05B, 06B, 07A). One-time prices are the example prices shown on the deck cards. Draft. home: also listed in the home Shop À La Carte list. */
     { id: "lmLeakSensors", label: "Water Leak Sensor Setup", desc: "Leak sensors under sinks, by the water heater and washer, linked to your phone.", price: 149, home: true },
     { id: "lmSumpBackup", label: "Sump Pump Battery Backup", desc: "A battery backup pump that keeps the basement dry when the power goes out.", price: 650, home: true },
-    { id: "lmBathFan", label: "Bath Fan Clean And Check", desc: "Clean bathroom exhaust fans and check they vent outside.", price: 95, home: true },
+    { id: "lmBathFan", label: "Bath Fans Clean And Check", desc: "Clean bathroom exhaust fans and check they vent outside.", price: 95, home: true },
     { id: "lmThermostat", label: "Smart Thermostat Install", desc: "Install and set up a smart thermostat you buy or we bring.", price: 175, home: true },
     /* Plan Services deck (Machan, Nov 2 2026): new extras. Prices are DRAFT estimates in line with the existing extras. */
     { id: "lmWeather", label: "Weatherproofing Refresh", desc: "Weatherstripping and door sweeps checked and replaced where worn. Parts included.", price: 145, home: true, draft: true },

@@ -686,6 +686,140 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   body.ob-kb-open .ob-address.qf{max-height:none}
 }
 
+
+/* ===== PR113 (Machan Nov 13 8:54-9:05 PM): one-row step bar, same-shape buttons, use freed height, add-ons peek ===== */
+.ob .ob-bar{
+  display:grid !important;
+  grid-template-columns:auto auto 1fr;
+  grid-template-rows:auto auto;
+  column-gap:8px;
+  row-gap:4px;
+  align-items:center;
+  flex-wrap:nowrap;
+  background:#FFFCF7 !important;
+  border-top:1px solid #E6E1D8;
+  padding-top:8px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+}
+.ob .ob-bar:not(:has(.qf-startover:not([hidden]))){grid-template-columns:auto 1fr}
+.ob .ob-bar .back-pill{
+  grid-column:1;grid-row:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 1 auto;min-width:0;margin:0;
+  min-height:48px;height:48px;padding:0 10px;
+  border:2px solid var(--mw-terracotta,#C1502E);border-radius:0;
+  background:#FFFCF7;color:var(--mw-terracotta,#C1502E);
+  font:600 13px/1 Hind,var(--mw-font-body),sans-serif;letter-spacing:0;text-transform:none;white-space:nowrap;
+  box-shadow:none;
+}
+.ob .ob-bar .back-pill svg{display:none}
+.ob .ob-bar .qf-startover{
+  grid-column:2;grid-row:1;justify-self:stretch;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:48px;height:48px;margin:0;padding:0 10px;
+  border:2px solid var(--mw-terracotta,#C1502E);border-radius:0;
+  background:#FFFCF7;color:var(--mw-terracotta,#C1502E);
+  font:600 13px/1 Hind,var(--mw-font-body),sans-serif;letter-spacing:0;text-transform:none;text-decoration:none;white-space:nowrap;
+}
+.ob .ob-bar .qf-startover[hidden]{display:none !important}
+.ob .ob-bar .btn-big{
+  grid-column:3;grid-row:1;
+  min-height:48px !important;height:48px;margin:0;padding:0 10px;
+  border:2px solid var(--mw-terracotta,#C1502E);border-radius:0 !important;
+  font:600 13px/1 Hind,var(--mw-font-body),sans-serif !important;letter-spacing:0 !important;text-transform:none !important;white-space:nowrap;
+}
+.ob .ob-bar:not(:has(.qf-startover:not([hidden]))) .btn-big{grid-column:2}
+.ob .ob-bar .ob-built{grid-column:1/-1;grid-row:2;margin:0;text-align:center}
+.ob-address .ob-bar .btn-big,.ob-address .ob-bar .back-pill,.ob-address .ob-bar .qf-startover{min-height:48px !important;height:48px}
+
+/* Use the height freed by the single-row bar: even air, restore readable type and Did You Know.
+   Put leftover space between the body and Did You Know — not as a hole above the bar. */
+.ob .qf-hero.stack.compact{margin:var(--sp-2) 0 var(--sp-3)}
+.ob .qf-body{margin-bottom:var(--sp-3)}
+.ob .qf-dyk{margin-top:auto;margin-bottom:var(--sp-2);padding:var(--sp-2) var(--sp-3)}
+.ob .qf-dyk p{font-size:13px;line-height:18px}
+.ob .qf-dyk + .ob-bar{margin-top:0 !important}
+
+/* Add-ons list: card border always; fade + peek height when the list overflows (sfitAddons). */
+.ob-addons .ob-ao-list{
+  border:1px solid #ECE5DA;
+  border-radius:14px;
+  background:#fff;
+  padding:8px 10px 0;
+  box-sizing:border-box;
+}
+.ob-addons.sfit-ao .ob-ao-list{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  position:relative;
+}
+.ob-addons.sfit-ao .ob-ao-list::after{
+  content:"";
+  pointer-events:none;
+  position:sticky;
+  bottom:0;
+  display:block;
+  height:22px;
+  margin:-22px -10px 0;
+  background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 70%);
+}
+.ob-addons.sfit-ao .qf-dyk{margin-top:8px !important;margin-bottom:8px !important}
+.ob-addons.sfit-ao-tight .qf-hero.stack.compact{margin:4px 0 6px !important}
+.ob-addons.sfit-ao-tight .qf-help{font-size:13px;line-height:17px}
+.ob-addons.sfit-ao-tight .qf-dyk{margin-top:6px !important;margin-bottom:8px !important;padding:6px 12px !important}
+.ob-addons.sfit-ao-tight .qf-dyk p{font-size:12.5px;line-height:16px}
+.ob-addons.sfit-ao-tight .ob-ao-list{padding-top:6px}
+
+
+/* PR113 body flex (kill stacked margin-top:auto): leftover sits once, above Did You Know (or above the bar when there is no tip). */
+.ob .qf-body{flex:1 1 auto;margin-top:0;justify-content:flex-start}
+.ob-address .qf-body,.ob-homesize .qf-body,.ob-billing .qf-body{justify-content:space-evenly}
+.ob-addons .qf-body{margin-top:0;margin-bottom:8px}
+.ob-addons.sfit-ao-tight .qf-body{margin-top:0 !important;margin-bottom:6px !important}
+
+.ob-start .qf-body,.ob-start.sfit-start .qf-body{margin-bottom:8px !important}
+.ob-start .sfit-row{margin-bottom:0}
+
+
+/* Short phones: keep 48px bar targets, tighten details/start so a 6-row calendar still clears the bar by 8px.
+   .cal-6 class is set in obCalendar; PR #111 also styles this in styles.css — same targets, compatible. */
+@media (max-height:700px){
+  .ob-address .ob-bar{padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));row-gap:4px}
+  .ob-address .ob-bar .btn-big{min-height:48px !important}
+  .ob-details .qf-dyk{margin-top:6px !important;margin-bottom:8px !important;padding:6px 12px !important}
+  .ob-details .qf-dyk p{font-size:12.5px;line-height:16px}
+  .ob-details .qf-hero.stack.compact{margin:4px 0 6px !important}
+  .ob-details .qf-body{margin-bottom:6px !important}
+  .ob-details .det-card .fl{margin-top:6px !important}
+  .ob-details .det-addr{padding-top:6px !important;padding-bottom:6px !important}
+  .ob-details .su-havecode{margin:4px 0 0 !important}
+  .ob-start .sfit-row{min-height:42px !important;height:42px !important}
+  .ob-start .cal-d{min-height:38px !important;height:38px !important}
+  .ob-start .cal-wk span{line-height:13px !important}
+  .ob-start > .qf-hero.stack.compact .qf-help{font-size:12.5px !important;line-height:16px !important}
+  .ob-start .ob-cal.cal-6 .cal-d{min-height:31px !important;height:31px !important}
+  .ob-start .ob-cal.cal-6 .cal-nav{width:31px !important;height:31px !important}
+}
+@media (min-height:701px) and (max-height:760px){
+  .ob-start .ob-cal.cal-6 .cal-d{min-height:36px !important;height:36px !important}
+  .ob-start .ob-cal.cal-6 .cal-nav{width:34px !important;height:34px !important}
+}
+@media (min-height:761px){
+  .ob-start .ob-cal.cal-6 .cal-d{min-height:38px !important;height:38px !important}
+}
+@media (max-height:640px){
+  .ob-address .ob-bar{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+  .ob-details .qf-prog{margin-top:4px !important;margin-bottom:4px !important}
+  .ob-details .qf-dyk{margin-bottom:6px !important}
+  .ob-details .det-hint{margin-top:0 !important}
+  .ob-details .qf-body{margin-bottom:4px !important}
+  .ob-details .qf-dyk{margin-bottom:8px !important}
+  .ob-start.sfit-start .sfit-row{min-height:40px !important;height:40px !important}
+}
+
+/* Gutter add-on subline under the title (Machan Nov 13 9:00 PM) */
+.ob-ao-t .ob-ao-note{display:block;margin:1px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}
 /* footer-mascot-1113: Built by Machan mascot on the onboarding bar (same mark as /member/). No link-out.
    r3: do not force padding/line-height/height on the Built row, so short-phone
    Address/Home Size rules inherit (14px line, 119px bar). Size the mark at 1lh
