@@ -634,7 +634,7 @@
   };
   /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Entries start the Get Started flow. */
   var FEATURED = [
-    { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge on Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
+    { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge On Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
     { id: "storm", art: "storm", title: "Storm Checks", hook: "After-Storm Checks, Up To 4 A Year.", popTitle: "Storm Checks", popText: "On Complete, we check your home after major storms, up to 4 a year, with a drone roof check and vent and ice dam clearing.", cta: "Free Quote in Minutes" }];
@@ -741,9 +741,9 @@
   }
   /* Machan Nov 13 1:43 PM ("teh same one we have at the bottom"): the same Featured Service bar also sits at the bottom of Plans; both open the one
      bottom-sheet pop-up (same motion, unchanged). Same markup and wording; only the extra class differs. */
-  function fsAdBtn(cls) {
+  function fsAdBtn(cls, hook) {
     var f = FEATURED[0], art = FS_ART[f.art];
-    return '<button type="button" class="fs-ad mw-hover' + (cls ? " " + cls : "") + '" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + f.hook + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>';
+    return '<button type="button" class="fs-ad mw-hover' + (cls ? " " + cls : "") + '" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + (hook || f.hook) + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>';
   }
   function featuredAd() {
     var f = FEATURED[0], art = FS_ART[f.art];
@@ -861,7 +861,7 @@
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), fsAdBtn("fs-ad-plans fs-ad-hdr") /* Machan Nov 13 4:17 PM: the warranties line sits top right on the Plans header row (no separate bar under the dots). */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), fsAdBtn("fs-ad-plans fs-ad-hdr", "And Logged In Your Member App") /* Machan Nov 13 4:33 PM wording, two lines */ /* Machan Nov 13 4:17 PM: the warranties line sits top right on the Plans header row (no separate bar under the dots). */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
         '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "À La Carte Menu") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
@@ -1104,10 +1104,17 @@
       var used = row ? row.getBoundingClientRect().height / z : 0;
       var room = budget(sec) - used;
       if (cards.length && room < 0 && sec.scrollHeight > sec.clientHeight) { /* nothing to shrink below content; CSS short-phone rules keep this from happening */ }
-      if (cards.length && room > 8) {
-        var h = cards[0].getBoundingClientRect().height / z + room;
-        setH(cards, Math.floor(h));
+      /* PR108 r2 (Machan + Swatch Nov 13 4:34 PM): tiles keep their natural height (no stretch, no empty white inside a tile). The spare height goes
+         evenly above and below the tile block (tiles + dots), each gap capped at 32px. */
+      var sc = sec.querySelector(".hm-scroll"), dots = sec.querySelector(".pc-dots");
+      if (sc) sc.style.marginTop = ""; if (dots) dots.style.marginBottom = "";
+      if (cards.length && room > 2 && sc) {
+        var g = Math.min(32, Math.floor(room / 2));
+        sc.style.setProperty("margin-top", g + "px", "important"); if (dots) dots.style.setProperty("margin-bottom", g + "px", "important");
       }
+      /* Warranties block: top right of the title row when both lines fit beside the title; otherwise its own row under the title (16px edge). */
+      var hh = sec.querySelector("#row-plans > .hm-row-h"), wb = hh && hh.querySelector(".fs-ad-hdr"), t2 = hh && hh.querySelector("h2");
+      if (hh && wb && t2) { hh.classList.remove("fs-stack"); if (t2.getBoundingClientRect().right + 10 * z > wb.getBoundingClientRect().left + 0.5 || wb.scrollWidth > wb.clientWidth + 1) hh.classList.add("fs-stack"); }
     })();
     /* Shop À La Carte and FAQ (Machan Nov 13 1:26-1:27 PM): chip row + one group at a time; the list box never runs past the section's one screen. */
     saFit(document.getElementById("hs-alc")); saFit(document.getElementById("hs-faq"));
@@ -1258,15 +1265,18 @@
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
     var z = zoomFactor(), arrow = sec.querySelector(":scope > .hs-arrow");
+    var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.marginTop = ""; grp.style.marginBottom = ""; }
     box.style.maxHeight = "none"; box.style.height = "";
     var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
     var limit = sec.getBoundingClientRect().top / z + sec.clientHeight - pb - (arrow ? arrow.getBoundingClientRect().height / z + 8 : 4);
     var h = Math.max(120, Math.floor(limit - box.getBoundingClientRect().top / z - 4));
     box.style.maxHeight = h + "px";
     for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); box.style.maxHeight = h + "px"; }
-    /* Machan Nov 13 4:17 PM: the list box grows into the whole section (fills down to the arrow over the flush bar), not just its rows. */
-    box.style.height = h + "px";
-    for (var k = 0; k < 3; k++) { var ov = sec.scrollHeight - sec.clientHeight; if (ov <= 0) break; h = Math.max(120, h - ov - 2); box.style.maxHeight = h + "px"; box.style.height = h + "px"; }
+    /* PR108 r2 (Swatch Nov 13 4:34 PM): the box keeps its natural height (inner scroll only when the group is taller); the spare height goes evenly
+       above and below the chips + box block, each gap capped at 32px. No empty white inside the box. */
+    var free = limit - box.getBoundingClientRect().bottom / z - 4;
+    if (grp && free > 2) { var g = Math.min(32, Math.floor(free / 2)); grp.style.setProperty("margin-top", g + "px", "important"); grp.style.setProperty("margin-bottom", g + "px", "important"); }
+    for (var k = 0; k < 3; k++) { var ov = sec.scrollHeight - sec.clientHeight; if (ov <= 0 || !grp) break; grp.style.setProperty("margin-bottom", Math.max(0, parseFloat(grp.style.marginBottom) - ov - 1) + "px", "important"); }
     saFade(box);
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
