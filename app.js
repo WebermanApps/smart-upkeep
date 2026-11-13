@@ -472,6 +472,7 @@
     else { S.screen = "home"; html = home(); }
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
+    if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
     document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
@@ -2230,6 +2231,21 @@
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
   function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
+  /* House build band (house-build-1113): onboarding-house.js draws the county map on step 1 and the live house from step 2, from this read-only snapshot.
+     Systems join the house once the Systems step has been reached (S._hbSys), so they're carried through Back and to the finish. No prices are read here. */
+  function obHouseState() {
+    if (!isOb(S.screen)) return null;
+    var a = S.answers || {}, sz = "", labels = [], seen = {};
+    if (OB.indexOf(S.screen) >= OB.indexOf("systems")) S._hbSys = 1;
+    SIZE_OPTS.forEach(function (o) { if (o[0] === String(a.sqft)) sz = o[1]; });
+    (Array.isArray(a.extras) ? a.extras : []).forEach(function (k) { if (P.extras && P.extras[k]) labels.push(P.extras[k].label); });
+    selectedFunnelAddons().forEach(function (x) { if (x && x.label) labels.push(x.label); });
+    labels = labels.filter(function (l) { var k = String(l).toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; });
+    var sys = !!S._hbSys;
+    var seq = obSeq();
+    return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels };
+  }
+  window.suHouseState = obHouseState;
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
     var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
@@ -2237,7 +2253,7 @@
       SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
     var heroArt = art ? '<div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div>' : '';
-    return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
+    return '<section class="qf ob ob-' + id + ' ' + obCls() + '"><div class="ob-hb-slot"></div>' + prog +
       '<div class="qf-hero stack compact' + (art ? '' : ' qf-hero-plain') + '">' + heroArt + '<h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
       '<div class="qf-body">' + body + '</div>' + dyk + obFoot(foot) + '</section>';
   }
@@ -2763,7 +2779,7 @@
     return api;
   }
   function sfitStart() {
-    var sec = app.querySelector("section.ob-start"); if (!sec || window.innerHeight >= 760) return;
+    var sec = app.querySelector("section.ob-start"); if (!sec || window.innerHeight >= 760 + (window.suHouse ? 124 : 0)) return; /* house-build-1113: the 124px house band moves the cutoff */
     sec.classList.add("sfit-start");
     var cal = sec.querySelector(".ob-cal"), blurb = sec.querySelector(".ob-blurb"), note = sec.querySelector(".priced-note"), pick = sec.querySelector(".cal-pick");
     if (!cal || !blurb) return;
@@ -3259,7 +3275,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9h1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k1"; document.head.appendChild(l); })();
+    /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k1"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

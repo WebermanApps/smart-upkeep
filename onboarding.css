@@ -913,3 +913,63 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 /* Pay step: Due Today under the cards, same total as Review and Accept (Machan Nov 13 11:00 PM) */
 .ob-billing .pay-due{display:flex;justify-content:space-between;align-items:baseline;margin:12px 4px 0;font-family:Hind,sans-serif;font-size:14px;line-height:20px;color:#3d3d3d}
 .ob-billing .pay-due b{font-family:Khand,sans-serif;font-weight:700;font-size:22px;line-height:1;color:#1a1a1a}
+
+/* house-build-1113 (Machan Nov 13 7:44 PM + Home Build Motion & Map Deck picks): one band above the step on every onboarding step, same spot and size on every step.
+   Step 1 = line-art county map (Wayne, Oakland, Macomb), step 2 on = the live house (onboarding-house.js). 106px art + 14px caption = 120px band.
+   With the keyboard open (visualViewport, html.ob-hb-mini) it drops to a 48px mini strip. Motion is transform/opacity only (WAAPI in the JS). */
+.ob-hb-slot{display:none}
+html.ob-hb-on .ob .ob-hb-slot{display:block;flex:none;margin:4px 0 4px}
+.ob-hb{position:relative;height:120px}
+.ob-hb-art{position:relative;height:106px;border-radius:12px;overflow:hidden;background:#F8F2E9;box-shadow:inset 0 0 0 1px rgba(42,36,28,.05)}
+.ob-hb-map,.ob-hb-house{position:absolute;left:0;top:0;right:0;bottom:0}
+.ob-hb svg{display:block;width:100%;height:100%}
+.ob-hb-house svg{overflow:visible}
+.ob-hb[data-mode="map"] .ob-hb-house,.ob-hb[data-mode="house"] .ob-hb-map{opacity:0;pointer-events:none}
+.ob-hb .hb-it,.ob-hb .hb-fl{transform-box:fill-box;transform-origin:50% 100%}
+.ob-hb .hb-badge{transform-origin:50% 50%}
+.ob-hb-cap{margin:0;height:14px;font:500 12px/14px Hind,system-ui,sans-serif;color:#6B6259;text-align:center;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.ob-hb-mini .ob-hb,html.ob-hb-mini .ob-hb-art{height:48px}
+html.ob-hb-mini .ob-hb-cap{display:none}
+/* Room for the band (Machan 7:49 PM: shrink questions or drop Did You Know): the house replaces the small step icon, and Did You Know lines drop on every step. */
+html.ob-hb-on .ob .qf-art{display:none}
+html.ob-hb-on .ob .qf-dyk{display:none}
+/* One screen at 390x660 (Safari visible area, Swatch QA bar: 8px of air above the bar), also 360x640 and 430x746: the band costs 124px, paid for by
+   a one-line step row, tighter title margins and a slimmer Back/Next bar (44px buttons, still full tap size). Only while the band is on. */
+html.ob-hb-on .ob .qf-prog{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;margin:2px 0 4px!important;padding-right:0!important}
+html.ob-hb-on .ob .qf-prog .qf-step{flex:none;white-space:nowrap}
+html.ob-hb-on .ob .qf-prog .qf-segs{flex:1;min-width:0}
+html.ob-hb-on .ob .qf-hero{margin-top:0!important;margin-bottom:4px!important}
+html.ob-hb-on .ob .ob-bar{padding-top:6px!important;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;row-gap:2px!important}
+html.ob-hb-on .ob .ob-bar .btn-big,html.ob-hb-on .ob .ob-bar .back-pill,html.ob-hb-on .ob .ob-bar .qf-startover{min-height:44px!important;height:44px}
+html.ob-hb-on .ob .ob-bar .ob-built{padding-top:0!important;line-height:14px!important}
+/* Short screens only (Safari visible area at 390x844 is ~660px tall): trim the tallest steps so they stay one screen with the band. Taller phones keep today's spacing.
+   Selectors carry html.ob-hb-on body.on-ob .ob.qf so they outrank the PR111 one-screen rules in styles.css only while the band is on. */
+@media (max-height:700px){
+  html.ob-hb-on body.on-ob .ob.qf > .qf-hero.stack.compact{margin-top:0!important}
+  html.ob-hb-on body.on-ob .ob.qf > .qf-hero.stack.compact .qf-help{line-height:16px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-stack{gap:5px!important;padding-top:0!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta.filled{margin-top:3px!important;min-height:40px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-plan .check-list li{line-height:16px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .gap-md{height:6px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .seg-toggle button{min-height:38px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .bill-card{padding-top:9px!important;padding-bottom:9px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .due-box{padding-top:8px!important;padding-bottom:8px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .bill-lead{margin-top:3px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-billing .due-note{margin-top:3px!important;line-height:16px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-addons .ob-ao-tabs button{min-height:38px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-addons .ob-ao-row{min-height:40px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-addons .ob-ao-list{padding-top:2px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-start .cal-d{min-height:34px!important;height:34px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-d{min-height:29px!important;height:29px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-start .cal-nav,html.ob-hb-on body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-nav{width:30px!important;height:30px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-start .sfit-row{min-height:40px!important;height:40px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-accept .sfit-rows{gap:5px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-accept .sfit-r{min-height:42px!important;height:42px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-accept .paybox{padding-top:7px!important;padding-bottom:7px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-accept .sfit-tail{margin-top:4px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-accept .su-cancel-line .link{min-height:30px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-details .det-card .fl{margin-top:2px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-systems .sys-row{padding-top:5px!important;padding-bottom:5px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-systems .ob-whs{padding-bottom:6px!important;row-gap:6px!important}
+  html.ob-hb-on body.on-ob .ob.qf.ob-systems .type-seg button{min-height:38px!important;height:38px!important}
+}
