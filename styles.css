@@ -2031,7 +2031,7 @@ body.on-home #hs-faq{padding-bottom:var(--su-sec-pb, 140px)}
 .pc-all[hidden]{display:none}
 body.on-home .hs-plans.pc-expanded{height:auto!important;max-height:none!important}
 body.on-home .hs-plans.pc-expanded .hm-scroll{align-items:flex-start}
-body.on-home .hm-plan.pc-open{height:auto!important;max-height:none!important}
+/* .hm-plan.pc-open height:auto removed Nov 13 1:26 PM: the open tile keeps a set height and its list scrolls inside (see end of file) */
 body.on-home .hm-plan.pc-anim{transition:height .28s ease;overflow:hidden}
 @media (prefers-reduced-motion:reduce){body.on-home .hm-plan.pc-anim{transition:none}}
 /* Footer: Built by Machan clears the taller stack; Swatch residual +2px. */
@@ -2127,3 +2127,151 @@ body.on-home #hs-plans .hm-scroll{padding-top:0!important}
 /* Full-width rows: no lift or scale on hover (it shifted the row); a quiet tint and brand-teal text instead. */
 .sa-q.mw-hover:hover,.sa-q.mw-hover:focus-visible,.sa-q.mw-hover:active{transform:none;box-shadow:none}
 @media (hover:hover){.sa-q:hover .sa-n{color:#05668D}}
+/* ===== Nov 13 2026 1:24-1:27 PM (Machan): badge swipe, bigger Log In/Share, one-screen sections (plans inner list, À La Carte + FAQ chips) ===== */
+/* Badges: JS rAF loop (same speed) replaces the keyframes; drag/wheel by hand; no sideways page scroll. */
+body.on-home .hm-hchips.js-mq .hm-hc-track{animation:none!important}
+body.on-home .hm-hchips{overscroll-behavior-x:contain;touch-action:pan-y}
+body.on-home .hm-hchips.js-mq .hm-hc-set .hm-hchip{pointer-events:none}
+@media (hover:hover) and (pointer:fine){body.on-home .hm-hchips.js-mq{cursor:grab}body.on-home .hm-hchips.js-mq.dragging{cursor:grabbing}}
+@media (prefers-reduced-motion:reduce){body.on-home .hm-hchips{overscroll-behavior-x:contain}}
+/* Header (Machan 1:24 PM "log in and share be just a litle bigger"): one small step up, same look. */
+body.on-home .topbar .top-login{height:48px!important;min-height:48px!important;font-size:15px!important}
+body.on-home .topbar .btn-share{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
+body.on-home .topbar .btn-share svg{width:22px;height:22px}
+body.on-ob .topbar .btn-share,body.on-ob .topbar .top-home{height:48px!important;min-height:48px!important;font-size:15px!important}
+body.on-ob .topbar .btn-share{width:48px!important;min-width:48px!important}
+body.on-ob .topbar .btn-share svg{width:22px;height:22px}
+body.on-ob .topbar .top-home svg{width:20px;height:20px}
+/* Hero: See Plans sits 8px over the bar (JS reserve), arrow bottom pad trimmed; JS grows the 3:4 video into the room. */
+@media (max-width:480px){body.on-home .hs-top > .hs-arrow{padding-bottom:2px}}
+/* Plans (Machan 1:26 PM "section inside secton"): And More keeps the tile within one screen; the full grouped list scrolls inside the tile. */
+body.on-home .hs-plans.pc-expanded{height:var(--su-sec-h)!important;max-height:var(--su-sec-h)!important}
+body.on-home .hm-plan .pc-all.pc-scroll{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+/* Inner scroll fade cues (top once scrolled, bottom while more is below; gone at the end) */
+.pc-all.pc-scroll,.sa-box{--fd:22px}
+.pc-all.pc-scroll.fade-b,.sa-box.fade-b{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--fd)),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--fd)),transparent)}
+.pc-all.pc-scroll.fade-t,.sa-box.fade-t{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 var(--fd));mask-image:linear-gradient(to bottom,transparent,#000 var(--fd))}
+.pc-all.pc-scroll.fade-t.fade-b,.sa-box.fade-t.fade-b{-webkit-mask-image:linear-gradient(to bottom,transparent,#000 var(--fd),#000 calc(100% - var(--fd)),transparent);mask-image:linear-gradient(to bottom,transparent,#000 var(--fd),#000 calc(100% - var(--fd)),transparent)}
+/* À La Carte + FAQ (Machan 1:26-1:27 PM): one screen each. Group chips on top, one group below, its own scroll only when taller than the room. */
+body.on-home #hs-alc,body.on-home #hs-faq{height:var(--su-sec-h)!important;max-height:var(--su-sec-h)!important;min-height:var(--su-sec-h)!important;overflow:hidden!important}
+.sa-tabbed{display:flex;flex-direction:column;min-height:0}
+.sa-tabs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:none;margin:0 -18px var(--hs-2,8px);padding:2px 18px;scroll-padding:0 18px;-webkit-overflow-scrolling:touch}
+.sa-tabs::-webkit-scrollbar{display:none}
+.sa-tab{flex:none;min-height:44px;padding:0 16px;margin:0;border:1.5px solid #D9D2C7;border-radius:999px;background:#fff;color:#1A1A1A;font:600 14px/1 Hind,var(--mw-font-body),sans-serif;white-space:nowrap;text-transform:none;letter-spacing:normal;box-shadow:none;cursor:pointer}
+.sa-tab[aria-selected="true"]{background:#0a0a0a;border-color:#0a0a0a;color:#fff}
+.sa-tab.mw-hover:hover,.sa-tab.mw-hover:active{transform:none;box-shadow:none}
+.sa-tab:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.sa-box{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
+.sa-tabbed .sa-grp{margin:0}
+.sa-tabbed .sa-grp[hidden]{display:none}
+/* ===== Home First Section Deck picks (Machan Nov 13 1:34 PM) ===== */
+/* 02 B Rebalanced Hierarchy (deck type_css): headline 'Home Care, On Schedule' dominant; eyebrow above; quieter price. 390: 32/20/16, 375: 30/19/15.5, 360: 28/18/15. */
+@media (max-width:480px){
+  body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:20px!important;line-height:1.1!important;color:#1a1a1a!important;letter-spacing:0!important}
+  body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:16px!important;line-height:1.15!important;color:#A8431F!important;margin-top:4px!important}
+  body.on-home .hm-hero .hm-lead{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:32px!important;line-height:1.05!important;color:#1a1a1a!important;margin-top:4px!important;white-space:nowrap!important}
+  body.on-home .hm-hero .hm-lead-l,body.on-home .hm-hero .hm-lead-s{font-family:inherit!important;font-weight:inherit!important;font-size:inherit!important;color:inherit!important}
+}
+@media (max-width:384px){
+  body.on-home .hm-hero .hm-eb-t{font-size:19px!important}
+  body.on-home .hm-hero h1{font-size:15.5px!important}
+  body.on-home .hm-hero .hm-lead{font-size:30px!important}
+}
+@media (max-width:369px){
+  body.on-home .hm-hero .hm-eb-t{font-size:18px!important}
+  body.on-home .hm-hero h1{font-size:15px!important}
+  body.on-home .hm-hero .hm-lead{font-size:28px!important}
+}
+/* 03 B Slower, Larger Pills: one set per 52s (JS reads this), 5px gap, slightly larger pills. Hand swipe/drag/wheel stays. */
+body.on-home .hm-hc-track{animation-duration:52s!important}
+body.on-home .hm-hc-set .hm-hchip{margin:0 5px 0 0!important;font-size:.84rem!important;padding:.36rem .72rem!important;line-height:1.1!important}
+/* 04 B Slimmer 44px Get Started with inline arrow, softer shadow, same width and terracotta. Arrow guard unchanged. */
+body.on-home .hm-dock .hm-tab-cta{min-height:44px!important;height:44px!important;font:600 14px/1 Hind,var(--mw-font-body),sans-serif!important;letter-spacing:.04em!important;box-shadow:0 4px 12px rgba(168,67,31,.14)!important;gap:8px!important}
+.hm-tab-cta .hm-cta-arr{display:none}
+body.on-home .hm-dock .hm-tab-cta .hm-cta-arr{display:inline-block;font:700 16px/1 Khand,sans-serif;opacity:.95;transform:translateY(-.5px);letter-spacing:0}
+/* 05 Machan Decides -> Swatch default B: 16px Essentials-green line icon inline beside each And More header (no added height). */
+.pc-all .pc-grp-h{display:flex;align-items:center;gap:6px}
+.pc-all .pc-grp-h .pc-ico{flex:0 0 16px;width:16px;height:16px;color:#0B6E4F;display:inline-flex;align-items:center;justify-content:center}
+.pc-all .pc-grp-h .pc-ico svg{display:block;width:16px;height:16px}
+/* 08 B split steps (deck step1-split mock): the shorter address and home size steps sit top-aligned under the title (24px), bar stays at the bottom. */
+.ob.ob-address .qf-body{margin-top:0!important}
+/* ===== Alignment + shine + shadow pass (Machan Nov 13 1:44 PM "an alignment, polish with slight shine and shadow accents, on the whole page"; Swatch spec) ===== */
+:root{
+  --su-edge:16px;
+  --su-shine:linear-gradient(to bottom,rgba(255,255,255,.15) 0%,rgba(255,255,255,0) 50%);
+  --su-shine-faint:linear-gradient(to bottom,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 50%);
+  --su-gloss:linear-gradient(100deg,#FAF3EB 0%,#fff 70%);          /* the bottom warranties bar's own gloss (.fs-ad), reused */
+  --su-sh-card:0 1px 2px rgba(60,40,20,.06),0 4px 12px rgba(60,40,20,.06);
+  --su-sh-bar:0 -4px 16px rgba(60,40,20,.08);
+  --su-sh-btn:0 2px 6px rgba(60,40,20,.10);
+  --su-hair:#E6E1D8;
+  --su-title-gap:32px;
+}
+@media (max-width:480px) and (max-height:760px){:root{--su-title-gap:24px}} /* 360x740-class phones */
+@media (max-width:480px) and (max-height:700px){:root{--su-title-gap:8px}} /* 375x667-class short phones: the one-screen rule wins over the 32px rhythm */
+@media (min-width:900px){:root{--su-title-gap:56px}}
+/* One content edge: 16px at phones */
+@media (max-width:480px){
+  body.on-home main#app > .hm{padding-left:var(--su-edge)!important;padding-right:var(--su-edge)!important}
+  body.on-home .hs-sec{padding-left:0!important;padding-right:0!important}
+  body.on-home .hm-hero .hm-hero-txt{padding-left:var(--su-edge)!important;padding-right:var(--su-edge)!important}
+  body.on-home .hm-hero .hm-thumb{width:calc(100% - 2 * var(--su-edge))!important}
+  body.on-home .hm-hero .hm-hcw,body.on-home .hm-hero .hm-hchips{margin-left:0!important;margin-right:0!important}
+}
+/* Desktop: hero uses the same container edge as the other sections */
+@media (min-width:900px){body.on-home .hm-hero{margin-left:0!important;margin-right:0!important;padding-left:0!important;padding-right:0!important;max-width:none!important}}
+/* One vertical rhythm: same gap above each section title, same title-to-content gap (8px) */
+body.on-home #hs-plans > .hm-row,body.on-home #hs-alc > .hm-row,body.on-home #hs-faq > .hm-faqs{padding-top:var(--su-title-gap)!important;margin-top:0!important}
+body.on-home #hs-plans .hm-row-h h2,body.on-home #row-alc .hm-row-h h2,body.on-home #hs-faq .hm-faqs > h2{margin-top:0!important;padding-top:0!important}
+body.on-home #hs-alc #row-alc > .hm-row-h,body.on-home #hs-plans > .hm-row > .hm-row-h{margin:0 0 8px!important;padding-top:0!important}
+body.on-home #hs-faq .hm-faqs > h2{margin-bottom:8px!important}
+.sa-tabs{padding-top:0;padding-bottom:2px;margin-left:calc(-1 * var(--su-edge));margin-right:calc(-1 * var(--su-edge));padding-left:var(--su-edge);padding-right:var(--su-edge);scroll-padding:0 var(--su-edge)}
+/* Pills and chips: one radius family (999px); chips 44px like Get Started */
+/* SHADOW (warm) */
+body.on-home .hm-plan{box-shadow:var(--su-sh-card)!important}
+body.on-home .sa-tabbed .sa-item:has(.sa-q[aria-expanded="true"]){box-shadow:var(--su-sh-card);border-radius:10px;margin:0 -12px;padding:0 12px;background:#fff;position:relative}
+body.on-home .sa-list{box-shadow:none}
+body.on-home .sa-item + .sa-item{border-top-color:var(--su-hair)}
+body.on-home .hm-dock .hm-pill{box-shadow:var(--su-sh-bar)!important}
+body.on-home .hm-dock .hm-tab-cta{box-shadow:var(--su-sh-btn)!important}
+/* SHINE (white, <=15%, top half, light surfaces) */
+body.on-home .hm-dock .hm-pill{background-image:var(--su-shine),var(--su-gloss)!important;border-color:var(--su-hair)!important}
+body.on-home .hm-dock .hm-tab-cta{background-image:var(--su-shine),linear-gradient(100deg,transparent 35%,rgba(255,255,255,.15) 50%,transparent 65%)!important;background-size:100% 100%,260% 100%!important;background-repeat:no-repeat!important;background-position:0 0,160% 0;animation:suSheen 1.8s ease-in-out .9s 1 both}
+@keyframes suSheen{from{background-position:0 0,160% 0}to{background-position:0 0,-60% 0}}
+body.on-home .hm-dock button[data-hm-tab].on{background-image:var(--su-shine-faint)}
+.sa-tab[aria-selected="true"]{background-image:var(--su-shine-faint)}
+body.on-home #hs-plans .hm-plan .hm-badge:not(.pc-ph){background-image:var(--su-shine)}
+/* Plans warranties bar: same Featured Service bar and wording; white surface, 16px top corners, hairline top, bar shadow, Khand Title Case labels, the original gloss + shine.
+   Rises from the bottom when Plans comes into view; it sits under the dots inside Plans, so it never covers a tile, See More, a price or Get Started. */
+body.on-home .fs-ad.fs-ad-plans{margin:8px 0 0;background-color:#fff;background-image:var(--su-shine),var(--su-gloss);border:1px solid var(--su-hair);border-radius:16px 16px 10px 10px;box-shadow:var(--su-sh-bar);padding:.3rem .8rem .3rem .35rem;flex:none}
+body.on-home .fs-ad.fs-ad-plans .fs-tx b{font-family:Khand,var(--mw-font-heading),sans-serif;font-weight:600;font-size:16px;line-height:1.05}
+body.on-home .fs-ad.fs-ad-plans .fs-art{width:54px;height:36px}
+body.on-home .fs-ad.fs-ad-plans.rise{transform-origin:50% 100%;transform:translateY(14px) scaleY(.85);opacity:0;transition:transform .42s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+body.on-home .fs-ad.fs-ad-plans.rise.in{transform:none;opacity:1}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .hm-dock .hm-tab-cta{animation:none!important}
+  body.on-home .fs-ad.fs-ad-plans.rise{transition:none!important;transform:none!important;opacity:1!important}
+}
+/* Bottom warranties bar: keeps its own gloss, look and motion; per Swatch spec it also gets the shared top-half shine and the bar shadow */
+body.on-home .fs-ad:not(.fs-ad-plans){background-image:var(--su-shine),var(--su-gloss);box-shadow:var(--su-sh-bar)}
+/* Plans bar stays slim on phones: two lines (title + existing hook), no "Featured Service" tag; one line on short phones. Keeps Plans inside one screen. */
+@media (max-width:480px){
+  body.on-home .fs-ad.fs-ad-plans{margin-top:4px;padding:3px 10px 3px 6px;min-height:0;gap:8px}
+  body.on-home .fs-ad.fs-ad-plans .fs-tag{display:none}
+  body.on-home .fs-ad.fs-ad-plans .fs-art{width:40px;height:28px;flex:none}
+  body.on-home .fs-ad.fs-ad-plans .fs-tx b{font-size:15px}
+  body.on-home .fs-ad.fs-ad-plans .fs-tx small{font-size:12px;line-height:1.2}
+  body.on-home .fs-ad.fs-ad-plans .fs-go{width:26px;height:26px;flex:none}
+}
+@media (max-width:480px) and (max-height:700px){
+  body.on-home .fs-ad.fs-ad-plans .fs-tx small{display:none}
+  body.on-home .fs-ad.fs-ad-plans .fs-art{width:32px;height:22px}
+  body.on-home .fs-ad.fs-ad-plans{padding-top:2px;padding-bottom:2px}
+  body.on-home #hs-plans .pc-dots{margin-top:0!important;margin-bottom:0!important}
+  body.on-home #hs-plans .hm-scroll{padding-bottom:2px!important}
+  body.on-home #hs-plans > .hs-arrow{min-height:36px!important;height:36px!important;padding-top:2px!important;padding-bottom:2px!important}
+}
+body.on-home #hs-faq .sa-groups.sa-tabbed,body.on-home #hs-alc .sa-groups.sa-tabbed{width:auto!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
+body.on-home #hs-faq > .hm-faqs{grid-template-columns:minmax(0,1fr)!important;column-gap:0!important}
+/* Funnel steps on the same 16px phone edge as Home and the funnel bar (was 13.6px) */
+@media (max-width:480px){body.on-ob main#app{padding-left:var(--su-edge)!important;padding-right:var(--su-edge)!important}}
