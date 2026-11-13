@@ -2728,6 +2728,12 @@ html body.on-home .hm-dock button[data-hm-tab] span:not(.hm-tab-core){
   line-height:14px!important;
   max-width:none!important;
 }
+/* #113 "Tailor Your Plan" is 83px at 11.5px Hind in an 82px tab at 360. Tighten only that label on narrow phones; keep the official name. */
+@media (max-width: 389px){
+  html body.on-home .hm-dock button[data-hm-tab="alacarte"] span:not(.hm-tab-core){
+    letter-spacing:-0.03em!important;
+  }
+}
 html body.on-home .hm-dock button[data-hm-tab] .su-ico,
 html body.on-home .hm-dock button[data-hm-tab] .hm-tab-core .su-ico{
   width:22px!important;height:22px!important;flex:none;color:#6B625A!important;stroke-width:2!important;
