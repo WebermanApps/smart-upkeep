@@ -457,3 +457,109 @@ body.on-qf.on-ob .foot{display:none}
 .ob-billing .gap-md{height:calc(12px + var(--tall) * .15)}
 .ob-billing .due-box:not(.in){padding:calc(11px + var(--tall) * .08) 14px}
 .ob-billing .seg-toggle button{min-height:calc(44px + var(--tall) * .1)}
+
+/* ===== Sign-Up Fit deck (Machan Nov 13 2026 8:50 AM): #01 A First Visit behind a tap (small phones), #02 B Accept tap-to-open boxes, #03 A Add-Ons list scrolls, tip stays ===== */
+.sfit-scrim{position:fixed;left:0;right:0;top:var(--sfit-top,72px);bottom:var(--sfit-bar,76px);background:rgba(26,26,26,.28);z-index:16;display:none}
+.sfit-sheet{position:fixed;left:max(12px,calc(50% - 300px));right:max(12px,calc(50% - 300px));bottom:calc(var(--sfit-bar,76px) + 8px);z-index:17;background:#fff;border:1px solid #e6dfd1;border-radius:14px;box-shadow:0 10px 30px rgba(26,26,26,.18);padding:0 14px 14px;display:none;max-height:calc(100dvh - var(--sfit-top,72px) - var(--sfit-bar,76px) - 16px);overflow:auto;overscroll-behavior:contain}
+.sfit-open .sfit-scrim,.sfit-sheet.on{display:block}
+.sfit-sh{display:flex;align-items:center;gap:8px;width:calc(100% + 28px);min-height:48px;margin:0 -14px 8px;padding:0 14px;border:0;border-bottom:1px solid #efe9de;font:700 18px/1.1 Khand,var(--mw-font-heading),sans-serif;color:#1A1A1A;background:#fff;position:sticky;top:0;z-index:1;cursor:pointer;text-align:left}
+.sfit-sh .sfit-chev{margin-left:auto;transform:rotate(90deg);color:#A8431F}
+/* #01 A Start Date */
+.ob-start.sfit-start .qf-prog{margin-top:4px!important}
+.ob-start.sfit-start .qf-hero.stack.compact{margin:4px 0 6px!important}
+.ob-start.sfit-start .qf-body{margin-bottom:6px!important}
+.ob-start.sfit-start .qf-body>.fl:first-child{margin:0 0 2px!important}
+.ob-start.sfit-start .ob-cal{padding:6px 8px!important;margin-bottom:6px!important}
+.ob-start.sfit-start .cal-pick{display:none!important}
+.ob-start.sfit-start .cal-nav{width:38px!important;height:38px!important}
+.ob-start.sfit-start .cal-grid{gap:1px!important}
+.ob-start.sfit-start .cal-wk span{padding:0!important}
+.ob-start .sfit-row{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;padding:0 12px;border:1px solid #e6dfd1;border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:#1A1A1A}
+.ob-start .sfit-row .k{font:600 15px/1.2 Hind,var(--mw-font-body),sans-serif}
+.ob-start .sfit-row .d{font:600 14px/1.2 Hind,var(--mw-font-body),sans-serif;color:#A8431F;margin-left:auto}
+.ob-start .sfit-row .i{display:inline-flex;color:#05668D}
+.ob-start .sfit-row .sfit-chev{color:#737373;flex:none}
+.ob-start .sfit-row .k+.sfit-chev{margin-left:auto}
+.ob-start .sfit-row[aria-expanded=true] .sfit-chev{transform:rotate(90deg)}
+.ob-start .sfit-sheet{padding-top:0}
+.ob-start .sfit-sheet .ob-blurb{margin:0!important;border:0!important;padding:0!important;background:none!important;font-size:14.5px!important;line-height:1.4!important}
+.ob-start .sfit-sheet .priced-note{margin:10px 0 0!important}
+/* #02 B Accept */
+.ob-accept.sfit-accept .qf-prog{margin-top:4px!important}
+.ob-accept.sfit-accept .qf-hero.stack.compact{margin:4px 0 6px!important}
+.ob-accept.sfit-accept .ob-bar .btn-big{flex:1;min-height:48px;margin:0}
+.ob-accept.sfit-accept .ob-bar .btn-big:disabled{opacity:.45;cursor:not-allowed}
+.ob-accept .sfit-rows{display:grid;gap:8px}
+.ob-accept .sfit-r{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 12px;border:1px solid #e6dfd1;border-radius:12px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:#1A1A1A}
+.ob-accept .sfit-r .k{font:700 18px/1.1 Khand,var(--mw-font-heading),sans-serif}
+.ob-accept .sfit-r .v{margin-left:auto;font:700 18px/1 Khand,var(--mw-font-heading),sans-serif}
+.ob-accept .sfit-r .sfit-chev{color:#737373;flex:none}
+.ob-accept .sfit-r .k+.sfit-chev{margin-left:auto}
+.ob-accept .sfit-ck{flex:none;width:20px;height:20px;border:2px solid #A3A3A3;border-radius:5px;box-sizing:border-box}
+.ob-accept .sfit-ck.on{border-color:#0B6E4F;background:#0B6E4F url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12l5 5 9-10' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.ob-accept .sfit-r[aria-expanded=true]{border-color:#A8431F}
+.ob-accept .sfit-rows .paybox{margin:0!important;padding:10px 12px!important;display:flex;align-items:center;justify-content:space-between;border-radius:12px}
+.ob-accept .sfit-rows .paybox h3{margin:0!important;font-size:18px}
+.ob-accept .sfit-rows .paybox p{margin:0!important}
+.ob-accept .sfit-hold{display:none!important}
+.ob-accept .sfit-sheet .item-card,.ob-accept .sfit-sheet .accept-compact{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important}
+.ob-accept .sfit-sheet .beta-pay-notice{margin:0 0 10px!important}
+.ob-accept .sfit-sheet .checkrow{margin:0!important}
+.ob-accept .sfit-sheet .ob-slot{display:inline-block;margin:0 0 10px}
+.ob-accept .sfit-tail{text-align:center;margin:8px 0 0}
+.ob-accept .sfit-tail p{margin:0!important}
+.ob-accept .sfit-tail .su-cancel-line a{min-height:32px}
+.ob-accept.sfit-accept .ob-accept-form{margin-top:8px!important;display:block!important}
+/* #03 A Add-Ons */
+.ob-addons.sfit-ao .ob-ao-list{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative}
+.ob-addons.sfit-ao .ob-ao-list::after{content:"";pointer-events:none;position:sticky;bottom:0;display:block;height:14px;margin-top:-14px;background:linear-gradient(to bottom,rgba(252,249,244,0),#FCF9F4)}
+.ob-addons.sfit-ao .qf-dyk{margin-top:8px!important;margin-bottom:0!important}
+
+/* Home Size Control deck (Machan Nov 13 9:00 AM): #01 B range chips; stories keep -/+ */
+.pick-step.pick-size{display:block!important}
+.pick-step.pick-size .meta{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pick-step.pick-size .meta .s{margin:0}
+.size-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.size-chip{min-height:44px;padding:4px 4px;border:1px solid #E6DFD1;border-radius:10px;background:#fff;color:#1A1A1A;font:500 13.5px/1.15 Hind,var(--mw-font-body),sans-serif;letter-spacing:0;text-transform:none;cursor:pointer;text-align:center}
+.size-chip small{display:block;font-size:11px;color:#737373;font-weight:400}
+.size-chip.on{border-color:#A8431F;background:rgba(193,80,46,.08);color:#A8431F;font-weight:600;box-shadow:inset 0 0 0 1px #A8431F}
+.size-chip.on small{color:#A8431F}
+.size-chip:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.pick-step.pick-size .meta .k small{font:500 12px/1 Hind,var(--mw-font-body),sans-serif;color:#737373;text-transform:none;letter-spacing:0}
+.size-chip{min-height:40px;white-space:nowrap;font-weight:600;font-size:13px;padding:4px 2px}
+/* Short phones (<=700px tall): keep Your Home and Your Details (now with Did You Know) on one screen. Tightening follows the Sign-Up Fit deck values; no words cut. */
+@media (max-height:700px){
+  .ob-address .qf-prog,.ob-details .qf-prog{margin-top:4px!important}
+  .ob-address .qf-hero.stack.compact,.ob-details .qf-hero.stack.compact{margin:4px 0 6px!important}
+  .ob-address .qf-body,.ob-details .qf-body{margin-bottom:6px!important}
+  .ob-address .pick-step.pick-size{padding-top:6px!important;padding-bottom:6px!important}
+  .ob-address .pick-step.pick-size .meta{margin-bottom:4px}
+  .ob-address .size-chips{gap:4px}
+  .ob-address .size-chip{min-height:32px;padding:2px}
+  .ob-address .pick-step:not(.pick-size){padding-top:4px!important;padding-bottom:4px!important}
+  .ob-address .ob-area{margin-bottom:4px!important}
+  .ob-address .qf-dyk,.ob-details .qf-dyk{margin-top:6px!important;margin-bottom:6px!important;padding-top:6px!important;padding-bottom:6px!important}
+  .ob-details .det-addr{padding-top:6px!important;padding-bottom:6px!important}
+  .ob-details .det-card .fl{margin-top:6px!important}
+  .ob-details .su-havecode{margin:4px 0 0!important}
+  .ob-details .su-havecode .link{min-height:32px!important;padding-top:0!important;padding-bottom:0!important}
+}
+@media (max-height:700px){
+  .ob-address .ferr:empty,.ob-details .ferr:empty{margin:0!important}
+  .ob-address .ob-fields input{min-height:42px!important;height:42px!important;padding-top:7px!important;padding-bottom:7px!important}
+  .ob-address .pick-card{margin-top:6px!important}
+  .ob-address .size-chip{min-height:30px;height:30px}
+  .ob-address .pick-step.pick-size .meta{margin-bottom:3px}
+  .ob-details .det-addr .link{min-height:28px!important;padding-top:0!important;padding-bottom:0!important}
+}
+@media (max-height:700px){
+  .ob-address .qf-dyk,.ob-details .qf-dyk{margin-top:4px!important;margin-bottom:4px!important;padding-top:4px!important;padding-bottom:4px!important}
+  .ob-address .qf-hero .qf-art,.ob-details .qf-hero .qf-art{width:34px!important;height:34px!important}
+}
+/* Sign-Up Fit #01 A: base tightening (START_COMMON) applies on every screen size, so tall screens also fit. */
+.ob-start .qf-prog{margin-top:4px!important}
+.ob-start .qf-hero.stack.compact{margin:4px 0 6px!important}
+.ob-start .qf-body{margin-bottom:6px!important}
+.ob-start .qf-body>.fl:first-child{margin:0 0 2px!important}
+.ob-start .ob-cal{margin-bottom:6px!important}
+.ob-start .ob-cal{padding-top:6px!important;padding-bottom:6px!important}

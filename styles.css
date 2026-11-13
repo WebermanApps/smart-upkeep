@@ -1933,7 +1933,6 @@ body.on-home .hm-hchips{
 }
 body.on-home .hm-hc-track{
   animation:none!important;
-  transform:none!important;
   width:100%!important;
   max-width:100%;
   display:block;
@@ -1960,3 +1959,110 @@ body.on-home .hm-hchip{pointer-events:auto;white-space:nowrap}
    --su-sec-pb is set in hsBarFill from the live bar (includes the resume strip when shown). */
 body.on-home #hs-details{padding-bottom:var(--su-sec-pb, calc(76px + env(safe-area-inset-bottom, 0px)))}
 body.on-home .foot{padding-bottom:calc(var(--su-sec-pb, calc(76px + env(safe-area-inset-bottom, 0px))) + 1px)}
+
+/* ===== Nov 13 2026 deck picks + Machan's hero notes (9:03-9:12 AM) ===== */
+/* One spacing scale for the hero (Swatch QA): every gap between eyebrow, price, line, video, badges and See Plans is a step on this scale. */
+:root{--hs-1:4px;--hs-2:8px;--hs-3:12px;--hs-4:16px;--hs-5:24px;--hero-gap:var(--hs-3);--hero-pair:var(--hs-1)}
+body.on-home .hm-hero .hm-cta-inline{display:none!important}
+/* Type: eyebrow is now the big line, the price sits under it smaller (Machan 9:03 AM). Price text is unchanged. */
+body.on-home .hm-hero .hm-eb{margin:0!important}
+body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:30px!important;line-height:1.05!important;color:#1a1a1a!important;letter-spacing:-.005em!important;white-space:nowrap}
+body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:22px!important;line-height:1.1!important;color:#A8431F!important;margin:var(--hero-pair) 0 0!important;white-space:nowrap;max-width:none!important}
+body.on-home .hm-hero .hm-lead{font-size:16px!important;line-height:1.25!important;margin:var(--hero-pair) 0 0!important;white-space:nowrap}
+@media (max-width:360px){body.on-home .hm-hero .hm-eb-t{font-size:28px!important}body.on-home .hm-hero h1{font-size:21px!important}}
+@media (max-width:480px){
+  body.on-home .hs-top{padding-top:0}
+  body.on-home .hm-hero{padding-top:var(--hero-gap)!important}
+  body.on-home .hm-hero .hm-thumb{width:calc(100% - 36px)!important;max-width:none;margin:0 auto!important;aspect-ratio:3/4!important;border-radius:18px!important}
+  body.on-home .hm-hero .hm-thumb img,body.on-home .hm-hero .hm-thumb video{object-fit:cover!important;object-position:50% 46%}
+  /* Text starts over the video's empty floor (bottom fade); --hero-ov is set from the fitted video height in hsBarFill. */
+  body.on-home .hm-hero .hm-hero-txt{margin-top:calc(-1 * var(--hero-ov,56px))!important;padding:var(--hero-ov-pad,32px) 18px 0!important;
+    background:linear-gradient(to bottom,rgba(251,246,238,0) 0,rgba(251,246,238,.9) calc(var(--hero-ov-pad,32px) * .7),#FBF6EE var(--hero-ov-pad,32px))!important}
+  body.on-home .hm-hero .hm-hcw{margin-top:var(--hero-gap)!important}
+  body.on-home .hs-top > .hs-arrow{margin-top:auto}
+}
+@media (min-width:481px) and (max-width:899px){
+  body.on-home .hm-hero .hm-eb-t{font-size:36px!important}
+  body.on-home .hm-hero h1{font-size:26px!important}
+  body.on-home .hm-hero .hm-hcw{margin-top:var(--hero-gap)!important}
+}
+@media (min-width:900px){
+  body.on-home .hm-hero{row-gap:0!important}
+  body.on-home .hm-hero .hm-eb{align-self:end}
+  body.on-home .hm-hero .hm-eb-t{font-size:46px!important}
+  body.on-home .hm-hero h1{font-size:30px!important;margin-top:var(--hs-2)!important}
+  body.on-home .hm-hero .hm-lead{margin-top:var(--hs-2)!important;font-size:1.2rem!important}
+  body.on-home .hm-hero .hm-hcw{grid-column:1!important;grid-row:4!important;margin-top:var(--hs-5)!important;max-width:100%}
+  body.on-home .hm-hero .hm-thumb{width:100%!important;max-width:600px;justify-self:center}
+}
+/* Badge carousel (Machan 9:03 AM): one row, steady seamless loop (two identical sets, translate -50%), edge fade masks so no label is cut at the edge, pause on hover and touch. */
+body.on-home .hm-hchips{display:block!important;overflow:hidden!important;width:100%;max-width:100%;margin:0!important;padding:2px 0!important;touch-action:pan-y;cursor:default;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)!important;mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)!important}
+body.on-home .hm-hc-track{display:flex!important;flex-wrap:nowrap;width:max-content!important;max-width:none!important;animation:hcMq 32s linear infinite!important;transform:translate3d(0,0,0);will-change:transform}
+body.on-home .hm-hc-set,body.on-home .hm-hc-set[aria-hidden]{display:flex!important;flex:none;flex-wrap:nowrap;width:auto!important;max-width:none!important;gap:0!important;justify-content:flex-start}
+body.on-home .hm-hc-set .hm-hchip{margin:0 8px 0 0!important;pointer-events:auto}
+body.on-home .hm-hchips.hold .hm-hc-track{animation-play-state:paused!important}
+@media (hover:hover){body.on-home .hm-hchips:hover .hm-hc-track{animation-play-state:paused!important}} /* hover pause only on real pointers; on touch, sticky :hover would keep it paused after a tap */
+@media (prefers-reduced-motion:reduce){
+  body.on-home .hm-hc-track{animation:none!important}
+  body.on-home .hm-hc-set[aria-hidden]{display:none!important}
+  body.on-home .hm-hchips{overflow-x:auto!important;touch-action:pan-x pan-y;scrollbar-width:none;-webkit-mask-image:none!important;mask-image:none!important}
+}
+/* Bottom bar: Floating Bottom Bar deck card 4 B "Two Pills, CTA Above Nav" (Machan 9:04 AM). Large Get Started pill (old .hm-sticky size, 52px) directly above a separate
+   section pill of the same width. Light only, solid white, soft shadow. Shown from load (Machan 9:11 AM); arrow guard still hides Get Started over a section arrow. */
+body.on-home .hm-tabs.hm-dock{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important;padding:0!important;display:flex;flex-direction:column;gap:var(--hs-2);pointer-events:none}
+body.on-home .hm-tabs.hm-dock > *{pointer-events:auto}
+body.on-home .hm-dock .hm-tab-cta{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:52px;height:52px;margin:0!important;padding:0 1rem!important;border-radius:999px!important;font:600 15px/1 Hind,var(--mw-font-body),sans-serif!important;letter-spacing:.06em;box-shadow:0 8px 20px rgba(168,67,31,.22);transition:opacity .2s ease,visibility .2s}
+body.on-home .hm-dock .hm-pill{display:flex;flex-direction:column;background:#fff;border:1px solid #E6E0D6;border-radius:28px;box-shadow:0 8px 24px rgba(10,10,10,.12);overflow:hidden}
+body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+body.on-home.hs-bar-off .hm-tabs{opacity:1!important;visibility:visible!important;pointer-events:none!important;transform:none!important}
+@media (min-width:1100px){body.on-home.hs-bar-off .hm-tabs{transform:translateX(-50%)!important}}
+/* Shop À La Carte section and FAQ section (Machan 9:09-9:11 AM) */
+body.on-home #hs-alc .hm-row-h{margin-bottom:var(--hs-2)}
+body.on-home #hs-alc .alc-box{overflow-y:auto;background:#fff;border:1px solid #E6E0D6;border-radius:14px;padding:0 12px}
+body.on-home #hs-alc .alc-go{display:flex;margin:var(--hs-3) auto 0;min-width:220px;justify-content:center}
+body.on-home #hs-faq .hm-faqs h2{margin:0 0 var(--hs-2)}
+body.on-home #hs-faq .hm-acc .acc-body p{margin:0}
+body.on-home #hs-faq .hm-faq-all{display:flex;margin:var(--hs-3) auto 0;width:max-content}
+body.on-home #hs-faq{padding-bottom:var(--su-sec-pb, 140px)}
+/* Plan tile And More: expands in place (Machan 9:07 AM), no jump. */
+.pc-more-link[aria-expanded]{font-weight:600}
+.pc-all{list-style:none;margin:0;padding:0;overflow:hidden}
+.pc-all[hidden]{display:none}
+body.on-home .hs-plans.pc-expanded{height:auto!important;max-height:none!important}
+body.on-home .hs-plans.pc-expanded .hm-scroll{align-items:flex-start}
+body.on-home .hm-plan.pc-open{height:auto!important;max-height:none!important}
+body.on-home .hm-plan.pc-anim{transition:height .28s ease;overflow:hidden}
+@media (prefers-reduced-motion:reduce){body.on-home .hm-plan.pc-anim{transition:none}}
+/* Footer: Built by Machan clears the taller stack; Swatch residual +2px. */
+body.on-home .foot{padding-bottom:calc(var(--su-sec-pb, 150px) + 3px)!important}
+body.on-home .hs-sec.hs-top{padding-bottom:var(--su-sec-pb, 150px)!important}
+body.on-home .hm-plan .pc-more{margin:4px 0 0;list-style:none}
+body.on-home .hm-plan .pc-inc[hidden]{display:none!important}
+body.on-home .hm-plan.pc > .pc-more{padding-left:1.25rem}
+body.on-home .hm-plan.pc > .pc-more .pc-more-link{text-transform:none!important;letter-spacing:normal!important;font-weight:600!important;font-size:.85rem!important;padding:0!important;min-height:24px!important;margin:0!important}
+/* Short phones (<=700px tall): tighter section pill and inset so the hero video keeps more room; Get Started stays 52px. */
+@media (max-width:480px) and (max-height:700px){
+  body.on-home .hm-tabs.hm-dock{bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;gap:6px}
+  body.on-home .hm-dock .hm-tabs-row{padding:2px 4px!important}
+  body.on-home .hm-dock button[data-hm-tab]{min-height:46px!important}
+}
+@media (min-width:900px){body.on-home .hm-hero .hm-eb-t{font-size:clamp(34px,3.1vw,44px)!important;white-space:normal}body.on-home .hm-hero h1{font-size:clamp(24px,2.1vw,30px)!important}}
+/* Short phones: Plans tiles fit Essentials' seven lines plus And More on one screen with the taller bar stack. */
+@media (max-width:480px) and (max-height:700px){
+  body.on-home #hs-plans .hm-row-h{padding-top:4px!important;min-height:0}
+  body.on-home #hs-plans .hm-plan.pc{padding-top:12px!important;padding-bottom:10px!important}
+  body.on-home #hs-plans .hm-plan .pc-inc:not(.pc-all) li{margin-bottom:1px!important}
+  body.on-home #hs-plans .hm-plan .pc-top{min-height:0!important;margin-bottom:0!important}
+  body.on-home #hs-plans .hm-plan .pc-top .hm-badge{padding-top:1px!important;padding-bottom:1px!important}
+}
+@media (max-width:480px) and (max-height:660px){
+  body.on-home #hs-plans .hm-plan .pc-inc:not(.pc-all) li{font-size:14px!important;line-height:1.15!important}
+  body.on-home #hs-plans .hm-scroll{padding-top:0!important;padding-bottom:2px!important}
+  body.on-home #hs-plans .pc-dots{margin-top:0!important;margin-bottom:0!important}
+  body.on-home #hs-plans .hm-plan .pc-price{margin-top:0!important}
+  body.on-home #hs-plans .hm-plan .pc-year{margin-bottom:2px!important}
+}
+/* FAQ is the last section: it grows when a question opens instead of clipping. */
+body.on-home #hs-faq{height:auto!important;max-height:none!important;overflow:visible!important;min-height:var(--su-sec-h)}
+body.on-home .hm-plan.pc-open,body.on-home .hm-plan.pc-anim{transform:none!important} /* hover lift scales a tall open tile past the scroller top and clips its color bar */
