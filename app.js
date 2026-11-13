@@ -577,8 +577,12 @@
   /* Home Four Sections deck (Machan Nov 12 2026, receipt 2007): 01A simple 2px chevron, 02B Title Case label + chevron, 03A bottom center of the section it leaves, 04A full screen. Tap lands the next title ~12px under the header (hmJump). */
   function hsArrow(target, label) { return '<button type="button" class="hs-arrow mw-hover" data-hs-go="' + target + '"><span class="hs-arrow-lab">' + label + '</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'; }
   /* Four Sections 05 note (Machan: "with the more space we could show more lines, and not have to use the 'and more' so early on"): Home plan cards show more lines before And More. Legal-approved copy, Nov 12 2026 night (LEGAL-FINAL-COPY section 4). Home cards only; pricing-config.js keyPoints (also read by /member/ pages) stay unchanged. */
-  var HOME_KEYPOINTS = { /* silver and gold now read pricing-config.js keyPoints (Machan Nov 13 7:35-7:37 PM ICT); see homeKeypoints() */
-    platinum: ["Everything in Plus, and:", "Monthly Visits", "Roof Drone Inspection Twice A Year", "After-Storm Checks, Up To 4 A Year", "Vent and Ice Dam Clearing After Storms", "Drone Roof Check After Storms"] /* Machan Nov 13 11:09 PM ICT "6-8" preview lines: Roof Drone Inspection Twice A Year is Complete's own feature line (pricing-config.js), same wording as the Plus tile */
+  var HOME_KEYPOINTS = { /* silver reads pricing-config.js keyPoints (Machan Nov 13 7:35-7:37 PM ICT); see homeKeypoints() */
+    /* Machan Nov 13 11:09-11:11 PM ICT "6-8" real items per Plans preview (the lead line doesn't count): Plus and Complete show 7 services each,
+       named once with the sheet's own labels and counts (PC_SUM). "add" = this plan's own pricing-config features (accent dot, "Added In {Plan}"
+       key like the sheet); "inh" = services the plan includes from the plan below ("Everything in ..."), check mark. No new services. */
+    gold: { add: ["Seasonal Visits ×4", "Drone Roof Inspection ×2", "Gutter Cleaning ×2", "Garage Door Tune-Up", "Water Softener Salt Top-Off"], inh: ["Furnace/AC Tune-Up", "Water Heater Flush/Descale"] },
+    platinum: { add: ["Monthly Visits ×12", "After-Storm Checks, Up To 4 A Year", "Drone Roof Inspection ×2 + After Storms", "Vent And Ice Dam Clearing After Storms"], inh: ["Gutter Cleaning ×2", "Garage Door Tune-Up", "Furnace/AC Tune-Up"] }
   };
   /* Late build Nov 12 (Fill The Sections 02, Swatch pick B): existing lines only. 390: Essentials 10, Plus 5, Complete 4 (+ lead). 360x640: Essentials 4, Plus/Complete lead + 4. 1280+: Essentials 9. Always ends in And More. */
   function hsSmall() { return window.innerWidth <= 400 && window.innerHeight <= 700; }
@@ -588,7 +592,8 @@
   /* Plans Expand deck picks (Machan Nov 13 8:25 PM ICT): Plus peeks 22% at the right edge, the sheet grows from the tile, X close only, most lines that fit. */
   var PC_PEEK = 22;
   function homeKeypoints(k) {
-    if (k === "silver" || k === "gold") return ((P.tiers[k] && P.tiers[k].keyPoints) || []).filter(function (x) { return x !== "And More"; }).concat(["And More"]);
+    if (k === "silver") return ((P.tiers[k] && P.tiers[k].keyPoints) || []).filter(function (x) { return x !== "And More"; }).concat(["And More"]);
+    if (HOME_KEYPOINTS[k] && HOME_KEYPOINTS[k].add) return HOME_KEYPOINTS[k].add.concat(HOME_KEYPOINTS[k].inh).concat(["And More"]);
     var src = HOME_KEYPOINTS[k] || [], lead = src.filter(function (s) { return /Plus:$|and:$/.test(s); }), rest = src.filter(function (s) { return lead.indexOf(s) < 0; });
     var n = rest.length; /* Machan Nov 13 11:09-11:11 PM ICT: 6-8 lines on every phone (the old 4-line cut at 360x640 is gone) */
     return lead.concat(rest.slice(0, n)).concat(["And More"]);
@@ -630,7 +635,7 @@
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
       '<div class="pc-year"><svg class="pc-year-cal" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3.5v3.5M16 3.5v3.5M3.5 10h17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="pc-year-n">' + t.visits + '</span><span class="pc-year-l">Visits / Year</span></div>' +
-            '<ul class="pc-inc">' + inc.filter(function (f) { return f !== "And More"; }).map(function (f, i) { return /Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li' + (k === "silver" ? ' data-i="' + i + '"' : '') + '>' + f + '</li>'; }).join("") + '</ul>' +
+            '<ul class="pc-inc">' + (HOME_KEYPOINTS[k] && HOME_KEYPOINTS[k].add ? '<li class="pc-lead pc-key" aria-hidden="true">Added In ' + t.label + '</li>' : '') + inc.filter(function (f) { return f !== "And More"; }).map(function (f, i) { var up = HOME_KEYPOINTS[k] && HOME_KEYPOINTS[k].add && HOME_KEYPOINTS[k].add.indexOf(f) > -1; return /Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li data-i="' + i + '"' + (up ? ' class="up"' : '') + '>' + esc(f) + (up ? '<span class="sr-only"> (added in ' + esc(t.label) + ')</span>' : '') + '</li>'; }).join("") + '</ul>' +
       /* Plans Expand: And More opens the full-screen sheet (bindPlanMore); the old in-tile list and inner scroll are gone. */
       (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-haspopup="dialog">See More</button></p>' : '') + '</div>';
   }
@@ -732,7 +737,7 @@
     gutters: "Gutter and downspout cleaning in spring and fall, done on your seasonal visits. Your plan price reflects how many stories your home has.",
     stormTile: "After-Storm Checks, Up To 4 A Year",
     storm: "After a major storm, we check your home, including a drone roof check and vent and ice dam clearing. Up to 4 a year, on top of your 12 visits.",
-    stormNote: "A major storm means the National Weather Service issued a severe thunderstorm, tornado, high wind or winter storm warning for your area. We schedule your check as soon as it's safe. Unused checks don't roll over.",
+    stormNote: "A major storm means the National Weather Service issued a severe thunderstorm, tornado, high wind or winter storm warning for your area. We schedule your check within a reasonable time once it's safe. Unused checks don't roll over.",
     equip: "Items that need equipment are done only if your home has it. Your price is based on the equipment you tell us about."
   };
   /* [label, detail (string or per-plan map), lowest plan] */
@@ -1613,31 +1618,46 @@
     trees: "If heavy trees need more, you can add an Extra Gutter Cleaning.", /* FAQ how-is-gutter-cleaning-priced */
     area: "Metro Detroit: Wayne, Oakland and Macomb counties." /* FAQ where-do-you-work */
   };
+  /* Legal-approved pop-up lines (Legal on PR #124, Nov 13 11:4x PM ICT; logged on /workspace/legal-docs/PRE-LAUNCH-LEGAL-LIST.md): G1 highlights
+     line (no link until the attorney-reviewed agreement is posted), the Recall Check line in place of "Recall Monitoring on your equipment"
+     (pop-up only), and the Good To Know lines G4 (access only), G5, G6 (drone plans) and G7 (water heater flush plans). Parts, repairs,
+     rescheduling/rollover, gutter limits, caps and liability wait on Machan. */
+  var PC_LG_LEGAL = {
+    top: "These are the highlights. Your Member Agreement has the full terms.",
+    recall: "Recall Check: we look up recalls on the equipment we record at your visits.",
+    access: "An adult needs to give us access, and pets need to be secured. If a task isn't safe or we can't reach it, we'll skip it and note why in your report.",
+    pit: "Our visits are preventive maintenance and point-in-time checks. They lower the chance of problems but can't promise nothing will break or that every issue will be found. Keep your homeowner's insurance.",
+    drone: "Drone flights depend on weather and flight rules. If we can't fly, we'll reschedule or check what we safely can from the ground.",
+    flush: "We may skip the flush on a tank that's leaking, very old or has a stuck drain valve, and we'll tell you why."
+  };
   function pcCap(s) { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); }
   function pcLegalFeats(k) {
     var r = WI_RANK[k], out = [];
     PC_TIER_ORDER.slice(0, r + 1).forEach(function (t) { ((P.tiers[t] && P.tiers[t].features) || []).forEach(function (f) { out.push(f); }); });
     var drone = out.filter(function (f) { return /^Roof Drone Inspection/i.test(f); }).pop(); /* the highest plan's drone line replaces the lower ones */
-    return out.filter(function (f) { return !/^Everything in /i.test(f) && !/visits a year/i.test(f) && !/warrant/i.test(f) && (!/^Roof Drone Inspection/i.test(f) || f === drone); });
+    return out.filter(function (f) { return !/^Everything in /i.test(f) && !/visits a year/i.test(f) && !/warrant/i.test(f) && (!/^Roof Drone Inspection/i.test(f) || f === drone); })
+      .map(function (f) { return f === "Recall Monitoring on your equipment" ? PC_LG_LEGAL.recall : f; });
   }
   function pcLegalHtml(k) {
     var r = WI_RANK[k], g = PC_GROUPS.map(function () { return []; });
     pcLegalFeats(k).forEach(function (f) {
       var i = f.indexOf(":"), h = i > 0 ? f.slice(0, i) : f, d = i > 0 ? f.slice(i + 1).trim() : "", x = pcTitle(h), gi = PC_GROUPS.length - 1;
       for (var j = 0; j < PC_GROUPS.length; j++) if (PC_GROUPS[j][1].test(x)) { gi = j; break; }
-      g[gi].push('<li>' + (d ? '<b>' + esc(pcCap(h)) + ':</b> ' + esc(pcCap(d)) : esc(pcCap(h))) + '</li>');
+      g[gi].push('<li>' + (d ? '<b>' + esc(pcCap(h)) + ':</b> ' + esc(f === PC_LG_LEGAL.recall ? d : pcCap(d)) : esc(pcCap(h))) + '</li>'); /* Legal's Recall Check line stays word for word */
     });
     function sec(h, body) { return '<section class="pc-lg-s"><h4>' + esc(h) + '</h4>' + body + '</section>'; }
     function ul(a) { return '<ul>' + a.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>'; }
-    var plat = k === "platinum";
+    var plat = k === "platinum", feats = pcLegalFeats(k);
+    var good = [PC_LG_LEGAL.access, PC_LG_LEGAL.pit].concat(feats.some(function (f) { return /drone/i.test(f); }) ? [PC_LG_LEGAL.drone] : []).concat(feats.some(function (f) { return /water heater flush/i.test(f); }) ? [PC_LG_LEGAL.flush] : []);
     var visits = [WI_LINES.visits[k], PC_LG_FAQ.starter].concat(plat ? [WI_LINES.storm, WI_LINES.stormNote] : []);
     var how = [WI_LINES.tuneup, plat ? WI_LINES.filterC : WI_LINES.filterEP].concat(plat ? [] : [WI_LINES.smokeEP]).concat([WI_LINES.drone[k], WI_LINES.mold]).concat(r > 0 ? [WI_LINES.gutters] : []).concat([WI_LINES.equip]);
     var lim = [PC_LG_FAQ.warranty, PC_LG_FAQ.emergency, PC_LG_FAQ.licensed, PC_LG_FAQ.price, PC_LG_FAQ.confirm].concat(r > 0 ? [PC_LG_FAQ.trees] : []);
-    return sec("Visits", ul(visits)) +
+    return '<p class="pc-lg-top">' + esc(PC_LG_LEGAL.top) + '</p>' + sec("Visits", ul(visits)) +
       sec("Every Included Service", PC_GROUPS.map(function (G, i) { return g[i].length ? '<h5>' + esc(pcGrpName(G[0])) + '</h5><ul>' + g[i].join("") + '</ul>' : ""; }).join("")) +
       sec("How Each Service Is Done", ul(how)) +
       sec("Limits And Exclusions", ul(lim)) +
-      sec("Service Area", ul([PC_LG_FAQ.area]));
+      sec("Service Area", ul([PC_LG_FAQ.area])) +
+      sec("Good To Know", ul(good));
   }
   function bindPlanMore(root) {
     /* Sheet motion (Machan Nov 13 8:40 PM ICT, "make the close really smooth"): the sheet surface is clipped (clip-path inset, the radius
@@ -1900,23 +1920,35 @@
      11px on 900px-tall screens), then is split evenly above the tiles and below the dots; the See arrow stays 8px over the bar, so Tailor Your Plan
      starts at or below the bar top. */
   function pcFitLines() {
+    /* r2 (Nov 13 11:4x PM ICT, "use the leftover room for content, not padding"): every tile shows all its items (Essentials 7, Plus 7,
+       Complete 7) and drops trailing items one at a time (never below 6 real items) only if the section would grow past the room. Leftover room
+       then goes to the item type (up to 18px on phones, 16px on desktop), the line spacing (up to 14px above and below each item) and, last, the tiles themselves:
+       the row stretches to fill the panel and items spread evenly inside each tile. Header-to-tiles and dots-to-arrow gaps stay fixed. */
     var sec = document.getElementById("hs-plans"); if (!sec) return;
     var z = zoomFactor(), rs = document.documentElement.style;
     var hdr = document.querySelector(".topbar"), dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
     var fill = Math.floor(Math.max(240, ((dock ? dock.getBoundingClientRect().top : window.innerHeight) - (hdr ? hdr.getBoundingClientRect().bottom : 0)) / z));
-    rs.setProperty("--su-fill-h", fill + "px"); rs.setProperty("--pc-li-pad", "0px");
-    var card = sec.querySelector('.hm-plan[data-tier="silver"]'), lis = card ? [].slice.call(card.querySelectorAll(".pc-inc li[data-i]")) : [], n = lis.length;
-    function show(m) { lis.forEach(function (li, i) { li.hidden = i >= m; }); }
+    rs.setProperty("--su-fill-h", fill + "px"); rs.setProperty("--pc-li-pad", "0px"); rs.removeProperty("--pc-li-fs"); sec.classList.remove("pc-fs");
+    var cards = [].slice.call(sec.querySelectorAll("#row-plans .hm-plan")), sets = cards.map(function (c) { return [].slice.call(c.querySelectorAll(".pc-inc li[data-i]")); });
+    var n = Math.max.apply(null, sets.map(function (l) { return l.length; }).concat([0]));
+    function show(m) { sets.forEach(function (l) { l.forEach(function (li, i) { li.hidden = i >= m; }); }); }
     function natural() { sec.classList.add("pc-measure"); var h = sec.getBoundingClientRect().height / z; sec.classList.remove("pc-measure"); return h; }
     show(n);
     while (n > 6 && natural() > fill + 0.5) { n--; show(n); }
-    if (card) card.setAttribute("data-lines", String(n));
-    var slack = fill - natural();
-    if (slack > 4) {
-      var lines = Math.max.apply(null, [].map.call(sec.querySelectorAll("#row-plans .hm-plan"), function (c) { return [].filter.call(c.querySelectorAll(".pc-inc > li"), function (li) { return !li.hidden; }).length; }).concat([1]));
-      rs.setProperty("--pc-li-pad", Math.min(window.innerHeight / z >= 900 ? 11 : 9, Math.floor(slack * 0.7 / lines / 2 * 10) / 10) + "px");
+    cards.forEach(function (c, i) { c.setAttribute("data-lines", String(Math.min(n, sets[i].length))); });
+    var lines = Math.max.apply(null, cards.map(function (c) { return [].filter.call(c.querySelectorAll(".pc-inc > li"), function (li) { return !li.hidden; }).length; }).concat([1]));
+    var phone = window.innerWidth <= 600;
+    var fsMax = phone ? 18 : 16;
+    if (natural() < fill - 4) { /* bigger type first, one px at a time, only while the whole section still fits the room */
+      var li0 = sec.querySelector("#row-plans .pc-inc > li[data-i]"), fs = li0 ? Math.round(parseFloat(getComputedStyle(li0).fontSize) / z) : 15;
+      sec.classList.add("pc-fs");
+      while (fs < fsMax) { rs.setProperty("--pc-li-fs", (fs + 1) + "px"); if (natural() > fill - 4) break; fs++; }
+      rs.setProperty("--pc-li-fs", fs + "px");
     }
+    var slack = fill - natural();
+    if (slack > 4) rs.setProperty("--pc-li-pad", Math.min(14, Math.floor(slack * 0.8 / lines / 2 * 10) / 10) + "px");
   }
+
   /* Badge carousel (Machan Nov 13 1:24 PM: "i want to be able to scroll the badges as they are passing"). The CSS keyframe loop is swapped for a
      rAF loop at the same speed (one set width per animation-duration, read from the CSS, so the pace is unchanged). Drag by touch or mouse, or
      wheel/trackpad sideways, moves it by hand; about 1s after letting go it carries on from that spot. The offset wraps modulo one set width

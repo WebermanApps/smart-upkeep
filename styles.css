@@ -2927,10 +2927,19 @@ html body.on-home #hs-plans.hs-sec,html body.on-home #hs-alc.hs-sec,html body.on
 html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
 html body.on-home #hs-alc.hs-sec.su-measure > .hs-arrow{margin-top:8px!important}
 html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
-html body.on-home #hs-plans .hm-scroll{margin-top:auto!important;align-items:stretch!important}
-html body.on-home #hs-plans .pc-dots{margin-bottom:auto!important}
-html body.on-home #hs-plans.pc-measure .hm-scroll,html body.on-home #hs-plans.pc-measure .pc-dots{margin-top:0!important;margin-bottom:0!important}
-@media (min-width:601px){html body.on-home #hs-plans .hm-scroll{margin-bottom:auto!important}}
+/* r2: the tiles take the leftover room (no auto gaps above the tiles or under the dots); items spread evenly inside each tile. */
+html body.on-home #hs-plans .hm-scroll{flex:1 1 auto!important;margin-top:0!important;margin-bottom:0!important;align-items:stretch!important}
+html body.on-home #hs-plans .pc-dots{margin-bottom:0!important}
+html body.on-home #hs-plans.pc-measure .hm-scroll{flex:0 0 auto!important}
+html body.on-home #row-plans .hm-plan .pc-inc{flex:1 0 auto!important;display:flex!important;flex-direction:column!important;justify-content:space-evenly!important}
+html body.on-home #hs-plans.pc-measure #row-plans .hm-plan .pc-inc{flex:0 0 auto!important;justify-content:flex-start!important}
+html body.on-home #hs-plans.pc-fs #row-plans .hm-plan .pc-inc:not(.pc-all) > li:not(.pc-key){font-size:var(--pc-li-fs,16px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key{font-size:12px!important;font-weight:500!important;color:#555!important;padding-left:14px!important;margin-top:0!important;margin-bottom:2px!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key::before,html body.on-home #row-plans .hm-plan .pc-inc > li.up::before{display:block!important;content:""!important;width:7px!important;height:7px!important;border:0!important;border-radius:50%!important;transform:none!important;background:var(--pc-ac,#A8431F)!important;left:.2rem!important;top:calc(.68em - 3.5px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key::before{left:0!important;top:calc(.7em - 3.5px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.up{font-weight:600!important}
+html body.on-home #row-plans .hm-plan[data-tier="gold"]{--pc-ac:#A8431F}html body.on-home #row-plans .hm-plan[data-tier="platinum"]{--pc-ac:#05668D}
+.pc-lg-top{margin:0 0 10px;font-size:13px;line-height:1.4;color:#5a5048}
 html body.on-home #row-plans .hm-plan{align-self:stretch!important;display:flex!important;flex-direction:column!important}
 html body.on-home #row-plans .hm-plan .pc-more{margin-top:auto!important}
 html body.on-home #row-plans .hm-plan .pc-inc > li{margin-top:var(--pc-li-pad,0px)!important;margin-bottom:calc(1px + var(--pc-li-pad,0px))!important}
