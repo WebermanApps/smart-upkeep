@@ -1645,7 +1645,7 @@ body.on-home .topbar .share-msg{left:48px;right:auto}
 body.on-home .topbar .top-login{display:inline-flex;align-items:center;justify-content:center;position:absolute;right:.6rem;top:50%;transform:translateY(-50%);z-index:2;height:40px;min-height:40px;padding:0 .8rem;border:1.5px solid #0a0a0a;border-radius:6px;background:#fff;color:#0a0a0a;font:500 .85rem/1 Hind,sans-serif;text-decoration:none;white-space:nowrap}
 body.on-home .topbar .top-login:focus-visible,body.on-home .topbar .btn-share:focus-visible{outline:2px solid #05668D;outline-offset:2px}
 /* ===== Home Four Sections deck (Machan, receipt 2007): full-screen sections, bottom-center Title Case label + 2px chevron ===== */
-.hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100vh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:calc(100svh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:var(--su-sec-h);padding-bottom:calc(76px + env(safe-area-inset-bottom));scroll-margin-top:var(--su-hdr-h,72px)}
+.hs-sec{position:relative;display:flex;flex-direction:column;box-sizing:border-box;min-height:calc(100svh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:calc(100dvh / var(--su-zoom,1) - var(--su-hdr-h,72px));min-height:var(--su-sec-h);padding-bottom:calc(76px + env(safe-area-inset-bottom));scroll-margin-top:var(--su-hdr-h,72px);scroll-snap-align:start;scroll-snap-stop:normal}
 @media (min-width:700px){.hs-sec{padding-bottom:80px}}
 @media (min-width:1100px){.hs-sec{padding-bottom:96px}} /* clear the floating 560px pill (bottom:1rem + bar height) so arrows never overlap it */
 body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-top:8px}
@@ -2302,6 +2302,8 @@ body.su-band .hdr-menu a:hover,body.su-band .hdr-menu button:hover,body.su-band 
 body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
 body.su-band .hdr-menu button[data-menu-act="start"]{color:#0B6E4F}
 body.on-home main#app{display:flow-root!important;padding-top:0!important}
+/* Home has no scroll-away skirt: the white card sits flush under the 56px header (Machan / Swatch PR121 r2). */
+body.on-home{--su-skirt:0px}
 body.on-home{background-image:linear-gradient(var(--su-band),var(--su-band))!important;background-size:100% calc(var(--su-band-h) + env(safe-area-inset-top,0px) + var(--su-skirt) + var(--su-overlap))!important;background-repeat:no-repeat!important;background-position:0 0!important}
 body.on-home main#app > .hm{position:relative;margin-top:var(--su-skirt)!important;background:#fff!important;border-radius:20px 20px 0 0!important;box-shadow:0 -1px 0 rgba(60,40,20,.06),0 -4px 16px rgba(60,40,20,.06)!important}
 body.on-home .foot{background:#fff!important}
@@ -2704,7 +2706,153 @@ body.on-home #hs-plans .hm-plan .pc-year-l{
   body.on-home #hs-plans .hm-plan .pc-year{white-space:nowrap}
 }
 
+/* ===== Home scroll polish + bottom bar (home-scroll-polish-1113, Machan 10:08–10:09, Swatch spec) ===== */
+/* One scroll path is JS ease-in-out (560ms). Keep CSS scroll-behavior auto so the two never fight. */
+html{scroll-behavior:auto}
+html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity}
+html.su-glide,html.su-glide body{scroll-snap-type:none!important}
+@media (prefers-reduced-motion:reduce){
+  html.su-home-snap,html.su-home-snap body{scroll-snap-type:none!important}
+}
+body.on-home .hs-sec,body.on-home .hs-sec.hs-top{scroll-margin-top:var(--su-hdr-h,56px);scroll-snap-align:start}
+/* Header height stays fixed (56/64 + safe area). Shrink is transform-only (--su-ly). */
+body.su-band .topbar{height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;min-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;max-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important}
+/* Bottom bar: keep existing height/padding/--tb (Get Started 44 + 6 gap + tabs 48 + 8/4 pad). Flush, not floating. Light only, no green. */
+html body.on-home .hm-tabs.hm-dock,html body.on-home.hs-bar-off .hm-tabs.hm-dock{
+  background-color:#FFFCF7!important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;
+  border-top:1px solid rgba(60,40,20,.08)!important;
+  box-shadow:var(--su-sh-bar),inset 0 1px 0 rgba(255,255,255,.9)!important;
+  padding:8px var(--su-edge) calc(4px + env(safe-area-inset-bottom,0px))!important;
+  gap:6px!important;
+}
+html body.on-home .hm-dock .hm-tabs-row{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  position:relative;
+  align-items:stretch;
+  padding:0!important;
+  background:transparent!important;
+  gap:0!important;
+}
+html body.on-home .hm-dock button[data-hm-tab]{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  color:#6B625A!important;
+  font:600 11.5px/14px Hind,var(--mw-font-body),sans-serif!important;
+  letter-spacing:0!important;
+  text-transform:none!important;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+  z-index:1;
+  gap:0!important;
+}
+html body.on-home .hm-dock button[data-hm-tab] .hm-tab-core{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  pointer-events:none;
+}
+html body.on-home .hm-dock button[data-hm-tab] span:not(.hm-tab-core){
+  display:block!important;
+  -webkit-line-clamp:unset!important;
+  overflow:visible!important;
+  white-space:nowrap!important;
+  font:inherit!important;
+  color:inherit!important;
+  line-height:14px!important;
+  max-width:none!important;
+}
+/* #113 "Tailor Your Plan" is 83px at 11.5px Hind in an 82px tab at 360. Tighten only that label on narrow phones; keep the official name. */
+@media (max-width: 389px){
+  html body.on-home .hm-dock button[data-hm-tab="alacarte"] span:not(.hm-tab-core){
+    letter-spacing:-0.03em!important;
+  }
+}
+html body.on-home .hm-dock button[data-hm-tab] .su-ico,
+html body.on-home .hm-dock button[data-hm-tab] .hm-tab-core .su-ico{
+  width:22px!important;height:22px!important;flex:none;color:#6B625A!important;stroke-width:2!important;
+  transform:none!important;display:block;
+}
+html body.on-home .hm-dock button[data-hm-tab].on,
+html body.on-home .hm-dock button[data-hm-tab][aria-current="page"]{
+  color:#2B2622!important;font-weight:600!important;background:transparent!important;background-image:none!important;
+}
+html body.on-home .hm-dock button[data-hm-tab].on .su-ico,
+html body.on-home .hm-dock button[data-hm-tab][aria-current="page"] .su-ico{
+  color:#A8431F!important;
+}
+/* Sliding active pill (inset 4x6, 12px radius). Sheen over terracotta 10% fill, inner 1px ring. */
+html body.on-home .hm-tab-ind{
+  position:absolute;left:0;top:4px;z-index:0;pointer-events:none;
+  border-radius:12px;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.45) 0%,rgba(255,255,255,0) 50%);
+  background-color:rgba(168,67,31,.10);
+  box-shadow:inset 0 0 0 1px rgba(168,67,31,.14);
+  will-change:transform;
+  transform:translate3d(0,0,0);
+  transition:transform 240ms cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home .hm-tab-ind{transition:none}
+  html body.on-home .hm-dock button[data-hm-tab] .hm-tab-core{transition:none}
+}
+html body.on-home .hm-dock button[data-hm-tab] .hm-tab-core{transition:transform 100ms ease}
+html body.on-home .hm-dock button[data-hm-tab]:active .hm-tab-core{transform:scale(.96)}
+html body.on-home .hm-dock button[data-hm-tab]:focus{outline:none}
+html body.on-home .hm-dock button[data-hm-tab]:focus-visible{outline:2px solid rgba(168,67,31,.4);outline-offset:-2px;border-radius:12px}
+
+/* ===== Continuous page (Machan 10:16): no header spacers, no forced 100vh gaps, proximity snap already on ===== */
+body.su-band .topbar{background:var(--su-band,#FFFCF7)!important;background-color:var(--su-band,#FFFCF7)!important;opacity:1!important}
+/* Size to content, cap at one screen. Offset only via scroll-margin / scroll-padding, never padding-top or spacer blocks. */
+body.on-home .hs-sec,
+body.on-home .hs-sec.hs-top,
+body.on-home #hs-top,
+body.on-home #hs-plans,
+body.on-home #hs-alc,
+body.on-home #hs-faq,
+body.on-home .hs-plans.pc-expanded,
+body.on-home #hs-alc.hs-sec,
+body.on-home #hs-faq.hs-sec{
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-top:0!important;
+  margin-top:0!important;
+  padding-bottom:8px!important;
+  justify-content:flex-start!important;
+}
+body.on-home .hs-sec::before,body.on-home .hs-sec::after{content:none!important;display:none!important}
+body.on-home .hs-sec > .hs-arrow,body.on-home .hs-top > .hs-arrow{margin-top:8px!important;margin-bottom:0!important}
+/* Normal title rhythm between sections, capped so the empty gap stays under 48px (desktop --su-title-gap was 56). */
+body.on-home #hs-plans > .hm-row,
+body.on-home #hs-alc > .hm-row,
+body.on-home #hs-faq > .hm-faqs{
+  padding-top:16px!important;
+  margin-top:0!important;
+}
+body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs,body.on-home .hm .hs-sec > .hm-faqs{padding-top:16px!important}
+/* Inner lists may scroll when a group is taller than one screen; the section itself does not grow past the cap via saFit. */
+body.on-home #hs-alc .sa-box,body.on-home #hs-faq .sa-box{max-height:inherit}
+/* Page-end spacer only (after the last section), so a short FAQ can still glide flush under the header. Not a between-section band. */
+body.on-home .hm{padding-bottom:calc(100dvh - var(--su-hdr-h,56px))!important}
+body.on-home .foot{padding-bottom:0!important;margin-bottom:0!important}
+body.on-home main#app{padding-bottom:0!important}
+html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
+
 /* Tailor Your Plan item note (Added Gutter Cleaning subline) */
 .sa-n .sa-note{display:block;margin:1px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373;font-weight:500}
 
 .addon-body .addon-note{margin:2px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}
+
