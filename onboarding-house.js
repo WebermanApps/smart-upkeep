@@ -190,6 +190,11 @@
   var LV = ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"], TRY = [[], ["ob-hb-t"], ["ob-hb-t", "ob-hb-noart"], ["ob-hb-t", "ob-hb-nodyk"], ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"]];
   function setLv(on) { LV.forEach(function (c) { document.documentElement.classList.toggle(c, on.indexOf(c) >= 0); }); }
   var LEAF = /^(BUTTON|INPUT|SELECT|TEXTAREA|P|H1|H2|H3|LABEL|LI|IMG|svg)$/;
+  function vis(c) { return !!c && c !== "transparent" && !/rgba\([^)]*,\s*0\)$/.test(c); }
+  function painted(cs) {
+    if (vis(cs.backgroundColor) || (cs.backgroundImage && cs.backgroundImage !== "none") || (cs.boxShadow && cs.boxShadow !== "none")) return true;
+    return ["Top", "Right", "Bottom", "Left"].some(function (k) { return parseFloat(cs["border" + k + "Width"]) > 0 && cs["border" + k + "Style"] !== "none" && vis(cs["border" + k + "Color"]); });
+  }
   function contentBottom(sec, bar) {
     var max = 0, clips = [];
     var all = sec.querySelectorAll("*");
@@ -201,7 +206,7 @@
       var r = e.getBoundingClientRect();
       if (r.height < 1 || r.width < 1) continue;
       if ((cs.overflowY === "auto" || cs.overflowY === "scroll" || cs.overflowY === "hidden") && e.scrollHeight > e.clientHeight + 1) clips.push([e, r.bottom]);
-      if (e.children.length && !LEAF.test(e.tagName)) continue;
+      if (e.children.length && !LEAF.test(e.tagName) && !painted(cs)) continue; /* painted cards and boxes count by their own edge */
       var b = r.bottom;
       for (var j = 0; j < clips.length; j++) if (clips[j][0].contains(e)) b = Math.min(b, clips[j][1]);
       if (b > max) max = b;
