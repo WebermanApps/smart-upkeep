@@ -57,10 +57,14 @@
       if (e && e.all > 0) n += monthlyOf(e.all);
     });
     selectedFunnelAddons().forEach(function (a) {
-      if (!a || a.once || a.fromExtras || a.quoteRequired || !(a.annual > 0)) return;
+      if (!a || a.once || a.fromExtras || a.quoteRequired || !(a.annual > 0) || isApprovedFlatAnnual(a)) return;
       n += monthlyOf(a.annual);
     });
     return n;
+  }
+  /* Machan approved flat annual prices (Nov 13 10:04 PM ICT). Show/charge the approved /yr amount, never a derived monthlyOf(flat). */
+  function addonsFlatAnnual() {
+    return selectedFunnelAddons().reduce(function (sum, a) { return sum + (isApprovedFlatAnnual(a) ? (+a.annual || 0) : 0); }, 0);
   }
   function selectedFunnelAddons() {
     var ids = Array.isArray(S.addons) ? S.addons : [];
@@ -216,14 +220,19 @@
     var monthlyIds={};
     monthlyAddonCatalog().forEach(function(a){ if(a&&a.id) monthlyIds[a.id]=1; });
     rows.forEach(function(a,i){ if(!a.id) a.id="o_cur_"+i; a.once=true; if(monthlyIds[a.id]) a.id=a.id+"_once";
-      /* Machan Nov 13 9:04-9:05 PM: every item with a set price is bookable and is not filed under We'll Quote. Only rows with no price stay quote-only (Air Duct Cleaning). */
+      /* r2: restore the draft/quoteRequired gate. Only Machan's approved flats (and already-bookable non-draft rows) show a price. */
       if (suClose(a.label, "Extra Flat Roof Cleaning")) {
         var fv = flatRoofPerVisit();
-        if (fv) { a.price = fv; a.quoteRequired = false; a.flatRoof = true; }
+        if (fv) { a.price = fv; a.quoteRequired = false; a.draft = false; a.flatRoof = true; }
         else { a.price = null; a.quoteRequired = true; a.flatRoof = true; }
-      } else if (+a.price > 0) { a.quoteRequired = false; }
-      else if (hasConfigRange(a) && a.quoteRequired !== true) { a.priceRange = true; }
-      else { a.quoteRequired = true; a.price = null; }
+      } else if (isApprovedFlatOnce(a) && +a.price > 0) {
+        a.quoteRequired = false;
+        a.draft = false;
+      } else {
+        var ranged = !a.draft && !a.quoteRequired && !(+a.price>0) && hasConfigRange(a);
+        if (ranged) { a.priceRange = true; a.price = null; }
+        else if (a.draft || a.quoteRequired || !(+a.price>0)) { a.quoteRequired = true; a.price = null; }
+      }
     }); /* B1: fixed, non-draft pricing-config prices show; ranged low/high show as a range; everything else stays Quote */
     return rows;
   }
@@ -244,11 +253,29 @@
   var QUOTE_LABEL = "Quote";
   /* Close buttons: a 2px stroke icon instead of the Arial times glyph (Nov 12 funnel polish). */
   var X_SVG = '<svg class="x-ico" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  /* Approved one-time / annual flats (Machan Nov 13 10:04 PM ICT). Draft and quoteRequired rows are not on this list. */
+  var APPROVED_FLAT_ONCE = {
+    "generator annual service": 1,
+    "chimney sweep": 1,
+    "radon test": 1,
+    "lead and water test": 1,
+    "snowblower tune-up": 1,
+    "lawn mower winterizing": 1,
+    "extra flat roof cleaning": 1
+  };
+  function isApprovedFlatOnce(a){ return !!(a && APPROVED_FLAT_ONCE[suNorm(a.label)]); }
+  function isApprovedFlatAnnual(a){
+    return !!(a && !a.once && !a.fromExtras && !a.gutter && !a.quoteRequired && a.annual!=null && isFinite(+a.annual) && +a.annual>0 && (
+      suClose(a.label, "Generator Annual Service") || suClose(a.label, "Chimney Sweep") || suClose(a.label, "Flat Roof Inspection And Clean") || a.flatRoof
+    ));
+  }
+  function yrLabel(annual){ return money(annual) + "/yr"; }
+  /* Existing approved monthly add-ons only (Irrigation and similar extras, plus Essentials gutter). Introduced 93a1ea51 (Nov 12); do not monthlyOf newly approved flats. */
   function hasRealMonthly(a){
-    return !!(a && !a.once && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0);
+    return !!(a && (a.fromExtras || a.gutter) && a.annual!=null && a.annual!=="" && !a.quoteRequired && isFinite(+a.annual) && +a.annual>0 && !a.draft);
   }
   function hasRealOncePrice(a){
-    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && isFinite(+a.price) && +a.price>0);
+    return !!(a && a.price!=null && a.price!=="" && !a.quoteRequired && !a.draft && isFinite(+a.price) && +a.price>0);
   }
   function isPricedBookable(a){
     if (!a || needsSiteVisit(a.label)) return false;
@@ -271,6 +298,7 @@
   function addMo(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
     if (hasRealMonthly(a)) return "+" + money(monthlyOf(a.annual)) + "/mo";
+    if (isApprovedFlatAnnual(a)) return yrLabel(a.annual);
     return QUOTE_LABEL;
   }
   function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
@@ -853,12 +881,18 @@
     /* A la carte pop-up: only facts from P.addons (desc, unit, low, high, note). Parts with no fact are left out. */
     function openAddon(id, from) { var a = P.addons.filter(function (x) { return x.id === id; })[0];
       if (!a) { var o = (P.lastMinute || []).filter(function (x) { return x.id === id; })[0]; if (!o) return;
-        var op = [["What's Included", o.desc], ["Limits", AC_LIMITS[o.id] || "Not set yet. We confirm limits when you book."], ["How the Price Is Set", o.quoteRequired ? "Quote required. Add it to your request and we will follow up with a price." : money(o.price) + " one time, done on a visit. Not added to your monthly membership. Draft price."]];
+        var onceHow = o.quoteRequired ? "Quote required. Add it to your request and we will follow up with a price." : money(o.price) + " one time, done on a visit. Not added to your monthly membership." + (isApprovedFlatOnce(o) ? "" : " Draft price.");
+        var op = [["What's Included", o.desc], ["Limits", AC_LIMITS[o.id] || "Not set yet. We confirm limits when you book."], ["How the Price Is Set", onceHow]];
         return show(o.label, o.quoteRequired ? QUOTE_LABEL : money(o.price) + " one time", op.map(function (p) { return '<li class="ac-part"><span><b>' + p[0] + '</b><br>' + p[1] + '</span></li>'; }).join(""), "Tailor Your Plan", from); }
       var parts = [["What's Included", a.desc]];
       parts.push(["Limits", AC_LIMITS[a.id] || "Not set yet. We confirm limits when you book."]);
-      parts.push(["How the Price Is Set", a.quoteRequired ? "Quote required. No flat annual price. Add it to your request and we will follow up with a quote." : addMo(a) + " added to your membership. It is the yearly price divided by 12, rounded, and the yearly price is set at the midpoint of metro Detroit market pricing research." + " Draft price."]);
-      show(a.label, addMo(a), parts.map(function (p) { return '<li class="ac-part"><span><b>' + p[0] + '</b><br>' + p[1] + '</span></li>'; }).join(""), "Tailor Your Plan", from); }
+      var priceHow = a.quoteRequired
+        ? "Quote required. No flat annual price. Add it to your request and we will follow up with a quote."
+        : (isApprovedFlatAnnual(a) || (a.annual > 0 && isApprovedFlatOnce(a))
+          ? (a.annual > 0 ? yrLabel(a.annual) : money(a.price)) + ". Flat price."
+          : addMo(a) + " added to your membership. It is the yearly price divided by 12, rounded, and the yearly price is set at the midpoint of metro Detroit market pricing research." + " Draft price.");
+      parts.push(["How the Price Is Set", priceHow]);
+      show(a.label, (isApprovedFlatAnnual(a) ? yrLabel(a.annual) : addMo(a)), parts.map(function (p) { return '<li class="ac-part"><span><b>' + p[0] + '</b><br>' + p[1] + '</span></li>'; }).join(""), "Tailor Your Plan", from); }
     function show(title, lead, html, cta, from) {
       pop.querySelector("#icT").textContent = title;
       var lp = pop.querySelector(".ic-lead2"); lp.textContent = lead; lp.hidden = !lead;
@@ -1891,17 +1925,18 @@
   }
   function obBill(tier) {
     tier = tier || S.tier;
-    var mem = price()[tier], add = addonsAnnual(), plan = obPlan();
-    var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(add) };
+    var mem = price()[tier], add = addonsAnnual(), flat = addonsFlatAnnual(), plan = obPlan();
+    var addMonthlyAnnual = add - flat; if (addMonthlyAnnual < 0) addMonthlyAnnual = 0;
+    var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, addonsFlatAnnual: flat, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(addMonthlyAnnual) };
     if (plan === "founding") { r.label = "Annual · Founding 2-For-1"; r.long = "Founding Member: 2 Years For The Price Of 1"; r.today = mem + add; r.termMonths = 24; }
     else if (plan === "annual") {
       r.perCharge = r.monthly + r.addonsMonthly;
-      r.today = annualPrepaidOf(r.perCharge);
+      r.today = annualPrepaidOf(r.perCharge) + flat;
       r.label = "Annual · 10% Off";
       r.long = "Prepay 12 Months (10% Off Monthly)";
       r.termMonths = 12;
     }
-    else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge; r.termMonths = 12; }
+    else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge + flat; r.termMonths = 12; }
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
@@ -2040,6 +2075,7 @@
       return QUOTE_LABEL;
     }
     if (hasRealMonthly(a)) return moLabel(a.annual);
+    if (isApprovedFlatAnnual(a)) return yrLabel(a.annual);
     if (hasRealOncePrice(a)) return money(+a.price);
     return QUOTE_LABEL;
   }
@@ -2066,12 +2102,15 @@
     onceQuote = onceQuote.filter(function (a) { return !/^(furnace|ac) tune up$/.test(suNorm(a.label)); });
     var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
       (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
-    var addMoSum = addonsNoteMonthly();
+    var addMoSum = addonsNoteMonthly(), addYrSum = addonsFlatAnnual();
+    var aoNoteBits = [];
+    if (addMoSum) aoNoteBits.push("+" + money(addMoSum) + "/mo");
+    if (addYrSum) aoNoteBits.push(money(addYrSum) + "/yr");
     var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Tailor Your Plan">' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Plan Add-Ons</button>' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "once" ? " on" : "") + '" id="ob-ao-tab-once" aria-selected="' + (tab === "once") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="once">One-Time Services</button></div>';
     var list = '<ul class="ob-ao-list" id="ob-ao-panel" role="tabpanel" aria-labelledby="' + (tab === "once" ? "ob-ao-tab-once" : "ob-ao-tab-monthly") + '">' + (tab === "once" ? once : monthly) + '</ul>';
-    var body = '<div class="ob-ao-groups">' + tabs + list + '</div>' + (addMoSum ? '<p class="priced-note">Your add-ons: +' + money(addMoSum) + '/mo</p>' : '');
+    var body = '<div class="ob-ao-groups">' + tabs + list + '</div>' + (aoNoteBits.length ? '<p class="priced-note">Your add-ons: ' + aoNoteBits.join(" + ") + '</p>' : '');
     return obShell("addons", "wrench", 3, "Tailor Your Plan", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
   }
 
@@ -2895,7 +2934,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9a9"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9a9m"; document.head.appendChild(l); })();
   function bootApp() {
     render(); suHist(S.screen, true);
     hmHash();
