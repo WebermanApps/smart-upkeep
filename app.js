@@ -561,7 +561,7 @@
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
       /* And More expands this tile in place to the plan's full feature list from pricing-config.js P.tiers[k].features (text before any ":"), with Show Less (Machan 9:07 AM). */
       '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '' : (/Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
-      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + (t.features || []).map(function (f) { var x = String(f).split(":")[0]; return /^Everything in /i.test(x) ? '<li class="pc-lead">' + esc(x) + '</li>' : '<li>' + esc(x.charAt(0).toUpperCase() + x.slice(1)) + '</li>'; }).join("") + '</ul>' +
+      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + (t.features || []).map(function (f) { var x = pcTitle(String(f).split(":")[0]); return /^Everything in /i.test(x) ? '<li class="pc-lead">' + esc(x) + '</li>' : '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
       (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-controls="pc-all-' + k + '">And More</button></p>' : '') + '</div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
@@ -1100,6 +1100,11 @@
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
   window.addEventListener("resize", function () { var r = app.querySelector(".hm"); if (r) { hmHdrSync(); hsBarFill(r); } });
   /* Plan tile And More / Show Less: expands the tile in place, no jump; scroll position stays put. The one-screen Plans rule relaxes only while a tile is open. */
+  /* Swatch QA (b): display-only Title Case for the expanded feature lists, matching the site's Title Case lines (every word capped, e.g. "Mold And Moisture Scan").
+     Caps the first letter after a start, space, hyphen, slash, quote or "("; all-caps tokens (AC, CO) and numbers are left as they are. pricing-config.js is untouched. */
+  function pcTitle(x) { x = String(x); return x.replace(/(^|[\s\-\/("])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
+  function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
+  function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
   function bindPlanMore(root) {
     var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, sec = document.getElementById("hs-plans");
     root.querySelectorAll("[data-pc-more]").forEach(function (b) {
@@ -1107,6 +1112,7 @@
       b.addEventListener("click", function (e) {
         e.preventDefault(); e.stopPropagation();
         var card = b.closest(".hm-plan"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)"), open = b.getAttribute("aria-expanded") !== "true", y = window.scrollY;
+        var hb0 = pcHdr(), pinned = !!sec && Math.abs(sec.getBoundingClientRect().top - hb0) < window.innerHeight * 0.35;
         var h0 = card.getBoundingClientRect().height;
         if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
         all.hidden = !open; if (keys) keys.hidden = open;
@@ -1119,9 +1125,10 @@
           card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
           card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); card.style.height = open ? "auto" : card.dataset.fixedH; }, { once: true });
         }
-        window.scrollTo(window.scrollX, y);
-        /* Show Less near the bottom of a long list: keep the tile in view instead of leaving them in a later section. */
-        if (!open) { var hb = (document.querySelector(".topbar") || { getBoundingClientRect: function () { return { bottom: 0 }; } }).getBoundingClientRect().bottom; var top = card.getBoundingClientRect().top; if (top < hb) hmJumpSec(sec || card, false); }
+        /* Swatch QA F2: no page jump on And More / Show Less for any tile. If Plans is (about) pinned under the header, keep it pinned exactly;
+           otherwise keep scrollY. Show Less from deep in a long list pins Plans so the tile stays in view. */
+        var hbN = pcHdr(), pinT = sec ? sec.getBoundingClientRect().top - hbN : 0;
+        if (sec && (pinned || (!open && card.getBoundingClientRect().top < hbN))) pcScroll(window.scrollY + pinT); else pcScroll(y);
       });
     });
   }
