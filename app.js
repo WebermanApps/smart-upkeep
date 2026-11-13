@@ -589,7 +589,8 @@
   /* Hero C: start teaser at 0.6s (skip white fade-in) and loop from there */
   (function heroSeek() {
     var S = 0.6;
-    function go(v) { try { v.currentTime = S; } catch (e) {} var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+    /* Home First Section Deck card 01 B (Machan Nov 13 1:34 PM): the Home loop plays at about 0.75x (deck retimed 6.3s -> 8.4s). */
+    function go(v) { try { v.currentTime = S; } catch (e) {} try { v.defaultPlaybackRate = 0.75; v.playbackRate = 0.75; } catch (e) {} var p = v.play(); if (p && p.catch) p.catch(function () {}); }
     document.addEventListener("loadedmetadata", function (e) { var v = e.target; if (v && v.classList && v.classList.contains("hm-teaser") && !v.getAttribute("data-hold")) go(v); }, true);
     /* first interaction (scroll, touch, mouse/cursor move, key): release held teaser + start the header van */
     function first(e) {
@@ -738,10 +739,16 @@
   function wiPop() {
     return '<div class="wi-pop va" role="dialog" aria-modal="true" aria-labelledby="wiT" data-ptr-ignore hidden><div class="wi-bg" data-wi-close></div><div class="wi-card"><button type="button" class="hm-pop-x wi-x mw-hover" data-wi-close aria-label="Close">' + X_SVG + '</button><div class="wi-head"></div><ul class="wi-list"></ul><button type="button" class="btn btn-primary mw-hover wi-go" data-act="start">Free Quote in Minutes</button></div></div>';
   }
+  /* Machan Nov 13 1:43 PM ("teh same one we have at the bottom"): the same Featured Service bar also sits at the bottom of Plans; both open the one
+     bottom-sheet pop-up (same motion, unchanged). Same markup and wording; only the extra class differs. */
+  function fsAdBtn(cls) {
+    var f = FEATURED[0], art = FS_ART[f.art];
+    return '<button type="button" class="fs-ad mw-hover' + (cls ? " " + cls : "") + '" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + f.hook + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>';
+  }
   function featuredAd() {
     var f = FEATURED[0], art = FS_ART[f.art];
     var cta = f.href ? '<a class="btn btn-primary mw-hover" href="' + f.href + '">' + f.cta + '</a>' : '<button type="button" class="btn btn-primary mw-hover" data-act="start">' + f.cta + '</button>';
-    return '<button type="button" class="fs-ad mw-hover" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + f.hook + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>' +
+    return fsAdBtn("") +
       '<div class="wi-pop fs-pop" role="dialog" aria-modal="true" aria-label="' + esc(f.popTitle) + '" data-ptr-ignore hidden><div class="wi-bg" data-wi-close></div><div class="wi-card"><button type="button" class="hm-pop-x wi-x mw-hover" data-wi-close aria-label="Close">' + X_SVG + '</button>' + art("fs-lg") + '<h3>' + f.popTitle + '</h3><p>' + f.popText + '</p>' + cta + '</div></div>';
   }
   function bindWW(root) {
@@ -761,7 +768,11 @@
       wp.querySelector(".wi-list").innerHTML = g[3].map(function (x) { return '<li><span>' + x[0] + '</span><em class="pl-' + x[1] + '">' + x[1] + '</em></li>'; }).join("");
       open(wp, t);
     }); });
-    var fa = root.querySelector(".fs-ad"); if (fa && fp) fa.addEventListener("click", function () { open(fp, fa); });
+    if (fp) root.querySelectorAll(".fs-ad").forEach(function (fa) { fa.addEventListener("click", function () { open(fp, fa); }); });
+    /* Plans copy of the bar rises from the bottom when Plans comes into view (off under reduced motion). */
+    (function () { var pb = root.querySelector(".fs-ad-plans"); if (!pb || !("IntersectionObserver" in window) || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+      pb.classList.add("rise"); var io2 = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { pb.classList.add("in"); io2.disconnect(); } }); }, { threshold: .4 });
+      io2.observe(pb); })();
     root.querySelectorAll("[data-wi-close]").forEach(function (c) { c.addEventListener("click", close); });
     root.querySelectorAll(".wi-pop [data-act]").forEach(function (b) { b.addEventListener("click", function () { document.documentElement.classList.remove("hm-pop-open"); }); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
@@ -851,7 +862,7 @@
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div>' + fsAdBtn("fs-ad-plans") + '</section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
@@ -866,12 +877,12 @@
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
       /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
-        FAQ_ALL.map(function (g, gi) { return '<div class="sa-grp"><h3 class="sa-grp-h">' + esc(g[0]) + '</h3><div class="sa-list">' + g[1].map(function (q, qi) {
-          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1]); }).join("") + '</div></div>'; }).join("") +
+        saTabsHtml("faqg", "faq-groups", "FAQ Topics", FAQ_ALL.map(function (g, gi) { return [g[0], g[1].map(function (q, qi) {
+          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1]); }).join("")]; })) +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
-      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started</button><div class="hm-pill">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
+      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
         [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "À La Carte", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
       '</div></div></nav>' +
       '</div>';
@@ -1038,7 +1049,7 @@
     var tabs = root.querySelector(".hm-tabs"), z = zoomFactor();
     if (!tabs) return;
     var off = document.body.classList.contains("hs-bar-off"); document.body.classList.remove("hs-bar-off");
-    var tr = tabs.getBoundingClientRect(), reserve = Math.ceil((window.innerHeight - tr.top) / z) + 12;
+    var tr = tabs.getBoundingClientRect(), reserve = Math.ceil((window.innerHeight - tr.top) / z) + 8; /* Machan Nov 13 1:25 PM: 8px over the bar (was 12) gives the hero video a little more room */
     if (off) document.body.classList.add("hs-bar-off");
     document.documentElement.style.setProperty("--su-sec-pb", reserve + "px");
     function budget(sec) {
@@ -1071,6 +1082,17 @@
           apply(Math.max(160, Math.floor(cur + slack / 0.88)));
         }
         if (limit() - gap - chips.getBoundingClientRect().bottom / z < 0) apply(Math.max(160, thumb.getBoundingClientRect().height / z - 2));
+        /* Machan Nov 13 1:25 PM ("a little more room beneath see plans ... make the video section a little larger"): when the video is already at its
+           full 3:4 and room is left above See Plans, grow it proportionally (wider and taller, same 3:4) into that room, up to 10px past each side margin. */
+        var room = limit() - gap - chips.getBoundingClientRect().bottom / z, curH = thumb.getBoundingClientRect().height / z;
+        if (room > 2 && curH >= H - 1) {
+          var grow = Math.min(20, Math.floor(room * 0.75 / 2) * 2);
+          if (grow >= 2) {
+            thumb.style.setProperty("width", (W + grow) + "px", "important"); thumb.style.setProperty("margin-left", "auto", "important"); thumb.style.setProperty("margin-right", "auto", "important");
+            H = Math.round((W + grow) * 4 / 3); apply(H);
+            for (var m = 0; m < 4 && limit() - gap - chips.getBoundingClientRect().bottom / z < 0; m++) { grow -= 2; thumb.style.setProperty("width", (W + grow) + "px", "important"); H = Math.round((W + grow) * 4 / 3); apply(H); }
+          }
+        }
       }
     })();
     /* Plans: stretch the cards to the leftover height, same height each. */
@@ -1087,17 +1109,8 @@
         setH(cards, Math.floor(h));
       }
     })();
-    /* Shop À La Carte section: the list box takes the leftover height and is the only inner scroll (same rows and prices as before). */
-    (function () {
-      var sec = document.getElementById("hs-alc"), alc = sec && sec.querySelector(".alc-box");
-      if (!alc) return;
-      alc.style.height = ""; alc.style.maxHeight = "none"; alc.style.minHeight = "80px";
-      var row = sec.querySelector("#row-alc"), used = row ? row.getBoundingClientRect().height / z : 0;
-      used -= alc.getBoundingClientRect().height / z;
-      var h = Math.max(120, Math.floor(budget(sec) - used) - 2);
-      alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; alc.style.overflowY = "auto";
-      for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; }
-    })();
+    /* Shop À La Carte and FAQ (Machan Nov 13 1:26-1:27 PM): chip row + one group at a time; the list box never runs past the section's one screen. */
+    saFit(document.getElementById("hs-alc")); saFit(document.getElementById("hs-faq"));
     hsBarSync();
   }
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
@@ -1113,6 +1126,15 @@
     ["Inside The Home", /dryer|smoke|mold|range hood|fridge coil|attic/i],
     ["Records And Perks", /checklist|health score|contractor|recall|warrant|report|record|sell|gift/i]
   ];
+  /* Home First Section Deck card 05 (Machan Decides -> Swatch default B, Nov 13 1:36 PM): a 16px Essentials-green line icon inline beside each header (deck mock SVGs). */
+  var PC_ICONS = {
+    "Visits": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    "Heating And Cooling": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3c0 0-2.2 3.2-2.2 6.2A2.2 2.2 0 0012 11.4a2.2 2.2 0 002.2-2.2C14.2 6.2 12 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.2 14.2c0-2 1.4-3.4 2.4-4.2M15.8 14.2c0-2-1.4-3.4-2.4-4.2M7 18.2c0-2.4 2.2-3.6 5-3.6s5 1.2 5 3.6-2.2 3.5-5 3.5-5-1.2-5-3.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    "Water And Plumbing": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3s-6.2 7.2-6.2 11.4A6.2 6.2 0 0012 21a6.2 6.2 0 006.2-6.6C18.2 10.2 12 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    "Roof And Outside (Drone)": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 13l9-8 9 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 13v7h12v-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17.5" cy="6" r="1.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M17.5 7.4v2.2M16 6h-2.1M19 6h2.1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    "Inside The Home": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.8V20h12v-9.2M10 20v-5.5h4V20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    "Records And Perks": '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 4.5h8.2L19 8.2V20a1.5 1.5 0 01-1.5 1.5H7A1.5 1.5 0 015.5 20V6A1.5 1.5 0 017 4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 4.8V8h3.4M8.5 12h7M8.5 15.5h7M8.5 19h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
   function pcGroupHtml(features) {
     var lead = "", g = PC_GROUPS.map(function () { return []; }), rest = [];
     (features || []).forEach(function (f) {
@@ -1124,7 +1146,7 @@
     if (rest.length) g[g.length - 1] = g[g.length - 1].concat(rest); /* never drop a feature */
     return lead + PC_GROUPS.map(function (G, i) {
       if (!g[i].length) return "";
-      return '<li class="pc-grp"><p class="pc-grp-h">' + esc(G[0]) + '</p><ul class="pc-sub">' + g[i].map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></li>';
+      return '<li class="pc-grp"><p class="pc-grp-h">' + (PC_ICONS[G[0]] ? '<span class="pc-ico" aria-hidden="true">' + PC_ICONS[G[0]] + '</span>' : '') + '<span>' + esc(G[0]) + '</span></p><ul class="pc-sub">' + g[i].map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></li>';
     }).join("");
   }
   /* Swatch QA (b): display-only Title Case for the expanded feature lists, matching the site's Title Case lines (every word capped, e.g. "Mold And Moisture Scan").
@@ -1163,13 +1185,24 @@
     rows.forEach(function (r) { for (var i = 0; i < ALC_GROUPS.length; i++) { if (ALC_GROUPS[i][1].test(r.a.label)) { g[i].push(r); return; } } other.push(r); });
     var groups = ALC_GROUPS.map(function (G, i) { return [G[0], g[i]]; }); if (other.length) groups.push(["More Services", other]);
     var n = 0;
-    return '<div class="sa-groups alc-groups">' + groups.map(function (G) {
-      if (!G[1].length) return "";
-      return '<div class="sa-grp"><h3 class="sa-grp-h">' + esc(G[0]) + '</h3><div class="sa-list">' + G[1].map(function (r) {
+    return saTabsHtml("alc", "alc-groups", "À La Carte Groups", groups.filter(function (G) { return G[1].length; }).map(function (G) {
+      return [G[0], G[1].map(function (r) {
         var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
         return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + '<small>' + (r.m ? "Monthly Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+      }).join("")];
+    }));
+  }
+  /* Machan Nov 13 1:27 PM ("divided by section with the names of the sections at the top, and then if they click the section it shows the list of the items";
+     "it all needs to fit in one screen"; "same with FAQ"): group names are a sideways chip row (role=tablist); only the chosen group's rows show below,
+     in a box that scrolls inside itself only when that group is taller than the room left on the screen. First group is selected by default. */
+  function saTabsHtml(pfx, cls, label, groups) {
+    return '<div class="sa-groups sa-tabbed ' + cls + '">' +
+      '<div class="sa-tabs" role="tablist" aria-label="' + esc(label) + '" data-ptr-ignore>' + groups.map(function (G, i) {
+        return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '">' + esc(G[0]) + '</button>';
+      }).join("") + '</div>' +
+      '<div class="sa-box" data-ptr-ignore>' + groups.map(function (G, i) {
+        return '<div class="sa-grp" role="tabpanel" id="' + pfx + '-p' + i + '" aria-labelledby="' + pfx + '-t' + i + '"' + (i ? " hidden" : "") + '><div class="sa-list">' + G[1] + '</div></div>';
       }).join("") + '</div></div>';
-    }).join("") + '</div>';
   }
   function bindSaRows(root) {
     root.addEventListener("click", function (e) {
@@ -1178,29 +1211,106 @@
       sec.querySelectorAll('.sa-q[aria-expanded="true"]').forEach(function (o) { if (o !== b) { o.setAttribute("aria-expanded", "false"); var p = document.getElementById(o.getAttribute("aria-controls")); if (p) p.hidden = true; } });
       b.setAttribute("aria-expanded", String(open)); var pnl = document.getElementById(b.getAttribute("aria-controls")); if (pnl) pnl.hidden = !open;
       pcScroll(y);
+      var box = b.closest(".sa-box");
+      if (box) { saFit(box.closest(".hs-sec")); if (open) saIntoBox(box, b.closest(".sa-item")); saFade(box); }
     });
+    /* Chip row: click or arrow keys pick a group; only that group's rows show. Opening a group closes any open row. */
+    root.querySelectorAll(".sa-tabbed").forEach(function (w) {
+      var tabs = [].slice.call(w.querySelectorAll(".sa-tab")), box = w.querySelector(".sa-box");
+      function pick(t, focus) {
+        var y = window.scrollY;
+        tabs.forEach(function (o) {
+          var on = o === t, pnl = document.getElementById(o.getAttribute("aria-controls"));
+          o.setAttribute("aria-selected", String(on)); o.tabIndex = on ? 0 : -1;
+          if (pnl) { pnl.hidden = !on; if (!on) pnl.querySelectorAll('.sa-q[aria-expanded="true"]').forEach(function (q) { q.setAttribute("aria-expanded", "false"); var a = document.getElementById(q.getAttribute("aria-controls")); if (a) a.hidden = true; }); }
+        });
+        if (focus) t.focus({ preventScroll: true });
+        var row = t.parentNode, tl = t.offsetLeft - row.offsetLeft, tr = tl + t.offsetWidth;
+        if (tl < row.scrollLeft + 8) row.scrollLeft = Math.max(0, tl - 16); else if (tr > row.scrollLeft + row.clientWidth - 8) row.scrollLeft = tr - row.clientWidth + 16;
+        if (box) { box.scrollTop = 0; saFit(w.closest(".hs-sec")); saFade(box); }
+        pcScroll(y);
+      }
+      tabs.forEach(function (t, i) {
+        t.addEventListener("click", function () { pick(t, false); });
+        t.addEventListener("keydown", function (e) {
+          var k = e.key, j = k === "ArrowRight" ? i + 1 : k === "ArrowLeft" ? i - 1 : k === "Home" ? 0 : k === "End" ? tabs.length - 1 : null;
+          if (j === null) return; e.preventDefault(); pick(tabs[(j + tabs.length) % tabs.length], true);
+        });
+      });
+      if (box) box.addEventListener("scroll", function () { saFade(box); }, { passive: true });
+    });
+  }
+  /* Inner scroll box helpers (Machan Nov 13 1:26 PM: "i never want to go past the screen size"). */
+  function saFade(box) {
+    var top = box.scrollTop > 2, more = box.scrollHeight - box.clientHeight - box.scrollTop > 2;
+    box.classList.toggle("fade-t", top); box.classList.toggle("fade-b", more);
+  }
+  function saIntoBox(box, item) {
+    if (!item) return;
+    var br = box.getBoundingClientRect(), ir = item.getBoundingClientRect(), z = zoomFactor();
+    var d = 0;
+    if (ir.bottom > br.bottom - 4) d = (ir.bottom - br.bottom + 12) / z;
+    if (ir.top - d * z < br.top + 4) d = (ir.top - br.top - 8) / z;
+    if (Math.abs(d) > 1) { try { box.scrollBy({ top: d, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); } catch (x) { box.scrollTop += d; } }
+  }
+  /* The list box gets at most the room left in its one-screen section (title + chips + paddings + arrow); it only scrolls when the group is taller. */
+  function saFit(sec) {
+    if (!sec) return;
+    var box = sec.querySelector(".sa-box"); if (!box) return;
+    var z = zoomFactor(), arrow = sec.querySelector(":scope > .hs-arrow");
+    box.style.maxHeight = "none";
+    var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
+    var limit = sec.getBoundingClientRect().top / z + sec.clientHeight - pb - (arrow ? arrow.getBoundingClientRect().height / z + 8 : 4);
+    var h = Math.max(120, Math.floor(limit - box.getBoundingClientRect().top / z - 4));
+    box.style.maxHeight = h + "px";
+    for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); box.style.maxHeight = h + "px"; }
+    saFade(box);
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
   function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
   function bindPlanMore(root) {
     var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, sec = document.getElementById("hs-plans");
     /* Open or close one tile in place (height animation unless reduced motion; instant when asked). */
+    /* Machan Nov 13 1:26 PM ("it should not expand to the whole file but instead show a couple more and a scrollable section" / "section inside secton"):
+       And More grows the tile by about two lines (only as far as the one-screen section allows) and the full grouped list scrolls inside the tile. */
     function pcSet(card, open, instant) {
       var b = card.querySelector("[data-pc-more]"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)");
       if (!b || !all || (b.getAttribute("aria-expanded") === "true") === open) return;
-      var h0 = card.getBoundingClientRect().height;
+      var z = zoomFactor(), h0 = card.getBoundingClientRect().height / z;
       if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
+      var keysH = keys ? keys.getBoundingClientRect().height / z : 0;
       all.hidden = !open; if (keys) keys.hidden = open;
       b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show Less" : "And More";
       card.classList.toggle("pc-open", open);
-      if (sec) sec.classList.toggle("pc-expanded", !!root.querySelector(".hm-plan.pc-open"));
-      if (open) { card.style.height = "auto"; card.style.maxHeight = "none"; } else { card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; }
-      var h1 = card.getBoundingClientRect().height;
+      all.style.maxHeight = ""; all.scrollTop = 0;
+      var h1 = h0;
+      if (open) {
+        /* room: about two list lines, capped by the space left above the section's See arrow (8px clear) */
+        var arrow = sec && sec.querySelector(":scope > .hs-arrow"), bottomUsed = 0;
+        if (sec) [].slice.call(sec.querySelectorAll(".hm-row, .pc-dots")).forEach(function (e) { bottomUsed = Math.max(bottomUsed, e.getBoundingClientRect().bottom / z); });
+        var slack = arrow ? arrow.getBoundingClientRect().top / z - 8 - bottomUsed : 40;
+        var lineH = parseFloat(getComputedStyle(all).lineHeight) || 20, extra = Math.max(0, Math.min(Math.round(lineH * 2), Math.floor(slack)));
+        var fixed = parseFloat(card.dataset.fixedH) || h0;
+        h1 = fixed + extra;
+        card.style.height = h1 + "px"; card.style.maxHeight = h1 + "px"; card.style.minHeight = h1 + "px";
+        /* the list box takes what the short list used plus the extra (the And More / Show Less link stays at the bottom) */
+        var cr = card.getBoundingClientRect(), ar = all.getBoundingClientRect(), mr = b.closest(".pc-more") ? b.closest(".pc-more").getBoundingClientRect() : null;
+        var pbC = parseFloat(getComputedStyle(card).paddingBottom) || 0;
+        var boxH = Math.floor((cr.bottom - ar.top) / z - pbC - (mr ? mr.height / z + 4 : 0));
+        all.style.maxHeight = Math.max(keysH, Math.min(boxH, all.scrollHeight)) + "px";
+        all.classList.add("pc-scroll"); pcFade(all);
+      } else {
+        all.classList.remove("pc-scroll", "fade-t", "fade-b");
+        card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; card.style.minHeight = card.dataset.fixedH;
+        h1 = card.getBoundingClientRect().height / z;
+      }
       if (!reduce && !instant && Math.abs(h1 - h0) > 2) {
         card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
-        card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); card.style.height = (b.getAttribute("aria-expanded") === "true") ? "auto" : card.dataset.fixedH; }, { once: true });
+        card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); }, { once: true });
       }
     }
+    function pcFade(el) { el.classList.toggle("fade-t", el.scrollTop > 2); el.classList.toggle("fade-b", el.scrollHeight - el.clientHeight - el.scrollTop > 2); }
+    root.querySelectorAll(".pc-all").forEach(function (el) { el.addEventListener("scroll", function () { pcFade(el); }, { passive: true }); });
     /* Swatch QA F2: no page jump. If Plans is (about) pinned under the header, keep it pinned exactly; otherwise keep scrollY.
        After a collapse that leaves the tile above the header, pin Plans so the tile stays in view. */
     function pcKeep(y, pinned, card, open) {
@@ -1238,14 +1348,67 @@
       scroller.addEventListener("scrollend", settle, { passive: true });
     }
   }
+  /* Badge carousel (Machan Nov 13 1:24 PM: "i want to be able to scroll the badges as they are passing"). The CSS keyframe loop is swapped for a
+     rAF loop at the same speed (one set width per animation-duration, read from the CSS, so the pace is unchanged). Drag by touch or mouse, or
+     wheel/trackpad sideways, moves it by hand; about 1s after letting go it carries on from that spot. The offset wraps modulo one set width
+     (two identical sets), so there is no jump in either direction. touch-action:pan-y keeps vertical page scroll; the page never scrolls sideways.
+     Reduced motion: no auto-motion and the CSS native sideways scroll stays (manual only). */
+  function bindBadgeStrip(c) {
+    var track = c.querySelector(".hm-hc-track"), set = track && track.querySelector(".hm-hc-set");
+    if (!track || !set || c.dataset.mq) return;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    c.dataset.mq = "1";
+    var dur = parseFloat(getComputedStyle(track).animationDuration) || 32; if (dur < 1) dur = 32;
+    c.classList.add("js-mq");
+    var setW = 0, x = 0, last = 0, hold = 0, hover = false, drag = null, raf = 0, dragEnd = 0;
+    function measure() { var w = set.getBoundingClientRect().width / zoomFactor(); if (w > 0) { if (setW) x = x / setW * w; setW = w; } }
+    function wrap() { if (setW > 0) { x = x % setW; if (x < 0) x += setW; } }
+    function paint() { track.style.transform = "translate3d(" + (-x).toFixed(2) + "px,0,0)"; }
+    function frame(t) {
+      raf = requestAnimationFrame(frame);
+      var dt = last ? Math.min(0.05, (t - last) / 1000) : 0; last = t;
+      if (!setW) measure();
+      if (!drag && !hover && t >= hold && !document.hidden && setW) { x += setW / dur * dt; wrap(); paint(); }
+    }
+    function pause(ms) { hold = performance.now() + ms; }
+    measure(); paint(); raf = requestAnimationFrame(frame);
+    addEventListener("resize", measure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    c.addEventListener("pointerdown", function (e) {
+      if (e.button > 0) return;
+      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, off: x, moved: false, mouse: e.pointerType === "mouse" };
+      if (drag.mouse) { try { c.setPointerCapture(e.pointerId); } catch (_) {} c.classList.add("dragging"); }
+    });
+    c.addEventListener("pointermove", function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x0;
+      if (!drag.moved && Math.abs(dx) < 4) return;
+      if (!drag.moved) { drag.moved = true; if (!drag.mouse) { try { c.setPointerCapture(e.pointerId); } catch (_) {} } c.classList.add("dragging"); }
+      x = drag.off - dx / zoomFactor(); wrap(); paint();
+    });
+    function end(e) {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      if (drag.moved) { dragEnd = performance.now(); hover = false; }
+      drag = null; c.classList.remove("dragging"); pause(1000); last = 0;
+    }
+    ["pointerup", "pointercancel"].forEach(function (ev) { c.addEventListener(ev, end); });
+    c.addEventListener("lostpointercapture", function (e) { if (e.target === c) end(e); }); /* a child losing its implicit touch capture is not a release */
+    c.addEventListener("click", function (e) { if (performance.now() - dragEnd < 350) { e.preventDefault(); e.stopPropagation(); } }, true);
+    c.addEventListener("wheel", function (e) {
+      var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+      if (!d) return;
+      e.preventDefault(); x += (e.deltaMode === 1 ? d * 16 : d); wrap(); paint(); pause(1000); hover = false;
+    }, { passive: false });
+    if (window.matchMedia && matchMedia("(hover: hover)").matches) {
+      c.addEventListener("mouseenter", function () { hover = true; });
+      c.addEventListener("mouseleave", function () { hover = false; pause(0); last = 0; });
+    }
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
     bindPlanMore(root);
     bindSaRows(root);
-    /* Badge carousel: pause while touched (hover pause is CSS). */
-    root.querySelectorAll(".hm-hchips").forEach(function (c) { var t = null;
-      c.addEventListener("touchstart", function () { clearTimeout(t); c.classList.add("hold"); }, { passive: true });
-      ["touchend", "touchcancel"].forEach(function (ev) { c.addEventListener(ev, function () { clearTimeout(t); t = setTimeout(function () { c.classList.remove("hold"); }, 1200); }, { passive: true }); }); });
+    root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip);
     hmHdrSync();
     bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
@@ -1364,7 +1527,8 @@
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
   /* Funnel decks (Machan Nov 12, Home Details #1 + Systems #8): address, size and stories share one screen; Systems is two short screens (counts, then extras). Still 9 steps; every screen counts. */
   /* Funnel Contact And Sign-Up deck 01 B (Machan Nov 12): Your Details is its own step before Accept. It stays after Your Plan (step 5), so the price shows before contact info is asked. */
-  var OB = ["address", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
+  /* Home First Section Deck card 08 B (Machan Nov 13 1:34 PM): address and size split into two steps, so the funnel is Step X Of 11. */
+  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
   var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Add-Ons", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
@@ -1583,12 +1747,21 @@
     var body = '<div class="ob-home-form"><div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
       '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
       '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
-      '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") +
-      '<div class="ob-size"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
+      '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") + '</div>';
+    return obShell("address", "", 0, "Where's Your Home?", "", body, nextBtn("Next", addrOk() && !out));
+  }
+  /* Step 2 Of 11: Home Size chips + Stories stepper (moved off step 1; same SIZE_OPTS / STORY_OPTS, same markup and CSS as before). */
+  function obHomeSize() {
+    var a = S.answers;
+    if (a.sqft == null || a.sqft === "unsure" || !SIZE_OPTS.some(function (o) { return o[0] === String(a.sqft); })) a.sqft = SIZE_OPTS[0][0];
+    if (a.stories == null || a.stories === "unsure") a.stories = STORY_OPTS[0][0];
+    var si = 0; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
+    var st = String(a.stories);
+    var body = '<div class="ob-home-form">' + '<div class="ob-size"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
       '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
       '<div class="ob-stories"><div class="ob-stories-row"><p class="k" id="obStoriesK">Stories</p>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div>' +
       '<p class="s">Sets gutter and ladder work</p><p class="priced-note">Both are priced into your plan.</p></div></div>';
-    return obShell("address", "", 0, "Where's Your Home?", "", body, nextBtn("Next", addrOk() && !out));
+    return obShell("homesize", "", 0, "How Big Is Your Home?", "", body, nextBtn("Next", true)).replace('class="qf ob ob-homesize ', 'class="qf ob ob-address ob-homesize ');
   }
   function waitlistCard(z) {
     return '<section class="hm-wait qt-wait ob-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon</h3><p class="small muted">We don\'t serve ZIP ' + esc(z) + ' yet. Join the waitlist and we\'ll email you when we\'re coming to your area. While founding spots last, founding members get 2 years for the price of 1.</p>' +
@@ -1909,6 +2082,7 @@
 
   function obRender(s) {
     if (s === "address") return obAddress();
+    if (s === "homesize") return obHomeSize();
     if (s === "systems2") return obSystems2();
     if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
     if (s === "addons") return obAddons();
@@ -1937,8 +2111,12 @@
         upd();
         if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
         if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
-        S._outZip = ""; go("systems");
+        S._outZip = ""; go("homesize");
       });
+      return;
+    }
+    if (s === "homesize") {
+      if (nx) nx.addEventListener("click", function () { save(); go("systems"); });
       app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () {
         var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
