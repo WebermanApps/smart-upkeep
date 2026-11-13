@@ -729,7 +729,7 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   font:600 13px/1 Hind,var(--mw-font-body),sans-serif !important;letter-spacing:0 !important;text-transform:none !important;white-space:nowrap;
 }
 .ob .ob-bar:not(:has(.qf-startover:not([hidden]))) .btn-big{grid-column:2}
-.ob .ob-bar .ob-built{grid-column:1/-1;grid-row:2;margin:0;padding-top:2px;text-align:center}
+.ob .ob-bar .ob-built{grid-column:1/-1;grid-row:2;margin:0;text-align:center}
 .ob-address .ob-bar .btn-big,.ob-address .ob-bar .back-pill,.ob-address .ob-bar .qf-startover{min-height:48px !important;height:48px}
 
 /* Use the height freed by the single-row bar: even air, restore readable type and Did You Know.
@@ -820,3 +820,22 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 
 /* Gutter add-on subline under the title (Machan Nov 13 9:00 PM) */
 .ob-ao-t .ob-ao-note{display:block;margin:1px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}
+/* footer-mascot-1113: Built by Machan mascot on the onboarding bar (same mark as /member/). No link-out.
+   r3: do not force padding/line-height/height on the Built row, so short-phone
+   Address/Home Size rules inherit (14px line, 119px bar). Size the mark at 1lh
+   so it follows the 16px line on Plan and the 14px line on Address/Home Size
+   (1em would be the 12px font-size and shrink the flex row). */
+.ob .ob-bar .ob-built.machan-ft{
+  display:flex;justify-content:center;align-items:center;gap:0;text-align:center;
+  box-sizing:border-box;overflow:visible;
+}
+.ob .ob-bar .ob-built .uk-built-a,
+.ob .ob-bar .ob-built .mw-machan{
+  display:inline-flex;align-items:center;vertical-align:middle;height:1lh;line-height:inherit;font:inherit;color:inherit;
+}
+.ob .ob-bar .ob-built .mw-machan-mark{width:1lh;height:1lh;transition:transform 295ms ease;flex:none}
+.ob .ob-bar .ob-built .uk-wink-l{opacity:0}
+.ob .ob-bar .ob-built:hover .mw-machan-mark,.ob .ob-bar .ob-built:focus-within .mw-machan-mark{transform:rotate(-8deg)}
+.ob .ob-bar .ob-built:hover .uk-eye-r,.ob .ob-bar .ob-built:focus-within .uk-eye-r{opacity:0}
+.ob .ob-bar .ob-built:hover .uk-wink-l,.ob .ob-bar .ob-built:focus-within .uk-wink-l{opacity:1}
+@media (prefers-reduced-motion:reduce){.ob .ob-bar .ob-built .mw-machan-mark{transition:none}}
