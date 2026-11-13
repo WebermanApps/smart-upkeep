@@ -2557,8 +2557,9 @@
     var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
       : (b.plan === "annual" ? annualConsent(b.today)
       : foundingConsent(b.today));
-    /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
-    var open = !!AGREEMENT.url;
+    /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
+       Accept only saves locally (no charge, no email); the checkbox and signature still apply. AGREEMENT.url still swaps in the real link when set. */
+    var open = true;
     var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
       : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">Member Agreement · Link Coming Soon</span>';
     var body = recap +
@@ -2572,8 +2573,7 @@
       '<fieldset style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>') :
         /* Finish deck #19: muted Payment box until sign-up opens (no card fields, per Legal's beta copy) */
         '<div class="card paybox paybox-soon" aria-disabled="true"><h3>' + I("shield", "xs") + ' Payment</h3><p class="small muted">Opens Soon</p></div>') +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Join Now") + '</button>' +
-      (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Accept And Continue") + '</button>' +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
     return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan and billing.", body, "");
   }
@@ -2816,7 +2816,6 @@
     ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
     document.getElementById("obF").addEventListener("submit", function (e) {
       e.preventDefault(); keep();
-      if (!AGREEMENT.url) return;
       var errs = [
         ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
         ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
@@ -3217,7 +3216,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9f2"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9f3"; document.head.appendChild(l); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
