@@ -1104,14 +1104,10 @@
       var used = row ? row.getBoundingClientRect().height / z : 0;
       var room = budget(sec) - used;
       if (cards.length && room < 0 && sec.scrollHeight > sec.clientHeight) { /* nothing to shrink below content; CSS short-phone rules keep this from happening */ }
-      /* PR108 r2 (Machan + Swatch Nov 13 4:34 PM): tiles keep their natural height (no stretch, no empty white inside a tile). The spare height goes
-         evenly above and below the tile block (tiles + dots), each gap capped at 32px. */
+      /* PR108 r3 (Swatch Nov 13 4:49 PM): tiles keep their own natural height (row align-items:flex-start in CSS); title + tiles + dots + See arrow
+         form one block centered in the section (CSS justify-content:center), so no JS gaps here. */
       var sc = sec.querySelector(".hm-scroll"), dots = sec.querySelector(".pc-dots");
-      if (sc) sc.style.marginTop = ""; if (dots) dots.style.marginBottom = "";
-      if (cards.length && room > 2 && sc) {
-        var g = Math.min(32, Math.floor(room / 2));
-        sc.style.setProperty("margin-top", g + "px", "important"); if (dots) dots.style.setProperty("margin-bottom", g + "px", "important");
-      }
+      if (sc) sc.style.removeProperty("margin-top"); if (dots) dots.style.removeProperty("margin-bottom");
       /* Warranties block: top right of the title row when both lines fit beside the title; otherwise its own row under the title (16px edge). */
       var hh = sec.querySelector("#row-plans > .hm-row-h"), wb = hh && hh.querySelector(".fs-ad-hdr"), t2 = hh && hh.querySelector("h2");
       if (hh && wb && t2) { hh.classList.remove("fs-stack"); if (t2.getBoundingClientRect().right + 10 * z > wb.getBoundingClientRect().left + 0.5 || wb.scrollWidth > wb.clientWidth + 1) hh.classList.add("fs-stack"); }
@@ -1264,19 +1260,17 @@
   function saFit(sec) {
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
-    var z = zoomFactor(), arrow = sec.querySelector(":scope > .hs-arrow");
-    var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.marginTop = ""; grp.style.marginBottom = ""; }
+    var z = zoomFactor();
+    var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.removeProperty("margin-top"); grp.style.removeProperty("margin-bottom"); }
     box.style.maxHeight = "none"; box.style.height = "";
-    var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
-    var limit = sec.getBoundingClientRect().top / z + sec.clientHeight - pb - (arrow ? arrow.getBoundingClientRect().height / z + 8 : 4);
-    var h = Math.max(120, Math.floor(limit - box.getBoundingClientRect().top / z - 4));
-    box.style.maxHeight = h + "px";
-    for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); box.style.maxHeight = h + "px"; }
-    /* PR108 r2 (Swatch Nov 13 4:34 PM): the box keeps its natural height (inner scroll only when the group is taller); the spare height goes evenly
-       above and below the chips + box block, each gap capped at 32px. No empty white inside the box. */
-    var free = limit - box.getBoundingClientRect().bottom / z - 4;
-    if (grp && free > 2) { var g = Math.min(32, Math.floor(free / 2)); grp.style.setProperty("margin-top", g + "px", "important"); grp.style.setProperty("margin-bottom", g + "px", "important"); }
-    for (var k = 0; k < 3; k++) { var ov = sec.scrollHeight - sec.clientHeight; if (ov <= 0 || !grp) break; grp.style.setProperty("margin-bottom", Math.max(0, parseFloat(grp.style.marginBottom) - ov - 1) + "px", "important"); }
+    /* PR108 r3 (Swatch Nov 13 4:49 PM): title + chips + box (+ See arrow) are one block centered in the section. The box keeps its natural height when
+       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside. */
+    var cs = getComputedStyle(sec), inner = sec.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    var kids = [].filter.call(sec.children, function (c) { var k = getComputedStyle(c); return k.display !== "none" && k.position !== "absolute" && k.position !== "fixed"; });
+    var total = kids.reduce(function (t, c) { var k = getComputedStyle(c); return t + c.getBoundingClientRect().height / z + (parseFloat(k.marginTop) || 0) + (parseFloat(k.marginBottom) || 0); }, 0);
+    var nat = box.getBoundingClientRect().height / z, others = total - nat, room = Math.floor(inner - others - 32);
+    if (nat > room) box.style.maxHeight = Math.max(120, room) + "px";
+    for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; var h = Math.max(120, box.getBoundingClientRect().height / z - over - 2); box.style.maxHeight = h + "px"; }
     saFade(box);
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
