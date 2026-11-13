@@ -2183,7 +2183,7 @@ body.on-home #hs-alc,body.on-home #hs-faq{height:var(--su-sec-h)!important;max-h
   body.on-home .hm-hero .hm-lead{font-size:28px!important}
 }
 /* 03 B Slower, Larger Pills: one set per 52s (JS reads this), 5px gap, slightly larger pills. Hand swipe/drag/wheel stays. */
-body.on-home .hm-hc-track{animation-duration:52s!important}
+body.on-home .hm-hc-track{animation-duration:60.81s!important} /* was 52s for 6 badges (838.19px set); 7 badges = 980.22px, so 52 x 980.22/838.19 keeps the same 16.12px/s */
 body.on-home .hm-hc-set .hm-hchip{margin:0 5px 0 0!important;font-size:.84rem!important;padding:.36rem .72rem!important;line-height:1.1!important}
 /* 04 B Slimmer 44px Get Started with inline arrow, softer shadow, same width and terracotta. Arrow guard unchanged. */
 body.on-home .hm-dock .hm-tab-cta{min-height:44px!important;height:44px!important;font:600 14px/1 Hind,var(--mw-font-body),sans-serif!important;letter-spacing:.04em!important;box-shadow:0 4px 12px rgba(168,67,31,.14)!important;gap:8px!important}
@@ -2288,27 +2288,27 @@ html body.on-home .hm-dock > *{width:100%;max-width:560px}
 html body.on-home .hm-dock .hm-pill{background:transparent!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
 html body.on-home .hm-dock .hm-tabs-row{padding:0!important;background:transparent!important}
 html body.on-home .hm-dock button[data-hm-tab]{min-height:48px!important;border-radius:12px!important}
-/* Header band (Home only): sticky 56px band (+ safe area); the extra band under it (--su-skirt) scrolls away, so the band reads ~88px at the top and ~56px once
+/* Header band (Home + onboarding/sign-up steps via body.su-band, Machan Nov 13 7:41 PM): sticky 56px band (+ safe area); the extra band under it (--su-skirt) scrolls away, so the band reads ~88px at the top and ~56px once
    scrolled with no layout change. Content starts in a white card with 20px top corners overlapping the band by 24px. */
-body.on-home .topbar{position:sticky!important;top:0!important;z-index:20!important;display:block!important;height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;min-height:0!important;padding:env(safe-area-inset-top,0px) 0 0!important;background:var(--su-band)!important;border:0!important;box-shadow:none!important;overflow:visible!important}
-body.on-home .topbar .hdr-road,body.on-home .topbar .hdr-van,body.on-home .topbar .dash-back,body.on-home .topbar .top-login,body.on-home .topbar .top-home{display:none!important}
-body.on-home .topbar .brand{position:absolute!important;left:var(--su-edge)!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;width:169px;height:42px;margin:-21px 0 0!important;padding:0!important;border-radius:0;background:transparent url(assets/logo-band.svg?v=1) center/contain no-repeat!important;-webkit-mask:none!important;mask:none!important;transform:translate3d(var(--su-lx,0px),var(--su-ly,0px),0)!important;transition:none!important;will-change:transform;z-index:2}
-body.on-home .topbar .brand img{opacity:0!important;width:100%!important;height:100%!important}
-body.on-home .topbar .brand:focus-visible{outline:2px solid #0A0A0A;outline-offset:3px}
-@media (min-width:900px){body.on-home .topbar .brand{width:213px;height:53px;margin-top:-26.5px!important}}
+body.su-band .topbar{position:sticky!important;top:0!important;z-index:20!important;display:block!important;height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;min-height:0!important;padding:env(safe-area-inset-top,0px) 0 0!important;background:var(--su-band)!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+body.su-band .topbar .hdr-road,body.su-band .topbar .hdr-van,body.su-band .topbar .dash-back,body.su-band .topbar .top-login,body.su-band .topbar .top-home{display:none!important}
+body.su-band .topbar .brand{position:absolute!important;left:50%!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;width:169px;height:42px;margin:-21px 0 0!important;padding:0!important;border-radius:0;background:transparent url(assets/logo-band.svg?v=1) center/contain no-repeat!important;-webkit-mask:none!important;mask:none!important;transform:translate3d(-50%,var(--su-ly,0px),0)!important;transition:none!important;will-change:transform;z-index:2}
+body.su-band .topbar .brand img{opacity:0!important;width:100%!important;height:100%!important}
+body.su-band .topbar .brand:focus-visible{outline:2px solid #0A0A0A;outline-offset:3px}
+@media (min-width:900px){body.su-band .topbar .brand{width:213px;height:53px;margin-top:-26.5px!important}}
 .top-menu,.hdr-menu{display:none}
-body.on-home .topbar .top-share{position:absolute!important;left:auto!important;width:48px;opacity:1!important;visibility:visible!important;right:calc(var(--su-edge) + 48px)!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;transform:translate3d(0,calc(-50% + var(--su-ly,0px)),0)!important;margin:0!important;display:flex!important;z-index:2}
-body.on-home .topbar .btn-share,body.on-home .topbar .top-menu{display:inline-flex!important;align-items:center;justify-content:center;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;padding:0!important;margin:0!important;border:0!important;border-radius:12px!important;background:transparent!important;box-shadow:none!important;color:var(--su-band-ink)!important;cursor:pointer}
-body.on-home .topbar .btn-share svg,body.on-home .topbar .top-menu svg{width:22px!important;height:22px!important}
-body.on-home .topbar .top-menu{position:absolute!important;right:var(--su-edge)!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;transform:translate3d(0,calc(-50% + var(--su-ly,0px)),0)!important;z-index:2}
-body.on-home .topbar .btn-share:focus-visible,body.on-home .topbar .top-menu:focus-visible{outline:2px solid var(--su-band-ink)!important;outline-offset:-4px!important}
-body.on-home .topbar .share-msg{position:absolute;right:0;top:calc(100% + 6px);white-space:nowrap;background:#fff!important;color:#1a1a1a;border-radius:8px;box-shadow:var(--su-sh-card)}
-body.on-home .topbar .share-msg:empty{display:none}
-body.on-home .hdr-menu:not([hidden]){display:flex;flex-direction:column;position:absolute;right:calc(var(--su-edge) - 4px);top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) - 4px);min-width:180px;padding:6px;transform:translate3d(0,var(--su-ly,0px),0);background:#fff;border:1px solid var(--su-hair);border-radius:14px;box-shadow:0 10px 30px rgba(60,40,20,.16),0 2px 6px rgba(60,40,20,.08);z-index:60}
-body.on-home .hdr-menu a,body.on-home .hdr-menu button{all:unset;box-sizing:border-box;display:flex;align-items:center;min-height:48px;padding:0 14px;border-radius:10px;font:600 16px/1.1 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a;cursor:pointer}
-body.on-home .hdr-menu a:hover,body.on-home .hdr-menu button:hover,body.on-home .hdr-menu a:focus-visible,body.on-home .hdr-menu button:focus-visible{background:#F6F1E7}
-body.on-home .hdr-menu a:focus-visible,body.on-home .hdr-menu button:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
-body.on-home .hdr-menu button{color:#0B6E4F}
+body.su-band .topbar .top-share{position:absolute!important;left:var(--su-edge)!important;width:48px;opacity:1!important;visibility:visible!important;right:auto!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;transform:translate3d(0,calc(-50% + var(--su-ly,0px)),0)!important;margin:0!important;display:flex!important;z-index:2}
+body.su-band .topbar .btn-share,body.su-band .topbar .top-menu{display:inline-flex!important;align-items:center;justify-content:center;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;padding:0!important;margin:0!important;border:0!important;border-radius:12px!important;background:transparent!important;box-shadow:none!important;color:var(--su-band-ink)!important;cursor:pointer}
+body.su-band .topbar .btn-share svg,body.su-band .topbar .top-menu svg{width:22px!important;height:22px!important}
+body.su-band .topbar .top-menu{position:absolute!important;right:var(--su-edge)!important;top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) / 2)!important;transform:translate3d(0,calc(-50% + var(--su-ly,0px)),0)!important;z-index:2}
+body.su-band .topbar .btn-share:focus-visible,body.su-band .topbar .top-menu:focus-visible{outline:2px solid var(--su-band-ink)!important;outline-offset:-4px!important}
+body.su-band .topbar .share-msg{position:absolute;right:0;top:calc(100% + 6px);white-space:nowrap;background:#fff!important;color:#1a1a1a;border-radius:8px;box-shadow:var(--su-sh-card)}
+body.su-band .topbar .share-msg:empty{display:none}
+body.su-band .hdr-menu:not([hidden]){display:flex;flex-direction:column;position:absolute;right:calc(var(--su-edge) - 4px);top:calc(env(safe-area-inset-top,0px) + var(--su-band-h) - 4px);min-width:180px;padding:6px;transform:translate3d(0,var(--su-ly,0px),0);background:#fff;border:1px solid var(--su-hair);border-radius:14px;box-shadow:0 10px 30px rgba(60,40,20,.16),0 2px 6px rgba(60,40,20,.08);z-index:60}
+body.su-band .hdr-menu a,body.su-band .hdr-menu button{all:unset;box-sizing:border-box;display:flex;align-items:center;min-height:48px;padding:0 14px;border-radius:10px;font:600 16px/1.1 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a;cursor:pointer}
+body.su-band .hdr-menu a:hover,body.su-band .hdr-menu button:hover,body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{background:#F6F1E7}
+body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
+body.su-band .hdr-menu button[data-menu-act="start"]{color:#0B6E4F}
 body.on-home main#app{display:flow-root!important;padding-top:0!important}
 body.on-home{background-image:linear-gradient(var(--su-band),var(--su-band))!important;background-size:100% calc(var(--su-band-h) + env(safe-area-inset-top,0px) + var(--su-skirt) + var(--su-overlap))!important;background-repeat:no-repeat!important;background-position:0 0!important}
 body.on-home main#app > .hm{position:relative;margin-top:var(--su-skirt)!important;background:#fff!important;border-radius:20px 20px 0 0!important;box-shadow:0 -1px 0 rgba(60,40,20,.06),0 -4px 16px rgba(60,40,20,.06)!important}
@@ -2338,7 +2338,7 @@ body.on-home #hs-plans > .hm-row > .hm-row-h.fs-stack .fs-ad-hdr .fs-tx{align-it
 body.on-home .hm-hero{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 body.on-home .hm-hero .hm-thumb{box-shadow:none!important}
 @media (max-width:480px){body.on-home .hm-hero .hm-hero-txt{background:linear-gradient(to bottom,rgba(255,255,255,0) 0,rgba(255,255,255,.9) calc(var(--hero-ov-pad,32px) * .7),#fff var(--hero-ov-pad,32px))!important}}
-@media (max-width:374px){body.on-home .topbar .brand{width:150px;height:37px;margin-top:-18.5px!important}}
+@media (max-width:374px){body.su-band .topbar .brand{width:150px;height:37px;margin-top:-18.5px!important}}
 @media (min-width:900px){body.on-home .hm-hero{padding-left:32px!important;padding-right:32px!important;box-sizing:border-box}}
 /* PR108 r3 (Swatch Nov 13 4:49 PM): Plans, À La Carte and FAQ: title + content + See arrow are one block, centered in the full-screen section with equal
    space above and below (8px top pad mirrors the 8px kept over the bar). Tiles keep their own natural height. */
@@ -2349,13 +2349,93 @@ body.on-home #row-plans .hm-scroll{align-items:flex-start!important}
 body.on-home #row-plans .hm-plan{align-self:flex-start!important}
 /* PR108 r4 (Header Color Deck pick 4, Swatch values): once the skirt has scrolled away (band at 56px / 64px desktop), a soft warm shadow under the band,
    no hairline. At the top the band has no shadow. Logo in its own brand colors (charcoal smart/keep, muted up, terracotta roof); Share + Menu charcoal. */
-body.on-home .topbar{transition:box-shadow .16s ease}
-body.on-home.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!important;border-bottom:0!important}
-@media (prefers-reduced-motion:reduce){body.on-home .topbar{transition:none}}
+body.su-band .topbar{transition:box-shadow .16s ease}
+body.su-band.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!important;border-bottom:0!important}
+@media (prefers-reduced-motion:reduce){body.su-band .topbar{transition:none}}
 /* Machan Nov 13 7:31 PM ICT: "and maybe even just a tad larger, header same size." Logo +12% at every width; band heights unchanged (56/64px + skirt). */
-body.on-home .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
-@media (max-width:374px){body.on-home .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
-@media (min-width:900px){body.on-home .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
+body.su-band .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
+@media (max-width:374px){body.su-band .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
+@media (min-width:900px){body.su-band .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
+/* Machan Nov 13 7:46 PM ICT: logo CENTERED at all times (no slide), Share top left, Menu top right, PR109 size kept (supersedes PR109's left logo).
+   Machan Nov 13 7:41 PM ICT: the Home header runs on every onboarding/sign-up step (body.su-band is set on Home and on the 11 funnel steps; the rules above
+   are shared, not forked). On the steps there is no white card to overlap, so the scroll-away skirt is 0: the band is the 56px/64px band, the step counter
+   and progress sit in the page flow just below it, and the warm shadow shows as soon as the step scrolls. Menu on a step: Home (keeps answers) + Log In. */
+body.on-ob{--su-skirt:0px;--tb:56px}
+@media (min-width:900px){body.on-ob{--tb:64px}}
+body.su-band .topbar .share-msg{left:0!important;right:auto!important}
+.hdr-menu .hdr-ob-only{display:none!important}
+body.on-ob .hdr-menu .hdr-ob-only{display:flex!important}
+body.on-ob .hdr-menu [data-menu-act="start"]{display:none!important}
+/* Machan Nov 13 7:47-7:48 PM ICT: hero badges are buttons (same pill look); tapping one opens a short explanation card that overlays under the badge row
+   (absolute, so the hero never grows). Strip pauses while open. 220ms opacity/transform; instant with reduced motion. */
+button.hm-hchip{font-family:inherit;line-height:inherit;-webkit-appearance:none;appearance:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.hm-hchip:focus-visible{outline:2px solid #05668D;outline-offset:1px}
+.hm-hchips.hc-open .hm-hc-track{animation-play-state:paused!important}
+.hm-hcw{position:relative}
+.hm-hc-info{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:6;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid #EADFCF;border-radius:12px;background:#fff;box-shadow:0 8px 22px rgba(60,40,20,.14),0 1px 3px rgba(60,40,20,.08);font:500 14px/1.35 Hind,var(--mw-font-body),sans-serif;color:#3d3d3d;text-align:left;opacity:0;transform:translate3d(0,-4px,0);transition:opacity .22s ease,transform .22s ease;pointer-events:none}
+.hm-hc-info.open{opacity:1;transform:none;pointer-events:auto}
+.hm-hc-info[hidden]{display:none!important}
+.hm-hc-info-t{font:600 14px/1.2 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a}
+@media (prefers-reduced-motion:reduce){.hm-hc-info{transition:none}}
+body.on-home .hm-hchip.on{box-shadow:inset 0 0 0 1.5px currentColor}
+.hm-hc-info.up{top:auto;bottom:calc(100% + 6px);transform:translate3d(0,4px,0)}.hm-hc-info.up.open{transform:none}
+/* Machan Nov 13 7:49 PM ICT: every onboarding step fits one screen on iPhone 14/15 (390x664 inside Safari). On short screens the step blocks keep
+   tighter gaps (progress row, title, body), so Plan, Access, Start and Details no longer run 6-10px under the sticky Back/Next bar. Nothing removed. */
+@media (max-height:700px){
+  body.on-ob .ob.qf > .qf-prog{margin-top:4px!important;margin-bottom:4px!important}
+  body.on-ob .ob.qf > .qf-hero,body.on-ob .ob.qf > .qf-body,body.on-ob .ob.qf > .qf-dyk{margin-bottom:4px!important}
+  body.on-ob .ob.qf.ob-start > .qf-hero{margin-bottom:2px!important}body.on-ob .ob.qf.ob-start > .qf-body{margin-bottom:0!important}
+}
+/* PR111 r2 (Swatch QA Nov 13 8:17 PM ICT): one screen with >=8px of air above the sticky step bar at 360x640, 360x740, 390x660/664, 390x844.
+   Machan's order: tighten question/answer sizing first (type, padding, gaps); no words cut. */
+@media (max-height:700px){
+  body.on-ob .ob.qf > .qf-hero.stack.compact{margin-top:4px!important}
+  body.on-ob .ob.qf > .qf-hero.stack.compact .qf-art.mid{width:34px!important;height:34px!important}
+  body.on-ob .ob.qf > .qf-hero.stack.compact .qf-help{font-size:13px!important;line-height:17px!important}
+  body.on-ob .ob.qf.ob-plan .plan-card{padding-top:7px!important;padding-bottom:7px!important}
+  body.on-ob .ob.qf.ob-access textarea{height:72px!important;min-height:72px!important}
+  body.on-ob .ob.qf.ob-start .cal-d{min-height:40px!important;height:40px!important}
+  body.on-ob .ob.qf.ob-start .cal-nav{width:34px!important;height:34px!important}
+  body.on-ob .ob.qf.ob-start .ob-cal{padding-top:4px!important;padding-bottom:4px!important}
+  body.on-ob .ob.qf.ob-accept .sfit-rows{gap:6px!important}
+  body.on-ob .ob.qf.ob-accept .sfit-r{min-height:46px!important;height:46px!important}
+  body.on-ob .ob.qf.ob-accept .ob-accept-form{margin-top:4px!important}
+}
+@media (max-height:760px){
+  body.on-ob .ob.qf.ob-details .det-card input{min-height:42px!important;height:42px!important;padding-top:3px!important;padding-bottom:3px!important}
+  body.on-ob .ob.qf.ob-details .det-card .fl{margin-top:4px!important}
+  body.on-ob .ob.qf.ob-details .det-addr{padding-top:4px!important;padding-bottom:4px!important}
+}
+@media (max-height:700px){
+  body.on-ob .ob.qf > .qf-dyk{margin-bottom:10px!important}
+  body.on-ob .ob.qf.ob-addons > .qf-dyk{margin-top:4px!important}
+  body.on-ob .ob.qf.ob-addons .ob-ao-tabs{margin-bottom:4px!important}
+  body.on-ob .ob.qf.ob-details .det-card{padding-top:8px!important;padding-bottom:6px!important}
+  body.on-ob .ob.qf.ob-details .det-addr{margin-bottom:4px!important}
+  body.on-ob .ob.qf.ob-details .det-card .fl{line-height:18px!important}
+  body.on-ob .ob.qf.ob-details .su-havecode .link{min-height:28px!important}
+}
+/* Still short at 360 wide x <=700 tall after tightening: Your Details drops its Did You Know line there only. */
+@media (max-height:700px) and (max-width:375px){
+  body.on-ob .ob.qf.ob-details > .qf-dyk{display:none!important}
+}
+/* PR111 r3 (Swatch re-QA Nov 13 8:40 PM ICT): more air on Start and Plan; 6-row months (.cal-6, set in obCalendar) take the height 5 rows do. */
+@media (max-height:700px){
+  body.on-ob .ob.qf.ob-plan .plan-card{padding-top:4px!important;padding-bottom:4px!important}
+  body.on-ob .ob.qf.ob-start .cal-d{min-height:38px!important;height:38px!important}
+  body.on-ob .ob.qf.ob-start .cal-wk span{line-height:13px!important}
+  body.on-ob .ob.qf.ob-start .sfit-row{min-height:42px!important;height:42px!important}
+  body.on-ob .ob.qf.ob-start > .qf-hero.stack.compact .qf-help{font-size:12.5px!important;line-height:16px!important}
+  body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-d{min-height:31px!important;height:31px!important}
+  body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-nav{width:31px!important;height:31px!important}
+}
+@media (min-height:701px) and (max-height:760px){
+  body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-d{min-height:36px!important;height:36px!important}
+  body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-nav{width:34px!important;height:34px!important}
+}
+@media (min-height:761px){
+  body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-d{min-height:38px!important;height:38px!important}
+}
 
 /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM, receipt faq-rich-look-deck-20261113-2046-7104ce66).
    Port the member /member/help/ FAQ look onto the public Home #hs-faq only. Chips and saFit stay.
@@ -2503,3 +2583,12 @@ body.on-home #hs-faq .faq-contact p{
   color:#3a352e;
 }
 body.on-home #hs-faq .faq-contact[hidden]{display:none!important}
+
+/* PR111 r4 (Swatch QA Nov 13 9:10 PM ICT): the sticky step bar must sit flush to the viewport
+   bottom. On short steps it was 15px up because .qf's padding-bottom sat under the bar, and
+   --tb fell back to 64px while the mobile band is 56px. Address already fills with
+   min-height: calc(100dvh - var(--tb, 56px)). Every step does that now. Under-bar padding
+   is 0; safe-area stays inside the bar itself (padding-bottom: calc(12px + env(safe-area-inset-bottom))). */
+body.on-ob{--tb:56px}
+@media (min-width:900px){body.on-ob{--tb:64px}}
+body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(--tb))}
