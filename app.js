@@ -1334,10 +1334,17 @@
       if (bar.style.transform) bar.style.transform = "";
       var pad = bar.nextElementSibling && bar.nextElementSibling.classList.contains("ob-kb-pad") ? bar.nextElementSibling : null;
       if (off) {
+        document.body.classList.add("ob-kb-open");
         bar.style.bottom = off + "px";
         if (!pad) { pad = document.createElement("div"); pad.className = "ob-kb-pad"; pad.setAttribute("aria-hidden", "true"); bar.parentNode.insertBefore(pad, bar.nextSibling); }
         pad.style.height = off + "px";
-      } else { bar.style.bottom = ""; if (pad) pad.remove(); }
+        /* Let the max-height unlock apply before we measure and scroll the field. */
+        void (bar.parentNode && bar.parentNode.offsetHeight);
+      } else {
+        document.body.classList.remove("ob-kb-open");
+        bar.style.bottom = "";
+        if (pad) pad.remove();
+      }
       last = off;
       var f = document.activeElement;
       if (off && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
@@ -2326,7 +2333,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h99o1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h99o2"; document.head.appendChild(l); })();
   function bootApp() {
     render(); suHist(S.screen, true);
     hmHash();

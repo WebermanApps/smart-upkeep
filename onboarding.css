@@ -678,4 +678,6 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   .ob-address .qf-prog{margin:0 0 4px!important}
   body.on-ob .topbar{min-height:56px}
   .ob-address.qf{min-height:calc(100dvh - var(--tb,56px));max-height:calc(100dvh - var(--tb,56px))}
+  /* F1 (Swatch PR106): drop the max-height lock while the keyboard is open so PR98 can scroll the focused field above the bar. */
+  body.ob-kb-open .ob-address.qf{max-height:none}
 }
