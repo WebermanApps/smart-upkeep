@@ -913,3 +913,107 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 /* Pay step: Due Today under the cards, same total as Review and Accept (Machan Nov 13 11:00 PM) */
 .ob-billing .pay-due{display:flex;justify-content:space-between;align-items:baseline;margin:12px 4px 0;font-family:Hind,sans-serif;font-size:14px;line-height:20px;color:#3d3d3d}
 .ob-billing .pay-due b{font-family:Khand,sans-serif;font-weight:700;font-size:22px;line-height:1;color:#1a1a1a}
+
+/* house-build-1113 (Machan Nov 13 7:44 PM + Home Build Motion & Map Deck picks): one band above the step on every onboarding step, same spot and size on every step.
+   Step 1 = line-art county map (Wayne, Oakland, Macomb), step 2 on = the live house (onboarding-house.js). 106px art + 14px caption = 120px band.
+   With the keyboard open (visualViewport, html.ob-hb-mini) it drops to a 48px mini strip. Motion is transform/opacity only (WAAPI in the JS). */
+.ob-hb-slot{display:none}
+html.ob-hb-on .ob .ob-hb-slot{display:block;flex:none;margin:4px 0 4px}
+.ob-hb{position:relative;height:120px}
+.ob-hb-art{position:relative;height:106px;border-radius:12px;overflow:hidden;background:#F8F2E9;box-shadow:inset 0 0 0 1px rgba(42,36,28,.05)}
+.ob-hb-map,.ob-hb-house{position:absolute;left:0;top:0;right:0;bottom:0}
+.ob-hb svg{display:block;width:100%;height:100%}
+.ob-hb-house svg{overflow:visible}
+.ob-hb[data-mode="map"] .ob-hb-house,.ob-hb[data-mode="house"] .ob-hb-map{opacity:0;pointer-events:none}
+.ob-hb .hb-it,.ob-hb .hb-fl{transform-box:fill-box;transform-origin:50% 100%}
+.ob-hb .hb-badge{transform-origin:50% 50%}
+.ob-hb-cap{margin:0;height:16px;font:500 12px/14px Hind,system-ui,sans-serif;color:#6B6259;text-align:center;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.ob-hb-mini .ob-hb,html.ob-hb-mini .ob-hb-art{height:48px}
+html.ob-hb-mini .ob-hb-cap{display:none}
+/* Room for the band, in Machan's cut order (7:49 PM): tighten question and answer sizing first (ob-hb-t), then the small step icon (ob-hb-noart),
+   then Did You Know (ob-hb-nodyk). The house is never shrunk. onboarding-house.js fit() adds only the levels a step needs at the current height,
+   so taller phones keep the icon and Did You Know wherever they fit with 8px of air above the bar. */
+html.ob-hb-on.ob-hb-noart .ob .qf-art{display:none}
+html.ob-hb-on.ob-hb-nodyk .ob .qf-dyk{display:none}
+/* One screen at 390x660 (Safari visible area, Swatch QA bar: 8px of air above the bar), also 360x640 and 430x746: the band costs 124px, paid for by
+   a one-line step row, tighter title margins and a slimmer Back/Next bar (44px buttons, still full tap size). Only while the band is on. */
+html.ob-hb-on .ob .qf-prog{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;margin:2px 0 4px!important;padding-right:0!important}
+html.ob-hb-on .ob .qf-prog .qf-step{flex:none;white-space:nowrap}
+html.ob-hb-on .ob .qf-prog .qf-segs{flex:1;min-width:0}
+html.ob-hb-on .ob .qf-hero{margin-top:0!important;margin-bottom:4px!important}
+html.ob-hb-on .ob .ob-bar{padding-top:6px!important;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;row-gap:2px!important}
+html.ob-hb-on .ob .ob-bar .btn-big,html.ob-hb-on .ob .ob-bar .back-pill,html.ob-hb-on .ob .ob-bar .qf-startover{min-height:44px!important;height:44px}
+html.ob-hb-on .ob .ob-bar .ob-built{padding-top:0!important;line-height:14px!important}
+/* Step 1 of the cut order: tighter question and answer sizing (html.ob-hb-t), added by onboarding-house.js fit() only when a step would not fit
+   with 8px of air at the current height. Selectors carry html.ob-hb-on body.on-ob .ob.qf so they outrank the PR111 one-screen rules in styles.css. */
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf > .qf-hero.stack.compact{margin-top:0!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf > .qf-hero.stack.compact .qf-help{line-height:16px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-plan .plan-stack{gap:3px!important;padding-top:0!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-plan .plan-card{padding-top:2px!important;padding-bottom:2px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-plan .plan-card .plan-cta.filled{margin-top:3px!important;min-height:40px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-plan .check-list li{line-height:16px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .gap-md{height:6px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .seg-toggle button{min-height:38px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .bill-card{padding-top:9px!important;padding-bottom:9px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .due-box{padding-top:8px!important;padding-bottom:8px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .bill-lead{margin-top:3px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-billing .due-note{margin-top:3px!important;line-height:16px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-addons .ob-ao-tabs button{min-height:38px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-addons .ob-ao-row{min-height:40px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-addons .ob-ao-list{padding-top:2px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-start .cal-d{min-height:34px!important;height:34px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-d{min-height:29px!important;height:29px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-start .cal-nav,html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-start .ob-cal.cal-6 .cal-nav{width:30px!important;height:30px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-start .sfit-row{min-height:40px!important;height:40px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-accept .sfit-rows{gap:5px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-accept .sfit-r{min-height:42px!important;height:42px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-accept .paybox{padding-top:7px!important;padding-bottom:7px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-accept .sfit-tail{margin-top:4px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-accept .su-cancel-line .link{min-height:30px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-details .det-card .fl{margin-top:2px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-systems .sys-row{padding-top:5px!important;padding-bottom:5px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-systems .ob-whs{padding-bottom:6px!important;row-gap:6px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-systems .type-seg button{min-height:38px!important;height:38px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-card{padding-top:0!important;padding-bottom:0!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-row{padding-top:5px!important;padding-bottom:5px!important;line-height:18px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-row .k small{line-height:16px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-total .v{line-height:22px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-edit{margin-top:2px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-review .bd-edit .link{min-height:28px!important;padding-top:2px!important;padding-bottom:2px!important}
+/* Last tightening (html.ob-hb-t2), only after the icon and Did You Know cuts and only when a step still would not fit: big homes on Plan
+   (every card shows a Base plan line, the picked card lists each extra system) and the heaviest Review carts. The house band stays 120px. */
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card{padding-top:1px!important;padding-bottom:1px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-kicker{line-height:13px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .check-list{display:flex!important;flex-wrap:wrap!important;column-gap:14px!important;row-gap:0!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .check-list li{flex:0 0 auto!important;width:auto!important;line-height:15px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-base{line-height:14px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan > .qf-hero.stack.compact .qf-help{line-height:14px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-cta:not(.filled){margin-top:4px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-review .bd-row{padding-top:3px!important;padding-bottom:3px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-review .bd-row .k small{line-height:15px!important}
+/* Annual Option After Founding (Swatch r4): the full after-Founding text shows by default. On tightened levels (ob-hb-t) it collapses to one tappable line
+   that opens the same text in a pop-up (app.js bindAfPop); ob-hb-afx hides the line too, only if even that won't fit. */
+.after-founding .af-open{display:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding{background:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-full{display:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-open{display:inline-flex;align-items:center;gap:4px;position:relative;min-height:32px;margin:6px 0 0;padding:4px 2px;background:none;border:0;cursor:pointer;
+  font:600 14px/20px Hind,var(--mw-font-body),sans-serif;color:#05668D;text-decoration:underline;text-underline-offset:3px}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-open svg{flex:none}
+html.ob-hb-on.ob-hb-afx .ob.ob-plan .after-founding{display:none}
+.af-pop-wrap{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}
+.af-pop-wrap[hidden]{display:none}
+.af-pop-bg{position:absolute;inset:0;background:rgba(43,38,34,.38);opacity:0;transition:opacity 220ms ease}
+.af-pop{position:relative;width:min(340px,100%);background:#FFFCF7;border:1px solid #ECE5DA;border-radius:16px;box-shadow:0 12px 32px rgba(43,38,34,.18);padding:14px 16px 16px;opacity:0;transform:translateY(8px);transition:opacity 220ms ease,transform 220ms ease}
+.af-pop-wrap.on .af-pop-bg{opacity:1}
+.af-pop-wrap.on .af-pop{opacity:1;transform:none}
+.af-pop:focus{outline:none}
+.af-pop-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+.af-pop-h h3{margin:0;font:600 20px/24px Khand,var(--mw-font-heading),sans-serif;color:#2B2622}
+.af-pop-x{flex:none;width:44px;height:44px;margin:-8px -10px -8px 0;display:grid;place-items:center;background:none;border:0;border-radius:999px;color:#2B2622;cursor:pointer}
+.af-pop-x:focus-visible{outline:2px solid #05668D;outline-offset:-4px}
+.af-pop-b .after-founding-line,.af-pop-b .after-founding-price{margin:6px 0 0;font:400 15px/22px Hind,var(--mw-font-body),sans-serif;color:#2B2622;background:none}
+.af-pop-b .after-founding-price{font-weight:600}
+@media (prefers-reduced-motion:reduce){.af-pop,.af-pop-bg{transform:none!important;transition:opacity 150ms linear!important}}
+/* 44px hit areas without moving layout (Swatch r4): plan buttons on tightened levels (40px), Review Edit (28px), the after-Founding line (32px). */
+html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link{position:relative}
+html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta::before,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link::before,html.ob-hb-on .ob.ob-plan .after-founding .af-open::before{content:"";position:absolute;left:0;right:0;top:50%;height:44px;min-height:100%;transform:translateY(-50%);z-index:1}
