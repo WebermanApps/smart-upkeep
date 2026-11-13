@@ -578,6 +578,19 @@
     var hold = port && !window.__suFirst; /* Oct 17: phone holds the van-at-house poster until first interaction */
     return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
+
+  /* Hero Look Deck 4A Always-On Checks (Machan Nov 13): page overlay, not baked into the video.
+     Exact Title Case lines from pricing-config (Water Heater Flush/Descale, Furnace/AC Tune-Up, Dryer Vent Cleaning).
+     Hidden from AT (the button stays "Watch Video"); pointer-events none so taps still open the video.
+     Stays up with the poster under reduced motion, and after the explainer is dismissed. */
+  var HERO_CHECKS = ["Water Heater Flush/Descale", "Furnace/AC Tune-Up", "Dryer Vent Cleaning"];
+  function heroChecks() {
+    var tick = '<svg class="hm-checks-tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="7.25" fill="none" stroke="#0B6E4F" stroke-width="1.5"/><path d="M4.4 8.2l2.3 2.3 5-5" fill="none" stroke="#0B6E4F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    return '<div class="hm-checks" aria-hidden="true"><div class="hm-checks-plate"><ul class="hm-checks-list">' +
+      HERO_CHECKS.map(function (line) { return '<li>' + tick + '<span>' + line + '</span></li>'; }).join("") +
+      '</ul></div></div>';
+  }
+
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
   var HERO_CHIPS = [["shield", "Certified Techs"], ["refund", "Cancel Anytime"], ["clipboard", "Home Reports"], ["user", "Background-Checked Yearly"], ["meter", "Moisture Scan Every Visit"], ["doc", "Licensed & Insured"], ["shield", "Warranties Checked"]]; /* Max-approved list, Oct 17; Warranties Checked added by Machan Nov 13 7:47 PM */
   /* Hero badge explanations (Machan Nov 13 7:48 PM). Wording only from the live FAQ (How Are Techs Vetted / Can I Cancel / What Do I Get After a Visit /
@@ -855,7 +868,7 @@
     }
     return '<div class="hm">' +
       '<section class="hs-sec hs-top" id="hs-top"><section class="hm-hero">' +
-        '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
+        '<button class="hm-thumb mw-hover' + '' + '" data-act="watch" type="button" aria-label="Watch Video">' + heroMedia() + heroChecks() + '<span class="hm-expand" aria-hidden="true">' + I("play", "xs") + '</span><span class="hm-dur">0:50</span></button>' +
         /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +

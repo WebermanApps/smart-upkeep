@@ -2164,23 +2164,41 @@ body.on-home #hs-alc,body.on-home #hs-faq{height:var(--su-sec-h)!important;max-h
 .sa-box{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 .sa-tabbed .sa-grp{margin:0}
 .sa-tabbed .sa-grp[hidden]{display:none}
-/* ===== Home First Section Deck picks (Machan Nov 13 1:34 PM) ===== */
-/* 02 B Rebalanced Hierarchy (deck type_css): headline 'Home Care, On Schedule' dominant; eyebrow above; quieter price. 390: 32/20/16, 375: 30/19/15.5, 360: 28/18/15. */
+/* ===== Hero Look Deck picks (Machan Nov 13) ===== */
+/* 01 B Eyebrow Leads: supersedes Home First Section 02 B (tagline-leads 32/20/16).
+   Phone: Preventive Home Maintenance 30px Khand, Starting At $139/mo 22px terracotta, Home Care, On Schedule 16px Hind.
+   Tagline stays under the price, typeset on the page, on the video floor fade. */
 @media (max-width:480px){
-  body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:20px!important;line-height:1.1!important;color:#1a1a1a!important;letter-spacing:0!important}
-  body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:16px!important;line-height:1.15!important;color:#A8431F!important;margin-top:4px!important}
-  body.on-home .hm-hero .hm-lead{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:32px!important;line-height:1.05!important;color:#1a1a1a!important;margin-top:4px!important;white-space:nowrap!important}
+  body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:30px!important;line-height:1.05!important;color:#1a1a1a!important;letter-spacing:-.005em!important}
+  body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:22px!important;line-height:1.1!important;color:#A8431F!important;margin-top:var(--hero-pair,4px)!important}
+  body.on-home .hm-hero .hm-lead{font-family:Hind,var(--mw-font-body),sans-serif!important;font-weight:500!important;font-size:16px!important;line-height:1.25!important;color:#3D3D3D!important;margin-top:var(--hero-pair,4px)!important;white-space:nowrap!important}
   body.on-home .hm-hero .hm-lead-l,body.on-home .hm-hero .hm-lead-s{font-family:inherit!important;font-weight:inherit!important;font-size:inherit!important;color:inherit!important}
 }
-@media (max-width:384px){
-  body.on-home .hm-hero .hm-eb-t{font-size:19px!important}
-  body.on-home .hm-hero h1{font-size:15.5px!important}
-  body.on-home .hm-hero .hm-lead{font-size:30px!important}
+/* 04 A Always-On Checks: cream plate, upper left of the hero video, clear of the play badge.
+   Light only. No motion (reduced-motion is a no-op). Stays visible on the poster and after the explainer is dismissed. */
+body.on-home .hm-hero .hm-thumb .hm-expand{z-index:4}
+body.on-home .hm-checks{position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:stretch}
+body.on-home .hm-checks-plate{align-self:flex-start;margin:12px 14px 0;padding:8px 10px;background:rgba(255,252,247,.94);border:1px solid rgba(10,10,10,.08);border-radius:12px;box-shadow:0 4px 14px rgba(60,40,20,.08);max-width:calc(100% - 28px);color-scheme:light only}
+body.on-home .hm-checks-list{list-style:none;margin:0;padding:0}
+body.on-home .hm-checks-list li{display:flex;align-items:flex-start;gap:7px;margin:0 0 5px;font-family:Hind,var(--mw-font-body),sans-serif;font-weight:500;font-size:13px;line-height:1.2;color:#1A1A1A;text-transform:none;text-align:left}
+body.on-home .hm-checks-list li:last-child{margin-bottom:0}
+body.on-home .hm-checks-tick{flex:none;margin-top:1px}
+@media (max-width:480px){
+  /* Play badge is top-left on phones (left:.5rem + top:.7rem). Sit the plate clearly under it. */
+  body.on-home .hm-checks-plate{margin:52px 14px 0}
 }
-@media (max-width:369px){
-  body.on-home .hm-hero .hm-eb-t{font-size:18px!important}
-  body.on-home .hm-hero h1{font-size:15px!important}
-  body.on-home .hm-hero .hm-lead{font-size:28px!important}
+@media (max-width:360px){
+  /* 30px nowrap 'Preventive Home Maintenance' overflows 5px at 360; 26px is the existing 360 fit valve and the deck's 360 frame. Price 22 and tagline 16 stay. */
+  body.on-home .hm-hero .hm-eb-t{font-size:26px!important}
+  body.on-home .hm-checks-list li{font-size:12px}
+  body.on-home .hm-checks-plate{margin-top:52px;padding:6px 8px;max-width:calc(100% - 24px)}
+}
+/* Phone 3:4 teaser has a clear upper field. The desktop 16:9 cut already paints 'Introducing Smart Upkeep' there, so the plate stays phone-only. */
+@media (min-width:481px){
+  body.on-home .hm-checks{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .hm-checks,body.on-home .hm-checks-plate{transition:none;animation:none}
 }
 /* 03 B Slower, Larger Pills: one set per 52s (JS reads this), 5px gap, slightly larger pills. Hand swipe/drag/wheel stays. */
 body.on-home .hm-hc-track{animation-duration:60.81s!important} /* was 52s for 6 badges (838.19px set); 7 badges = 980.22px, so 52 x 980.22/838.19 keeps the same 16.12px/s */
