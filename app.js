@@ -394,6 +394,7 @@
     /* Nov 11 2026 onboarding redo: the old question screens, photos, free tech visit, compare, sign-up and pay screens are retired. Saved state on any of them lands on step 1. */
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
+    if (S.screen === "access") S.screen = "start"; if (S.resume === "access") S.resume = "start"; /* Access step removed (Machan Nov 13 10:18 PM): resume on Start Date */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     if (obSkip(S.screen)) S.screen = obNextOf(S.screen); if (obSkip(S.resume)) S.resume = obNextOf(S.resume);
     var s = S.screen, html;
@@ -1704,13 +1705,15 @@
   }
   var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", humidifier: "radon", softener: "meter" };
   /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
-     Address > Home Basics > Systems > Add-Ons > Plan > Billing > Access > Start Date > Accept.
+     Address > Home Basics > Systems > Add-Ons > Plan > Billing > Start Date > Details > Accept (Access removed Nov 13).
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
   /* Funnel decks (Machan Nov 12, Home Details #1 + Systems #8): address, size and stories share one screen; Systems is two short screens (counts, then extras). Still 9 steps; every screen counts. */
   /* Funnel Contact And Sign-Up deck 01 B (Machan Nov 12): Your Details is its own step before Accept. It stays after Your Plan (step 5), so the price shows before contact info is asked. */
   /* Home First Section Deck card 08 B (Machan Nov 13 1:34 PM): address and size split into two steps, so the funnel is Step X Of 11. */
-  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
+  /* Machan Nov 13 10:18 PM: "we can remove step 8 how should we get in". The Access step is gone; lockbox and door codes go in the member app after login.
+     Old saved state on "access" resumes on Start Date (see render), and an old S.access is ignored by the UI. */
+  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "billing", "start", "details", "accept"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", billing: "Billing", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -1741,7 +1744,6 @@
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
   var STORY_OPTS = [["1", "1 Story", "Ranch"], ["2", "2 Stories", ""], ["3", "3 Stories", ""]];
-  var ACCESS_OPTS = [["home", "I'll Be Home", "user"], ["lockbox", "Lockbox", "shield"], ["door", "Door Code", "tag"], ["other", "Something Else", "pen"]];
   /* Did You Know tips stay on the question screens (Machan Nov 11). */
   /* Did You Know Lines deck (Machan Nov 13 9:00 AM): #01 Your Home = both lines (one shows per visit, picked once per session); #02 Systems, #03 Extras, #04 Add-Ons keep today's lines;
      #05 Your Plan = Machan Decides -> Swatch default A, no tip; #06 Access = B Confirm The Time; #07 Your Details = B Why We Ask. Wording is the deck's, word for word. */
@@ -1751,7 +1753,6 @@
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
     addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
-    access: "We'll confirm the time with you before your visit.",
     details: "You've seen your price. We ask for these details so we can reach you about your visits."
   };
   /* Legal-approved First Visit blurb. Keep word for word. */
@@ -1901,7 +1902,7 @@
       if (Array.isArray(v) && !v.length) continue;
       return true;
     }
-    if ((S.addons && S.addons.length) || (S.lastMinute && S.lastMinute.length) || S.signup || S.access || S.firstVisit) return true;
+    if ((S.addons && S.addons.length) || (S.lastMinute && S.lastMinute.length) || S.signup || S.firstVisit) return true;
     if (S.screen && isOb(S.screen) && S.screen !== "address") return true;
     return false;
   }
@@ -2120,19 +2121,7 @@
       : "Charged today, then on this date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
     var help = foundingOpen() ? "Founding members get two years for the price of one, while spots last. " + (aSel ? "Annual is selected." : "Monthly is selected.") : (foundingFull() ? (ySel ? "Annual is selected." : "Monthly is selected.") : "Pay monthly. Your first charge is today.");
     if (foundingFull()) body += afterFoundingBlock(mo.perCharge);
-    return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Access", true));
-  }
-
-  /* 7. Access */
-  function obAccess() {
-    var a = S.access || {};
-    var body = '<div class="qt-grid two" data-ptr-ignore>' + ACCESS_OPTS.map(function (o, k) {
-        var on = a.how === o[0];
-        return '<button type="button" class="qt chkt mw-hover t' + (k % 4) + (on ? " sel" : "") + '" data-ob-access="' + o[0] + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(o[2], "sm") + '</span><span class="qt-lab">' + o[1] + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-      }).join("") + '</div>' +
-      '<label class="fl" for="obAccessNote">Anything We Should Know? (Optional)</label><textarea id="obAccessNote" rows="3" placeholder="Pets, a gate, where the lockbox is">' + esc(a.note || "") + '</textarea>' +
-      '<p class="priced-note">Lockbox and door codes go in your member app, not here.</p>';
-    return obShell("access", "house", 0, "How Should We Get In?", "You don't need to be home. You can leave a lockbox or a door code, or meet us there.", body, nextBtn("Next", !!a.how));
+    return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Start Date", true));
   }
 
   /* 8. Start Date: date picker, earliest two days out, with the Legal-approved First Visit blurb. */
@@ -2215,7 +2204,6 @@
     var nx = app.querySelector("[data-ob-next]"); if (nx) nx.addEventListener("click", next);
   }
   /* 10. Accept: recap, agreement, signature, payment (contact moved to Your Details). Deck card 4: A compact recap line, B itemized. */
-  function accessLabel() { var a = (S.access || {}).how; var o = ACCESS_OPTS.filter(function (x) { return x[0] === a; })[0]; return o ? (a === "home" ? "Home For Visits" : o[1] + " Access") : ""; }
   function obAccept() {
     var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
     var start = S.firstVisit ? longDate(S.firstVisit) : "";
@@ -2227,12 +2215,12 @@
       var rows = [["Plan", esc(t.label) + " · " + money(b.monthly) + "/mo"]];
       var aoBits = extraTags().concat(adds.map(function (x) { return esc(x.label) + " " + aoPrice(x); }));
       if (aoBits.length) rows.push(["Add-Ons", aoBits.join("<br>")]);
-      rows.push(["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]);
+      rows.push(["Billing", billTxt], ["Start Date", start]);
       rows.push([dueK, dueV]);
       recap = '<div class="item-card">' + rows.map(function (r, i) { return '<div class="item-row' + (i === rows.length - 1 ? " total" : "") + (String(r[1]).length > 28 ? " stack" : "") + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>'; }).join("") +
         '<p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     } else {
-      var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : "", esc(accessLabel())].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
+      var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : ""].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
       recap = '<div class="accept-compact"><p class="accept-line">' + bits.join(" · ") + '</p><p class="accept-due"><span>' + dueK + '</span><b>' + dueV + '</b></p><p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
@@ -2270,7 +2258,6 @@
     if (s === "addons") return obAddons();
     if (s === "plan") return obPlanScreen();
     if (s === "billing") return obBilling();
-    if (s === "access") return obAccess();
     if (s === "start") return obStart();
     if (s === "details") return obDetails();
     return obAccept();
@@ -2344,10 +2331,6 @@
         function pick() { S.plan = b.getAttribute("data-ob-bill"); rer(); }
         b.addEventListener("click", pick); b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
       });
-    }
-    if (s === "access") {
-      app.querySelectorAll("[data-ob-access]").forEach(function (b) { b.addEventListener("click", function () { S.access = Object.assign({}, S.access, { how: b.getAttribute("data-ob-access"), note: val("obAccessNote") }); rer(); }); });
-      var nt = document.getElementById("obAccessNote"); if (nt) nt.addEventListener("input", function () { S.access = Object.assign({}, S.access, { note: nt.value }); save(); });
     }
     if (s === "start") {
       app.querySelectorAll("[data-ob-day]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-ob-day"); if (v < minStart()) return; S.firstVisit = v; S._calMonth = v.slice(0, 7); rer(); }); });
@@ -2582,13 +2565,14 @@
     var email = su.email || "";
     try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
     var paid = ['Paid Today', money(t.today || 0)];
-    return homePill() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
-      '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what happens next, including how to log in.</p>' +
+    return homePill() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>Thank You' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
+      /* Machan Nov 13 10:20 PM: "so they would eventually land on a thank you and expect an email within 1 business day" / "for now i am planning on giving them an email with log in information after sign up". Copy only: no email is wired here. */
+      '<p class="lead-sm">Expect an email with your member app login details within 1 business day.</p>' +
       '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
-      '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + ' and the password from your welcome email.</span></li>' +
+      '<li><strong>Watch For Your Login Email</strong><span>Within 1 business day, we\'ll email your member app login details to the address you gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + '. Then log in at <a class="link" href="member/">smartupkeep.ai/member</a>.</span></li>' +
       '<li><strong>Read Your Welcome Message</strong><span>The first time you sign in, Ask Anything opens with a welcome from your care team.</span></li>' +
       '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We\'ll confirm the time with you before your visit. ' + FIRST_VISIT_BLURB + '</span></li>' +
-      '<li><strong>Add Access Details</strong><span>Lockbox or door codes go in your member app.</span></li>' +
+      '<li><strong>Add Access Details</strong><span>Once you log in, you can add lockbox or door codes in your member app.</span></li>' +
       '</ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Summary</h3>' +
       '<div class="summary"><div><span>Membership</span><span>' + esc(su.planTag || planTag()) + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Billing</span><span>' + esc(t.label || "") + '</span></div>' +
