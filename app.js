@@ -1294,8 +1294,8 @@
   /* Did You Know Lines deck (Machan Nov 13 9:00 AM): #01 Your Home = both lines (one shows per visit, picked once per session); #02 Systems, #03 Extras, #04 Add-Ons keep today's lines;
      #05 Your Plan = Machan Decides -> Swatch default A, no tip; #06 Access = B Confirm The Time; #07 Your Details = B Why We Ask. Wording is the deck's, word for word. */
   var DYK_HOME = ["Every visit ends with a written report saved to your Home Record.", "After every visit you get a written report with photos, saved to your Home Record."];
+  /* DYK_HOME is held (deck card may bring Did You Know back on step 1). Step 1 has no tip; other steps keep PR103 lines. */
   var DYK = {
-    address: DYK_HOME[(function () { var k = "su.dykHome", v = null; try { v = sessionStorage.getItem(k); if (v !== "0" && v !== "1") { v = String(Math.floor(Math.random() * 2)); sessionStorage.setItem(k, v); } } catch (e) { v = "0"; } return Number(v) || 0; })()],
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
     addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
@@ -1334,10 +1334,17 @@
       if (bar.style.transform) bar.style.transform = "";
       var pad = bar.nextElementSibling && bar.nextElementSibling.classList.contains("ob-kb-pad") ? bar.nextElementSibling : null;
       if (off) {
+        document.body.classList.add("ob-kb-open");
         bar.style.bottom = off + "px";
         if (!pad) { pad = document.createElement("div"); pad.className = "ob-kb-pad"; pad.setAttribute("aria-hidden", "true"); bar.parentNode.insertBefore(pad, bar.nextSibling); }
         pad.style.height = off + "px";
-      } else { bar.style.bottom = ""; if (pad) pad.remove(); }
+        /* Let the max-height unlock apply before we measure and scroll the field. */
+        void (bar.parentNode && bar.parentNode.offsetHeight);
+      } else {
+        document.body.classList.remove("ob-kb-open");
+        bar.style.bottom = "";
+        if (pad) pad.remove();
+      }
       last = off;
       var f = document.activeElement;
       if (off && f && f.closest && f.closest(".ob") && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) {
@@ -1419,19 +1426,40 @@
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
     var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
-    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' of ' + SQ.length + ' &middot; ' + OB_NAME[id]) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' of ' + SQ.length + '">' +
+    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' Of ' + SQ.length) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' Of ' + SQ.length + '">' +
       SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
+    var heroArt = art ? '<div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div>' : '';
     return '<section class="qf ob ob-' + id + ' ' + obCls() + '">' + prog +
-      '<div class="qf-hero stack compact"><div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div><h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
+      '<div class="qf-hero stack compact' + (art ? '' : ' qf-hero-plain') + '">' + heroArt + '<h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
       '<div class="qf-body">' + body + '</div>' + dyk + obFoot(foot) + '</section>';
   }
   /* Funnel decks #11 + #17 (sticky part): Back left and Next right in a sticky bottom bar on every step. The rest of the footer (tagline, Home, Start Over, Built by Machan) stays; the Back-only footer layout is held for the Extras deck. */
   function backOnly() { var m = backBtn().match(/<button class="back back-pill[\s\S]*?<\/button>/); return m ? m[0] : ""; }
+  function obHasAnswers() {
+    var a = S.answers || {}, k, v;
+    if (String(a.street || "").trim() || String(a.zipcode || "").trim()) return true;
+    if (a.sqft && String(a.sqft) !== SIZE_OPTS[0][0]) return true;
+    if (a.stories && String(a.stories) !== "1") return true;
+    for (k in a) {
+      if (!Object.prototype.hasOwnProperty.call(a, k)) continue;
+      if (k === "street" || k === "zipcode" || k === "zip" || k === "sqft" || k === "stories") continue;
+      v = a[k];
+      if (v == null || v === "" || v === "unsure") continue;
+      if (Array.isArray(v) && !v.length) continue;
+      return true;
+    }
+    if ((S.addons && S.addons.length) || (S.lastMinute && S.lastMinute.length) || S.signup || S.access || S.firstVisit) return true;
+    if (S.screen && isOb(S.screen) && S.screen !== "address") return true;
+    return false;
+  }
   function obFoot(foot) {
     var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
-    /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps. */
-    return '<div class="ob-bar">' + backOnly() + nx + '<p class="ob-built">Built by Machan</p></div>' + '<div class="qf-foot">' + rest + startOverBtn() + '</div>';
+    /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps.
+       Machan Nov 13 / Swatch: Start Over is a quiet link under Next, only when answers exist. */
+    var so = startOverBtn();
+    if (!obHasAnswers()) so = so.replace('class="', 'hidden class="');
+    return '<div class="ob-bar">' + backOnly() + nx + so + '<p class="ob-built">Built by Machan</p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
   }
   function nextBtn(label, ok) { return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + '>' + label + '</button>'; }
 
@@ -1444,18 +1472,16 @@
     if (a.stories == null || a.stories === "unsure") a.stories = STORY_OPTS[0][0];
     var si = 0; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
     var st = String(a.stories);
-    /* #2: ZIP first in a short box, service-area line under it; #3: Title Case labels */
-    var body = '<div class="ob-fields"><label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="next" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
-      '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p>' +
-      '<label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="go" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '"></div>' +
+    /* Swatch Nov 13: Street full width, ZIP half width with the service-area helper under it; size chips 2x3, no box; stories as a plain stepper row. Same SIZE_OPTS / STORY_OPTS values. Autofill hints stay. */
+    var body = '<div class="ob-home-form"><div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
+      '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
+      '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") +
-      /* #5: size and stories in one card with a divider */
-      /* Home Size Control deck (Machan Nov 13 9:00 AM): #01 B range chips for home size (same six SIZE_OPTS, so pricing reads the same values); #02 A stories keep the -/+ control. */
-      '<div class="pick-card"><div class="pick-step pick-size"><div class="meta"><p class="k" id="obSizeK">Home Size <small>sq ft</small></p><p class="s">A rough range is fine</p></div>' +
+      '<div class="ob-size"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
       '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
-      '<div class="pick-step"><div class="meta"><p class="k">Stories</p><p class="v">' + STORY_OPTS[Number(st) - 1][1] + '</p><p class="s">Sets gutter and ladder work</p></div>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div></div>' +
-      '<p class="priced-note">Size and stories are both priced into your plan.</p>';
-    return obShell("address", "house", 0, "Where's Your Home?", "What's the address of the home you'd like us to take care of?", body, nextBtn("Next", addrOk() && !out));
+      '<div class="ob-stories"><div class="ob-stories-row"><p class="k" id="obStoriesK">Stories</p>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div>' +
+      '<p class="s">Sets gutter and ladder work</p><p class="priced-note">Both are priced into your plan.</p></div></div>';
+    return obShell("address", "", 0, "Where's Your Home?", "", body, nextBtn("Next", addrOk() && !out));
   }
   function waitlistCard(z) {
     return '<section class="hm-wait qt-wait ob-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon</h3><p class="small muted">We don\'t serve ZIP ' + esc(z) + ' yet. Join the waitlist and we\'ll email you when we\'re coming to your area. While founding spots last, founding members get 2 years for the price of 1.</p>' +
@@ -1793,9 +1819,13 @@
     app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-ob-go")); }); });
     if (s === "address") {
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
-      function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); save(); }
+      function showSo() { var so = app.querySelector(".ob-bar .qf-startover"); if (so) so.hidden = !obHasAnswers(); }
+      function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); showSo(); save(); }
       st.addEventListener("input", upd); zp.addEventListener("input", function () { upd(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
-      [st, zp].forEach(function (el) { el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === zp) st.focus(); else if (nx && !nx.disabled) nx.click(); } }); });
+      [st, zp].forEach(function (el) {
+        el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === st) zp.focus(); else if (nx && !nx.disabled) nx.click(); } });
+        el.addEventListener("blur", function () { upd(); if (!addrOk() && (st.value.trim() || zp.value.trim())) er.textContent = "Enter your street address and 5-digit ZIP."; });
+      });
       if (nx) nx.addEventListener("click", function () {
         upd();
         if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
@@ -2284,6 +2314,8 @@
   function hmHash() { var h = location.hash.slice(1); if (!h || S.screen !== "home" || !/^[\w-]+$/.test(h)) return; var el = document.getElementById(h); if (!el || !el.closest(".hm")) return; if (el.tagName === "DETAILS") el.open = true; setTimeout(function () { hmJump(el, false); }, 50); }
   window.addEventListener("hashchange", hmHash);
   if (location.hash === "#start") { history.replaceState(null, "", location.pathname); if (!isOb(S.screen)) go(OB[0]); }
+    var obHomeBtn = document.getElementById("obHomeBtn");
+  if (obHomeBtn) obHomeBtn.addEventListener("click", function (e) { e.preventDefault(); save(); go("home"); });
   document.getElementById("logoHome").addEventListener("click", function (e) { e.preventDefault(); if (S.screen !== "home") go("home"); else window.scrollTo({ top: 0, behavior: (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); });
 
   /* Onboarding styles (Nov 11 redo) live in onboarding.css, loaded here so the locked index.html stays untouched. */
@@ -2301,7 +2333,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob15"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h99o2"; document.head.appendChild(l); })();
   function bootApp() {
     render(); suHist(S.screen, true);
     hmHash();
