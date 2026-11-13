@@ -60,6 +60,7 @@ window.SMART_UPKEEP_PRICING = {
   platinumRoofInspection: 318,
   platinumAnnualDiscount: 0.10, // DRAFT — unused in the funnel; do not apply alongside annualDiscount (never stack)
   annualDiscount: 0.10, // Full-price annual after Founding 50: 12 x monthly quote less 10%, Machan Nov 12 2026
+  foundingFull: false, // Machan Nov 13 2026 (option B): set true once the 50 Founding spots fill; the pay step then offers Monthly or Annual 10% off, paid up front
   unsureDefaults: { sqft: 4000, furnaces: 2, acs: 2, waterHeaters: 1, whType: "tank", stories: 2 },
   /* Plans shown, in order. Remove a key (e.g. "platinum") to show 2 tiers; layouts adapt. */
   /* Final pop-up offer shown once, right before sign-up Submit (beta test).

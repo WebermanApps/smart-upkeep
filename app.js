@@ -2404,7 +2404,7 @@
      choose to pay show the 2 for 1 if they choose that". Order: plan, add-ons, payment choice, 2-for-1 (annual only), total. Every figure is the same value the
      Accept step shows (obBill(), aoPrice(), money()); nothing new is computed here. */
   function planColor(k) { var s = (k + " " + ((P.tiers[k] || {}).label || "")).toLowerCase(); return /platinum|complete/.test(s) ? "#05668D" : (/gold|plus/.test(s) ? "#A8431F" : "#0B6E4F"); }
-  function billChoiceTxt(b) { return b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual" : "Annual · Founding 2-For-1"); }
+  function billChoiceTxt(b) { return b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual · 10% Off" : "Annual · Founding 2-For-1"); }
   function proposalRows() {
     var b = obBill(), t = P.tiers[S.tier], tags = extraTags(), adds = selectedFunnelAddons(), rows = [];
     rows.push({ k: "plan", lab: '<b class="bd-plan" style="color:' + planColor(S.tier) + '">' + esc(t.label) + '</b><small>' + t.visits + ' Visits / Year' + (tags.length ? ' · ' + esc(tags.join(", ")) : '') + '</small>', v: money(b.monthly) + "/mo" });
@@ -2425,15 +2425,18 @@
   }
 
   /* 6b. Pay: "Pick How You'd Like To Pay". Deck picks: Choice Style B Selectable Cards, Founding Offer B Soft Cream Banner, Tone A Calm; Annual Saving skipped
-     ("only 2-for-1"), so no 10% copy here. The 2-for-1 badge opens a short explanation quoted from the FAQ "What Is the First 50 Founding Offer?". */
+     ("only 2-for-1") while founding spots last. The 2-for-1 badge opens a short explanation quoted from the FAQ "What Is the First 50 Founding Offer?".
+     Machan Nov 13 11:22 PM (option B): after the founding spots fill (foundingFull in pricing-config.js, false today), the Annual card is the 10% off annual
+     prepay (12 x monthly quote less annualDiscount, obBill "annual") instead of the 2-for-1. No 2-for-1 banner, badge or pop-up then. */
   var F2_POP = { t: "Founding 2-For-1", b: "Prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care. Offers do not stack." };
   function obBilling() {
     var plan = obPlan(), t = P.tiers[S.tier], col = planColor(S.tier);
     var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
     var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
-    var fOpen = foundingOpen();
-    if (!fOpen && S.plan !== "monthly") { S.plan = "monthly"; plan = obPlan(); save(); } /* only 2-for-1 or monthly is offered (Annual Saving skipped), so the shown choice is always the charged one */
-    var aSel = fOpen && plan === "founding";
+    var fOpen = foundingOpen(), fFull = foundingFull();
+    var yr = fFull ? (function () { var s = S.plan; S.plan = "annual"; var r = obBill(); S.plan = s; return r; })() : null;
+    if (!fOpen && S.plan !== "monthly" && !(fFull && S.plan === "annual")) { S.plan = "monthly"; plan = obPlan(); save(); } /* only the offered choices (2-for-1 or monthly; after the fill, 10% annual or monthly) can be picked, so the shown choice is always the charged one */
+    var aSel = fOpen && plan === "founding", ySel = fFull && plan === "annual";
     var chk = '<span class="pay-ck" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
     function card(key, sel, name, amt, copy, badge) {
       return '<div class="pay-card' + (sel ? " sel" : "") + '" role="radio" tabindex="' + (sel ? "0" : "-1") + '" aria-checked="' + sel + '" data-ob-bill="' + key + '" style="--plan-c:' + col + '">' +
@@ -2442,9 +2445,10 @@
     var badge = '<button type="button" class="f2-badge mw-hover" data-f2-open aria-expanded="false" aria-controls="f2Pop">2-For-1<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
     var banner = fOpen ? '<div class="f2-banner"><span class="f2-ic" aria-hidden="true">' + I("star", "xs") + '</span><p><b>Founding Member: 2 Years For The Price Of 1</b><br>Pay one year of your ' + esc(t.label) + ' plan' + (an.addonsAnnual ? ' and add-ons' : '') + ', get two years of care.</p></div>' : '';
     var cards = (fOpen ? card("founding", aSel, "Annual", money(an.today), "Paid today for 24 months of care.", badge) : '') +
-      card("monthly", !aSel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
+      (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>') : '') +
+      card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
     var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
-    var dueNow = aSel ? an.today : mo.today; /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
+    var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
     var body = banner + '<div class="pay-stack" role="radiogroup" aria-label="How to pay">' + cards + '</div>' +
       '<p class="pay-due" aria-live="polite"><span>Due Today</span><b>' + money(dueNow) + '</b></p>' + pop;
     return obShell("billing", "", 0, "Pick How You'd Like To Pay", "", body, nextBtn("Continue To Payment", true));
@@ -3216,7 +3220,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9f3"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9h1"; document.head.appendChild(l); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
