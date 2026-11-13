@@ -2356,3 +2356,47 @@ body.on-home.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!i
 body.on-home .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
 @media (max-width:374px){body.on-home .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
 @media (min-width:900px){body.on-home .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
+
+/* ===== Plans Expand (Machan Nov 13 7:34 PM ICT): Essentials first with Plus peeking; And More opens a full-screen sheet grown from the tile ===== */
+@media(max-width:600px){
+  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory}
+  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:start!important}
+}
+body.on-home .hm-plan .pc-inc li[hidden]{display:none!important}
+body.on-home .hm-plan.pc-src{visibility:hidden}
+html.pc-lock,body.pc-lock{overflow:hidden!important;overscroll-behavior:none}
+.pc-sheet-wrap{position:fixed;inset:0;z-index:2147483000;--pc-ac:#0B6E4F}
+.pc-sheet-wrap.tier-gold{--pc-ac:#A8431F}
+.pc-sheet-wrap.tier-platinum{--pc-ac:#05668D}
+.pc-sheet-bg{position:absolute;inset:0;background:rgba(40,28,16,.28)}
+.pc-sheet{position:absolute;inset:0;display:flex;flex-direction:column;background-color:#FFFCF7;background-image:var(--su-shine),var(--su-gloss);
+  border-top:5px solid var(--pc-ac);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 -4px 16px rgba(60,40,20,.08);outline:none;will-change:clip-path,transform;
+  font-family:Hind,var(--mw-font-body),sans-serif;color:#0a0a0a}
+.pc-sheet-in{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;max-width:640px;width:100%;margin:0 auto}
+.pc-sheet-hd{position:relative;flex:none;padding:calc(env(safe-area-inset-top,0px) + 14px) 64px 12px 20px;border-bottom:1px solid var(--su-hair,#E6E1D8)}
+.pc-sheet-grab{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 5px);width:36px;height:4px;margin-left:-18px;border-radius:2px;background:#d8d0c4}
+.pc-sheet-x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:8px;width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:24px;background:transparent;color:#0A0A0A;cursor:pointer;padding:0}
+.pc-sheet-x .x-ico{width:22px;height:22px}
+.pc-sheet-x:focus-visible,.pc-sheet-pill:focus-visible,.pc-sheet-go:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
+.pc-sheet-hd .hm-badge{display:inline-block;margin:0 0 6px}
+.pc-sheet .pc-name{font-family:Khand,var(--mw-font-heading),sans-serif;font-weight:700;font-size:1.9rem!important;line-height:1.05;margin:0!important}
+.pc-sheet .pc-tag{display:block;margin:2px 0 6px}
+.pc-sheet .pc-price{display:flex;align-items:baseline;gap:6px}
+.pc-sheet .pc-big{font-size:2.6rem}
+.pc-sheet .pc-year{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:#4a4a4a;margin-top:4px}
+.pc-sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 20px 16px}
+.pc-sheet .pc-inc{font-size:15px;line-height:1.4;margin:0}
+.pc-sheet .pc-inc li{margin:.35rem 0}
+.pc-sheet .pc-sh-top > li{padding-left:1.4rem}
+.pc-sheet .pc-sh-kp{display:block;font-weight:600}
+.pc-sheet .pc-sh-det{display:block;font-size:13px;line-height:1.35;color:#5a5a5a}
+.pc-sheet .pc-sh-also{margin:16px 0 2px;font:600 13px/1.3 Hind,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#6b6b6b}
+.pc-sheet .pc-all .pc-grp-h{font-size:13px}
+.pc-sheet .pc-all .pc-grp-h .pc-ico{color:#6b5a48}
+.pc-sheet-ft{flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 12px);border-top:1px solid var(--su-hair,#E6E1D8);
+  background-color:#fff;background-image:var(--su-shine),var(--su-gloss)}
+.pc-sheet-go{width:100%;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.pc-sheet-pill{align-self:center;min-height:44px;min-width:140px;padding:0 22px;border-radius:22px;border:1px solid var(--su-hair,#E6E1D8);
+  background-color:#fff;background-image:var(--su-shine),var(--su-gloss);box-shadow:var(--su-sh-btn);font:600 15px/1 Hind,sans-serif;color:#0A0A0A;cursor:pointer}
+@media (min-width:700px){.pc-sheet-hd{padding-left:max(20px,calc(50% - 300px))}}

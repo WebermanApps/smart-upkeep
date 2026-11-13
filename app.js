@@ -515,12 +515,18 @@
   };
   /* Late build Nov 12 (Fill The Sections 02, Swatch pick B): existing lines only. 390: Essentials 10, Plus 5, Complete 4 (+ lead). 360x640: Essentials 4, Plus/Complete lead + 4. 1280+: Essentials 9. Always ends in And More. */
   function hsSmall() { return window.innerWidth <= 400 && window.innerHeight <= 700; }
-  /* Machan Nov 13 9:07 AM: Essentials shows his seven lines in this order, then And More (kept, it now expands the tile). Plus and Complete unchanged. */
-  var ESSENTIALS_LINES = ["Furnace/AC Tune-Up", "Water Heater Flush", "Furnace Filter Check And Change", "Roof Drone Inspection", "Mold And Moisture Scan", "Dryer Vent Cleaning", "Sump Pump Test"];
+  /* Machan Nov 13 7:35-7:37 PM ICT: Essentials and Plus tile lines come straight from pricing-config.js keyPoints (his order and wording; gutter
+     cleaning and fridge filters moved into Essentials). Essentials renders every keyPoint and pcFitLines() shows PV.lines of them (one-screen rule).
+     Complete keeps HOME_KEYPOINTS (Legal storm-cap wording). */
+  /* Preview-only A/B toggles for the Plans Expand deck (read from location.search only; no param = A): peek=22|32, enter=grow|rise, close=x|pill, lines=6|8. */
+  var PV = (function () {
+    var q = {}; try { (location.search || "").replace(/^\?/, "").split("&").forEach(function (kv) { var p = kv.split("="); if (p[0]) q[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || ""); }); } catch (e) {}
+    return { peek: q.peek === "32" ? 32 : 22, enter: q.enter === "rise" ? "rise" : "grow", close: q.close === "pill" ? "pill" : "x", lines: q.lines === "8" ? 8 : 6 };
+  })();
   function homeKeypoints(k) {
-    if (k === "silver") return ESSENTIALS_LINES.concat(["And More"]);
+    if (k === "silver" || k === "gold") return ((P.tiers[k] && P.tiers[k].keyPoints) || []).filter(function (x) { return x !== "And More"; }).concat(["And More"]);
     var src = HOME_KEYPOINTS[k] || [], lead = src.filter(function (s) { return /Plus:$|and:$/.test(s); }), rest = src.filter(function (s) { return lead.indexOf(s) < 0; });
-    var n = hsSmall() ? 4 : (window.innerWidth >= 700 && k === "silver") ? 9 : rest.length;
+    var n = hsSmall() ? 4 : rest.length;
     return lead.concat(rest.slice(0, n)).concat(["And More"]);
   }
   /* Home FAQ (Machan Nov 13 9:11 AM "we can do just an FAQ section"): the same five questions and answers the Details FAQ drop-down had, word for word. */
@@ -560,10 +566,9 @@
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
-      /* And More expands this tile in place to the plan's full feature list from pricing-config.js P.tiers[k].features (text before any ":"), with Show Less (Machan 9:07 AM). */
-      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '' : (/Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
-      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + pcGroupHtml(t.features) + '</ul>' +
-      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-controls="pc-all-' + k + '">And More</button></p>' : '') + '</div>';
+            '<ul class="pc-inc">' + inc.filter(function (f) { return f !== "And More"; }).map(function (f, i) { return /Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li' + (k === "silver" ? ' data-i="' + i + '"' : '') + '>' + f + '</li>'; }).join("") + '</ul>' +
+      /* Plans Expand: And More opens the full-screen sheet (bindPlanMore); the old in-tile list and inner scroll are gone. */
+      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-haspopup="dialog">And More</button></p>' : '') + '</div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
@@ -898,20 +903,31 @@
     function sync() {
       if (!mq.matches) return;
       var best = null, d = 1e9;
-      cards().forEach(function (c) { var x = Math.abs(mid(c)); if (x < d) { d = x; best = c; } });
+      var sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0), cs = cards();
+      cs.forEach(function (c) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; best = c; } });
+      if (sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
       dots.forEach(function (o) { o.classList.toggle("on", !!best && o.getAttribute("data-dot") === best.getAttribute("data-tier")); });
     }
+    /* Machan Nov 13 7:34 PM ICT ("for plans lets begin with essentials and show a little more of plus"): the row opens at its left edge on
+       Essentials; tile width is set so PV.peek % of the Plus tile shows at the right edge (A 22%, B 32%). Snap is to each tile's start. */
+    function size() {
+      if (!mq.matches) { sc.style.removeProperty("--pc-w"); return; }
+      var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
+      var w = (sc.clientWidth - padL - gap) / (1 + PV.peek / 100);
+      sc.style.setProperty("--pc-w", Math.floor(w) + "px"); sc.style.scrollPaddingLeft = padL + "px";
+    }
     function start() {
+      size();
       if (!mq.matches) return;
-      var c = sc.querySelector(".hm-plan.rec") || sc.querySelector(".hm-plan.sel");
       var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
-      if (c) sc.scrollLeft += mid(c); else sc.scrollLeft = 0;
+      sc.scrollLeft = 0;
       sc.style.scrollBehavior = sb;
       sync();
     }
     var raf = 0;
     sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
     if (mq.addEventListener) mq.addEventListener("change", start);
+    window.addEventListener("resize", size);
     start(); requestAnimationFrame(start);
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
@@ -1113,6 +1129,7 @@
       if (hh && wb && t2) { hh.classList.remove("fs-stack"); if (t2.getBoundingClientRect().right + 10 * z > wb.getBoundingClientRect().left + 0.5 || wb.scrollWidth > wb.clientWidth + 1) hh.classList.add("fs-stack"); }
     })();
     /* Shop À La Carte and FAQ (Machan Nov 13 1:26-1:27 PM): chip row + one group at a time; the list box never runs past the section's one screen. */
+    pcFitLines(); /* Plans Expand: Essentials tile shows PV.lines keyPoints, fewer only if the section would pass one screen */
     saFit(document.getElementById("hs-alc")); saFit(document.getElementById("hs-faq"));
     hsBarSync();
   }
@@ -1275,85 +1292,143 @@
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
   function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
+  /* Plans Expand (Machan Nov 13 7:34 PM ICT: "when you click 'and more' ... i think the whole tile should expand to cover the screen"):
+     And More opens a full-screen sheet that grows out of the tile's own rect (FLIP via clip-path, no content distortion) and collapses back
+     into it. Reduced motion: a plain fade. Dialog is aria-modal, focus is trapped and returned, body scroll is locked, and it closes on the X,
+     Escape, a swipe down from the top of the list, or the phone's Back gesture (one history entry, removed on close).
+     Preview-only variants (PV, read from location.search only): enter=rise slides up from the bottom; close=pill adds a bottom Close pill. */
+  /* Essentials sheet: Machan's keyPoints first, in his order; each one lists the real features it covers (detail kept, e.g. the drone roof wording),
+     and those features are left out of the grouped list below. A keyPoint with no entry here simply shows its own label. */
+  var PC_KP_COVER = {
+    "Furnace/AC Tune-Up": /^fall furnace tune-up|^spring ac tune-up/i,
+    "Water Heater Flush/Descale": /^water heater flush/i,
+    "Appliance Filter Cleaning/Changes": /^furnace filter changes|^range hood filter|^fridge water filter/i,
+    "Gutter Cleaning": /^gutter and downspout cleaning/i,
+    "Mold And Moisture Scan": /mold and moisture scan/i,
+    "Roof Inspections": /^roof drone inspection/i,
+    "Dryer Vent Cleaning": /^dryer vent cleaning/i,
+    "Sump Pump Test": /^sump pump test/i
+  };
+  function pcShort(f) { return pcTitle(String(f).split(":")[0]); }
+  function pcSheetList(k) {
+    var t = P.tiers[k], feats = (t.features || []).slice(), kps = (t.keyPoints || []).filter(function (x) { return x !== "And More" && !/Plus:$|and:$/.test(x); });
+    if (k !== "silver") return '<ul class="pc-inc pc-all pc-sh-all">' + pcGroupHtml(feats) + '</ul>';
+    var used = {}, top = kps.map(function (kp) {
+      var re = PC_KP_COVER[kp], cov = re ? feats.filter(function (f) { return re.test(f); }) : [];
+      cov.forEach(function (f) { used[f] = 1; });
+      var det = cov.map(pcShort).filter(function (x) { return x.toLowerCase() !== kp.toLowerCase(); });
+      return '<li><span class="pc-sh-kp">' + esc(kp) + '</span>' + (det.length ? '<span class="pc-sh-det">' + det.map(esc).join(" · ") + '</span>' : '') + '</li>';
+    }).join("");
+    var rest = feats.filter(function (f) { return !used[f]; });
+    return '<ul class="pc-inc pc-sh-top">' + top + '</ul><p class="pc-sh-also">Also Included</p><ul class="pc-inc pc-all pc-sh-all">' + pcGroupHtml(rest) + '</ul>';
+  }
   function bindPlanMore(root) {
-    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, sec = document.getElementById("hs-plans");
-    /* Open or close one tile in place (height animation unless reduced motion; instant when asked). */
-    /* Machan Nov 13 1:26 PM ("it should not expand to the whole file but instead show a couple more and a scrollable section" / "section inside secton"):
-       And More grows the tile by about two lines (only as far as the one-screen section allows) and the full grouped list scrolls inside the tile. */
-    function pcSet(card, open, instant) {
-      var b = card.querySelector("[data-pc-more]"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)");
-      if (!b || !all || (b.getAttribute("aria-expanded") === "true") === open) return;
-      var z = zoomFactor(), h0 = card.getBoundingClientRect().height / z;
-      if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
-      var keysH = keys ? keys.getBoundingClientRect().height / z : 0;
-      all.hidden = !open; if (keys) keys.hidden = open;
-      b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show Less" : "And More";
-      card.classList.toggle("pc-open", open);
-      all.style.maxHeight = ""; all.scrollTop = 0;
-      var h1 = h0;
-      if (open) {
-        /* room: about two list lines, capped by the space left above the section's See arrow (8px clear) */
-        var arrow = sec && sec.querySelector(":scope > .hs-arrow"), bottomUsed = 0;
-        if (sec) [].slice.call(sec.querySelectorAll(".hm-row, .pc-dots")).forEach(function (e) { bottomUsed = Math.max(bottomUsed, e.getBoundingClientRect().bottom / z); });
-        var slack = arrow ? arrow.getBoundingClientRect().top / z - 8 - bottomUsed : 40;
-        var lineH = parseFloat(getComputedStyle(all).lineHeight) || 20, extra = Math.max(0, Math.min(Math.round(lineH * 2), Math.floor(slack)));
-        var fixed = parseFloat(card.dataset.fixedH) || h0;
-        h1 = fixed + extra;
-        card.style.height = h1 + "px"; card.style.maxHeight = h1 + "px"; card.style.minHeight = h1 + "px";
-        /* the list box takes what the short list used plus the extra (the And More / Show Less link stays at the bottom) */
-        var cr = card.getBoundingClientRect(), ar = all.getBoundingClientRect(), mr = b.closest(".pc-more") ? b.closest(".pc-more").getBoundingClientRect() : null;
-        var pbC = parseFloat(getComputedStyle(card).paddingBottom) || 0;
-        var boxH = Math.floor((cr.bottom - ar.top) / z - pbC - (mr ? mr.height / z + 4 : 0));
-        all.style.maxHeight = Math.max(keysH, Math.min(boxH, all.scrollHeight)) + "px";
-        all.classList.add("pc-scroll"); pcFade(all);
+    var sheetDur = 340, ease = "cubic-bezier(.2,.8,.2,1)";
+    var cur = null; /* { wrap, sheet, card, trigger, hist } */
+    function reduce() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+    function inset(r) { var w = window.innerWidth, h = window.innerHeight; return "inset(" + Math.max(0, r.top) + "px " + Math.max(0, w - r.right) + "px " + Math.max(0, h - r.bottom) + "px " + Math.max(0, r.left) + "px round 20px)"; }
+    function lock(on) { document.documentElement.classList.toggle("pc-lock", on); document.body.classList.toggle("pc-lock", on); }
+    function focusables(el) { return [].slice.call(el.querySelectorAll('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(function (x) { return x.offsetParent !== null || x === document.activeElement; }); }
+    function build(card) {
+      var k = card.getAttribute("data-tier"), t = P.tiers[k];
+      var wrap = document.createElement("div");
+      wrap.className = "pc-sheet-wrap pv-enter-" + PV.enter + " pv-close-" + PV.close + " tier-" + k + (t.recommended ? " rec" : "");
+      wrap.setAttribute("role", "dialog"); wrap.setAttribute("aria-modal", "true"); wrap.setAttribute("aria-labelledby", "pcSheetT");
+      wrap.innerHTML = '<div class="pc-sheet-bg" data-pc-close></div><div class="pc-sheet" tabindex="-1"><div class="pc-sheet-in">' +
+        '<div class="pc-sheet-hd"><div class="pc-sheet-grab" aria-hidden="true"></div>' +
+          '<button type="button" class="pc-sheet-x mw-hover" data-pc-close aria-label="Close">' + X_SVG + '</button>' +
+          (t.recommended ? '<span class="hm-badge">Most Popular</span>' : '') +
+          '<h3 id="pcSheetT" class="pc-name">' + esc(t.label) + '</h3><span class="pc-tag muted small">' + esc(t.tagline) + '</span>' +
+          '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
+          '<div class="pc-year">Visits Per Year: ' + t.visits + '</div></div>' +
+        '<div class="pc-sheet-body">' + pcSheetList(k) + '</div>' +
+        '<div class="pc-sheet-ft"><button type="button" class="btn btn-primary mw-hover pc-sheet-go">Get Started With ' + esc(t.label) + '<span class="hm-cta-arr" aria-hidden="true">→</span></button>' +
+          (PV.close === "pill" ? '<button type="button" class="pc-sheet-pill mw-hover" data-pc-close>Close</button>' : '') + '</div>' +
+      '</div></div>';
+      document.body.appendChild(wrap);
+      return wrap;
+    }
+    function open(card, trigger) {
+      if (cur) return;
+      var wrap = build(card), sheet = wrap.querySelector(".pc-sheet"), r = card.getBoundingClientRect();
+      cur = { wrap: wrap, sheet: sheet, card: card, trigger: trigger, hist: false };
+      lock(true);
+      trigger.setAttribute("aria-expanded", "true");
+      try { history.pushState({ pcSheet: 1, su: history.state && history.state.su, s: history.state && history.state.s }, "", location.pathname + location.search + location.hash); cur.hist = true; } catch (e) {}
+      var inn = wrap.querySelector(".pc-sheet-in"), bg = wrap.querySelector(".pc-sheet-bg");
+      if (reduce()) { wrap.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: "ease-out" }); }
+      else if (PV.enter === "rise") {
+        sheet.animate([{ transform: "translateY(100%)" }, { transform: "translateY(0)" }], { duration: sheetDur, easing: ease });
+        bg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheetDur, easing: "ease-out" });
       } else {
-        all.classList.remove("pc-scroll", "fade-t", "fade-b");
-        card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; card.style.minHeight = card.dataset.fixedH;
-        h1 = card.getBoundingClientRect().height / z;
+        card.classList.add("pc-src");
+        sheet.animate([{ clipPath: inset(r) }, { clipPath: "inset(0px 0px 0px 0px round 0px)" }], { duration: sheetDur, easing: ease });
+        inn.animate([{ opacity: 0, transform: "translateY(" + Math.round(r.top * 0.25) + "px)" }, { opacity: 0, offset: 0.25 }, { opacity: 1, transform: "none" }], { duration: sheetDur, easing: ease });
+        bg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: sheetDur, easing: "ease-out" });
       }
-      if (!reduce && !instant && Math.abs(h1 - h0) > 2) {
-        card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
-        card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); }, { once: true });
+      var x = wrap.querySelector(".pc-sheet-x"); setTimeout(function () { try { x.focus({ preventScroll: true }); } catch (e) { x.focus(); } }, 30);
+      wrap.addEventListener("click", function (e) {
+        if (e.target.closest("[data-pc-close]")) { e.preventDefault(); close(); return; }
+        if (e.target.closest(".pc-sheet-go")) { e.preventDefault(); var c = cur && cur.card; close(true); if (c) { c.click(); var go = app.querySelector(".hm-tab-cta"); if (go) go.click(); } }
+      });
+      wrap.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { e.preventDefault(); close(); return; }
+        if (e.key !== "Tab") return;
+        var f = focusables(wrap); if (!f.length) return;
+        var a = f[0], z = f[f.length - 1];
+        if (e.shiftKey && (document.activeElement === a || !wrap.contains(document.activeElement))) { e.preventDefault(); z.focus(); }
+        else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+      });
+      /* swipe down to close: from the header, or from the list when it is scrolled to the top */
+      var body = wrap.querySelector(".pc-sheet-body"), y0 = null, dy = 0;
+      sheet.addEventListener("touchstart", function (e) { var inBody = body.contains(e.target); y0 = (!inBody || body.scrollTop <= 0) ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+      sheet.addEventListener("touchmove", function (e) { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy > 0) sheet.style.transform = "translateY(" + Math.round(dy * 0.6) + "px)"; else { sheet.style.transform = ""; } }, { passive: true });
+      sheet.addEventListener("touchend", function () { if (y0 == null) return; y0 = null; if (dy > 90) close(); else { sheet.style.transition = "transform .2s ease-out"; sheet.style.transform = ""; setTimeout(function () { sheet.style.transition = ""; }, 220); } });
+    }
+    function close(instant, fromPop) {
+      if (!cur) return;
+      var c = cur; cur = null;
+      if (c.hist && !fromPop) { c.hist = false; try { history.back(); } catch (e) {} }
+      c.trigger.setAttribute("aria-expanded", "false");
+      var done = function () { c.wrap.remove(); c.card.classList.remove("pc-src"); lock(false); try { c.trigger.focus({ preventScroll: true }); } catch (e) { c.trigger.focus(); } };
+      var r = c.card.getBoundingClientRect(), inn = c.wrap.querySelector(".pc-sheet-in"), bg = c.wrap.querySelector(".pc-sheet-bg"), a;
+      var tf = c.sheet.style.transform; 
+      if (instant) { done(); return; }
+      if (reduce()) a = c.wrap.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: "ease-in", fill: "forwards" });
+      else if (PV.enter === "rise" || tf) {
+        a = c.sheet.animate([{ transform: tf || "translateY(0)" }, { transform: "translateY(100%)" }], { duration: 260, easing: "cubic-bezier(.4,0,.6,1)", fill: "forwards" });
+        bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: "forwards" });
+      } else {
+        a = c.sheet.animate([{ clipPath: "inset(0px 0px 0px 0px round 0px)" }, { clipPath: inset(r) }], { duration: sheetDur - 40, easing: ease, fill: "forwards" });
+        inn.animate([{ opacity: 1 }, { opacity: 0, offset: 0.55 }, { opacity: 0 }], { duration: sheetDur - 40, fill: "forwards" });
+        bg.animate([{ opacity: 1 }, { opacity: 0 }], { duration: sheetDur - 40, fill: "forwards" });
       }
+      a.onfinish = done;
     }
-    function pcFade(el) { el.classList.toggle("fade-t", el.scrollTop > 2); el.classList.toggle("fade-b", el.scrollHeight - el.clientHeight - el.scrollTop > 2); }
-    root.querySelectorAll(".pc-all").forEach(function (el) { el.addEventListener("scroll", function () { pcFade(el); }, { passive: true }); });
-    /* Swatch QA F2: no page jump. If Plans is (about) pinned under the header, keep it pinned exactly; otherwise keep scrollY.
-       After a collapse that leaves the tile above the header, pin Plans so the tile stays in view. */
-    function pcKeep(y, pinned, card, open) {
-      var hbN = pcHdr(), pinT = sec ? sec.getBoundingClientRect().top - hbN : 0;
-      if (sec && (pinned || (!open && card && card.getBoundingClientRect().top < hbN))) pcScroll(window.scrollY + pinT); else pcScroll(y);
-    }
-    function pcPinned() { return !!sec && Math.abs(sec.getBoundingClientRect().top - pcHdr()) < window.innerHeight * 0.35; }
+    window.addEventListener("popstate", function () { if (cur) close(false, true); });
     root.querySelectorAll("[data-pc-more]").forEach(function (b) {
       ["pointerdown", "keydown"].forEach(function (ev) { b.addEventListener(ev, function (e) { e.stopPropagation(); }); });
-      b.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation();
-        var card = b.closest(".hm-plan"), open = b.getAttribute("aria-expanded") !== "true", y = window.scrollY, pinned = pcPinned();
-        /* Machan Nov 13 11:10 AM: only one tile open at a time (desktop shows all three side by side). */
-        if (open) root.querySelectorAll(".hm-plan.pc-open").forEach(function (c) { if (c !== card) pcSet(c, false, true); });
-        pcSet(card, open, false);
-        pcKeep(y, pinned, card, open);
-      });
+      b.setAttribute("aria-haspopup", "dialog"); b.removeAttribute("aria-controls");
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); open(b.closest(".hm-plan"), b); });
     });
-    /* Machan Nov 13 11:10 AM: swipe the plan carousel to a neighbor and the open tile closes by itself. Fires only once the open tile is
-       less than half visible in the carousel and the swipe has settled (scrollend, or 160ms after the last scroll), so small nudges do nothing. */
-    var scroller = sec && sec.querySelector(".hm-scroll");
-    if (scroller) {
-      var settleT = null;
-      var settle = function () {
-        clearTimeout(settleT); settleT = null;
-        var openC = root.querySelectorAll(".hm-plan.pc-open"); if (!openC.length) return;
-        var sr = scroller.getBoundingClientRect(), y = window.scrollY, pinned = pcPinned(), changed = false;
-        openC.forEach(function (c) {
-          var r = c.getBoundingClientRect(), w = Math.max(1, r.width), shown = Math.max(0, Math.min(r.right, sr.right) - Math.max(r.left, sr.left)) / w;
-          if (shown < 0.5) { pcSet(c, false, true); changed = c; }
-        });
-        if (changed) pcKeep(y, pinned, changed, false);
-      };
-      scroller.addEventListener("scroll", function () { clearTimeout(settleT); settleT = setTimeout(settle, 160); }, { passive: true });
-      scroller.addEventListener("scrollend", settle, { passive: true });
+  }
+  /* Collapsed Essentials tile: PV.lines keyPoints (A = 6, B = 8), trimmed one at a time until the Plans section fits its one screen
+     (no clipping, no inner scroll, arrow clear of the bottom bar). Plus and Complete show all their real lines. */
+  function pcFitLines() {
+    var sec = document.getElementById("hs-plans"); if (!sec) return;
+    var card = sec.querySelector('.hm-plan[data-tier="silver"]'); if (!card) return;
+    var lis = [].slice.call(card.querySelectorAll(".pc-inc li[data-i]")); if (!lis.length) return;
+    var desk = window.innerWidth >= 700, n = desk ? lis.length : Math.min(PV.lines, lis.length);
+    function show(m) { lis.forEach(function (li, i) { li.hidden = i >= m; }); }
+    function fits() {
+      var secH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--su-sec-h")) || (window.innerHeight - pcHdr());
+      var arrow = sec.querySelector(":scope > .hs-arrow"), pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0, sr = sec.getBoundingClientRect();
+      if (sec.offsetHeight > secH + 1) return false;
+      return !arrow || arrow.getBoundingClientRect().bottom <= sr.bottom - pb + 1;
     }
+    show(n);
+    while (!desk && n > 4 && !fits()) { n--; show(n); }
+    card.setAttribute("data-lines", String(n));
   }
   /* Badge carousel (Machan Nov 13 1:24 PM: "i want to be able to scroll the badges as they are passing"). The CSS keyframe loop is swapped for a
      rAF loop at the same speed (one set width per animation-duration, read from the CSS, so the pace is unchanged). Drag by touch or mouse, or
