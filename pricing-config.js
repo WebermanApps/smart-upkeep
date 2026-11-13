@@ -44,7 +44,7 @@ window.SMART_UPKEEP_PRICING = {
   perUnit: { furnace: 184, ac: 178, tankWaterHeater: 140, tanklessWaterHeater: 318 },
   dryerVent: 171,                                // one per home, assumed
   gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
-  /* Machan Nov 13 9:00 PM: flat roof per visit = base by stories + $0.02 × home sq ft. Inspection is 2 visits/yr; Extra Flat Roof Cleaning is 1 visit. */
+  /* Machan Nov 13: flat roof per visit = base by stories + $0.02 × home sq ft (Extra Flat Roof Cleaning = 1 visit). Plan add-on visit frequency not yet confirmed. */
   flatRoofVisit: { 1: 150, 2: 195, 3: 240 },
   flatRoofPerSqFt: 0.02,
   /* Systems the member owns. Plan Services deck (Nov 2 2026): servicing them is an extra. If picked, it is added to ANY plan

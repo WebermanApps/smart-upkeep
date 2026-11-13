@@ -184,8 +184,8 @@
       var v = flatRoofPerVisit();
       if(a && suClose(a.label, "Flat Roof Inspection And Clean")){
         a.flatRoof=true;
-        if (v) { a.annual=2*v; a.quoteRequired=false; }
-        else { a.annual=null; a.quoteRequired=true; }
+        /* Nov 13 r3: Machan approved the per-visit formula only; visits per year not yet confirmed, so the plan add-on stays Quote. */
+        a.perVisit=v||null; a.annual=null; a.quoteRequired=true;
       }
       return a;
     });
