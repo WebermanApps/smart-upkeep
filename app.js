@@ -2062,6 +2062,12 @@
   var ANNUAL_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>12 months</strong> of membership (10% off 12 monthly payments). My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
   var FOUNDING_CONSENT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
   var FOUNDING_CONSENT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today, for <strong>24 months</strong> of membership. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
+  /* Legal Nov 13 (PR123 review): when priced one-time services are in the total, the consent splits the amount into membership + one-time so it isn't read as all discounted.
+     Rest of each sentence unchanged. Without one-time items the lines above are used as-is. LIVE variants mirror the beta wording (not shown until PAYMENTS_LIVE). */
+  var ANNUAL_CONSENT_SPLIT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today: <strong>{membershipAmount}</strong> for <strong>12 months</strong> of membership (10% off 12 monthly payments), plus <strong>{oneTimeAmount}</strong> for one-time services. My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime in the app under Profile & Account.";
+  var ANNUAL_CONSENT_SPLIT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today: <strong>{membershipAmount}</strong> for <strong>12 months</strong> of membership (10% off 12 monthly payments), plus <strong>{oneTimeAmount}</strong> for one-time services. My membership <strong>renews automatically each year</strong> at the then-current annual prepaid price until I cancel, with at least 60 days' notice of any price change. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
+  var FOUNDING_CONSENT_SPLIT_LIVE = "I agree Smart Upkeep may charge me <strong>{amount}</strong> today: <strong>{membershipAmount}</strong> for <strong>24 months</strong> of membership (2-for-1 founding offer), plus <strong>{oneTimeAmount}</strong> for one-time services. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime in the app under Profile &amp; Account.";
+  var FOUNDING_CONSENT_SPLIT_BETA = "I agree to pay Smart Upkeep <strong>{amount}</strong>, due today: <strong>{membershipAmount}</strong> for <strong>24 months</strong> of membership (2-for-1 founding offer), plus <strong>{oneTimeAmount}</strong> for one-time services. After that, my membership <strong>renews automatically each year</strong> at the plan price then in effect (with at least 60 days' notice of any change) until I cancel. I can cancel anytime, with no fee, by emailing support@smartupkeep.ai.";
   /* Base set (Machan Nov 11): 1 furnace, 1 AC, 1 water heater. Anything above shows as a +1 tag, e.g. "Plus · +1 Furnace". */
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
@@ -2173,8 +2179,10 @@
     return '<div class="after-founding" data-after-founding><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div>';
   }
   function monthlyConsent(amount) { return fillAmt(paymentsLive() ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, amount); }
-  function annualConsent(amount) { return fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
-  function foundingConsent(amount) { return fillAmt(paymentsLive() ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA, amount); }
+  /* oneTime (optional): priced one-time services inside amount. > 0 picks the Legal split line; membership = amount - oneTime. */
+  function fillSplit(tpl, amount, oneTime) { return fillAmt(tpl, amount).replace(/\{membershipAmount\}/g, money(amount - oneTime)).replace(/\{oneTimeAmount\}/g, money(oneTime)); }
+  function annualConsent(amount, oneTime) { oneTime = +oneTime || 0; return oneTime > 0 ? fillSplit(paymentsLive() ? ANNUAL_CONSENT_SPLIT_LIVE : ANNUAL_CONSENT_SPLIT_BETA, amount, oneTime) : fillAmt(paymentsLive() ? ANNUAL_CONSENT_LIVE : ANNUAL_CONSENT_BETA, amount); }
+  function foundingConsent(amount, oneTime) { oneTime = +oneTime || 0; return oneTime > 0 ? fillSplit(paymentsLive() ? FOUNDING_CONSENT_SPLIT_LIVE : FOUNDING_CONSENT_SPLIT_BETA, amount, oneTime) : fillAmt(paymentsLive() ? FOUNDING_CONSENT_LIVE : FOUNDING_CONSENT_BETA, amount); }
   function obPlan() {
     if (foundingFull()) return S.plan === "annual" ? "annual" : "monthly";
     var p = S.plan;
@@ -2438,14 +2446,15 @@
     if (!fOpen && S.plan !== "monthly" && !(fFull && S.plan === "annual")) { S.plan = "monthly"; plan = obPlan(); save(); } /* only the offered choices (2-for-1 or monthly; after the fill, 10% annual or monthly) can be picked, so the shown choice is always the charged one */
     var aSel = fOpen && plan === "founding", ySel = fFull && plan === "annual";
     var chk = '<span class="pay-ck" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
-    function card(key, sel, name, amt, copy, badge) {
+    function card(key, sel, name, amt, copy, badge, copy2) {
       return '<div class="pay-card' + (sel ? " sel" : "") + '" role="radio" tabindex="' + (sel ? "0" : "-1") + '" aria-checked="' + sel + '" data-ob-bill="' + key + '" style="--plan-c:' + col + '">' +
-        '<div class="pay-top"><span class="pay-name">' + name + '</span>' + (badge || '') + '<span class="pay-amt">' + amt + '</span>' + chk + '</div><p class="pay-copy">' + copy + '</p></div>';
+        '<div class="pay-top"><span class="pay-name">' + name + '</span>' + (badge || '') + '<span class="pay-amt">' + amt + '</span>' + chk + '</div><p class="pay-copy">' + copy + '</p>' + (copy2 ? '<p class="pay-copy pay-copy2">' + copy2 + '</p>' : '') + '</div>';
     }
     var badge = '<button type="button" class="f2-badge mw-hover" data-f2-open aria-expanded="false" aria-controls="f2Pop">2-For-1<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
     var banner = fOpen ? '<div class="f2-banner"><span class="f2-ic" aria-hidden="true">' + I("star", "xs") + '</span><p><b>Founding Member: 2 Years For The Price Of 1</b><br>Pay one year of your ' + esc(t.label) + ' plan' + (an.addonsAnnual ? ' and add-ons' : '') + ', get two years of care.</p></div>' : '';
     var cards = (fOpen ? card("founding", aSel, "Annual", money(an.today), "Paid today for 24 months of care.", badge) : '') +
-      (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>') : '') +
+      (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>',
+        yr.onceToday > 0 ? "Includes " + money(yr.onceToday) + " for one-time services at full price." : "") : '') + /* Legal Nov 13: second line only when one-time items exist */
       card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
     var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
     var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
@@ -2559,8 +2568,8 @@
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
     /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
     var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
-      : (b.plan === "annual" ? annualConsent(b.today)
-      : foundingConsent(b.today));
+      : (b.plan === "annual" ? annualConsent(b.today, b.onceToday)
+      : foundingConsent(b.today, b.onceToday));
     /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
        Accept only saves locally (no charge, no email); the checkbox and signature still apply. AGREEMENT.url still swaps in the real link when set. */
     var open = true;
