@@ -742,7 +742,7 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 
 /* Add-ons list: card border always; fade + peek height when the list overflows (sfitAddons). */
 .ob-addons .ob-ao-list{
-  border:1px solid #E6E0D6;
+  border:1px solid #ECE5DA;
   border-radius:14px;
   background:#fff;
   padding:8px 10px 0;

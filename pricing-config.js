@@ -44,9 +44,6 @@ window.SMART_UPKEEP_PRICING = {
   perUnit: { furnace: 184, ac: 178, tankWaterHeater: 140, tanklessWaterHeater: 318 },
   dryerVent: 171,                                // one per home, assumed
   gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
-  /* Machan Nov 13 9:00 PM: flat roof per visit = base by stories + $0.02 × home sq ft. Inspection is 2 visits/yr; Extra Flat Roof Cleaning is 1 visit. */
-  flatRoofVisit: { 1: 150, 2: 195, 3: 240 },
-  flatRoofPerSqFt: 0.02,
   /* Systems the member owns. Plan Services deck (Nov 2 2026): servicing them is an extra. If picked, it is added to ANY plan
      at the yearly price below (higher monthly price); the member can remove it on the Accept step. Draft prices unchanged. */
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
@@ -80,13 +77,15 @@ window.SMART_UPKEEP_PRICING = {
     /* Plan Services deck (Machan, Nov 2 2026). Plans differ mainly by visit frequency. Drone roof frequency per plan is a DEFAULT, not decided yet:
        Essentials once a year, Plus twice a year, Complete after storms too. */
     silver: { fromMonthly: 139, label: "Essentials", tagline: "Seasonal Care", visits: 2,
-      keyPoints: ["Furnace/AC Tune-Up", "Roof Drone Inspection", "Mold and Moisture Scan", "Downloadable Visit Record", "And More"],
+      /* Machan Nov 13 7:35-7:37 PM ICT: Essentials tile lines, his order and wording (fridge water filter changes moved into Essentials, prices unchanged).
+         Gutter Cleaning is HELD off Essentials and stays a Plus service until pricing is finalized (Machan 8:42 PM: "we will finalize pricing later"); to add it back, insert "Gutter Cleaning" after "Appliance Filter Cleaning/Changes" below. */
+      keyPoints: ["Furnace/AC Tune-Up", "Water Heater Flush/Descale", "Appliance Filter Cleaning/Changes", "Mold And Moisture Scan", "Roof Inspections", "Dryer Vent Cleaning", "Sump Pump Test", "And More"],
       keyPointsOnCard: true,
-      features: ["2 seasonal visits a year (spring and fall)", "Roof Drone Inspection once a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Furnace filter changes during visits", "Water heater flush or tankless descale", "Dryer vent cleaning", "Smoke and CO detector checks and battery swap", "Drone Gutter Check: a drone flight spots clogged or sagging gutters and downspouts, no ladder needed", "Drone Roof Photos To Home Record: dated roof photos from each drone flight, saved to track wear", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Winter Freeze Prep: hose bibs, crawlspace vents and exposed pipes checked before the first hard freeze; outdoor faucets shut off and drained", "Pipe Insulation Check on your first visit (repairs are a paid extra)", "Thermostat battery and settings check", "Sump pump test before spring thaw", "Main water shut-off found, tested and tagged", "Washing machine hose check", "Toilet leak dye test", "Caulk check at tubs and sinks", "Range hood filter clean", "Fridge coil cleaning", "Basement window well check", "Grading and downspout check", "Humidifier pad swap and service", "Dehumidifier check", "Attic insulation check", "Seasonal home checklist email before each season", "Annual Home Health Score built from your Home Record", "Vetted Contractor Network: every contractor licensed, certified and insured", "Recall Monitoring on your equipment", "Warranties Checked badge on your Home Record", "Written report after every visit", "Downloadable Visit Record: every visit kept in a downloadable record with dates, photos and work done", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
+      features: ["2 seasonal visits a year (spring and fall)", "Roof Drone Inspection once a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Fall furnace tune-up for every furnace", "Spring AC tune-up for every AC unit", "Furnace filter changes during visits", "Water Heater Flush/Descale", "Dryer vent cleaning", "Fridge water filter changes during visits", "Smoke and CO detector checks and battery swap", "Drone Gutter Check: a drone flight spots clogged or sagging gutters and downspouts, no ladder needed", "Drone Roof Photos To Home Record: dated roof photos from each drone flight, saved to track wear", "Whole-Home Mold and Moisture Scan: pinless moisture meter and thermal camera check ceilings under bathrooms, windows, basement walls and under sinks; readings and photos saved to your Home Record, damp spots where mold can grow flagged (not a lab mold test)", "Winter Freeze Prep: hose bibs, crawlspace vents and exposed pipes checked before the first hard freeze; outdoor faucets shut off and drained", "Pipe Insulation Check on your first visit (repairs are a paid extra)", "Thermostat battery and settings check", "Sump pump test before spring thaw", "Main water shut-off found, tested and tagged", "Washing machine hose check", "Toilet leak dye test", "Caulk check at tubs and sinks", "Range hood filter clean", "Fridge coil cleaning", "Basement window well check", "Grading and downspout check", "Humidifier pad swap and service", "Dehumidifier check", "Attic insulation check", "Seasonal home checklist email before each season", "Annual Home Health Score built from your Home Record", "Vetted Contractor Network: every contractor licensed, certified and insured", "Recall Monitoring on your equipment", "Warranties Checked badge on your Home Record", "Written report after every visit", "Downloadable Visit Record: every visit kept in a downloadable record with dates, photos and work done", "Home Record Transfers When You Sell", "Selling? Gift the Buyers 3 Months Free"] },
     gold: { fromMonthly: 209, label: "Plus", tagline: "Quarterly Care", visits: 4, recommended: true,
-      keyPoints: ["Everything in Essentials, Plus:", "Gutter Cleaning", "Garage Door Tune-Up", "Salt in Water Softener", "And More"],
+      keyPoints: ["Everything in Essentials, Plus:", "Gutter Cleaning", "4 Seasonal Visits A Year", "Roof Drone Inspection Twice A Year", "Garage Door Tune-Up", "Salt in Water Softener", "And More"],
       keyPointsOnCard: true,
-      features: ["Everything in Essentials", "4 seasonal visits a year (one per quarter)", "Roof Drone Inspection twice a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Gutter and downspout cleaning, spring and fall", "Garage door tune-up", "Water softener salt top-off during visits", "Fridge water filter changes during visits"] },
+      features: ["Everything in Essentials", "4 seasonal visits a year (one per quarter)", "Roof Drone Inspection twice a year: shingles, flashing, vents and the chimney cap and crown checked from the air by drone. Nobody walks on your roof", "Gutter and downspout cleaning, spring and fall", "Garage door tune-up", "Water softener salt top-off during visits"] },
     platinum: { fromMonthly: 379, label: "Complete", tagline: "Monthly Care", visits: 12,
       keyPoints: ["Everything in Plus, and:", "Monthly Visits", "Storm Checks After Major Storms", "Vent and Ice Dam Clearing After Storms", "And More"],
       keyPointsOnCard: true,
@@ -98,10 +97,10 @@ window.SMART_UPKEEP_PRICING = {
   likelyAddons: ["guttersExtra", "chimney"],
   /* Removed Nov 2 2026 (Plan Services deck): Carpet Cleaning, Deck Sealing, Furniture Assembly, TV/Picture Hanging; Smoke/CO Battery Swap and Range Hood Filter now in every plan. Removed Oct 17 (Max): Pool Opening/Closing, Snow Removal, Extra Handyman Hours, Pest Control, Irrigation Backflow Test. */
   addons: [
-    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 255, high: 255, unit: "service", annual: 255, price: 255 },
+    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check. Quote required — we will follow up.", quoteRequired: true, low: 129, high: 381, unit: "service", annual: 255 },
     { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years. Quote required — we will follow up.", quoteRequired: true, low: 271, high: 509, unit: "service", annual: 390 },
-    { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up and service for a standby generator.", low: 275, high: 275, unit: "service", annual: 275, price: 275 },
-    { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", price: 100, low: 100, high: 100, unit: "service", annual: 100 },
+    { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up / service for a standby generator. Quote required — we will follow up.", quoteRequired: true, low: 200, high: 400, unit: "service", annual: 275 },
+    { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
   ],
   /* Last-minute extras tacked onto an upcoming visit. Flat one-time prices (draft).
@@ -120,8 +119,8 @@ window.SMART_UPKEEP_PRICING = {
     { id: "lmPanelLabels", label: "Electrical Panel Label Check", desc: "Make sure every breaker is labeled and note anything that looks unsafe.", price: 85, home: true, draft: true },
     { id: "lmExtinguisher", label: "Fire Extinguisher Check", desc: "Check gauge and date on each extinguisher and flag ones to replace.", price: 45, home: true, draft: true },
     { id: "lmFrozenPipe", label: "Frozen Pipe Rescue", desc: "Fast response and thaw help if a pipe freezes.", price: 225, home: true, draft: true },
-    { id: "lmMower", label: "Lawn Mower Winterizing", desc: "Drain fuel, sharpen the blade and store the mower for winter.", price: 95, home: true },
-    { id: "lmSnowblower", label: "Snowblower Tune-Up", desc: "Oil, plug and a test start before the first snow.", price: 135, home: true },
+    { id: "lmMower", label: "Lawn Mower Winterizing", desc: "Drain fuel, sharpen the blade and store the mower for winter.", price: 95, home: true, draft: true },
+    { id: "lmSnowblower", label: "Snowblower Tune-Up", desc: "Oil, plug and a test start before the first snow.", price: 135, home: true, draft: true },
     { id: "lmBibCovers", label: "Hose Bib Freeze Covers", desc: "Frost covers installed on your outdoor faucets for winter. Covers included.", price: 45, home: true, draft: true },
     { id: "lmSurge", label: "Whole-House Surge Protector", desc: "A surge protector installed at the panel by a licensed electrician from our network.", price: 395, home: true, draft: true },
     { id: "lmSmartLock", label: "Smart Lock Install", desc: "Install and set up a keypad or smart lock you buy or we bring.", price: 150, home: true, draft: true },
@@ -131,7 +130,7 @@ window.SMART_UPKEEP_PRICING = {
     { id: "lmWaterShutoff", label: "Smart Water Shut-Off Valve", desc: "An auto shut-off that closes the main when it senses a leak. Installed by a licensed plumber from our network.", price: 695, home: true, draft: true },
     { id: "lmApplianceClean", label: "Appliance Deep Clean", desc: "Oven, fridge and dishwasher cleaned inside.", price: 195, home: true, draft: true },
     { id: "lmPatio", label: "Seasonal Patio Furniture Setup", desc: "Put out patio furniture in spring and store it in fall.", price: 110, home: true, draft: true },
-    { id: "lmLeadTest", label: "Lead And Water Test", desc: "Tap water tested for lead, useful in older Detroit homes.", price: 95, home: true },
+    { id: "lmLeadTest", label: "Lead And Water Test", desc: "Tap water tested for lead, useful in older Detroit homes.", price: 95, home: true, draft: true },
     { id: "lmHumInstall", label: "Whole-House Humidifier Install", desc: "A whole-house humidifier added to your furnace.", price: 650, home: true, draft: true }
   ]
 };
