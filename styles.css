@@ -2018,6 +2018,9 @@ body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-
 body.on-home.hs-bar-off .hm-tabs{opacity:1!important;visibility:visible!important;pointer-events:none!important;transform:none!important}
 @media (min-width:1100px){body.on-home.hs-bar-off .hm-tabs{transform:translateX(-50%)!important}}
 /* Shop À La Carte section and FAQ section (Machan 9:09-9:11 AM) */
+/* Tailor Your Plan subtitle (Machan Nov 13 8:50 PM): Hind, muted charcoal, existing subtitle color. Tight on Home so the section still fits one screen. */
+.alc-sub{font-family:Hind,var(--mw-font-body),sans-serif;font-weight:500;font-size:.88rem;line-height:1.35;color:var(--mw-muted-text,#525252);margin:.15rem 0 .55rem}
+body.on-home #hs-alc .alc-sub{margin:2px 0 0;font-size:.82rem;line-height:1.3}
 body.on-home #hs-alc .hm-row-h{margin-bottom:var(--hs-2)}
 body.on-home #hs-alc .alc-box{overflow-y:auto;background:#fff;border:1px solid #E6E0D6;border-radius:14px;padding:0 12px}
 body.on-home #hs-alc .alc-go{display:flex;margin:var(--hs-3) auto 0;min-width:220px;justify-content:center}

@@ -862,14 +862,14 @@
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), fsAdBtn("fs-ad-plans fs-ad-hdr", "And Logged In Your Member App") /* Machan Nov 13 4:33 PM wording, two lines */ /* Machan Nov 13 4:17 PM: the warranties line sits top right on the Plans header row (no separate bar under the dots). */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "À La Carte Menu") + '</section>' +
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "Tailor Your Plan") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
          Shop À La Carte drop-down, Refund Promise) are off the page; the À La Carte list moves into its own section with the same rows and prices. */
       /* Machan Nov 13 11:11 AM + Swatch default: every à la carte service on Home, grouped under always-visible headers, no inner scroll and no link out.
          Rows are buttons (aria-expanded) that open in place; one open at a time; scrollY unchanged. */
-      '<section class="hs-sec hs-alc" id="hs-alc"><section class="hm-row" id="row-alc"><div class="hm-row-h"><h2>Shop À La Carte</h2></div>' +
+      '<section class="hs-sec hs-alc" id="hs-alc"><section class="hm-row" id="row-alc"><div class="hm-row-h"><div><h2>Tailor Your Plan</h2><p class="hm-sub alc-sub">Members can tailor their plan or add one-time services.</p></div></div>' +
         alcGroupsHtml() + '</section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
@@ -883,7 +883,7 @@
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
       '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
-        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "À La Carte", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
+        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "Tailor Your Plan", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
       '</div></div></nav>' +
       '</div>';
   }
@@ -2335,10 +2335,10 @@
     var total = alacarteTotal();
     var picks = '<div class="addons"><h3>Services</h3>' +
       renderAddonList(monthlyAddonCatalog(), S.alacarte || [], "alacarte", addMo, true) + '</div>' +
-      '<div class="addons last-minute"><h3>Shop À La Carte: Quick Jobs</h3>' +
+      '<div class="addons last-minute"><h3>Tailor Your Plan: Quick Jobs</h3>' +
       
       renderAddonList(onceAddonCatalog(), S.alacarte || [], "alacarte", oncePriceLabel, true) + '</div>';
-    return backBtn() + '<h1>Shop À La Carte</h1>' +
+    return backBtn() + '<h1>Tailor Your Plan</h1><p class="hm-sub alc-sub">Members can tailor their plan or add one-time services.</p>' +
       
       picks +
       '<div class="running card"><h3>One-Time Total</h3>' +
