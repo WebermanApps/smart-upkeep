@@ -2360,7 +2360,8 @@ body.su-band .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important
    Machan Nov 13 7:41 PM ICT: the Home header runs on every onboarding/sign-up step (body.su-band is set on Home and on the 11 funnel steps; the rules above
    are shared, not forked). On the steps there is no white card to overlap, so the scroll-away skirt is 0: the band is the 56px/64px band, the step counter
    and progress sit in the page flow just below it, and the warm shadow shows as soon as the step scrolls. Menu on a step: Home (keeps answers) + Log In. */
-body.on-ob{--su-skirt:0px}
+body.on-ob{--su-skirt:0px;--tb:56px}
+@media (min-width:900px){body.on-ob{--tb:64px}}
 body.su-band .topbar .share-msg{left:0!important;right:auto!important}
 .hdr-menu .hdr-ob-only{display:none!important}
 body.on-ob .hdr-menu .hdr-ob-only{display:flex!important}
@@ -2420,7 +2421,7 @@ body.on-home .hm-hchip.on{box-shadow:inset 0 0 0 1.5px currentColor}
 }
 /* PR111 r3 (Swatch re-QA Nov 13 8:40 PM ICT): more air on Start and Plan; 6-row months (.cal-6, set in obCalendar) take the height 5 rows do. */
 @media (max-height:700px){
-  body.on-ob .ob.qf.ob-plan .plan-card{padding-top:5px!important;padding-bottom:5px!important}
+  body.on-ob .ob.qf.ob-plan .plan-card{padding-top:4px!important;padding-bottom:4px!important}
   body.on-ob .ob.qf.ob-start .cal-d{min-height:38px!important;height:38px!important}
   body.on-ob .ob.qf.ob-start .cal-wk span{line-height:13px!important}
   body.on-ob .ob.qf.ob-start .sfit-row{min-height:42px!important;height:42px!important}
@@ -2582,3 +2583,12 @@ body.on-home #hs-faq .faq-contact p{
   color:#3a352e;
 }
 body.on-home #hs-faq .faq-contact[hidden]{display:none!important}
+
+/* PR111 r4 (Swatch QA Nov 13 9:10 PM ICT): the sticky step bar must sit flush to the viewport
+   bottom. On short steps it was 15px up because .qf's padding-bottom sat under the bar, and
+   --tb fell back to 64px while the mobile band is 56px. Address already fills with
+   min-height: calc(100dvh - var(--tb, 56px)). Every step does that now. Under-bar padding
+   is 0; safe-area stays inside the bar itself (padding-bottom: calc(12px + env(safe-area-inset-bottom))). */
+body.on-ob{--tb:56px}
+@media (min-width:900px){body.on-ob{--tb:64px}}
+body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(--tb))}
