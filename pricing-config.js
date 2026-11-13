@@ -49,7 +49,6 @@ window.SMART_UPKEEP_PRICING = {
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
     irrigation:  { label: "Irrigation System", all: 229 },
     sump:        { label: "Sump Pump", all: 76 },
-    pool:        { label: "Pool or Hot Tub", gold: 0, note: "Checked during visits" },
     humidifier:  { label: "Whole-House Humidifier", all: 76 },
     softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
   },
@@ -96,9 +95,9 @@ window.SMART_UPKEEP_PRICING = {
   likelyAddons: ["guttersExtra", "chimney"],
   /* Removed Nov 2 2026 (Plan Services deck): Carpet Cleaning, Deck Sealing, Furniture Assembly, TV/Picture Hanging; Smoke/CO Battery Swap and Range Hood Filter now in every plan. Removed Oct 17 (Max): Pool Opening/Closing, Snow Removal, Extra Handyman Hours, Pest Control, Irrigation Backflow Test. */
   addons: [
-    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check. Quote required — we will follow up.", quoteRequired: true, low: 129, high: 381, unit: "service", annual: 255 },
+    { id: "chimney", label: "Chimney Sweep", desc: "Wood-burning chimney cleaning and Level 1 check.", low: 255, high: 255, unit: "service", annual: 255, price: 255 },
     { id: "ducts", label: "Air Duct Cleaning", desc: "Full duct clean, usually every few years. Quote required — we will follow up.", quoteRequired: true, low: 271, high: 509, unit: "service", annual: 390 },
-    { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up / service for a standby generator. Quote required — we will follow up.", quoteRequired: true, low: 200, high: 400, unit: "service", annual: 275 },
+    { id: "generatorTune", label: "Generator Annual Service", desc: "Yearly tune-up and service for a standby generator.", low: 275, high: 275, unit: "service", annual: 275, price: 275 },
     { id: "radon", label: "Radon Test", desc: "Professional radon test for your home.", low: 50, high: 150, unit: "service", annual: 100 },
     { id: "guttersExtra", label: "Extra Gutter Cleaning", desc: "One more cleaning when trees drop heavy debris.", low: 180, high: 360, unit: "service", annual: 270 },
   ],
@@ -118,8 +117,8 @@ window.SMART_UPKEEP_PRICING = {
     { id: "lmPanelLabels", label: "Electrical Panel Label Check", desc: "Make sure every breaker is labeled and note anything that looks unsafe.", price: 85, home: true, draft: true },
     { id: "lmExtinguisher", label: "Fire Extinguisher Check", desc: "Check gauge and date on each extinguisher and flag ones to replace.", price: 45, home: true, draft: true },
     { id: "lmFrozenPipe", label: "Frozen Pipe Rescue", desc: "Fast response and thaw help if a pipe freezes.", price: 225, home: true, draft: true },
-    { id: "lmMower", label: "Lawn Mower Winterizing", desc: "Drain fuel, sharpen the blade and store the mower for winter.", price: 95, home: true, draft: true },
-    { id: "lmSnowblower", label: "Snowblower Tune-Up", desc: "Oil, plug and a test start before the first snow.", price: 135, home: true, draft: true },
+    { id: "lmMower", label: "Lawn Mower Winterizing", desc: "Drain fuel, sharpen the blade and store the mower for winter.", price: 95, home: true },
+    { id: "lmSnowblower", label: "Snowblower Tune-Up", desc: "Oil, plug and a test start before the first snow.", price: 135, home: true },
     { id: "lmBibCovers", label: "Hose Bib Freeze Covers", desc: "Frost covers installed on your outdoor faucets for winter. Covers included.", price: 45, home: true, draft: true },
     { id: "lmSurge", label: "Whole-House Surge Protector", desc: "A surge protector installed at the panel by a licensed electrician from our network.", price: 395, home: true, draft: true },
     { id: "lmSmartLock", label: "Smart Lock Install", desc: "Install and set up a keypad or smart lock you buy or we bring.", price: 150, home: true, draft: true },
