@@ -2586,8 +2586,7 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
-  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo centered -> 16px left over the first 80px of scroll
-     (transform only; reduced motion starts left, no animation), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo always left on the content grid (Nov 13 7:30 PM, no scoot), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
   (function () {
     var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
     var rmq = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null, ticking = false;
@@ -2598,11 +2597,11 @@
       /* PR108 r4: warm shadow under the band once the skirt has scrolled away (band at its 56px/64px height). */
       document.body.classList.toggle("su-band-scrolled", onHome && (window.scrollY || 0) >= Math.max(1, skirt() - 0.5));
       if (!brand || !onHome) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
-      if (rmq && rmq.matches) { root.style.setProperty("--su-lx", "0px"); root.style.setProperty("--su-ly", "0px"); return; }
-      var y = Math.max(0, window.scrollY || 0), p = Math.min(1, y / 80), z = zoomFactor();
-      var vw = document.documentElement.clientWidth / z, edge = 16, w = brand.offsetWidth || 0;
-      var sh = document.querySelector(".topbar .top-share"), stop = sh ? (sh.getBoundingClientRect().left / z) - 8 : vw; /* centered logo never runs under Share on narrow phones */
-      var lx = Math.max(0, (1 - p) * Math.min(vw / 2 - edge - w / 2, stop - edge - w)), ly = Math.max(0, skirt() - y / z) / 2;
+      /* Machan Nov 13 7:30 PM ICT: "smart up keep logo should be on the left no centered." The logo is always left, on the content grid (no
+         center-to-left scoot). --su-lx only lines the logo up with the hero text's left edge (0 on phones, card padding on desktop); it never moves on scroll. */
+      var z = zoomFactor(), y = Math.max(0, window.scrollY || 0), tb = brand.offsetParent, ref = document.querySelector("main#app > .hm .hm-hero h1");
+      var lx = (ref && tb) ? Math.max(0, (ref.getBoundingClientRect().left - tb.getBoundingClientRect().left) / z - brand.offsetLeft) : 0;
+      var ly = (rmq && rmq.matches) ? 0 : Math.max(0, skirt() - y / z) / 2; /* vertical centring in the visible band, as live */
       root.style.setProperty("--su-lx", lx.toFixed(1) + "px"); root.style.setProperty("--su-ly", ly.toFixed(1) + "px");
     }
     function req() { if (!ticking) { ticking = true; requestAnimationFrame(sync); } }

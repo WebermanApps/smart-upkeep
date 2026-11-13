@@ -2352,3 +2352,7 @@ body.on-home #row-plans .hm-plan{align-self:flex-start!important}
 body.on-home .topbar{transition:box-shadow .16s ease}
 body.on-home.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!important;border-bottom:0!important}
 @media (prefers-reduced-motion:reduce){body.on-home .topbar{transition:none}}
+/* Machan Nov 13 7:31 PM ICT: "and maybe even just a tad larger, header same size." Logo +12% at every width; band heights unchanged (56/64px + skirt). */
+body.on-home .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
+@media (max-width:374px){body.on-home .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
+@media (min-width:900px){body.on-home .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
