@@ -2164,23 +2164,41 @@ body.on-home #hs-alc,body.on-home #hs-faq{height:var(--su-sec-h)!important;max-h
 .sa-box{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
 .sa-tabbed .sa-grp{margin:0}
 .sa-tabbed .sa-grp[hidden]{display:none}
-/* ===== Home First Section Deck picks (Machan Nov 13 1:34 PM) ===== */
-/* 02 B Rebalanced Hierarchy (deck type_css): headline 'Home Care, On Schedule' dominant; eyebrow above; quieter price. 390: 32/20/16, 375: 30/19/15.5, 360: 28/18/15. */
+/* ===== Hero Look Deck picks (Machan Nov 13) ===== */
+/* 01 B Eyebrow Leads: supersedes Home First Section 02 B (tagline-leads 32/20/16).
+   Phone: Preventive Home Maintenance 30px Khand, Starting At $139/mo 22px terracotta, Home Care, On Schedule 16px Hind.
+   Tagline stays under the price, typeset on the page, on the video floor fade. */
 @media (max-width:480px){
-  body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:20px!important;line-height:1.1!important;color:#1a1a1a!important;letter-spacing:0!important}
-  body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:16px!important;line-height:1.15!important;color:#A8431F!important;margin-top:4px!important}
-  body.on-home .hm-hero .hm-lead{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:32px!important;line-height:1.05!important;color:#1a1a1a!important;margin-top:4px!important;white-space:nowrap!important}
+  body.on-home .hm-hero .hm-eb-t{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:700!important;font-size:30px!important;line-height:1.05!important;color:#1a1a1a!important;letter-spacing:-.005em!important}
+  body.on-home .hm-hero h1{font-family:Khand,var(--mw-font-heading),sans-serif!important;font-weight:600!important;font-size:22px!important;line-height:1.1!important;color:#A8431F!important;margin-top:var(--hero-pair,4px)!important}
+  body.on-home .hm-hero .hm-lead{font-family:Hind,var(--mw-font-body),sans-serif!important;font-weight:500!important;font-size:16px!important;line-height:1.25!important;color:#3D3D3D!important;margin-top:var(--hero-pair,4px)!important;white-space:nowrap!important}
   body.on-home .hm-hero .hm-lead-l,body.on-home .hm-hero .hm-lead-s{font-family:inherit!important;font-weight:inherit!important;font-size:inherit!important;color:inherit!important}
 }
-@media (max-width:384px){
-  body.on-home .hm-hero .hm-eb-t{font-size:19px!important}
-  body.on-home .hm-hero h1{font-size:15.5px!important}
-  body.on-home .hm-hero .hm-lead{font-size:30px!important}
+/* 04 A Always-On Checks: cream plate, upper left of the hero video, clear of the play badge.
+   Light only. No motion (reduced-motion is a no-op). Stays visible on the poster and after the explainer is dismissed. */
+body.on-home .hm-hero .hm-thumb .hm-expand{z-index:4}
+body.on-home .hm-checks{position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:stretch}
+body.on-home .hm-checks-plate{align-self:flex-start;margin:12px 14px 0;padding:8px 10px;background:rgba(255,252,247,.94);border:1px solid rgba(10,10,10,.08);border-radius:12px;box-shadow:0 4px 14px rgba(60,40,20,.08);max-width:calc(100% - 28px);color-scheme:light only}
+body.on-home .hm-checks-list{list-style:none;margin:0;padding:0}
+body.on-home .hm-checks-list li{display:flex;align-items:flex-start;gap:7px;margin:0 0 5px;font-family:Hind,var(--mw-font-body),sans-serif;font-weight:500;font-size:13px;line-height:1.2;color:#1A1A1A;text-transform:none;text-align:left}
+body.on-home .hm-checks-list li:last-child{margin-bottom:0}
+body.on-home .hm-checks-tick{flex:none;margin-top:1px}
+@media (max-width:480px){
+  /* Play badge is top-left on phones (left:.5rem + top:.7rem). Sit the plate clearly under it. */
+  body.on-home .hm-checks-plate{margin:52px 14px 0}
 }
-@media (max-width:369px){
-  body.on-home .hm-hero .hm-eb-t{font-size:18px!important}
-  body.on-home .hm-hero h1{font-size:15px!important}
-  body.on-home .hm-hero .hm-lead{font-size:28px!important}
+@media (max-width:360px){
+  /* 30px nowrap 'Preventive Home Maintenance' overflows 5px at 360; 26px is the existing 360 fit valve and the deck's 360 frame. Price 22 and tagline 16 stay. */
+  body.on-home .hm-hero .hm-eb-t{font-size:26px!important}
+  body.on-home .hm-checks-list li{font-size:12px}
+  body.on-home .hm-checks-plate{margin-top:52px;padding:6px 8px;max-width:calc(100% - 24px)}
+}
+/* Phone 3:4 teaser has a clear upper field. The desktop 16:9 cut already paints 'Introducing Smart Upkeep' there, so the plate stays phone-only. */
+@media (min-width:481px){
+  body.on-home .hm-checks{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .hm-checks,body.on-home .hm-checks-plate{transition:none;animation:none}
 }
 /* 03 B Slower, Larger Pills: one set per 52s (JS reads this), 5px gap, slightly larger pills. Hand swipe/drag/wheel stays. */
 body.on-home .hm-hc-track{animation-duration:60.81s!important} /* was 52s for 6 badges (838.19px set); 7 badges = 980.22px, so 52 x 980.22/838.19 keeps the same 16.12px/s */
@@ -2592,3 +2610,48 @@ body.on-home #hs-faq .faq-contact[hidden]{display:none!important}
 body.on-ob{--tb:56px}
 @media (min-width:900px){body.on-ob{--tb:64px}}
 body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(--tb))}
+
+/* ===== Plans Expand (Machan Nov 13 7:34 PM ICT): Essentials first with Plus peeking; And More opens a full-screen sheet grown from the tile ===== */
+@media(max-width:600px){
+  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory}
+  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:start!important}
+}
+body.on-home .hm-plan .pc-inc li[hidden]{display:none!important}
+body.on-home #row-plans .hm-plan,body.on-home #row-plans .pc-more-link{-webkit-tap-highlight-color:transparent} /* no blue tile flash on tap before the sheet grows */
+/* scroll lock on the viewport only: body keeps no scroller of its own, so the sticky top bar stays put and scrollY never moves */
+html.pc-lock{overflow:hidden!important;overscroll-behavior:none}
+html.pc-lock body{overflow:visible!important}
+.pc-sheet-wrap{position:fixed;inset:0;z-index:2147483000;--pc-ac:#0B6E4F}
+.pc-sheet-wrap.tier-gold{--pc-ac:#A8431F}
+.pc-sheet-wrap.tier-platinum{--pc-ac:#05668D}
+.pc-sheet-bg{position:absolute;inset:0;background:rgba(40,28,16,.28)}
+.pc-sheet{position:absolute;inset:0;display:flex;flex-direction:column;background-color:#FFFCF7;background-image:var(--su-shine),var(--su-gloss);
+  border-top:5px solid var(--pc-ac);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 -4px 16px rgba(60,40,20,.08);outline:none;
+  font-family:Hind,var(--mw-font-body),sans-serif;color:#0a0a0a}
+.pc-sheet-in{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;max-width:640px;width:100%;margin:0 auto}
+.pc-sheet-hd{position:relative;flex:none;padding:calc(env(safe-area-inset-top,0px) + 14px) 64px 12px 20px;border-bottom:1px solid var(--su-hair,#E6E1D8)}
+.pc-sheet-grab{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 5px);width:36px;height:4px;margin-left:-18px;border-radius:2px;background:#d8d0c4}
+.pc-sheet-x,.pc-sheet-go{-webkit-tap-highlight-color:transparent}
+.pc-sheet-x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:8px;width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:24px;background:transparent;color:#0A0A0A;cursor:pointer;padding:0}
+.pc-sheet-x .x-ico{width:22px;height:22px}
+.pc-sheet-x:focus-visible,.pc-sheet-go:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
+.pc-sheet-hd .hm-badge{display:inline-block;margin:0 0 6px}
+.pc-sheet .pc-name{font-family:Khand,var(--mw-font-heading),sans-serif;font-weight:700;font-size:1.9rem!important;line-height:1.05;margin:0!important}
+.pc-sheet .pc-tag{display:block;margin:2px 0 6px}
+.pc-sheet .pc-price{display:flex;align-items:baseline;gap:6px}
+.pc-sheet .pc-big{font-size:2.6rem}
+.pc-sheet .pc-year{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:#4a4a4a;margin-top:4px}
+.pc-sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 20px 16px}
+.pc-sheet .pc-inc{font-size:15px;line-height:1.4;margin:0}
+.pc-sheet .pc-inc li{margin:.35rem 0}
+.pc-sheet .pc-sh-top > li{padding-left:1.4rem}
+.pc-sheet .pc-sh-kp{display:block;font-weight:600}
+.pc-sheet .pc-sh-det{display:block;font-size:13px;line-height:1.35;color:#5a5a5a}
+.pc-sheet .pc-sh-also{margin:16px 0 2px;font:600 13px/1.3 Hind,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#6b6b6b}
+.pc-sheet .pc-all .pc-grp-h{font-size:13px}
+.pc-sheet .pc-all .pc-grp-h .pc-ico{color:#6b5a48}
+.pc-sheet-ft{flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 12px);border-top:1px solid var(--su-hair,#E6E1D8);
+  background-color:#fff;background-image:var(--su-shine),var(--su-gloss)}
+.pc-sheet-go{width:100%;min-height:48px;border-radius:999px!important;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+@media (min-width:700px){.pc-sheet-hd{padding-left:max(20px,calc(50% - 300px))}}

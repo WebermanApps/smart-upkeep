@@ -685,3 +685,23 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
   /* F1 (Swatch PR106): drop the max-height lock while the keyboard is open so PR98 can scroll the focused field above the bar. */
   body.ob-kb-open .ob-address.qf{max-height:none}
 }
+
+/* footer-mascot-1113: Built by Machan mascot on the onboarding bar (same mark as /member/). No link-out.
+   r3: do not force padding/line-height/height on the Built row, so short-phone
+   Address/Home Size rules inherit (14px line, 119px bar). Size the mark at 1lh
+   so it follows the 16px line on Plan and the 14px line on Address/Home Size
+   (1em would be the 12px font-size and shrink the flex row). */
+.ob .ob-bar .ob-built.machan-ft{
+  display:flex;justify-content:center;align-items:center;gap:0;text-align:center;
+  box-sizing:border-box;overflow:visible;
+}
+.ob .ob-bar .ob-built .uk-built-a,
+.ob .ob-bar .ob-built .mw-machan{
+  display:inline-flex;align-items:center;vertical-align:middle;height:1lh;line-height:inherit;font:inherit;color:inherit;
+}
+.ob .ob-bar .ob-built .mw-machan-mark{width:1lh;height:1lh;transition:transform 295ms ease;flex:none}
+.ob .ob-bar .ob-built .uk-wink-l{opacity:0}
+.ob .ob-bar .ob-built:hover .mw-machan-mark,.ob .ob-bar .ob-built:focus-within .mw-machan-mark{transform:rotate(-8deg)}
+.ob .ob-bar .ob-built:hover .uk-eye-r,.ob .ob-bar .ob-built:focus-within .uk-eye-r{opacity:0}
+.ob .ob-bar .ob-built:hover .uk-wink-l,.ob .ob-bar .ob-built:focus-within .uk-wink-l{opacity:1}
+@media (prefers-reduced-motion:reduce){.ob .ob-bar .ob-built .mw-machan-mark{transition:none}}
