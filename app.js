@@ -2039,7 +2039,8 @@
       cells += '<button type="button" class="cal-d mw-hover' + (on ? " on" : "") + '" data-ob-day="' + iso + '" aria-label="' + esc(longDate(iso)) + '" aria-pressed="' + on + '"' + (dis ? " disabled" : "") + '>' + dd + '</button>';
     }
     function nav(d, lab, dis, path) { return '<button type="button" class="cal-nav mw-hover" data-ob-cal="' + d + '" aria-label="' + lab + '"' + (dis ? " disabled" : "") + '><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="' + path + '" fill="none" stroke="#A8431F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'; }
-    return '<div class="ob-cal" role="group" aria-labelledby="obDateL obCalT"><div class="cal-top">' + nav(-1, "Previous Month", ym <= minYm, "M15 5l-7 7 7 7") + '<p class="cal-t" id="obCalT">' + CAL_MONTHS[mo] + " " + y + '</p>' + nav(1, "Next Month", ym >= maxYm, "M9 5l7 7-7 7") + '</div>' +
+    var rows = Math.ceil((lead + days) / 7); /* PR111 r3: .cal-6 lets short screens shrink cells so a 6-row month fits like a 5-row one */
+    return '<div class="ob-cal' + (rows > 5 ? " cal-6" : "") + '" role="group" aria-labelledby="obDateL obCalT"><div class="cal-top">' + nav(-1, "Previous Month", ym <= minYm, "M15 5l-7 7 7 7") + '<p class="cal-t" id="obCalT">' + CAL_MONTHS[mo] + " " + y + '</p>' + nav(1, "Next Month", ym >= maxYm, "M9 5l7 7-7 7") + '</div>' +
       '<div class="cal-wk" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="cal-grid">' + cells + '</div>' +
       (sel ? '<p class="cal-pick" aria-live="polite">' + esc(longDate(sel)) + '</p>' : '') + '</div>';
   }
