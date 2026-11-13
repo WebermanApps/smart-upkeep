@@ -368,8 +368,22 @@
   window.SmartUpkeepPrice = price; // exposed for testing
 
   /* ---------- Navigation ---------- */
-  function go(screen) { if (typeof obSkip === "function" && obSkip(screen)) screen = obNextOf(screen); if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; if (S.screen !== screen) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
-  function back() { var p = S.path.pop(); while (p && obSkip(p)) p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
+  /* Funnel Drop-Off deck #01 A (Machan Nov 13 8:57 AM): browser Back goes to the previous step and keeps the picks. Each screen change pushes a history entry;
+     popstate moves to that screen without clearing answers. The in-app Back pill uses the same history so the two never disagree. */
+  function suHist(screen, replace) { try { var st = { su: 1, s: screen }; if (replace) history.replaceState(st, "", location.pathname + location.search); else history.pushState(st, "", location.pathname + location.search); } catch (e) {} }
+  function go(screen) { if (typeof obSkip === "function" && obSkip(screen)) screen = obNextOf(screen); if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; var moved = S.screen !== screen; if (moved) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); if (moved) suHist(screen, screen === "confirm"); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
+  function back() { if (history.state && history.state.su && S.path.length) { suBackPending = true; history.back(); setTimeout(function () { if (suBackPending) { suBackPending = false; backNow(); } }, 400); return; } backNow(); }
+  var suBackPending = false;
+  window.addEventListener("popstate", function (e) {
+    suBackPending = false;
+    var t = e.state && e.state.su ? e.state.s : "home";
+    if (t === S.screen) return;
+    if (S.screen === "confirm" && isOb(t)) { suHist("confirm", true); return; } /* B7: no Back into Accept after You're In */
+    var ix = S.path.lastIndexOf(t);
+    if (ix > -1) S.path = S.path.slice(0, ix); else { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); }
+    S.screen = t; if (t !== "home" && t !== "confirm") S.resume = t; save(); render(); window.scrollTo(0, 0);
+  });
+  function backNow() { var p = S.path.pop(); while (p && obSkip(p)) p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
   /* B7: after You're In there is no Back into Accept; only the Home pill. */
   function homePill() { return '<span class="nav-pills">' + backBtn().replace(/^<span class="nav-pills">/, "").replace(/<button class="back back-pill[\s\S]*?<\/button>/, ""); }
   function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2" stroke-linejoin="round"/></svg></button></span>'; }
@@ -501,11 +515,17 @@
   };
   /* Late build Nov 12 (Fill The Sections 02, Swatch pick B): existing lines only. 390: Essentials 10, Plus 5, Complete 4 (+ lead). 360x640: Essentials 4, Plus/Complete lead + 4. 1280+: Essentials 9. Always ends in And More. */
   function hsSmall() { return window.innerWidth <= 400 && window.innerHeight <= 700; }
+  /* Machan Nov 13 9:07 AM: Essentials shows his seven lines in this order, then And More (kept, it now expands the tile). Plus and Complete unchanged. */
+  var ESSENTIALS_LINES = ["Furnace/AC Tune-Up", "Water Heater Flush", "Furnace Filter Check And Change", "Roof Drone Inspection", "Mold And Moisture Scan", "Dryer Vent Cleaning", "Sump Pump Test"];
   function homeKeypoints(k) {
+    if (k === "silver") return ESSENTIALS_LINES.concat(["And More"]);
     var src = HOME_KEYPOINTS[k] || [], lead = src.filter(function (s) { return /Plus:$|and:$/.test(s); }), rest = src.filter(function (s) { return lead.indexOf(s) < 0; });
     var n = hsSmall() ? 4 : (window.innerWidth >= 700 && k === "silver") ? 9 : rest.length;
     return lead.concat(rest.slice(0, n)).concat(["And More"]);
   }
+  /* Home FAQ (Machan Nov 13 9:11 AM "we can do just an FAQ section"): the same five questions and answers the Details FAQ drop-down had, word for word. */
+  var HOME_FAQ = [["How Often Should I Change My Furnace Filter?", "It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due."],
+    ["Service Area?", "Metro Detroit: Wayne, Oakland, Macomb."], ["How Do You Vet Techs?", "State License Checked, Insured, Yearly Background Check."], ["Can I Cancel?", "Anytime, no fee. See Refund Promise."], ["Do I Need To Send Photos?", "No. No photos are needed to sign up."]];
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"' + (arguments[4] ? " open" : "") + '><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -539,12 +559,15 @@
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
       '<div class="pc-price"><span class="pc-from">From</span><span class="pc-big">' + money(t.fromMonthly || P.minMonthly || 139) + '</span><span class="pc-per">/mo</span></div>' +
       '<div class="pc-year">Visits Per Year: ' + t.visits + '</div>' +
-      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '<li class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-hs-next="hs-ww">And More</button></li>' : (/Plus:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul></div>';
+      /* And More expands this tile in place to the plan's full feature list from pricing-config.js P.tiers[k].features (text before any ":"), with Show Less (Machan 9:07 AM). */
+      '<ul class="pc-inc">' + inc.map(function (f) { return f === "And More" ? '' : (/Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li>' + f + '</li>'); }).join("") + '</ul>' +
+      '<ul class="pc-inc pc-all" id="pc-all-' + k + '" hidden>' + (t.features || []).map(function (f) { var x = pcTitle(String(f).split(":")[0]); return /^Everything in /i.test(x) ? '<li class="pc-lead">' + esc(x) + '</li>' : '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' +
+      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-controls="pc-all-' + k + '">And More</button></p>' : '') + '</div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Late build Nov 12: phone hero box is ~335x449 (3:4) with object-fit: cover. A later 4-scene cut is a one-line swap here. */
-  var HERO_PHONE = { src: "video/teaser-v7-phone-5svc-3x4.mp4?v=f3", poster: "assets/teaser-v7-phone-3x4-poster.jpg?v=p3", wh: 'width="1080" height="1440"' };
+  var HERO_PHONE = { src: "video/teaser-v7-phone-4svc-fill-3x4.mp4?v=f4", poster: "assets/teaser-v7-phone-4svc-fill-3x4-poster.jpg?v=p4", wh: 'width="1080" height="1440"' };
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
     var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
@@ -821,34 +844,33 @@
         /* Machan Nov 12 7:59 PM: eyebrow 'Preventive Home Maintenance'; headline 'Starting At $139/mo' in the h1 slot; $139 from pricing-config minMonthly; price shows once */
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
-        '<button class="btn btn-primary btn-big mw-hover hm-cta-inline" data-act="start" type="button"><span class="hm-cta-l">Get Started</span><span class="hm-cta-s">Free Quote In Minutes</span></button>' +
+        /* Machan Nov 13 9:12 AM: the bottom bar is always visible, so the hero's own CTA (Get Started on desktop, Free Quote In Minutes on phones) is removed. */
         '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<span class="hm-hchip t' + (i % 4) + '"><span>' + c[1] + '</span></span>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), '<button class="link mw-hover" type="button" data-act="start">Free Quote in Minutes</button>',
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("row-services", "See What We Take Care Of") + '</section>' +
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
-      '<section class="hs-sec hs-ww" id="hs-ww"><section class="hm-row" id="row-services"><div class="hm-row-h"><h2>What We Take Care Of</h2></div>' +
-        wwCarousel() + '<div class="ww-all"><button class="link mw-hover" type="button" data-hs-next="hs-details">See All <span class="ww-arr" aria-hidden="true">&rsaquo;</span></button></div></section>' + hsArrow("hs-details", "See Details") + '</section>' +
+      /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
+         Shop À La Carte drop-down, Refund Promise) are off the page; the À La Carte list moves into its own section with the same rows and prices. */
+      '<section class="hs-sec hs-alc" id="hs-alc"><section class="hm-row" id="row-alc"><div class="hm-row-h"><h2>Shop À La Carte</h2></div>' +
+        '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div>' +
+        '<button class="btn btn-outline mw-hover alc-go" data-act="alacarte" type="button">Shop À La Carte</button></section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
-      '<section class="hs-sec hs-details" id="hs-details"><section class="hm-row" id="row-trust"><div class="hm-row-h"><h2 class="hm-trust-h">Why Trust Us</h2><button class="link mw-hover" type="button" data-hm-open="faq">How We Vet</button></div>' +
-        '<div class="hm-chips">' + trust.map(function (s, i) { return '<span class="hm-chip t' + (i % 4) + '"><span>' + s[1] + '</span></span>'; }).join("") + '</div>' +
-        '</section>' +
-      '<section class="hm-accs"><h2>Details</h2>' +
-      hmAcc("plans", "house", "What's Included", wiRedo()) +
-      hmAcc("addons", "wrench", "Shop À La Carte", '<div class="alc-box" tabindex="0" role="region" aria-label="Shop À La Carte Services"><ul class="hm-prices">' + monthlyAddonCatalog().map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + addMo(a) + '</b></button></li>'; }).join("") + onceAddonCatalog().filter(function (a) { return WI_EVERY_PLAN.indexOf(a.label) < 0; }).map(function (a) { return '<li><button type="button" class="ac-item mw-hover" data-ac="' + a.id + '" aria-haspopup="dialog"><span>' + a.label + '</span><b>' + onceListPrice(a) + '</b></button></li>'; }).join("") + '</ul></div><button class="btn btn-outline mw-hover" data-act="alacarte" type="button">Shop À La Carte</button>', true) +
-      hmAcc("refund", "refund", "Refund Promise", ul(["Cancel Anytime, No Fee", "Full Refund Before Your First Visit", "After That, We Refund Paid Services Not Yet Done, Within 14 Days", '<a href="/#cancel" class="link mw-hover">Cancel Online Anytime In One Step</a>']) + '<p class="small muted" style="margin:.4rem 0 0">Signed up in person at your home or an event, or on a sales call from us? You get a 3-day right to cancel.</p>') +
-      hmAcc("faq", "faq", "FAQ", '<h4>How Often Should I Change My Furnace Filter?</h4><p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it\'s due.</p><h4>Service Area?</h4><p>Metro Detroit: Wayne, Oakland, Macomb.</p><h4>How Do You Vet Techs?</h4><p>State License Checked, Insured, Yearly Background Check.</p><h4>Can I Cancel?</h4><p>Anytime, no fee. See Refund Promise.</p><h4>Do I Need To Send Photos?</h4><p>No. No photos are needed to sign up.</p><a class="btn btn-outline mw-hover" href="faq/">See All FAQs</a>') +
+      '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
+        HOME_FAQ.map(function (f, k) { return hmAcc("faq" + k, "faq", f[0], '<p>' + f[1] + '</p>'); }).join("") +
+        '<a class="btn btn-outline mw-hover hm-faq-all" href="faq/">See All FAQs</a>' +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
-      '<nav class="hm-tabs" aria-label="Page Sections">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
-        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["included", "What\'s Included", "hs-ww", "grid"], ["details", "Details", "hs-details", "doc"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
-        '<button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started</button>' +
-      '</div></nav>' +
+      /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
+         full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
+      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started</button><div class="hm-pill">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row">' +
+        [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "À La Carte", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '">' + I(t[3], "sm") + '<span>' + t[1] + '</span></button>'; }).join("") +
+      '</div></div></nav>' +
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
@@ -1003,7 +1025,7 @@
     var tabs = document.querySelector(".hm-tabs"), pl = document.getElementById("hs-plans"), hdr = document.querySelector(".topbar");
     if (!tabs || !pl || !document.body.classList.contains("on-home")) return;
     var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
-    document.body.classList.toggle("hs-bar-off", pl.getBoundingClientRect().top > line + window.innerHeight * 0.35);
+    document.body.classList.remove("hs-bar-off"); /* Machan Nov 13 9:11 AM: the bar shows from load, no scroll gate. */
     var cta = tabs.querySelector(".hm-tab-cta"), hit = false;
     if (cta && !document.body.classList.contains("hs-bar-off")) { var c = cta.getBoundingClientRect();
       document.querySelectorAll(".hs-arrow").forEach(function (a) { var r = a.getBoundingClientRect(); if (r.bottom > c.top && r.top < c.bottom && r.right > c.left && r.left < c.right) hit = true; }); }
@@ -1023,34 +1045,29 @@
       return Math.max(80, sec.clientHeight - pb - ah - 8);
     }
     function setH(els, h) { els.forEach(function (e) { e.style.height = h + "px"; e.style.minHeight = h + "px"; e.style.maxHeight = h + "px"; }); }
-    /* Top: keep the 3:4 box (~335x449 at 390). Only shrink at tight 360 if the section overflows.
-       Leftover cream between the chips and See Plans is split as type room and even spacing. */
+    /* Top (Machan Nov 13 9:03-9:12 AM): eyebrow, price, line, video and badge carousel on one screen above See Plans, which sits 12px over the bar stack.
+       Phones: the video takes every pixel left over (3:4 up to the full content width; below that it keeps the width and crops top/bottom white space),
+       and the text starts over the video's empty floor (--hero-ov). Gaps come from the --hs-* scale. */
     (function () {
       var sec = document.getElementById("hs-top"), thumb = sec && sec.querySelector(".hm-thumb");
       if (!thumb) return;
-      var cta = sec.querySelector(".hm-cta-inline"), chips = sec.querySelector(".hm-hcw") || sec.querySelector(".hm-hchips");
-      if (cta) cta.style.removeProperty("margin-top");
-      if (chips) chips.style.removeProperty("margin-top");
-      thumb.style.height = ""; thumb.style.maxHeight = ""; thumb.style.minHeight = "";
-      if (window.matchMedia("(max-width:480px)").matches && !hsSmall()) {
-        var w = Math.min(335, thumb.getBoundingClientRect().width);
-        thumb.style.width = w + "px";
-        thumb.style.height = Math.round(w * 4 / 3) + "px";
-        thumb.style.aspectRatio = "3 / 4";
-      }
-      if (sec.scrollHeight > sec.clientHeight + 1) {
-        var over = sec.scrollHeight - sec.clientHeight + 2;
-        var h = Math.max(hsSmall() ? 180 : 240, thumb.getBoundingClientRect().height / z - over);
-        thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto";
-      }
-      var arrow = sec.querySelector(":scope > .hs-arrow");
-      if (chips && arrow && window.matchMedia("(max-width:480px)").matches) {
-        var leftover = (arrow.getBoundingClientRect().top - chips.getBoundingClientRect().bottom) / z;
-        if (leftover > 16) {
-          var a = Math.floor(leftover / 3), b = Math.floor(leftover / 3);
-          if (cta) cta.style.setProperty("margin-top", ((parseFloat(getComputedStyle(cta).marginTop) || 0) + a) + "px", "important");
-          if (chips) chips.style.setProperty("margin-top", ((parseFloat(getComputedStyle(chips).marginTop) || 0) + b) + "px", "important");
+      var chips = sec.querySelector(".hm-hcw") || sec.querySelector(".hm-hchips"), arrow = sec.querySelector(":scope > .hs-arrow"), txt = sec.querySelector(".hm-hero-txt");
+      thumb.style.height = ""; thumb.style.maxHeight = ""; thumb.style.minHeight = ""; thumb.style.width = ""; thumb.style.aspectRatio = "";
+      if (!window.matchMedia("(max-width:480px)").matches) return;
+      var root = document.documentElement, gap = parseFloat(getComputedStyle(root).getPropertyValue("--hs-3")) || 12;
+      var W = thumb.getBoundingClientRect().width / z, H = Math.round(W * 4 / 3);
+      /* the bottom fifth of every scene is empty floor: the text block starts there (fade = 40% of it, text over the rest) */
+      function apply(h) { h = Math.min(H, Math.round(h)); var ov = Math.round(Math.min(96, h * 0.2)); root.style.setProperty("--hero-ov", ov + "px"); root.style.setProperty("--hero-ov-pad", Math.max(gap, Math.round(ov * 0.4)) + "px"); thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto"; }
+      apply(H);
+      if (chips && arrow) {
+        /* the arrow is pinned to the section bottom (above the bar reserve); measure against that spot, not where an overflowing arrow got pushed */
+        var limit = function () { var r = sec.getBoundingClientRect(); return r.top / z + sec.clientHeight - (parseFloat(getComputedStyle(sec).paddingBottom) || 0) - arrow.getBoundingClientRect().height / z; };
+        for (var n = 0; n < 6; n++) {
+          var slack = limit() - gap - chips.getBoundingClientRect().bottom / z, cur = thumb.getBoundingClientRect().height / z;
+          if (slack >= 0 && (slack < 2 || cur >= H)) break;
+          apply(Math.max(160, Math.floor(cur + slack / 0.88)));
         }
+        if (limit() - gap - chips.getBoundingClientRect().bottom / z < 0) apply(Math.max(160, thumb.getBoundingClientRect().height / z - 2));
       }
     })();
     /* Plans: stretch the cards to the leftover height, same height each. */
@@ -1061,57 +1078,67 @@
       var row = sec.querySelector("#row-plans") || sec.querySelector(".hm-row");
       var used = row ? row.getBoundingClientRect().height / z : 0;
       var room = budget(sec) - used;
+      if (cards.length && room < 0 && sec.scrollHeight > sec.clientHeight) { /* nothing to shrink below content; CSS short-phone rules keep this from happening */ }
       if (cards.length && room > 8) {
         var h = cards[0].getBoundingClientRect().height / z + room;
         setH(cards, Math.floor(h));
       }
     })();
-    /* What We Take Care Of: equal, taller tiles that fill leftover (~480x283 at 390). */
+    /* Shop À La Carte section: the list box takes the leftover height and is the only inner scroll (same rows and prices as before). */
     (function () {
-      var sec = document.getElementById("hs-ww"); if (!sec) return;
-      var cards = [].slice.call(sec.querySelectorAll(".ca-card"));
-      cards.forEach(function (c) { c.style.height = ""; c.style.minHeight = ""; c.style.maxHeight = ""; });
-      var head = sec.querySelector(".hm-row-h"), dots = sec.querySelector(".ca-dots"), all = sec.querySelector(".ww-all");
-      var other = (head ? head.getBoundingClientRect().height / z : 0) + (dots ? dots.getBoundingClientRect().height / z + 12 : 0) + (all ? all.getBoundingClientRect().height / z + 8 : 0) + 8;
-      var h = Math.floor(budget(sec) - other);
-      var minH = hsSmall() ? 200 : (window.innerWidth >= 900 ? 240 : 280);
-      var maxH = hsSmall() ? 280 : 520;
-      h = Math.max(minH, Math.min(maxH, h));
-      setH(cards, h);
-      cards.forEach(function (c) {
-        c.style.display = "flex";
-        var body = c.querySelector(".ca-body"), ul = c.querySelector("ul");
-        if (body) { body.style.display = "flex"; body.style.flexDirection = "column"; body.style.flex = "1"; body.style.minHeight = "0"; }
-        if (ul) { ul.style.flex = "1"; ul.style.display = "flex"; ul.style.flexDirection = "column"; ul.style.justifyContent = "space-evenly"; }
-      });
-    })();
-    /* Details: only À La Carte box grows, and it is the only inner scroll. */
-    (function () {
-      var sec = document.getElementById("hs-details"), alc = sec && sec.querySelector("#acc-addons .alc-box");
+      var sec = document.getElementById("hs-alc"), alc = sec && sec.querySelector(".alc-box");
       if (!alc) return;
       alc.style.height = ""; alc.style.maxHeight = "none"; alc.style.minHeight = "80px";
-      var used = 0;
-      [].forEach.call(sec.querySelectorAll(":scope > *"), function (el) {
-        if (el.classList.contains("hs-arrow")) return;
-        used += el.getBoundingClientRect().height / z;
-      });
-      /* alc height is already in used; replace it with leftover */
+      var row = sec.querySelector("#row-alc"), used = row ? row.getBoundingClientRect().height / z : 0;
       used -= alc.getBoundingClientRect().height / z;
-      var h = Math.floor(budget(sec) - used);
-      if (h < 80) h = 80;
+      var h = Math.max(120, Math.floor(budget(sec) - used) - 2);
       alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; alc.style.overflowY = "auto";
-      var refund = sec.querySelector("#acc-refund"), faq = sec.querySelector("#acc-faq");
-      if (faq) faq.style.marginTop = "";
-      if (refund && faq && window.matchMedia("(min-width:1100px)").matches) {
-        faq.style.marginTop = Math.round(refund.getBoundingClientRect().height / z + 10) + "px";
-      }
+      for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); alc.style.height = h + "px"; alc.style.maxHeight = h + "px"; }
     })();
     hsBarSync();
   }
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
   window.addEventListener("resize", function () { var r = app.querySelector(".hm"); if (r) { hmHdrSync(); hsBarFill(r); } });
+  /* Plan tile And More / Show Less: expands the tile in place, no jump; scroll position stays put. The one-screen Plans rule relaxes only while a tile is open. */
+  /* Swatch QA (b): display-only Title Case for the expanded feature lists, matching the site's Title Case lines (every word capped, e.g. "Mold And Moisture Scan").
+     Caps the first letter after a start, space, hyphen, slash, quote or "("; all-caps tokens (AC, CO) and numbers are left as they are. pricing-config.js is untouched. */
+  function pcTitle(x) { x = String(x); return x.replace(/(^|[\s\-\/("])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
+  function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
+  function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
+  function bindPlanMore(root) {
+    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches, sec = document.getElementById("hs-plans");
+    root.querySelectorAll("[data-pc-more]").forEach(function (b) {
+      ["pointerdown", "keydown"].forEach(function (ev) { b.addEventListener(ev, function (e) { e.stopPropagation(); }); });
+      b.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var card = b.closest(".hm-plan"), all = card.querySelector(".pc-all"), keys = card.querySelector(".pc-inc:not(.pc-all)"), open = b.getAttribute("aria-expanded") !== "true", y = window.scrollY;
+        var hb0 = pcHdr(), pinned = !!sec && Math.abs(sec.getBoundingClientRect().top - hb0) < window.innerHeight * 0.35;
+        var h0 = card.getBoundingClientRect().height;
+        if (!card.dataset.fixedH) card.dataset.fixedH = card.style.height || "";
+        all.hidden = !open; if (keys) keys.hidden = open;
+        b.setAttribute("aria-expanded", String(open)); b.textContent = open ? "Show Less" : "And More";
+        card.classList.toggle("pc-open", open);
+        if (sec) sec.classList.toggle("pc-expanded", !!root.querySelector(".hm-plan.pc-open"));
+        if (open) { card.style.height = "auto"; card.style.maxHeight = "none"; } else { card.style.height = card.dataset.fixedH; card.style.maxHeight = card.dataset.fixedH; }
+        var h1 = card.getBoundingClientRect().height;
+        if (!reduce && Math.abs(h1 - h0) > 2) {
+          card.style.height = h0 + "px"; card.classList.add("pc-anim"); void card.offsetHeight; card.style.height = h1 + "px";
+          card.addEventListener("transitionend", function te() { card.removeEventListener("transitionend", te); card.classList.remove("pc-anim"); card.style.height = open ? "auto" : card.dataset.fixedH; }, { once: true });
+        }
+        /* Swatch QA F2: no page jump on And More / Show Less for any tile. If Plans is (about) pinned under the header, keep it pinned exactly;
+           otherwise keep scrollY. Show Less from deep in a long list pins Plans so the tile stays in view. */
+        var hbN = pcHdr(), pinT = sec ? sec.getBoundingClientRect().top - hbN : 0;
+        if (sec && (pinned || (!open && card.getBoundingClientRect().top < hbN))) pcScroll(window.scrollY + pinT); else pcScroll(y);
+      });
+    });
+  }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
+    bindPlanMore(root);
+    /* Badge carousel: pause while touched (hover pause is CSS). */
+    root.querySelectorAll(".hm-hchips").forEach(function (c) { var t = null;
+      c.addEventListener("touchstart", function () { clearTimeout(t); c.classList.add("hold"); }, { passive: true });
+      ["touchend", "touchcancel"].forEach(function (ev) { c.addEventListener(ev, function () { clearTimeout(t); t = setTimeout(function () { c.classList.remove("hold"); }, 1200); }, { passive: true }); }); });
     hmHdrSync();
     bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
@@ -1144,7 +1171,7 @@
     }); });
     /* Scroll spy: which of the 4 sections is in view (black active tab, no gold). */
     function spyTabs() {
-      var map = [["home","hs-top"],["plans","hs-plans"],["included","hs-ww"],["details","hs-details"]];
+      var map = [["home","hs-top"],["plans","hs-plans"],["alacarte","hs-alc"],["faq","hs-faq"]];
       var hdr = document.querySelector(".topbar");
       var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
       var best = "home", bestTop = -1e9;
@@ -1159,7 +1186,7 @@
     addEventListener("resize", spyTabs);
     if (window.IntersectionObserver) {
       var io = new IntersectionObserver(function () { spyTabs(); }, { threshold: [0, .15, .4, .7, 1] });
-      ["hs-top","hs-plans","hs-ww","hs-details"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
+      ["hs-top","hs-plans","hs-alc","hs-faq"].forEach(function (id) { var el = document.getElementById(id); if (el) io.observe(el); });
     }
     spyTabs();
     hsBarFill(root);
@@ -1264,11 +1291,16 @@
   var STORY_OPTS = [["1", "1 Story", "Ranch"], ["2", "2 Stories", ""], ["3", "3 Stories", ""]];
   var ACCESS_OPTS = [["home", "I'll Be Home", "user"], ["lockbox", "Lockbox", "shield"], ["door", "Door Code", "tag"], ["other", "Something Else", "pen"]];
   /* Did You Know tips stay on the question screens (Machan Nov 11). */
+  /* Did You Know Lines deck (Machan Nov 13 9:00 AM): #01 Your Home = both lines (one shows per visit, picked once per session); #02 Systems, #03 Extras, #04 Add-Ons keep today's lines;
+     #05 Your Plan = Machan Decides -> Swatch default A, no tip; #06 Access = B Confirm The Time; #07 Your Details = B Why We Ask. Wording is the deck's, word for word. */
+  var DYK_HOME = ["Every visit ends with a written report saved to your Home Record.", "After every visit you get a written report with photos, saved to your Home Record."];
   var DYK = {
-    address: "Every visit ends with a written report saved to your Home Record.",
+    address: DYK_HOME[(function () { var k = "su.dykHome", v = null; try { v = sessionStorage.getItem(k); if (v !== "0" && v !== "1") { v = String(Math.floor(Math.random() * 2)); sessionStorage.setItem(k, v); } } catch (e) { v = "0"; } return Number(v) || 0; })()],
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
-    addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera."
+    addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
+    access: "We'll confirm the time with you before your visit.",
+    details: "You've seen your price. We ask for these details so we can reach you about your visits."
   };
   /* Legal-approved First Visit blurb. Keep word for word. */
   var FIRST_VISIT_BLURB = "Your first visit is a full visit. We check every system in your plan, start your Home Record and get to know your home. Seasonal tasks happen on the visits when they're due.";
@@ -1418,7 +1450,9 @@
       '<label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="go" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '"></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") +
       /* #5: size and stories in one card with a divider */
-      '<div class="pick-card"><div class="pick-step"><div class="meta"><p class="k">Home Size</p><p class="v">' + SIZE_OPTS[si][1] + ' sq ft</p><p class="s">A rough range is fine</p></div>' + obStepper("sqft", null, si <= 0, si >= SIZE_OPTS.length - 1, "Home size") + '</div>' +
+      /* Home Size Control deck (Machan Nov 13 9:00 AM): #01 B range chips for home size (same six SIZE_OPTS, so pricing reads the same values); #02 A stories keep the -/+ control. */
+      '<div class="pick-card"><div class="pick-step pick-size"><div class="meta"><p class="k" id="obSizeK">Home Size <small>sq ft</small></p><p class="s">A rough range is fine</p></div>' +
+      '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
       '<div class="pick-step"><div class="meta"><p class="k">Stories</p><p class="v">' + STORY_OPTS[Number(st) - 1][1] + '</p><p class="s">Sets gutter and ladder work</p></div>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div></div>' +
       '<p class="priced-note">Size and stories are both priced into your plan.</p>';
     return obShell("address", "house", 0, "Where's Your Home?", "What's the address of the home you'd like us to take care of?", body, nextBtn("Next", addrOk() && !out));
@@ -1666,6 +1700,22 @@
     var hc = document.getElementById("haveCode"); if (hc) hc.addEventListener("click", function () { hc.hidden = true; hc.setAttribute("aria-expanded", "true"); document.getElementById("refWrap").hidden = false; document.getElementById("sRef").focus(); });
     (function () { var r = document.getElementById("sRef"), o = document.getElementById("refCheck"); if (!r || !o) return; function chk() { var v = r.value.trim().toUpperCase(); if (!v) { o.textContent = ""; r.removeAttribute("aria-invalid"); return; } var ok = /^SU-[A-Z]{1,4}-\d{4}$/.test(v); o.textContent = ok ? "\u2713 Code looks right" : "Codes look like SU-HOME-1234"; r.setAttribute("aria-invalid", ok ? "false" : "true"); } r.addEventListener("input", chk); chk(); })();
     ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
+    /* Funnel Drop-Off deck #02 A (Machan Nov 13): check each field when they leave it (blur), using the same messages as Next. A field left empty
+       is only flagged once they've typed in it or pressed Next. The message clears as soon as the entry is fixed. Autofill hints (#03 A) stay. */
+    (function () {
+      var touched = {};
+      function chk(id, live) {
+        keep(); var x = detailErrs(S.signup).filter(function (r) { return r[0] === id; })[0]; if (!x) return;
+        var el = document.getElementById("e-" + id), f = document.getElementById(id); if (!f) return;
+        var msg = x[1];
+        if (live && msg && f.getAttribute("aria-invalid") !== "true") return;
+        if (!touched[id] && !f.value.trim()) return;
+        if (el) el.textContent = msg; f.setAttribute("aria-invalid", msg ? "true" : "false");
+      }
+      ["sName", "sPhone", "sEmail"].forEach(function (id) { var f = document.getElementById(id); if (!f) return;
+        f.addEventListener("input", function () { if (f.value.trim()) touched[id] = 1; chk(id, true); });
+        f.addEventListener("blur", function () { if (f.value.trim()) touched[id] = 1; chk(id, false); save(); }); });
+    })();
     function next() {
       keep(); save();
       var first = null;
@@ -1752,6 +1802,8 @@
         if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
         S._outZip = ""; go("systems");
       });
+      app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () {
+        var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-step").split(":"), d = Number(kv[1]);
         if (kv[0] === "sqft") { var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(S.answers.sqft)) si = k; }); si = si < 0 ? 0 : Math.max(0, Math.min(SIZE_OPTS.length - 1, si + d)); S.answers.sqft = SIZE_OPTS[si][0]; }
@@ -1783,6 +1835,7 @@
         var id = b.getAttribute("data-ob-ao"); S.addons = Array.isArray(S.addons) ? S.addons.slice() : []; var ix = S.addons.indexOf(id);
         if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); syncSharedExtras("addons"); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
       app.querySelectorAll("[data-ob-ao-open]").forEach(function (b) { b.addEventListener("click", function () { var id = b.getAttribute("data-ob-ao-open"); S._aoOpen = S._aoOpen === id ? null : id; rer(); }); });
+      sfitAddons(); setTimeout(sfitAddons, 300); if (document.fonts && document.fonts.ready) document.fonts.ready.then(sfitAddons);
     }
     if (s === "plan") {
       app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function () { S.tier = b.getAttribute("data-ob-tier"); rer(); }); });
@@ -1802,10 +1855,96 @@
     if (s === "start") {
       app.querySelectorAll("[data-ob-day]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-ob-day"); if (v < minStart()) return; S.firstVisit = v; S._calMonth = v.slice(0, 7); rer(); }); });
       app.querySelectorAll("[data-ob-cal]").forEach(function (b) { b.addEventListener("click", function () { var base = /^\d{4}-\d{2}$/.test(S._calMonth || "") ? S._calMonth : (S.firstVisit || minStart()).slice(0, 7); S._calMonth = ymShift(base, Number(b.getAttribute("data-ob-cal"))); rer(); }); });
+      sfitStart();
     }
-    if (s === "accept") { bindAccept(); return; }
+    if (s === "accept") { bindAccept(); sfitAccept(); return; }
     if (s === "details") { bindDetails(); return; }
     if (nx) nx.addEventListener("click", function () { go(obNextOf(s)); });
+  }
+
+  /* ===== Sign-Up Fit deck (Machan Nov 13 8:50 AM) =====
+     #01 A: Start Date on a small phone (under 760px tall) keeps the full month; Your First Visit becomes one row with the picked date, and one tap opens Legal's box (word for word) over the calendar.
+     #02 B: Accept is one screen of tap-to-open rows (Due Today, Member Agreement, Payments During Beta, Signature); each opens its full text over the page; Join Now sits in the bottom bar.
+     #03 A: Add-Ons on a small phone: the list scrolls and Did You Know stays in view above the bar. No words are cut or changed; blocks only move or tuck behind a tap. */
+  var SFIT_CHEV = '<svg class="sfit-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  var SFIT_INFO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.01"/></svg>';
+  function sfitVars(sec) {
+    var hdr = document.querySelector(".topbar"), bar = sec.querySelector(".ob-bar");
+    document.documentElement.style.setProperty("--sfit-top", (hdr ? hdr.getBoundingClientRect().bottom : 72) + "px");
+    document.documentElement.style.setProperty("--sfit-bar", (bar ? Math.max(bar.getBoundingClientRect().height, window.innerHeight - bar.getBoundingClientRect().top) : 76) + "px");
+  }
+  function sfitSheets(sec) {
+    var scrim = document.createElement("div"); scrim.className = "sfit-scrim"; sec.appendChild(scrim);
+    var api = { cur: null, items: {} };
+    api.close = function () { var c = api.cur && api.items[api.cur]; if (c) { c.sh.classList.remove("on"); c.r.setAttribute("aria-expanded", "false"); } api.cur = null; sec.classList.remove("sfit-open"); };
+    api.open = function (id) { api.close(); sfitVars(sec); var c = api.items[id]; api.cur = id; c.sh.classList.add("on"); c.r.setAttribute("aria-expanded", "true"); sec.classList.add("sfit-open"); if (c.onOpen) c.onOpen(); };
+    api.add = function (id, r, label, nodes, head, onOpen) {
+      r.setAttribute("aria-expanded", "false"); r.setAttribute("aria-controls", "sfit-" + id);
+      var sh = document.createElement("div"); sh.className = "sfit-sheet"; sh.id = "sfit-" + id; sh.setAttribute("role", "region"); sh.setAttribute("aria-label", label);
+      if (head) { var hd = document.createElement("button"); hd.type = "button"; hd.className = "sfit-sh mw-hover"; hd.innerHTML = '<span>' + label + '</span>' + SFIT_CHEV; hd.addEventListener("click", api.close); sh.appendChild(hd); }
+      nodes.filter(Boolean).forEach(function (n) { sh.appendChild(n); });
+      sec.appendChild(sh); api.items[id] = { r: r, sh: sh, onOpen: onOpen };
+      r.addEventListener("click", function () { if (api.cur === id) api.close(); else api.open(id); });
+    };
+    scrim.addEventListener("click", api.close);
+    document.addEventListener("keydown", function esc(e) { if (!sec.isConnected) { document.removeEventListener("keydown", esc); return; } if (e.key === "Escape") api.close(); });
+    return api;
+  }
+  function sfitStart() {
+    var sec = app.querySelector("section.ob-start"); if (!sec || window.innerHeight >= 760) return;
+    sec.classList.add("sfit-start");
+    var cal = sec.querySelector(".ob-cal"), blurb = sec.querySelector(".ob-blurb"), note = sec.querySelector(".priced-note"), pick = sec.querySelector(".cal-pick");
+    if (!cal || !blurb) return;
+    var row = document.createElement("button"); row.type = "button"; row.className = "sfit-row mw-hover";
+    row.innerHTML = '<span class="i">' + SFIT_INFO + '</span><span class="k">Your First Visit</span>' + (pick ? '<span class="d">' + esc(pick.textContent) + '</span>' : '') + SFIT_CHEV;
+    cal.parentNode.insertBefore(row, cal.nextSibling);
+    sfitSheets(sec).add("first", row, "Your First Visit", [blurb, note], true);
+    sfitVars(sec);
+  }
+  function sfitAccept() {
+    var sec = app.querySelector("section.ob-accept"); if (!sec) return;
+    sec.classList.add("sfit-accept");
+    var q = function (x) { return sec.querySelector(x); };
+    var bar = q(".ob-bar"), built = bar && bar.querySelector(".ob-built"), form = q(".ob-accept-form"), card = form && form.querySelector(".card:not(.paybox)");
+    var recap = q(".qf-body > .item-card") || q(".qf-body > .accept-compact");
+    if (!bar || !form || !card || !recap) return;
+    var tot = recap.querySelector(".item-row.total"), dueK = tot ? tot.querySelector(".k").textContent : "Due Today", dueV = tot ? tot.querySelector(".v").textContent : ((recap.querySelector(".accept-due b") || {}).textContent || "");
+    var rows = document.createElement("div"); rows.className = "sfit-rows";
+    var api = sfitSheets(sec);
+    function mk(id, label, pre, post, nodes, onOpen) {
+      var r = document.createElement("button"); r.type = "button"; r.className = "sfit-r mw-hover";
+      r.innerHTML = pre + '<span class="k">' + label + '</span>' + post + SFIT_CHEV; rows.appendChild(r);
+      api.add(id, r, label, nodes, true, onOpen); return r;
+    }
+    var h3 = card.querySelector("h3"), slot = h3 && h3.nextElementSibling, agree = document.getElementById("agree"), charge = document.getElementById("chargeOk");
+    var beta = q("[data-beta-pay]"), sigL = [].filter.call(card.children, function (c) { return c.matches("p.fl"); })[0], sig = q(".sig");
+    function ck(box) { return '<i class="sfit-ck' + (box && box.checked ? " on" : "") + '" aria-hidden="true"></i>'; }
+    mk("recap", dueK, "", '<span class="v">' + esc(dueV) + '</span>', [recap]);
+    var rA = mk("agree", h3 ? h3.textContent : "Member Agreement", ck(agree), "", [slot, agree && agree.closest("label"), document.getElementById("e-agree")]);
+    var rC = mk("charge", beta ? beta.querySelector("h3").textContent : "Charge Consent", ck(charge), "", [beta, charge && charge.closest("label"), document.getElementById("e-chargeOk")]);
+    var sized = false;
+    mk("sig", sigL ? sigL.textContent : "Signature", "", "", [sig, document.getElementById("e-agreeSig")], function () { if (!sized && sig) { sized = true; var d = sig.querySelector('[data-sigmode="draw"]'); if (d) d.click(); } });
+    [[agree, rA], [charge, rC]].forEach(function (p) { if (p[0]) p[0].addEventListener("change", function () { var i = p[1].querySelector(".sfit-ck"); if (i) i.classList.toggle("on", p[0].checked); }); });
+    card.classList.add("sfit-hold");
+    var pay = form.querySelector(".paybox"); if (pay) rows.appendChild(pay);
+    form.insertBefore(rows, form.firstChild);
+    var join = form.querySelector('button[type="submit"]'); if (join) { join.setAttribute("form", "obF"); bar.insertBefore(join, built); }
+    var tail = document.createElement("div"); tail.className = "sfit-tail"; [q(".ob-soon"), q(".su-cancel-line")].forEach(function (n) { if (n) tail.appendChild(n); }); form.appendChild(tail);
+    /* errors on submit open the first box that needs a fix */
+    form.addEventListener("submit", function () { setTimeout(function () { var m = [["agree", "agree"], ["chargeOk", "charge"], ["agreeSig", "sig"]].filter(function (x) { var e = document.getElementById("e-" + x[0]); return e && e.textContent; })[0]; if (m) api.open(m[1]); }, 0); });
+    sfitVars(sec);
+  }
+  function sfitAddons() {
+    var sec = app.querySelector("section.ob-addons"); if (!sec) return;
+    var list = sec.querySelector(".ob-ao-list"), dyk = sec.querySelector(".qf-dyk"), bar = sec.querySelector(".ob-bar");
+    if (!list || !dyk || !bar) return;
+    list.style.maxHeight = ""; sec.classList.remove("sfit-ao");
+    var over = Math.ceil(dyk.getBoundingClientRect().bottom + 8 - bar.getBoundingClientRect().top);
+    var docOver = document.documentElement.scrollHeight - window.innerHeight;
+    over = Math.max(over, docOver);
+    if (over <= 0) return;
+    var h = Math.max(96, Math.floor(list.getBoundingClientRect().height - over - 2));
+    sec.classList.add("sfit-ao"); list.style.maxHeight = h + "px"; list.setAttribute("tabindex", "0");
   }
   function bindAccept() {
     var sigs = {}; app.querySelectorAll("[data-sig]").forEach(function (r) { sigs[r.getAttribute("data-sig")] = setupSig(r); });
@@ -2162,9 +2301,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob14"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=ob15"; document.head.appendChild(l); })();
   function bootApp() {
-    render();
+    render(); suHist(S.screen, true);
     hmHash();
     var dismissed = false; try { dismissed = sessionStorage.getItem(VKEY) === "1"; } catch (e) {}
     if (!dismissed && S.screen === "home") openVideo(false);
