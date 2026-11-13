@@ -2923,7 +2923,8 @@ html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
 /* ===== Home sections fill the room between the header and the bar (Machan Nov 13 11:11-11:18 PM ICT) =====
    min-height only (never a fixed height or overflow:hidden), so a section grows when its content is taller and nothing is cut off by the
    header or the bar. --su-fill-h is set in JS (pcFitLines) from the live header bottom and bar top. */
-html body.on-home #hs-plans.hs-sec,html body.on-home #hs-alc.hs-sec,html body.on-home #hs-faq.hs-sec{min-height:var(--su-fill-h,0px)!important;height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+/* r3 (Swatch): Plans only; Tailor and FAQ stay content-sized (#121). */
+html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
 html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
 html body.on-home #hs-alc.hs-sec.su-measure > .hs-arrow{margin-top:8px!important}
 html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
@@ -2945,7 +2946,7 @@ html body.on-home #row-plans .hm-plan .pc-more{margin-top:auto!important}
 html body.on-home #row-plans .hm-plan .pc-inc > li{margin-top:var(--pc-li-pad,0px)!important;margin-bottom:calc(1px + var(--pc-li-pad,0px))!important}
 @media (min-height:780px) and (max-width:600px){html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:16px!important}html body.on-home #row-plans .hm-plan.pc{padding-top:16px!important;padding-bottom:16px!important}}
 @media (min-height:900px) and (max-width:600px){html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:17px!important}html body.on-home #row-plans .hm-plan .pc-big{font-size:3rem!important}}
-html body.on-home #hs-alc > .hs-arrow,html body.on-home #hs-plans > .hs-arrow{margin-top:auto!important}
+html body.on-home #hs-plans > .hs-arrow{margin-top:auto!important}
 /* Hero: same min-height so the Plans header never peeks under it on tall phones; any spare room sits above See Plans. */
 html body.on-home #hs-top.hs-sec{min-height:var(--su-fill-h,0px)!important}
 html body.on-home #hs-top.hs-sec > .hs-arrow{margin-top:auto!important}
