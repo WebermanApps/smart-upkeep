@@ -2586,7 +2586,7 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
-  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec): green band, logo centered -> 16px left over the first 80px of scroll
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo centered -> 16px left over the first 80px of scroll
      (transform only; reduced motion starts left, no animation), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
   (function () {
     var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
@@ -2594,7 +2594,10 @@
     function skirt() { return parseFloat(getComputedStyle(root).getPropertyValue("--su-skirt")) || 0; }
     function sync() {
       ticking = false;
-      if (!brand || !document.body.classList.contains("on-home")) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
+      var onHome = document.body.classList.contains("on-home");
+      /* PR108 r4: warm shadow under the band once the skirt has scrolled away (band at its 56px/64px height). */
+      document.body.classList.toggle("su-band-scrolled", onHome && (window.scrollY || 0) >= Math.max(1, skirt() - 0.5));
+      if (!brand || !onHome) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
       if (rmq && rmq.matches) { root.style.setProperty("--su-lx", "0px"); root.style.setProperty("--su-ly", "0px"); return; }
       var y = Math.max(0, window.scrollY || 0), p = Math.min(1, y / 80), z = zoomFactor();
       var vw = document.documentElement.clientWidth / z, edge = 16, w = brand.offsetWidth || 0;
