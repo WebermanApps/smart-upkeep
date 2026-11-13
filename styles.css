@@ -2085,3 +2085,10 @@ body.on-home #hs-faq > .hm-faqs > h2{margin-top:0!important;padding-top:0!import
   body.on-home .hm-hero .hm-hcw{margin-top:var(--hs-2)!important}
   body.on-home .hm-hero .hm-hchips{padding-top:0!important;padding-bottom:0!important}
 }
+/* 375-class phones only (361-389px wide; 360 and 390 unchanged): same trims as 360 (Swatch PR103 r2 follow-up).
+   Eyebrow 30 -> 28px, lead-to-badges gap 12 -> 8px (--hs-2), badge row 32 -> 28px; hsBarFill gives the freed height to the video. */
+@media (min-width:361px) and (max-width:389px){
+  body.on-home .hm-hero .hm-eb-t{font-size:28px!important}
+  body.on-home .hm-hero .hm-hcw{margin-top:var(--hs-2)!important}
+  body.on-home .hm-hero .hm-hchips{padding-top:0!important;padding-bottom:0!important}
+}
