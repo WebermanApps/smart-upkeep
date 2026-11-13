@@ -474,6 +474,7 @@
     app.setAttribute("data-screen", s);
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
+    if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
     document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
@@ -2522,6 +2523,8 @@
     return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels };
   }
   window.suHouseState = obHouseState;
+  /* Called by onboarding-house.js fit() for each cut-order level: re-size the Add-Ons list for that level, and only accept the level if the list keeps at least ~3 rows. */
+  window.suHouseRefit = function () { if (S.screen !== "addons") return true; sfitAddons(); var l = app.querySelector("section.ob-addons .ob-ao-list"); return !l || !l.style.maxHeight || parseFloat(l.style.maxHeight) >= 150; };
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
     var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
@@ -3106,8 +3109,9 @@
     sec.classList.remove("sfit-ao-tight");
     sec.classList.add("sfit-ao"); /* apply border + padding before measuring rows */
     function overflowPx() {
-      var limitEl = dyk || list;
-      var over = Math.ceil(limitEl.getBoundingClientRect().bottom + 8 - bar.getBoundingClientRect().top);
+      /* house-build-1113: Did You Know can be hidden by the house band's cut order, and the priced note sits under the list; measure the lowest one shown */
+      var low = 0; [dyk, list, sec.querySelector(".qf-body .priced-note")].forEach(function (e) { if (e && e.getClientRects().length) low = Math.max(low, e.getBoundingClientRect().bottom); });
+      var over = Math.ceil(low + 8 - bar.getBoundingClientRect().top);
       var docOver = document.documentElement.scrollHeight - window.innerHeight;
       return Math.max(over, docOver);
     }
@@ -3551,9 +3555,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k1"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

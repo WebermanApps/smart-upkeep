@@ -147,7 +147,7 @@
   }
   function sync(st) {
     var slot = document.querySelector(".ob .ob-hb-slot");
-    if (!st || !slot) { if (band && band.parentNode) band.parentNode.removeChild(band); last = null; lastScreen = st ? st.screen : null; document.documentElement.classList.remove("ob-hb-on", "ob-hb-mini"); return; }
+    if (!st || !slot) { if (band && band.parentNode) band.parentNode.removeChild(band); last = null; lastScreen = st ? st.screen : null; document.documentElement.classList.remove("ob-hb-on", "ob-hb-mini", "ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"); document.documentElement.removeAttribute("data-hb-fit"); return; }
     if (!band) build();
     var fresh = !last;
     if (band.parentNode !== slot) slot.appendChild(band);
@@ -181,7 +181,57 @@
     last = { mode: mode, stories: stories };
     lastScreen = st.screen;
     kb();
+    fit();
   }
+  /* One screen with the band, in Machan's cut order: tighter question and answer sizing, then the step icon, then Did You Know.
+     The house band is never shrunk. Measured with the full 120px band (the keyboard mini strip is ignored) and 8px of air above the Back/Next bar.
+     Runs from sync() (before app.js binds the step) and again after bind, on font load and on resize. Reads layout only, no state. */
+  /* Tried in order; the first that fits wins. The icon goes before Did You Know, but comes back if Did You Know has to drop anyway and there's room. */
+  var LV = ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"], TRY = [[], ["ob-hb-t"], ["ob-hb-t", "ob-hb-noart"], ["ob-hb-t", "ob-hb-nodyk"], ["ob-hb-t", "ob-hb-noart", "ob-hb-nodyk"]];
+  function setLv(on) { LV.forEach(function (c) { document.documentElement.classList.toggle(c, on.indexOf(c) >= 0); }); }
+  var LEAF = /^(BUTTON|INPUT|SELECT|TEXTAREA|P|H1|H2|H3|LABEL|LI|IMG|svg)$/;
+  function contentBottom(sec, bar) {
+    var max = 0, clips = [];
+    var all = sec.querySelectorAll("*");
+    for (var i = 0; i < all.length; i++) {
+      var e = all[i];
+      if (e.ownerSVGElement || (bar && bar.contains(e)) || (band && band.contains(e)) || e.classList.contains("ob-hb-slot")) continue;
+      var cs = getComputedStyle(e);
+      if (cs.display === "none" || cs.visibility === "hidden" || +cs.opacity === 0) continue;
+      var r = e.getBoundingClientRect();
+      if (r.height < 1 || r.width < 1) continue;
+      if ((cs.overflowY === "auto" || cs.overflowY === "scroll" || cs.overflowY === "hidden") && e.scrollHeight > e.clientHeight + 1) clips.push([e, r.bottom]);
+      if (e.children.length && !LEAF.test(e.tagName)) continue;
+      var b = r.bottom;
+      for (var j = 0; j < clips.length; j++) if (clips[j][0].contains(e)) b = Math.min(b, clips[j][1]);
+      if (b > max) max = b;
+    }
+    return max;
+  }
+  function fitsNow(sec) {
+    var bar = sec.querySelector(".ob-bar"), ih = window.innerHeight, se = document.scrollingElement || document.documentElement;
+    var ok = true; if (window.suHouseRefit) { try { ok = window.suHouseRefit() !== false; } catch (x) {} }
+    if (!ok || se.scrollHeight - ih > 0) return false;
+    var bt = bar ? Math.min(ih, bar.getBoundingClientRect().top) : ih;
+    return bt - contentBottom(sec, bar) >= 8;
+  }
+  function fit() {
+    var html = document.documentElement, sec = document.querySelector("section.ob");
+    if (!sec || !band || !band.parentNode || !html.classList.contains("ob-hb-on")) { LV.forEach(function (c) { html.classList.remove(c); }); return 0; }
+    document.body.classList.add("on-ob", "on-qf"); /* app.js bind() sets these for every onboarding step; set them a beat early so the pre-bind check matches */
+    var mini = html.classList.contains("ob-hb-mini"), n;
+    if (mini) html.classList.remove("ob-hb-mini");
+    for (n = 0; n < TRY.length; n++) {
+      setLv(TRY[n]);
+      if (fitsNow(sec)) break;
+    }
+    if (n >= TRY.length) n = TRY.length - 1;
+    if (mini) html.classList.add("ob-hb-mini");
+    html.setAttribute("data-hb-fit", TRY[n].join("+") || "none");
+    return n;
+  }
+  var fitT = 0;
+  function fitLater() { clearTimeout(fitT); fitT = setTimeout(function () { if (document.documentElement.classList.contains("ob-hb-mini")) return; fit(); }, 150); }
   /* Keyboard: same visualViewport reading as the Back/Next bar lift in app.js (hidden strip under the keyboard >= 80px). */
   var vv = window.visualViewport, queued = false;
   function kb() {
@@ -193,6 +243,8 @@
   function queue() { if (!queued) { queued = true; (window.requestAnimationFrame || setTimeout)(kb); } }
   if (vv) { vv.addEventListener("resize", queue); vv.addEventListener("scroll", queue); }
   window.addEventListener("resize", queue);
-  window.suHouse = { sync: sync, itemsOf: itemsOf };
+  window.addEventListener("resize", fitLater);
+  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fit(); }); } catch (x) {}
+  window.suHouse = { sync: sync, itemsOf: itemsOf, fit: fit };
   if (window.suHouseState) sync(window.suHouseState());
 })();
