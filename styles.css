@@ -2308,7 +2308,7 @@ body.su-band .hdr-menu:not([hidden]){display:flex;flex-direction:column;position
 body.su-band .hdr-menu a,body.su-band .hdr-menu button{all:unset;box-sizing:border-box;display:flex;align-items:center;min-height:48px;padding:0 14px;border-radius:10px;font:600 16px/1.1 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a;cursor:pointer}
 body.su-band .hdr-menu a:hover,body.su-band .hdr-menu button:hover,body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{background:#F6F1E7}
 body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
-body.su-band .hdr-menu button{color:#0B6E4F}
+body.su-band .hdr-menu button[data-menu-act="start"]{color:#0B6E4F}
 body.on-home main#app{display:flow-root!important;padding-top:0!important}
 body.on-home{background-image:linear-gradient(var(--su-band),var(--su-band))!important;background-size:100% calc(var(--su-band-h) + env(safe-area-inset-top,0px) + var(--su-skirt) + var(--su-overlap))!important;background-repeat:no-repeat!important;background-position:0 0!important}
 body.on-home main#app > .hm{position:relative;margin-top:var(--su-skirt)!important;background:#fff!important;border-radius:20px 20px 0 0!important;box-shadow:0 -1px 0 rgba(60,40,20,.06),0 -4px 16px rgba(60,40,20,.06)!important}
@@ -2384,4 +2384,37 @@ body.on-home .hm-hchip.on{box-shadow:inset 0 0 0 1.5px currentColor}
   body.on-ob .ob.qf > .qf-prog{margin-top:4px!important;margin-bottom:4px!important}
   body.on-ob .ob.qf > .qf-hero,body.on-ob .ob.qf > .qf-body,body.on-ob .ob.qf > .qf-dyk{margin-bottom:4px!important}
   body.on-ob .ob.qf.ob-start > .qf-hero{margin-bottom:2px!important}body.on-ob .ob.qf.ob-start > .qf-body{margin-bottom:0!important}
+}
+/* PR111 r2 (Swatch QA Nov 13 8:17 PM ICT): one screen with >=8px of air above the sticky step bar at 360x640, 360x740, 390x660/664, 390x844.
+   Machan's order: tighten question/answer sizing first (type, padding, gaps); no words cut. */
+@media (max-height:700px){
+  body.on-ob .ob.qf > .qf-hero.stack.compact{margin-top:4px!important}
+  body.on-ob .ob.qf > .qf-hero.stack.compact .qf-art.mid{width:34px!important;height:34px!important}
+  body.on-ob .ob.qf > .qf-hero.stack.compact .qf-help{font-size:13px!important;line-height:17px!important}
+  body.on-ob .ob.qf.ob-plan .plan-card{padding-top:7px!important;padding-bottom:7px!important}
+  body.on-ob .ob.qf.ob-access textarea{height:72px!important;min-height:72px!important}
+  body.on-ob .ob.qf.ob-start .cal-d{min-height:40px!important;height:40px!important}
+  body.on-ob .ob.qf.ob-start .cal-nav{width:34px!important;height:34px!important}
+  body.on-ob .ob.qf.ob-start .ob-cal{padding-top:4px!important;padding-bottom:4px!important}
+  body.on-ob .ob.qf.ob-accept .sfit-rows{gap:6px!important}
+  body.on-ob .ob.qf.ob-accept .sfit-r{min-height:46px!important;height:46px!important}
+  body.on-ob .ob.qf.ob-accept .ob-accept-form{margin-top:4px!important}
+}
+@media (max-height:760px){
+  body.on-ob .ob.qf.ob-details .det-card input{min-height:42px!important;height:42px!important;padding-top:3px!important;padding-bottom:3px!important}
+  body.on-ob .ob.qf.ob-details .det-card .fl{margin-top:4px!important}
+  body.on-ob .ob.qf.ob-details .det-addr{padding-top:4px!important;padding-bottom:4px!important}
+}
+@media (max-height:700px){
+  body.on-ob .ob.qf > .qf-dyk{margin-bottom:10px!important}
+  body.on-ob .ob.qf.ob-addons > .qf-dyk{margin-top:4px!important}
+  body.on-ob .ob.qf.ob-addons .ob-ao-tabs{margin-bottom:4px!important}
+  body.on-ob .ob.qf.ob-details .det-card{padding-top:8px!important;padding-bottom:6px!important}
+  body.on-ob .ob.qf.ob-details .det-addr{margin-bottom:4px!important}
+  body.on-ob .ob.qf.ob-details .det-card .fl{line-height:18px!important}
+  body.on-ob .ob.qf.ob-details .su-havecode .link{min-height:28px!important}
+}
+/* Still short at 360 wide x <=700 tall after tightening: Your Details drops its Did You Know line there only. */
+@media (max-height:700px) and (max-width:375px){
+  body.on-ob .ob.qf.ob-details > .qf-dyk{display:none!important}
 }
