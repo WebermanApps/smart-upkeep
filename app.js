@@ -66,6 +66,10 @@
   function addonsFlatAnnual() {
     return selectedFunnelAddons().reduce(function (sum, a) { return sum + (isApprovedFlatAnnual(a) ? (+a.annual || 0) : 0); }, 0);
   }
+  /* Machan Nov 13 11:00 PM: priced one-time add-ons (e.g. Water Leak Sensor $149) are charged in Due Today on every payment choice. Quote and range rows stay $0. */
+  function addonsOnceToday() {
+    return selectedFunnelAddons().reduce(function (sum, a) { return sum + (a.once ? serviceOncePrice(a) : 0); }, 0);
+  }
   function selectedFunnelAddons() {
     var ids = Array.isArray(S.addons) ? S.addons : [];
     var seen = {}, out = [];
@@ -184,8 +188,9 @@
       var v = flatRoofPerVisit();
       if(a && suClose(a.label, "Flat Roof Inspection And Clean")){
         a.flatRoof=true;
-        /* Nov 13 r3: Machan approved the per-visit formula only; visits per year not yet confirmed, so the plan add-on stays Quote. */
-        a.perVisit=v||null; a.annual=null; a.quoteRequired=true;
+        /* Machan Nov 13 11:00 PM: the plan add-on is 2 visits a year, annual = visits x per visit (e.g. 2 stories, 1,500 sq ft = 2 x $225 = $450/yr). Quote only when stories or sq ft are unknown. */
+        var fvN=(P.flatRoofPlanVisits!=null && +P.flatRoofPlanVisits>0) ? +P.flatRoofPlanVisits : 2;
+        a.perVisit=v||null; a.annual=v ? fvN*v : null; a.quoteRequired=!v;
       }
       return a;
     });
@@ -453,6 +458,7 @@
     /* Nov 11 2026 onboarding redo: the old question screens, photos, free tech visit, compare, sign-up and pay screens are retired. Saved state on any of them lands on step 1. */
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
+    if (S.screen === "access") S.screen = "start"; if (S.resume === "access") S.resume = "start"; /* Access step removed (Machan Nov 13 10:18 PM): resume on Start Date */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     if (obSkip(S.screen)) S.screen = obNextOf(S.screen); if (obSkip(S.resume)) S.resume = obNextOf(S.resume);
     var s = S.screen, html;
@@ -471,6 +477,8 @@
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
+    syncResumeMenu(s);
+    try { document.title = isOb(s) && OB_NAME[s] ? OB_NAME[s] + " | Smart Upkeep" : (s === "confirm" ? "Thank You | Smart Upkeep" : "Smart Upkeep"); } catch (x) {}
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
     var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You're on the list. We'll email you when Smart Upkeep is coming to your area."; wf.reset(); });
@@ -952,7 +960,7 @@
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
-      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill">' + (hasResume() ? resumeStrip() : "") + '<div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
+      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill"><div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
         [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "Tailor Your Plan", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '"' + (i === 0 ? ' aria-current="page"' : "") + '><span class="hm-tab-core">' + I(t[3], "sm") + '<span>' + t[1] + '</span></span></button>'; }).join("") +
       '</div></div></nav>' +
       '</div>';
@@ -1368,7 +1376,7 @@
     return saTabsHtml("alc", "alc-groups", "Tailor Your Plan Groups", groups.filter(function (G) { return G[1].length; }).map(function (G) {
       return [G[0], G[1].map(function (r) {
         var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
       }).join("")];
     }));
   }
@@ -1377,29 +1385,54 @@
   /* Machan Nov 13 1:27 PM ("divided by section with the names of the sections at the top, and then if they click the section it shows the list of the items";
      "it all needs to fit in one screen"; "same with FAQ"): group names are a sideways chip row (role=tablist); only the chosen group's rows show below,
      in a box that scrolls inside itself only when that group is taller than the room left on the screen. First group is selected by default. */
+  /* À La Carte Warm Look Deck (Machan Nov 13 9:15 PM): card 3 B icons on the chips and card 5 B an Icon Header above each group's list. Rows stay text only (card 1 B).
+     1.8-stroke line icons from the deck capture (capture_alcwarm.py ICO / GROUP_ICO), drawn in currentColor. */
+  var ALC_ICO = {
+    "Heating And Cooling": '<path d="M12 3s-2 3.2-2 6.2A2 2 0 0012 11.2a2 2 0 002-2C14 6.2 12 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7.2 18c0-2.2 2.1-3.4 4.8-3.4s4.8 1.2 4.8 3.4-2.1 3.3-4.8 3.3-4.8-1.1-4.8-3.3z" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+    "Water And Plumbing": '<path d="M12 3s-6 7-6 11.2A6 6 0 0012 21a6 6 0 006-6.8C18 10 12 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+    "Roof And Outside": '<path d="M3 13l9-8 9 8M6 13v7h12v-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+    "Inside The Home": '<path d="M3 11.5 12 4l9 7.5M6 10.8V20h12v-9.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+    "Seasonal Equipment": '<path d="M5 19c8-1 13-7 14-14-7 1-13 6-14 14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+    "More Services": '<circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/>'
+  };
+  function alcIco(name, px) { return '<svg viewBox="0 0 24 24" width="' + px + '" height="' + px + '" aria-hidden="true" focusable="false">' + (ALC_ICO[name] || ALC_ICO["More Services"]) + '</svg>'; }
   function saTabsHtml(pfx, cls, label, groups) {
-    var isFaq = cls === "faq-groups";
+    var isFaq = cls === "faq-groups", isAlc = cls === "alc-groups";
     return '<div class="sa-groups sa-tabbed ' + cls + '">' +
       '<div class="sa-tabs" role="tablist" aria-label="' + esc(label) + '" data-ptr-ignore>' + groups.map(function (G, i) {
-        var ico = (isFaq && G[2]) ? '<span class="faq-ico" aria-hidden="true">' + I(G[2], "sm") + '</span>' : "";
+        var ico = (isFaq && G[2]) ? '<span class="faq-ico" aria-hidden="true">' + I(G[2], "sm") + '</span>' : (isAlc ? '<span class="alc-tico" aria-hidden="true">' + alcIco(G[0], 14) + '</span>' : "");
         return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '"' + (G[2] ? ' data-faq-ico="' + esc(G[2]) + '"' : "") + '>' + ico + esc(G[0]) + '</button>';
       }).join("") + '</div>' +
       (isFaq ? '<div class="sa-faq-wrap">' : "") +
       '<div class="sa-box" data-ptr-ignore>' + groups.map(function (G, i) {
-        return '<div class="sa-grp" role="tabpanel" id="' + pfx + '-p' + i + '" aria-labelledby="' + pfx + '-t' + i + '"' + (i ? " hidden" : "") + '><div class="sa-list">' + G[1] + '</div></div>';
+        return '<div class="sa-grp" role="tabpanel" id="' + pfx + '-p' + i + '" aria-labelledby="' + pfx + '-t' + i + '"' + (i ? " hidden" : "") + '>' + (isAlc ? '<div class="alc-ghd"><span class="alc-gico" aria-hidden="true">' + alcIco(G[0], 28) + '</span><p>' + esc(G[0]) + '</p></div>' : '') + '<div class="sa-list">' + G[1] + '</div></div>';
       }).join("") + '</div>' +
       (isFaq ? '</div><div class="faq-contact" hidden><p>Give Us A Call Or Send A Message In The App.</p></div>' : "") +
       '</div>';
+  }
+  /* Polish item 13 (Swatch §B motion): rows open over 240ms (--su-ease) and close over 200ms (--su-ease-in) instead of snapping. Layout is measured at the
+     final size first, so the one-screen fit (saFit) is unchanged. Reduced motion keeps the instant toggle. */
+  function saReduced() { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (x) { return false; } }
+  function saAnim(pnl, open, after) {
+    if (!pnl.animate || saReduced()) { if (!open) pnl.hidden = true; if (after) after(); return; }
+    var h = pnl.scrollHeight; pnl.style.overflow = "hidden";
+    var a = pnl.animate(open ? [{ height: "0px", opacity: 0 }, { height: h + "px", opacity: 1 }] : [{ height: h + "px", opacity: 1 }, { height: "0px", opacity: 0 }],
+      { duration: open ? 240 : 200, easing: open ? "cubic-bezier(.2,.8,.2,1)" : "cubic-bezier(.4,0,1,1)" });
+    pnl._an = a;
+    a.onfinish = function () { pnl._an = null; pnl.style.overflow = ""; if (!open) pnl.hidden = true; if (after) after(); };
   }
   function bindSaRows(root) {
     root.addEventListener("click", function (e) {
       var b = e.target.closest && e.target.closest(".sa-q"); if (!b || !root.contains(b)) return;
       var y = window.scrollY, open = b.getAttribute("aria-expanded") !== "true", sec = b.closest(".hs-sec") || root;
       sec.querySelectorAll('.sa-q[aria-expanded="true"]').forEach(function (o) { if (o !== b) { o.setAttribute("aria-expanded", "false"); var p = document.getElementById(o.getAttribute("aria-controls")); if (p) p.hidden = true; } });
-      b.setAttribute("aria-expanded", String(open)); var pnl = document.getElementById(b.getAttribute("aria-controls")); if (pnl) pnl.hidden = !open;
+      b.setAttribute("aria-expanded", String(open)); var pnl = document.getElementById(b.getAttribute("aria-controls")), box = b.closest(".sa-box");
+      if (pnl && pnl._an) { pnl._an.cancel(); pnl._an = null; pnl.style.overflow = ""; }
+      if (pnl && !open && pnl.animate && !saReduced()) { saAnim(pnl, false, function () { if (box) { saFit(box.closest(".hs-sec")); saFade(box); } }); pcScroll(y); return; }
+      if (pnl) pnl.hidden = !open;
       pcScroll(y);
-      var box = b.closest(".sa-box");
       if (box) { saFit(box.closest(".hs-sec")); if (open) saIntoBox(box, b.closest(".sa-item")); saFade(box); }
+      if (pnl && open) saAnim(pnl, true);
     });
     /* Chip row: click or arrow keys pick a group; only that group's rows show. Opening a group closes any open row. */
     root.querySelectorAll(".sa-tabbed").forEach(function (w) {
@@ -1975,9 +2008,14 @@
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
   function hasResume() { return !!S.resume && isOb(S.resume); }
   /* Machan 11:16 PM: resume strip docked on top of the bar. Existing label + " · Step X" (same numbering as the funnel). Tap = Resume, × = clear (dismissResume). */
-  function resumeStrip() {
-    return '<div class="hm-resume-strip"><button type="button" class="hm-resume-go mw-hover" data-act="resume">' + I("clock", "sm") + '<span>Pick Up Where You Left Off &middot; Step ' + obStepNo(S.resume) + '</span></button>' +
-      '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">' + X_SVG + '</button></div>';
+  /* Resume Indicator Placement Deck (Machan Nov 13 9:12 PM; team pick Menu Dot, Then Continue Row, Swatch polish item 6): a small dot on the menu button and a
+     Continue Sign-Up row (with the step) at the top of the menu, replacing the strip on the dock. Sign Up hides while it shows; Log In stays. Not shown on the steps themselves. */
+  function syncResumeMenu(s) {
+    var btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu"); if (!btn || !menu) return;
+    var row = menu.querySelector(".hdr-resume"), on = hasResume() && !isOb(s) && s !== "confirm";
+    btn.classList.toggle("has-resume", on); menu.classList.toggle("has-resume", on);
+    btn.setAttribute("aria-label", on ? "Menu, sign-up in progress" : "Menu");
+    if (row) { row.hidden = !on; var sm = row.querySelector("small"); if (sm && on) sm.textContent = "Step " + obStepNo(S.resume) + " Of " + obSeq().length; }
   }
   function resumeCard() {
     var done = Math.max(0, OB.indexOf(S.resume));
@@ -1987,13 +2025,17 @@
   }
   var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", humidifier: "radon", softener: "meter" };
   /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
-     Address > Home Basics > Systems > Add-Ons > Plan > Billing > Access > Start Date > Accept.
+     Address > Home Basics > Systems > Add-Ons > Plan > Billing > Start Date > Details > Accept (Access removed Nov 13).
      No photos, no separate price visit, no promo-only founding offer, no 24+6 offer. Every amount comes from pricing-config.js via buildLines(). */
   /* Funnel decks (Machan Nov 12, Home Details #1 + Systems #8): address, size and stories share one screen; Systems is two short screens (counts, then extras). Still 9 steps; every screen counts. */
   /* Funnel Contact And Sign-Up deck 01 B (Machan Nov 12): Your Details is its own step before Accept. It stays after Your Plan (step 5), so the price shows before contact info is asked. */
   /* Home First Section Deck card 08 B (Machan Nov 13 1:34 PM): address and size split into two steps, so the funnel is Step X Of 11. */
-  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "billing", "access", "start", "details", "accept"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", billing: "Billing", access: "Access", start: "Start Date", details: "Your Details", accept: "Accept" };
+  /* Machan Nov 13 10:18 PM: "we can remove step 8 how should we get in". The Access step is gone; lockbox and door codes go in the member app after login.
+     Old saved state on "access" resumes on Start Date (see render), and an old S.access is ignored by the UI. */
+  /* Pay Choice Deck (Machan Nov 13 ~10:27 PM via Grok; Swatch two-step plan): Review ("Your Home Care Proposal") then Pay ("Pick How You'd Like To Pay"). */
+  /* Machan Nov 13 11:00 PM: payment right after the proposal: Review, Pay, Accept (agreement, charge OK, signature), then Start Date and Details; Details finishes sign-up. */
+  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "review", "billing", "accept", "start", "details"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", review: "Your Home Care Proposal", billing: "Pick How You'd Like To Pay", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -2024,7 +2066,6 @@
   var BASE_SET = { furnaces: 1, acs: 1, waterHeaters: 1 };
   var SIZE_OPTS = [["1500", "Under 2,000"], ["2500", "2,000 to 3,000"], ["3500", "3,000 to 4,000"], ["4500", "4,000 to 5,000"], ["5500", "5,000 to 6,000"], ["6500", "Over 6,000"]];
   var STORY_OPTS = [["1", "1 Story", "Ranch"], ["2", "2 Stories", ""], ["3", "3 Stories", ""]];
-  var ACCESS_OPTS = [["home", "I'll Be Home", "user"], ["lockbox", "Lockbox", "shield"], ["door", "Door Code", "tag"], ["other", "Something Else", "pen"]];
   /* Did You Know tips stay on the question screens (Machan Nov 11). */
   /* Did You Know Lines deck (Machan Nov 13 9:00 AM): #01 Your Home = both lines (one shows per visit, picked once per session); #02 Systems, #03 Extras, #04 Add-Ons keep today's lines;
      #05 Your Plan = Machan Decides -> Swatch default A, no tip; #06 Access = B Confirm The Time; #07 Your Details = B Why We Ask. Wording is the deck's, word for word. */
@@ -2034,7 +2075,6 @@
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
     addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
-    access: "We'll confirm the time with you before your visit.",
     details: "You've seen your price. We ask for these details so we can reach you about your visits."
   };
   /* Legal-approved First Visit blurb. Keep word for word. */
@@ -2145,7 +2185,7 @@
     tier = tier || S.tier;
     var mem = price()[tier], add = addonsAnnual(), flat = addonsFlatAnnual(), plan = obPlan();
     var addMonthlyAnnual = add - flat; if (addMonthlyAnnual < 0) addMonthlyAnnual = 0;
-    var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, addonsFlatAnnual: flat, monthly: monthlyOf(mem), addonsMonthly: monthlyOf(addMonthlyAnnual) };
+    var r = { tier: tier, plan: plan, membershipAnnual: mem, membership: mem, addonsAnnual: add, addonsFlatAnnual: flat, onceToday: addonsOnceToday(), monthly: monthlyOf(mem), addonsMonthly: monthlyOf(addMonthlyAnnual) };
     if (plan === "founding") { r.label = "Annual · Founding 2-For-1"; r.long = "Founding Member: 2 Years For The Price Of 1"; r.today = mem + add; r.termMonths = 24; }
     else if (plan === "annual") {
       r.perCharge = r.monthly + r.addonsMonthly;
@@ -2155,6 +2195,7 @@
       r.termMonths = 12;
     }
     else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge + flat; r.termMonths = 12; }
+    r.today += r.onceToday;
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
@@ -2185,7 +2226,7 @@
       if (Array.isArray(v) && !v.length) continue;
       return true;
     }
-    if ((S.addons && S.addons.length) || (S.lastMinute && S.lastMinute.length) || S.signup || S.access || S.firstVisit) return true;
+    if ((S.addons && S.addons.length) || (S.lastMinute && S.lastMinute.length) || S.signup || S.firstVisit) return true;
     if (S.screen && isOb(S.screen) && S.screen !== "address") return true;
     return false;
   }
@@ -2304,7 +2345,7 @@
   }
   function aoRow(a, sel) {
     var on = sel.indexOf(a.id) > -1, open = S._aoOpen === a.id;
-    return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + I(aoIco(a), "sm") +
+    return '<li class="ob-ao' + (on ? " on" : "") + (open ? " open" : "") + '"><div class="ob-ao-top"><button type="button" class="ob-ao-row mw-hover" data-ob-ao-open="' + a.id + '" aria-expanded="' + open + '">' + /* Machan Nov 13 10:04 PM: Add-Ons rows go text only, like À La Carte */
       '<span class="ob-ao-t"><b>' + esc(a.label) + '</b><small>' + aoPrice(a) + '</small></span><span class="ob-chev" aria-hidden="true"></span></button>' +
       (a.gutter && gutterIncluded() ? '' : '<button type="button" role="switch" aria-checked="' + on + '" aria-label="' + esc(a.label) + '" class="ob-sw mw-hover" data-ob-ao="' + a.id + '"><i></i></button>') + '</div>' +
       (open ? '<p class="ob-ao-d">' + esc(aoDesc(a)) + '</p>' : '') + '</li>';
@@ -2356,71 +2397,57 @@
         (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
     }).join("");
-    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Continue To Billing", true));
+    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Continue To Your Proposal", true));
   }
 
-  /* 6. Billing: founding 2-for-1 annual preselected vs monthly. Deck card 3: A segmented control, B stacked cards. */
+  /* 6a. Review: "Your Home Care Proposal" (Pay Choice Deck, Layout A Stacked Cards, Tone A Calm). Machan Nov 13 10:20 PM: "meaning the plan + extras and how they
+     choose to pay show the 2 for 1 if they choose that". Order: plan, add-ons, payment choice, 2-for-1 (annual only), total. Every figure is the same value the
+     Accept step shows (obBill(), aoPrice(), money()); nothing new is computed here. */
+  function planColor(k) { var s = (k + " " + ((P.tiers[k] || {}).label || "")).toLowerCase(); return /platinum|complete/.test(s) ? "#05668D" : (/gold|plus/.test(s) ? "#A8431F" : "#0B6E4F"); }
+  function billChoiceTxt(b) { return b.plan === "monthly" ? "Monthly" : (b.plan === "annual" ? "Annual" : "Annual · Founding 2-For-1"); }
+  function proposalRows() {
+    var b = obBill(), t = P.tiers[S.tier], tags = extraTags(), adds = selectedFunnelAddons(), rows = [];
+    rows.push({ k: "plan", lab: '<b class="bd-plan" style="color:' + planColor(S.tier) + '">' + esc(t.label) + '</b><small>' + t.visits + ' Visits / Year' + (tags.length ? ' · ' + esc(tags.join(", ")) : '') + '</small>', v: money(b.monthly) + "/mo" });
+    /* Monthly add-ons from Systems/Extras (fromExtras, Gutter) are already priced into the plan's monthly figure (planAmtFromBase), as on Accept; say so instead of adding them twice. */
+    adds.forEach(function (x) { rows.push({ k: "addon", lab: esc(x.label) + (x.once ? '<small>One-Time</small>' : ((x.fromExtras || x.gutter) && hasRealMonthly(x) ? '<small>In Your Plan Price</small>' : '')), v: aoPrice(x) }); });
+    rows.push({ k: "pay", lab: "Payment", v: billChoiceTxt(b) });
+    if (b.plan === "founding") rows.push({ k: "f2", lab: "Founding 2-For-1", v: "Pay 1 Year, Get 2" });
+    rows.push({ k: "total", lab: "Due Today", v: money(b.today) });
+    return rows;
+  }
+  function obReview() {
+    var rows = proposalRows();
+    var body = '<div class="bd-card" role="group" aria-label="Price Breakdown">' + rows.map(function (r) {
+        return '<div class="bd-row bd-' + r.k + '"><span class="k">' + r.lab + '</span><span class="v">' + r.v + '</span></div>';
+      }).join("") + '</div>' +
+      '<p class="bd-edit"><button type="button" class="link mw-hover" data-ob-go="addons" aria-label="Edit, back to Tailor Your Plan">Edit</button></p>';
+    return obShell("review", "", 0, "Your Home Care Proposal", "", body, nextBtn("Looks Good", true));
+  }
+
+  /* 6b. Pay: "Pick How You'd Like To Pay". Deck picks: Choice Style B Selectable Cards, Founding Offer B Soft Cream Banner, Tone A Calm; Annual Saving skipped
+     ("only 2-for-1"), so no 10% copy here. The 2-for-1 badge opens a short explanation quoted from the FAQ "What Is the First 50 Founding Offer?". */
+  var F2_POP = { t: "Founding 2-For-1", b: "Prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care. Offers do not stack." };
   function obBilling() {
-    var plan = obPlan(), t = P.tiers[S.tier];
+    var plan = obPlan(), t = P.tiers[S.tier], col = planColor(S.tier);
     var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
     var mo = (function () { var s = S.plan; S.plan = "monthly"; var r = obBill(); S.plan = s; return r; })();
-    var aSel = plan === "founding";
-    var annualCopy = "Pay one year of your " + esc(t.label) + " plan" + (an.addonsAnnual ? " and add-ons" : "") + ", get two years of care.";
-    var monthlyCopy = "First charge today, then on this date each month." + (foundingOpen() ? " Switch to annual and get 2 years for the price of 1." : (foundingFull() ? " Or prepay 12 months at 10% off your monthly price." : ""));
-    var addNote = an.addonsAnnual ? " Includes add-ons " + money(an.addonsAnnual) + "/yr, also 2 years for the price of 1." : "";
-    function annualCard(sel, withDue) {
-      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="founding"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="badge-found">Founding 2-For-1</span></div>' +
-        '<p class="bill-lead">Founding Member: 2 Years For The Price Of 1</p><p class="bill-copy">' + annualCopy + '</p>' +
-        (withDue ? '<div class="due-box in"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : '') + '</div>';
+    var fOpen = foundingOpen();
+    if (!fOpen && S.plan !== "monthly") { S.plan = "monthly"; plan = obPlan(); save(); } /* only 2-for-1 or monthly is offered (Annual Saving skipped), so the shown choice is always the charged one */
+    var aSel = fOpen && plan === "founding";
+    var chk = '<span class="pay-ck" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    function card(key, sel, name, amt, copy, badge) {
+      return '<div class="pay-card' + (sel ? " sel" : "") + '" role="radio" tabindex="' + (sel ? "0" : "-1") + '" aria-checked="' + sel + '" data-ob-bill="' + key + '" style="--plan-c:' + col + '">' +
+        '<div class="pay-top"><span class="pay-name">' + name + '</span>' + (badge || '') + '<span class="pay-amt">' + amt + '</span>' + chk + '</div><p class="pay-copy">' + copy + '</p></div>';
     }
-    function monthlyCard(sel) {
-      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="monthly"' : '') + '><div class="bill-top"><p class="bill-name">Monthly</p><span class="bill-amt">' + money(mo.perCharge) + '/mo</span></div><p class="bill-copy">' + monthlyCopy + '</p></div>';
-    }
-    var yr = (function () { var s = S.plan; S.plan = "annual"; var r = obBill(); S.plan = s; return r; })();
-    var ySel = plan === "annual";
-    function annualPrepayCard(sel, withDue) {
-      return '<div class="bill-card' + (sel ? " sel" : "") + '"' + (OB_STYLE.billing === "B" ? ' role="radio" tabindex="0" aria-checked="' + sel + '" data-ob-bill="annual"' : '') + '><div class="bill-top"><p class="bill-name">Annual</p><span class="bill-amt">' + money(yr.today) + '</span></div>' +
-        '<p class="bill-lead">Prepay 12 Months (10% Off Monthly)</p><p class="bill-copy">Pay ' + money(yr.today) + ' today for 12 months, 10% off your monthly price of ' + money(yr.perCharge) + '/mo.</p>' +
-        (withDue ? '<div class="due-box in"><span class="k">Due Today</span><span class="v">' + money(yr.today) + '</span></div>' : '') + '</div>';
-    }
-    var moDue = '<div class="due-box"><span class="k">Due Today</span><span class="v">' + money(mo.perCharge) + '</span></div>';
-    var body;
-    if (foundingFull()) {
-      /* Founding 50 filled: monthly or 10% annual prepay. Hidden today (FOUNDING_FULL=false). */
-      var aOn = ySel;
-      if (OB_STYLE.billing === "B") {
-        body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualPrepayCard(aOn, true) + monthlyCard(!aOn) + '</div>';
-      } else {
-        body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aOn ? " on" : "") + '" aria-checked="' + aOn + '" data-ob-bill="annual">Annual<span class="seg-badge">10% Off</span></button><button type="button" role="radio" class="mw-hover' + (!aOn ? " on" : "") + '" aria-checked="' + !aOn + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
-          (aOn ? annualPrepayCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(yr.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
-      }
-    } else if (!foundingOpen()) {
-      /* Founding closed without FOUNDING_FULL: monthly only. */
-      body = monthlyCard(true) + '<div class="gap-md"></div>' + moDue;
-    } else if (OB_STYLE.billing === "B") {
-      body = '<div class="bill-stack" role="radiogroup" aria-label="How to pay">' + annualCard(aSel, true) + monthlyCard(!aSel) + '</div>';
-    } else {
-      body = '<div class="seg-toggle" role="radiogroup" aria-label="How to pay"><button type="button" role="radio" class="mw-hover' + (aSel ? " on" : "") + '" aria-checked="' + aSel + '" data-ob-bill="founding">Annual<span class="seg-badge">Limited Offer</span></button><button type="button" role="radio" class="mw-hover' + (!aSel ? " on" : "") + '" aria-checked="' + !aSel + '" data-ob-bill="monthly">Monthly</button></div><div class="gap-md"></div>' +
-        (aSel ? annualCard(true, false) + '<div class="gap-md"></div><div class="due-box"><span class="k">Due Today</span><span class="v">' + money(an.today) + '</span></div>' : monthlyCard(true) + '<div class="gap-md"></div>' + moDue);
-    }
-    body += '<p class="due-note">' + (foundingFull() && ySel ? ("Prepay 12 months for " + money(yr.today) + " (10% off your monthly price of " + money(yr.perCharge) + "/mo).")
-      : aSel ? "One year at your " + esc(t.label) + " price of " + money(an.monthly) + "/mo, for two years of care." + addNote + " Monthly is the other choice, charged today and then each month."
-      : "Charged today, then on this date each month." + (mo.addonsMonthly ? " Includes add-ons " + money(mo.addonsMonthly) + "/mo." : "")) + '</p>';
-    var help = foundingOpen() ? "Founding members get two years for the price of one, while spots last. " + (aSel ? "Annual is selected." : "Monthly is selected.") : (foundingFull() ? (ySel ? "Annual is selected." : "Monthly is selected.") : "Pay monthly. Your first charge is today.");
-    if (foundingFull()) body += afterFoundingBlock(mo.perCharge);
-    return obShell("billing", "doc", 2, "How Would You Like To Pay?", help, body, nextBtn("Continue To Access", true));
-  }
-
-  /* 7. Access */
-  function obAccess() {
-    var a = S.access || {};
-    var body = '<div class="qt-grid two" data-ptr-ignore>' + ACCESS_OPTS.map(function (o, k) {
-        var on = a.how === o[0];
-        return '<button type="button" class="qt chkt mw-hover t' + (k % 4) + (on ? " sel" : "") + '" data-ob-access="' + o[0] + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(o[2], "sm") + '</span><span class="qt-lab">' + o[1] + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-      }).join("") + '</div>' +
-      '<label class="fl" for="obAccessNote">Anything We Should Know? (Optional)</label><textarea id="obAccessNote" rows="3" placeholder="Pets, a gate, where the lockbox is">' + esc(a.note || "") + '</textarea>' +
-      '<p class="priced-note">Lockbox and door codes go in your member app, not here.</p>';
-    return obShell("access", "house", 0, "How Should We Get In?", "You don't need to be home. You can leave a lockbox or a door code, or meet us there.", body, nextBtn("Next", !!a.how));
+    var badge = '<button type="button" class="f2-badge mw-hover" data-f2-open aria-expanded="false" aria-controls="f2Pop">2-For-1<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
+    var banner = fOpen ? '<div class="f2-banner"><span class="f2-ic" aria-hidden="true">' + I("star", "xs") + '</span><p><b>Founding Member: 2 Years For The Price Of 1</b><br>Pay one year of your ' + esc(t.label) + ' plan' + (an.addonsAnnual ? ' and add-ons' : '') + ', get two years of care.</p></div>' : '';
+    var cards = (fOpen ? card("founding", aSel, "Annual", money(an.today), "Paid today for 24 months of care.", badge) : '') +
+      card("monthly", !aSel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
+    var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
+    var dueNow = aSel ? an.today : mo.today; /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
+    var body = banner + '<div class="pay-stack" role="radiogroup" aria-label="How to pay">' + cards + '</div>' +
+      '<p class="pay-due" aria-live="polite"><span>Due Today</span><b>' + money(dueNow) + '</b></p>' + pop;
+    return obShell("billing", "", 0, "Pick How You'd Like To Pay", "", body, nextBtn("Continue To Payment", true));
   }
 
   /* 8. Start Date: date picker, earliest two days out, with the Legal-approved First Visit blurb. */
@@ -2497,13 +2524,14 @@
       var first = null;
       detailErrs(S.signup).forEach(function (x) { var el = document.getElementById("e-" + x[0]), f = document.getElementById(x[0]); if (el) el.textContent = x[1]; if (f) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = f; });
       if (first) { first.focus(); return; }
-      go("accept");
+      /* Details is the last step now (Machan Nov 13 11:00 PM). */
+      if (acceptStillValid() && S.firstVisit) { finishSignup(); return; }
+      go(!acceptStillValid() ? "accept" : "start");
     }
     var f = document.getElementById("obDF"); if (f) f.addEventListener("submit", function (e) { e.preventDefault(); next(); });
     var nx = app.querySelector("[data-ob-next]"); if (nx) nx.addEventListener("click", next);
   }
   /* 10. Accept: recap, agreement, signature, payment (contact moved to Your Details). Deck card 4: A compact recap line, B itemized. */
-  function accessLabel() { var a = (S.access || {}).how; var o = ACCESS_OPTS.filter(function (x) { return x[0] === a; })[0]; return o ? (a === "home" ? "Home For Visits" : o[1] + " Access") : ""; }
   function obAccept() {
     var b = obBill(), t = P.tiers[S.tier], su = S.signup || {}, a = S.answers;
     var start = S.firstVisit ? longDate(S.firstVisit) : "";
@@ -2515,12 +2543,12 @@
       var rows = [["Plan", esc(t.label) + " · " + money(b.monthly) + "/mo"]];
       var aoBits = extraTags().concat(adds.map(function (x) { return esc(x.label) + " " + aoPrice(x); }));
       if (aoBits.length) rows.push(["Add-Ons", aoBits.join("<br>")]);
-      rows.push(["Billing", billTxt], ["Start Date", start], ["Access", esc(accessLabel())]);
+      rows.push(["Billing", billTxt]); if (start) rows.push(["Start Date", start]);
       rows.push([dueK, dueV]);
       recap = '<div class="item-card">' + rows.map(function (r, i) { return '<div class="item-row' + (i === rows.length - 1 ? " total" : "") + (String(r[1]).length > 28 ? " stack" : "") + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>'; }).join("") +
         '<p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     } else {
-      var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : "", esc(accessLabel())].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
+      var bits = [esc(planTag()), money(b.monthly) + "/mo", billTxt, start ? "Starts " + start : ""].concat(adds.map(function (x) { return "+ " + esc(x.label); })).filter(Boolean);
       recap = '<div class="accept-compact"><p class="accept-line">' + bits.join(" · ") + '</p><p class="accept-due"><span>' + dueK + '</span><b>' + dueV + '</b></p><p class="price-confirm pc-plain">' + PRICE_CONFIRM + '</p></div>';
     }
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
@@ -2529,8 +2557,9 @@
     var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge)
       : (b.plan === "annual" ? annualConsent(b.today)
       : foundingConsent(b.today));
-    /* Guard (Legal, Nov 11): no sign-ups until the Member Agreement is published and AGREEMENT.url is set. */
-    var open = !!AGREEMENT.url;
+    /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
+       Accept only saves locally (no charge, no email); the checkbox and signature still apply. AGREEMENT.url still swaps in the real link when set. */
+    var open = true;
     var agreeLink = AGREEMENT.url ? '<a class="link mw-hover" href="' + esc(AGREEMENT.url) + '" target="_blank" rel="noopener">Read The Member Agreement</a>'
       : '<span class="ob-slot" data-agreement-slot="' + AGREEMENT.id + '@' + AGREEMENT.rev + '">Member Agreement · Link Coming Soon</span>';
     var body = recap +
@@ -2544,10 +2573,9 @@
       '<fieldset style="border:0;padding:0;margin:0"><label class="fl">Card Number</label><input type="text" placeholder="•••• •••• •••• ••••" autocomplete="off"><div class="grid2"><div><label class="fl">Expiry</label><input type="text" placeholder="MM / YY" autocomplete="off"></div><div><label class="fl">CVC</label><input type="text" placeholder="•••" autocomplete="off"></div></div></fieldset></div>') :
         /* Finish deck #19: muted Payment box until sign-up opens (no card fields, per Legal's beta copy) */
         '<div class="card paybox paybox-soon" aria-disabled="true"><h3>' + I("shield", "xs") + ' Payment</h3><p class="small muted">Opens Soon</p></div>') +
-      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true" aria-describedby="obSoon"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Join Now") + '</button>' +
-      (open ? '' : '<p class="small muted ob-soon" id="obSoon">Sign-up opens soon.</p>') +
+      '<button class="btn btn-primary btn-big mw-hover" type="submit"' + (open ? '' : ' disabled aria-disabled="true"') + '>' + (paymentsLive() ? ("Accept And Pay " + money(b.today)) : "Accept And Continue") + '</button>' +
       '<p class="su-cancel-line small"><a href="#cancel" class="link mw-hover">Cancel Anytime, No Fee</a></p></form>';
-    return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan, billing and start date.", body, "");
+    return obShell("accept", "pen", 3, "Join " + esc(t.label), "A recap of your plan and billing.", body, "");
   }
 
   function obRender(s) {
@@ -2557,13 +2585,27 @@
     if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
     if (s === "addons") return obAddons();
     if (s === "plan") return obPlanScreen();
+    if (s === "review") return obReview();
     if (s === "billing") return obBilling();
-    if (s === "access") return obAccess();
     if (s === "start") return obStart();
     if (s === "details") return obDetails();
     return obAccept();
   }
   function obNextOf(s) { var i = OB.indexOf(s), n = OB[Math.min(OB.length - 1, i + 1)]; return (n !== s && obSkip(n)) ? obNextOf(n) : n; }
+  /* 2-for-1 badge pop-up (Machan Nov 13 10:19 PM: "the annual 2 for 1 should be a small badge and when its clicked it explains"). Hero badge pop-up look;
+     the first outside tap only closes it, Esc closes and returns focus to the badge. */
+  function bindF2Pop() {
+    var bt = app.querySelector("[data-f2-open]"), pop = document.getElementById("f2Pop"); if (!bt || !pop) return;
+    function place() { var r = bt.getBoundingClientRect(), host = pop.offsetParent || document.body, hr = host.getBoundingClientRect(), w = pop.offsetWidth, x = Math.min(Math.max(16, r.left + r.width / 2 - w / 2), innerWidth - 16 - w); pop.style.left = Math.round(x - hr.left) + "px"; pop.style.top = Math.round(r.bottom - hr.top + 8) + "px"; }
+    function shut(back) { if (pop.hidden || pop.classList.contains("closing")) return; pop.classList.remove("on"); pop.classList.add("closing"); bt.setAttribute("aria-expanded", "false"); document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", esc, true);
+      setTimeout(function () { pop.hidden = true; pop.classList.remove("closing"); }, 160); if (back) bt.focus({ preventScroll: true }); }
+    function outside(e) { if (pop.contains(e.target)) return; if (e.target === bt || bt.contains(e.target)) return; e.preventDefault(); e.stopPropagation(); shut(false);
+      var swallow = function (ev) { ev.preventDefault(); ev.stopPropagation(); document.removeEventListener("click", swallow, true); }; document.addEventListener("click", swallow, true); setTimeout(function () { document.removeEventListener("click", swallow, true); }, 500); }
+    function esc(e) { if (e.key === "Escape") { e.preventDefault(); shut(true); } }
+    bt.addEventListener("click", function (e) { e.stopPropagation(); if (!pop.hidden && !pop.classList.contains("closing")) { shut(true); return; }
+      pop.hidden = false; place(); void pop.offsetWidth; pop.classList.add("on"); bt.setAttribute("aria-expanded", "true"); pop.focus({ preventScroll: true });
+      document.addEventListener("pointerdown", outside, true); document.addEventListener("keydown", esc, true); });
+  }
   function bindOb(s) {
     function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
     var nx = app.querySelector("[data-ob-next]");
@@ -2629,13 +2671,15 @@
     }
     if (s === "billing") {
       app.querySelectorAll("[data-ob-bill]").forEach(function (b) {
-        function pick() { S.plan = b.getAttribute("data-ob-bill"); rer(); }
-        b.addEventListener("click", pick); b.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+        function pick() { if (S.plan === b.getAttribute("data-ob-bill")) return; S.plan = b.getAttribute("data-ob-bill"); rer(); var n = app.querySelector('.pay-card[data-ob-bill="' + S.plan + '"]'); if (n) n.focus({ preventScroll: true }); }
+        b.addEventListener("click", function (e) { if (e.target.closest && e.target.closest("[data-f2-open]")) return; pick(); });
+        b.addEventListener("keydown", function (e) {
+          if (e.target !== b) return;
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
+          if (/^Arrow(Up|Down|Left|Right)$/.test(e.key)) { e.preventDefault(); var all = [].slice.call(app.querySelectorAll(".pay-card")), i = all.indexOf(b), n = all[(i + (/Up|Left/.test(e.key) ? all.length - 1 : 1)) % all.length]; if (n) { S.plan = n.getAttribute("data-ob-bill"); rer(); var f = app.querySelector('.pay-card[data-ob-bill="' + S.plan + '"]'); if (f) f.focus({ preventScroll: true }); } }
+        });
       });
-    }
-    if (s === "access") {
-      app.querySelectorAll("[data-ob-access]").forEach(function (b) { b.addEventListener("click", function () { S.access = Object.assign({}, S.access, { how: b.getAttribute("data-ob-access"), note: val("obAccessNote") }); rer(); }); });
-      var nt = document.getElementById("obAccessNote"); if (nt) nt.addEventListener("input", function () { S.access = Object.assign({}, S.access, { note: nt.value }); save(); });
+      bindF2Pop();
     }
     if (s === "start") {
       app.querySelectorAll("[data-ob-day]").forEach(function (b) { b.addEventListener("click", function () { var v = b.getAttribute("data-ob-day"); if (v < minStart()) return; S.firstVisit = v; S._calMonth = v.slice(0, 7); rer(); }); });
@@ -2772,9 +2816,6 @@
     ["sName", "sPhone", "sEmail", "sRef"].forEach(function (id) { var el = document.getElementById(id); if (el) el.addEventListener("change", function () { keep(); save(); }); });
     document.getElementById("obF").addEventListener("submit", function (e) {
       e.preventDefault(); keep();
-      if (!AGREEMENT.url) return;
-      var s = S.signup;
-      if (detailErrs(s).some(function (x) { return x[1]; })) { go("details"); return; }
       var errs = [
         ["agree", !document.getElementById("agree").checked ? "Check the box to agree." : ""],
         ["chargeOk", !document.getElementById("chargeOk").checked ? "Check the box to OK the charge and auto-renewal." : ""],
@@ -2782,15 +2823,29 @@
       var first = null;
       errs.forEach(function (x) { var el = document.getElementById("e-" + x[0]); if (el) el.textContent = x[1]; var f = document.getElementById(x[0]); if (f && f.setAttribute) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = el; });
       if (first) { first.scrollIntoView({ block: "center" }); return; }
+      /* Machan Nov 13 11:00 PM: Accept now comes before Start Date and Details. Keep the signed acceptance with the exact totals it covered;
+         Details finishes sign-up only if the plan, payment choice and Due Today still match, otherwise it sends them back here to accept again. */
       var b = obBill();
-      s.agreementSignature = sigs.agreeSig.value(); s.signedAt = new Date().toISOString(); s.tier = S.tier; s.planTag = planTag(); s.firstVisit = S.firstVisit; s.access = S.access;
-      s.agreement = AGREEMENT.id + "@" + AGREEMENT.rev;
-      s.totals = { plan: b.plan, label: b.label, today: b.today, perCharge: b.perCharge || 0, membershipAnnual: b.membershipAnnual, addonIds: (S.addons || []).slice(), termMonths: b.termMonths };
-      if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
-      logAddon("purchase", (S.addons || []).slice(), "accept:" + S.tier);
-      try { window.SUEvents && SUEvents.emit("signup.completed", "site", { member: s.name || "New member", payload: { plan: P.tiers[S.tier].label, tag: s.planTag, payment: b.plan, addons: (S.addons || []).length } }); } catch (x) {}
-      go("confirm");
+      S.accepted = { sig: sigs.agreeSig.value(), signedAt: new Date().toISOString(), agreement: AGREEMENT.id + "@" + AGREEMENT.rev, tier: S.tier, plan: b.plan, today: b.today, addonIds: (S.addons || []).slice() };
+      save();
+      if (S.firstVisit && S.firstVisit >= minStart() && !detailErrs(S.signup || {}).some(function (x) { return x[1]; })) { finishSignup(); return; }
+      go(obNextOf("accept"));
     });
+  }
+  function acceptStillValid() {
+    var A = S.accepted, b = obBill();
+    return !!(A && A.sig && A.tier === S.tier && A.plan === b.plan && A.today === b.today && String(A.addonIds || []) === String(S.addons || []));
+  }
+  function finishSignup() {
+    var s = S.signup = Object.assign({}, S.signup), A = S.accepted, b = obBill();
+    s.agreementSignature = A.sig; s.signedAt = A.signedAt; s.tier = S.tier; s.planTag = planTag(); s.firstVisit = S.firstVisit; s.access = S.access;
+    s.agreement = A.agreement;
+    s.totals = { plan: b.plan, label: b.label, today: b.today, perCharge: b.perCharge || 0, membershipAnnual: b.membershipAnnual, addonIds: (S.addons || []).slice(), termMonths: b.termMonths };
+    if (!s.myReferralCode) s.myReferralCode = makeReferralCode(s.name);
+    logAddon("purchase", (S.addons || []).slice(), "accept:" + S.tier);
+    try { window.SUEvents && SUEvents.emit("signup.completed", "site", { member: s.name || "New member", payload: { plan: P.tiers[S.tier].label, tag: s.planTag, payment: b.plan, addons: (S.addons || []).length } }); } catch (x) {}
+    S.accepted = null; save();
+    go("confirm");
   }
   var XT_ICO = { windows: "window", carpet: "brush", pressure: "spray", deck: "brush", chimney: "chimney", ducts: "duct", lights: "lights", radon: "radon", guttersExtra: "gutter", lmInteriorWindows: "window", lmScreens: "window", lmBulbs: "lights", lmLeakSensors: "bell", lmSumpBackup: "meter", lmHoodFilter: "spray", lmBathFan: "duct", lmThermostat: "furnace" };
   function tierKeys() { return (P.tierOrder || Object.keys(P.tiers)).filter(function (k) { return P.tiers[k]; }); }
@@ -2870,13 +2925,14 @@
     var email = su.email || "";
     try { localStorage.setItem("su.firstLoginWelcome", JSON.stringify({ at: new Date().toISOString(), name: su.name || "", email: email, tier: S.tier, plan: P.tiers[S.tier].label })); } catch (e) {}
     var paid = ['Paid Today', money(t.today || 0)];
-    return homePill() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>You\'re In' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
-      '<p class="lead-sm">' + esc(P.tiers[S.tier].label) + ' is active. Here is what happens next, including how to log in.</p>' +
+    return homePill() + '<div class="check-big" aria-hidden="true">&#10003;</div><h1>Thank You' + (su.name ? ", " + esc(su.name.split(" ")[0]) : "") + '</h1>' +
+      /* Machan Nov 13 10:20 PM: "so they would eventually land on a thank you and expect an email within 1 business day" / "for now i am planning on giving them an email with log in information after sign up". Copy only: no email is wired here. */
+      '<p class="lead-sm">Expect an email with your member app login details within 1 business day.</p>' +
       '<div class="card qa-next"><h3>Next Steps</h3><ol class="qa-steps">' +
-      '<li><strong>Log In To Your Member App</strong><span>Open <a class="link" href="member/">smartupkeep.ai/member</a>. Use the email you just gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + ' and the password from your welcome email.</span></li>' +
+      '<li><strong>Watch For Your Login Email</strong><span>Within 1 business day, we\'ll email your member app login details to the address you gave us' + (email ? ' <span class="cf-email">(<strong>' + esc(email) + '</strong>)</span>' : '') + '. Then log in at <a class="link" href="member/">smartupkeep.ai/member</a>.</span></li>' +
       '<li><strong>Read Your Welcome Message</strong><span>The first time you sign in, Ask Anything opens with a welcome from your care team.</span></li>' +
       '<li><strong>Your First Visit' + (fv ? ': ' + esc(longDate(fv)) : '') + '</strong><span>We\'ll confirm the time with you before your visit. ' + FIRST_VISIT_BLURB + '</span></li>' +
-      '<li><strong>Add Access Details</strong><span>Lockbox or door codes go in your member app.</span></li>' +
+      '<li><strong>Add Access Details</strong><span>Once you log in, you can add lockbox or door codes in your member app.</span></li>' +
       '</ol></div>' +
       '<div class="card" style="margin-top:1rem"><h3>Summary</h3>' +
       '<div class="summary"><div><span>Membership</span><span>' + esc(su.planTag || planTag()) + '</span></div><div><span>Service Address</span><span>' + esc(su.address) + '</span></div><div><span>Billing</span><span>' + esc(t.label || "") + '</span></div>' +
@@ -3103,8 +3159,13 @@
     if (rmq && rmq.addEventListener) rmq.addEventListener("change", req);
     window.suBandSync = req;
     if (!btn || !menu) return;
+    var shutT = 0;
     function setOpen(o, back) {
-      menu.hidden = !o; btn.setAttribute("aria-expanded", o ? "true" : "false");
+      /* Polish item 13: menu opens over 160ms and closes over 120ms (keyframes in polish.css); [hidden] is set once the close has played. */
+      clearTimeout(shutT); menu.classList.remove("is-closing");
+      if (o) menu.hidden = false;
+      else if (!menu.hidden) { var rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; if (rm) menu.hidden = true; else { menu.classList.add("is-closing"); shutT = setTimeout(function () { menu.hidden = true; menu.classList.remove("is-closing"); }, 120); } }
+      btn.setAttribute("aria-expanded", o ? "true" : "false");
       if (o) { var f = menu.querySelector("a,button"); if (f) f.focus(); } else if (back) btn.focus();
     }
     btn.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden, true); });
@@ -3155,7 +3216,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9d4"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9f3"; document.head.appendChild(l); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

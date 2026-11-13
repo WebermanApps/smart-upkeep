@@ -1,0 +1,64 @@
+/* Funnel Deck Picks + Polish (PR funnel-polish-1113). Home and header rules only; onboarding step rules live at the end of onboarding.css.
+   Sources: Swatch polish proposals 13 Nov 2026 (items 1-6, 10-13, 16, 17), À La Carte Warm Look Deck, Resume Indicator Placement Deck, Machan 10:04 PM answers. */
+
+/* Machan 10:04 PM: Log In lives in the menu only. */
+.topbar .top-login,body.on-home .topbar .top-login,body.su-band .topbar .top-login{display:none!important}
+
+/* ---- 6. Resume Indicator: Menu Dot, Then Continue Row ---- */
+#hdrMenuBtn{position:relative}
+#hdrMenuBtn.has-resume::after{content:"";position:absolute;top:10px;right:6px;width:8px;height:8px;border-radius:50%;background:#C1502E;box-shadow:0 0 0 2px #FFFCF7}
+body.su-band .hdr-menu button.hdr-resume{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding-top:6px;padding-bottom:6px;color:#A8431F;font:600 15px/1.2 Hind,var(--mw-font-body),sans-serif}
+body.su-band .hdr-menu button.hdr-resume small{font:500 12px/1.2 Hind,var(--mw-font-body),sans-serif;color:#737373}
+body.su-band .hdr-menu button.hdr-resume[hidden]{display:none!important}
+body.su-band .hdr-menu.has-resume [data-menu-act="start"]{display:none!important}
+
+/* ---- 13. Menu motion: 160ms in (--su-ease), 120ms out (--su-ease-in), from the top right ---- */
+@keyframes suMenuIn{from{opacity:0;transform:translate3d(0,calc(var(--su-ly,0px) - 4px),0) scale(.98)}to{opacity:1;transform:translate3d(0,var(--su-ly,0px),0) scale(1)}}
+@keyframes suMenuOut{from{opacity:1;transform:translate3d(0,var(--su-ly,0px),0) scale(1)}to{opacity:0;transform:translate3d(0,calc(var(--su-ly,0px) - 4px),0) scale(.98)}}
+body.su-band .hdr-menu:not([hidden]){transform-origin:top right;animation:suMenuIn var(--su-mo-1) var(--su-ease) backwards;box-shadow:var(--su-sh-3)}
+body.su-band .hdr-menu.is-closing{animation:suMenuOut 120ms var(--su-ease-in) both;pointer-events:none}
+body.su-band .topbar{transition:box-shadow var(--su-mo-2) var(--su-ease)}
+.sa-q .sa-chev{transition:transform var(--su-mo-2) var(--su-ease)}
+
+/* ---- 2. À La Carte chip icons ---- */
+#hs-alc .sa-tab{display:inline-flex;align-items:center;gap:6px;padding:0 14px 0 12px}
+#hs-alc .sa-tab .alc-tico{display:inline-flex;width:14px;height:14px;flex:0 0 14px;color:currentColor}
+#hs-alc .sa-tab .alc-tico svg{display:block;overflow:visible}
+
+/* ---- 3. À La Carte Icon Header ---- */
+#hs-alc .alc-ghd{display:flex;align-items:center;gap:10px;height:56px;padding:0 16px;margin:0 0 8px;background:#FCF9F4;border:1px solid var(--su-hair,#E6E1D8);border-radius:var(--su-r-s)}
+#hs-alc .alc-gico{display:inline-flex;width:28px;height:28px;flex:0 0 28px;color:#A8431F}
+#hs-alc .alc-gico svg{display:block}
+#hs-alc .alc-ghd p{margin:0;font:600 16px/1.1 Khand,var(--mw-font-heading),sans-serif;color:#1A1A1A}
+@media (max-height:700px){#hs-alc .alc-ghd{height:44px}}
+
+/* ---- 4. Terracotta price pills ---- */
+body.on-home #hs-alc .sa-q .sa-p{display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:999px;background:#A8431F;color:#fff;font:600 12px/1 Hind,var(--mw-font-body),sans-serif}
+body.on-home #hs-alc .sa-q .sa-p.is-quote{background:#fff;color:#A8431F;box-shadow:inset 0 0 0 1px rgba(168,67,31,.45)}
+
+/* ---- 5. Charcoal Lifted Card for the open row (À La Carte only; FAQ keeps Warm Tint) ---- */
+body.on-home #hs-alc .sa-item{transition:box-shadow 200ms var(--su-ease-in),background-color 200ms var(--su-ease-in)}
+body.on-home #hs-alc .sa-tabbed .sa-item:has(.sa-q[aria-expanded="true"]){background:#FFFCF7;box-shadow:var(--su-sh-2),inset 0 0 0 1.5px #1A1A1A;border-radius:var(--su-r-s);margin:0 -12px;padding:0 12px;transition:box-shadow var(--su-mo-2) var(--su-ease),background-color var(--su-mo-2) var(--su-ease)}
+
+/* ---- 10. 16px inner padding on list cards ---- */
+body.on-home #hs-alc .sa-list{padding-left:16px;padding-right:16px}
+body.on-home #hs-faq .sa-list{padding-left:16px;padding-right:16px}
+
+/* ---- 11. Radius scale ---- */
+body.on-home .hm-card{border-radius:var(--su-r-m)}
+
+/* ---- 16. Bottom bar tab labels 11px/600 (48px tall, r12 kept) ---- */
+body.on-home .hm-tabs button[data-hm-tab]{font-size:11px}
+body.on-home .hm-tabs button[data-hm-tab] span{font-weight:600}
+
+/* ---- 17. Whole-pixel headline type ---- */
+body.on-home .hm h2,body.on-home .pc-name{font-size:22px!important}
+body.on-home .pc-from,body.on-home .pc-per{font-size:14px}
+body.on-home .pc-big{font-size:38px}
+body.on-home .hs-arrow-lab{font-size:15px}
+body.on-home .hm-hchip span{font-size:13px}
+
+@media (prefers-reduced-motion:reduce){
+  body.su-band .hdr-menu:not([hidden]),body.su-band .hdr-menu.is-closing{animation:none}
+  body.su-band .topbar,.sa-q .sa-chev,body.on-home #hs-alc .sa-item{transition:none}
+}

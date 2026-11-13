@@ -26,7 +26,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 
 /* Systems rows */
 .ob .sys-list{display:grid;gap:.45rem}
-.ob .sys-row{display:flex;align-items:center;gap:.65rem;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.55rem .7rem;box-shadow:0 1px 3px rgba(10,10,10,.05);min-height:64px}
+.ob .sys-row{display:flex;align-items:center;gap:.65rem;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.55rem .7rem;box-shadow:var(--su-sh-1);min-height:64px}
 .ob .sys-row .sys-ic{flex:none;width:2.6rem;height:2.6rem;border-radius:.7rem;display:grid;place-items:center}
 .ob .sys-row .sys-ic .su-ico{width:1.55rem;height:1.55rem}
 .ob .sys-ic.t0{background:rgba(193,80,46,.13)}.ob .sys-ic.t1{background:rgba(5,102,141,.12)}.ob .sys-ic.t2{background:rgba(5,102,141,.12)}
@@ -52,7 +52,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob.ob-stepper-b .sys-row .sys-ic{width:3rem;height:3rem}
 .ob.ob-stepper-b .sys-row .sys-name{font-size:1.2rem}
 .ob.ob-stepper-b .sys-row .ob-step{width:100%;justify-content:flex-end;gap:.65rem}
-.ob.ob-stepper-b .ob-step button{width:48px;height:48px;border-radius:50%;border:1.5px solid #cfc6b4;background:#fff;font-size:1.6rem;line-height:1;box-shadow:0 1px 2px rgba(10,10,10,.05)}
+.ob.ob-stepper-b .ob-step button{width:48px;height:48px;border-radius:50%;border:1.5px solid #cfc6b4;background:#fff;font-size:1.6rem;line-height:1;box-shadow:var(--su-sh-1)}
 .ob.ob-stepper-b .ob-step .n{min-width:1.8rem;font-size:1.7rem}
 
 /* Home basics. Deck card 5: A chips, B steppers */
@@ -68,7 +68,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .story-row .qt{min-height:64px;padding:.4rem .3rem}
 .ob .story-row .qt-ic{width:2rem;height:2rem;display:grid;place-items:center}
 .ob .story-row .qt-ic .su-ico{width:1.35rem;height:1.35rem}
-.ob .pick-step{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.7rem .8rem;box-shadow:0 1px 3px rgba(10,10,10,.05);display:flex;align-items:center;gap:.6rem}
+.ob .pick-step{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.7rem .8rem;box-shadow:var(--su-sh-1);display:flex;align-items:center;gap:.6rem}
 .ob .pick-step .meta{flex:1;min-width:0}
 .ob .pick-step .k{font:700 .7rem/1 var(--mw-font-body);letter-spacing:.1em;text-transform:uppercase;color:#737373;margin:0 0 .15rem}
 .ob .pick-step .v{font:700 1.2rem/1.15 var(--mw-font-heading);margin:0}
@@ -79,7 +79,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 
 /* Add-ons list: name + price, on/off switch, tap row to open detail in place */
 .ob .ob-ao-list{list-style:none;margin:0;padding:0;display:grid;gap:.45rem}
-.ob .ob-ao{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .ob-ao{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:var(--su-sh-1)}
 .ob .ob-ao.on{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
 .ob .ob-ao-top{display:flex;align-items:center;gap:.4rem;padding:.35rem .6rem .35rem .4rem}
 .ob .ob-ao-row{flex:1;display:flex;align-items:center;gap:.55rem;min-height:52px;background:transparent;border:0;padding:0 .2rem;text-align:left;cursor:pointer;color:#0a0a0a}
@@ -97,7 +97,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 
 /* Plan. Deck card 2: A tag chips, B checklist */
 .ob .plan-stack{display:grid;gap:.55rem}
-.ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.95rem .9rem .5rem;box-shadow:0 1px 3px rgba(10,10,10,.05);position:relative}
+.ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.95rem .9rem .5rem;box-shadow:var(--su-sh-1);position:relative}
 .ob .plan-card.sel{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
 .ob .plan-card .ribbon{position:absolute;top:-10px;left:.8rem;right:auto;background:rgba(193,80,46,.12);color:#A8431F;font:700 .68rem/1 var(--mw-font-body);letter-spacing:.08em;text-transform:uppercase;padding:.25rem .5rem;border-radius:999px;transform:none}
 .ob .plan-kicker{font:700 .68rem/1 var(--mw-font-body);letter-spacing:.14em;text-transform:uppercase;color:var(--mw-lagoon);margin:0 0 .15rem}
@@ -120,11 +120,11 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .tailor{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:.15rem;background:transparent;border:0;padding:0;font:700 .86rem/1 var(--mw-font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mw-terracotta-deep);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 
 /* Billing. Deck card 3: A segmented control, B stacked cards */
-.ob .seg-toggle{display:flex;background:#fff;border:1px solid #e6dfd1;border-radius:999px;padding:3px;box-shadow:0 1px 3px rgba(10,10,10,.04)}
+.ob .seg-toggle{display:flex;background:#fff;border:1px solid #e6dfd1;border-radius:999px;padding:3px;box-shadow:var(--su-sh-1)}
 .ob .seg-toggle button{flex:1;display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:999px;border:0;background:transparent;font:700 .92rem/1 var(--mw-font-body);color:#525252;cursor:pointer}
 .ob .seg-toggle button.on{background:#F9EAE4;color:#A8431F;box-shadow:inset 0 0 0 1.5px #A8431F}
 .ob .bill-stack{display:grid;gap:.55rem}
-.ob .bill-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.9rem .95rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .bill-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.9rem .95rem;box-shadow:var(--su-sh-1)}
 .ob.ob-billing-b .bill-card{cursor:pointer}
 .ob .bill-card.sel{border-color:var(--mw-jungle);box-shadow:inset 0 0 0 1px var(--mw-jungle)}
 .ob .bill-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
@@ -148,7 +148,7 @@ body.on-qf.on-ob .foot{display:block;background:transparent;border-top:0;padding
 .ob .accept-due{display:flex;justify-content:space-between;align-items:baseline;margin:.55rem 0 0;padding:.6rem .8rem;background:#fff;border:1px solid var(--mw-border);border-radius:.75rem}
 .ob .accept-due span{font:700 .7rem/1 var(--mw-font-body);letter-spacing:.12em;text-transform:uppercase;color:#525252}
 .ob .accept-due b{font:700 1.3rem/1 var(--mw-font-heading)}
-.ob .item-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.2rem .95rem .15rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .item-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;padding:.2rem .95rem .15rem;box-shadow:var(--su-sh-1)}
 .ob .item-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:.55rem 0;border-bottom:1px solid #efe8dc;font:500 .9rem/1.3 var(--mw-font-body)}
 .ob .item-row .k{color:#525252}
 .ob .item-row .v{font-weight:600;text-align:right;color:#0a0a0a}
@@ -189,7 +189,7 @@ body:not(.on-home) .topbar{overflow-x:clip}
 
 
 /* Machan plan colors (Nov 11 5:30 PM) + hero badge nowrap */
-.ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-left:3px solid var(--plan-c,#0B6E4F);border-radius:.85rem;padding:.95rem .9rem .7rem;box-shadow:0 1px 3px rgba(10,10,10,.05);position:relative}
+.ob .plan-card{background:#fff;border:1px solid var(--mw-border);border-left:3px solid var(--plan-c,#0B6E4F);border-radius:.85rem;padding:.95rem .9rem .7rem;box-shadow:var(--su-sh-1);position:relative}
 .ob .plan-card.sel{border-color:var(--plan-c,#0B6E4F);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--plan-c,#0B6E4F) 35%, transparent)}
 .ob .plan-card .ribbon{white-space:nowrap;background:#F9EAE4;color:#A8431F;border:1px solid #A8431F}
 .ob .plan-price, .ob .plan-alt .amt{color:#1a1a1a}
@@ -205,7 +205,7 @@ body:not(.on-home) .topbar{overflow-x:clip}
 .ob .ob-ao-tabs{margin:0 0 .7rem}
 
 /* Funnel fix-now PR A (Nov 12 2026): Sunday-first start-date calendar, Undo Changes, soft gray contact hints, confirm email wrap */
-.ob .ob-cal{background:#fff;border:1px solid var(--mw-border);border-radius:12px;padding:12px;margin:0 0 16px;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .ob-cal{background:#fff;border:1px solid var(--mw-border);border-radius:12px;padding:12px;margin:0 0 16px;box-shadow:var(--su-sh-1)}
 .ob .cal-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
 .ob .cal-t{margin:0;font:700 20px/22px var(--mw-font-heading);color:#1A1A1A}
 .ob .cal-nav{width:44px;height:44px;border:1px solid #e6dfd1;border-radius:50%;background:#fff;display:grid;place-items:center;padding:0;cursor:pointer}
@@ -259,11 +259,11 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 .ob input[type=text].ob-zip{width:8.5rem;max-width:100%;display:block}
 .ob .ob-area{margin:var(--sp-1) 0 0;color:#525252;font-size:13px;line-height:17px}
 /* #5 size and stories in one white card with a thin divider */
-.ob .pick-card{margin-top:var(--sp-4);background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05)}
+.ob .pick-card{margin-top:var(--sp-4);background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:var(--su-sh-1)}
 .ob .pick-card .pick-step{background:transparent;border:0;border-radius:0;box-shadow:none;padding:var(--sp-3) var(--sp-3)}
 .ob .pick-card .pick-step+.pick-step{border-top:1px solid var(--mw-border)}
 /* #13 counts share one white card with dividers */
-.ob .sys-card{gap:0;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05);overflow:hidden}
+.ob .sys-card{gap:0;background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:var(--su-sh-1);overflow:hidden}
 .ob .sys-card .sys-row{background:transparent;border:0;border-radius:0;box-shadow:none;padding:var(--sp-3)}
 .ob .sys-card .sys-row+.sys-row{border-top:1px solid var(--mw-border)}
 /* #9 water heater type on its own full-width line under the count */
@@ -272,7 +272,7 @@ body:not(.on-home) .topbar .btn-share{min-height:44px}
 .ob .ob-whs-line .type-seg{flex:1;max-width:16rem}
 .ob .ob-whs-line .type-seg button{flex:1}
 /* #13 extras in a second white card; #10 included ones under their label */
-.ob .ex-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:0 1px 3px rgba(10,10,10,.05);padding:var(--sp-3)}
+.ob .ex-card{background:#fff;border:1px solid var(--mw-border);border-radius:.85rem;box-shadow:var(--su-sh-1);padding:var(--sp-3)}
 .ob .ex-card .ex-incl{margin:var(--sp-4) 0 var(--sp-2);font:600 14px/19px var(--mw-font-body);color:#525252}
 /* #12 picked extra: soft jungle fill (~7%), check kept, no heavy outline */
 .ob .ex-card .qt.sel{border-color:rgba(11,110,79,.35);box-shadow:none;background:rgba(11,110,79,.07)}
@@ -837,3 +837,77 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 .ob .ob-bar .ob-built:hover .uk-eye-r,.ob .ob-bar .ob-built:focus-within .uk-eye-r{opacity:0}
 .ob .ob-bar .ob-built:hover .uk-wink-l,.ob .ob-bar .ob-built:focus-within .uk-wink-l{opacity:1}
 @media (prefers-reduced-motion:reduce){.ob .ob-bar .ob-built .mw-machan-mark{transition:none}}
+
+/* ===== Funnel Deck Picks + Polish (funnel-polish-1113) ===== */
+/* 10. 16px inner padding on plan cards */
+.ob .plan-card{padding-left:16px;padding-right:16px}
+/* 11. Radius scale: cards 16, rows/inputs/tiles 12, pills 999 */
+.ob .plan-card{border-radius:var(--su-r-m)}
+.ob .qt,.ob .ob-ao,.ob .sys-row .sys-ic,.ob .size-chip,.ob input[type=text],.ob input[type=tel],.ob input[type=email],.ob textarea{border-radius:var(--su-r-s)}
+.ob .qf-segs{border-radius:999px}
+/* 12. Switch knob on the warm level-1 shadow */
+.ob .ob-sw i{box-shadow:var(--su-sh-1)}
+/* Machan 10:04 PM: Add-Ons rows are text only, like À La Carte */
+.ob .ob-ao-row{padding-left:4px}
+/* 13. Motion tokens */
+.ob .ob-sw i{transition:left var(--su-mo-1) var(--su-ease)}
+.ob .ob-chev{transition:transform var(--su-mo-2) var(--su-ease)}
+/* 15. Plan step CTA stays on one line */
+@media (max-width:375px){.ob .plan-card .plan-cta{white-space:nowrap;padding-left:12px;padding-right:12px}}
+
+/* ---- Pay Choice Deck: Review ("Your Home Care Proposal") ---- */
+.ob-review .bd-card{background:#fff;border:1px solid #ECE5DA;border-radius:16px;box-shadow:var(--su-sh-1);padding:4px 16px}
+.ob-review .bd-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #F0EAE0;font:400 15px/20px Hind,var(--mw-font-body),sans-serif;color:#2B2622}
+.ob-review .bd-row:first-child{border-top:0}
+.ob-review .bd-row .k{min-width:0}
+.ob-review .bd-row .k small{display:block;font:500 13px/18px Hind,var(--mw-font-body),sans-serif;color:#737373}
+.ob-review .bd-row .v{flex:none;font-weight:600;white-space:nowrap;text-align:right}
+.ob-review .bd-plan{font:600 20px/22px Khand,var(--mw-font-heading),sans-serif}
+.ob-review .bd-f2 .k,.ob-review .bd-f2 .v{color:#A8431F}
+.ob-review .bd-total{border-top:1.5px solid #2B2622;font-size:16px}
+.ob-review .bd-total .k{font-weight:600}
+.ob-review .bd-total .v{font:700 22px/24px Khand,var(--mw-font-heading),sans-serif}
+.ob-review .bd-edit{margin:8px 0 0;text-align:right}
+.ob-review .bd-edit .link{font:600 14px/20px Hind,var(--mw-font-body),sans-serif;color:#A8431F;background:none;border:0;padding:4px 0;min-height:32px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* ---- Pay Choice Deck: Pay ("Pick How You'd Like To Pay") ---- */
+.ob-billing .f2-banner{display:flex;gap:10px;align-items:flex-start;background:#FFF8EE;border:1px solid #ECE5DA;border-radius:16px;padding:12px 14px;margin:0 0 12px}
+.ob-billing .f2-banner p{margin:0;font:400 14px/20px Hind,var(--mw-font-body),sans-serif;color:#4A433D}
+.ob-billing .f2-banner b{font-weight:600;color:#2B2622}
+.ob-billing .f2-ic,.ob-billing .f2-pop-ic{flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#F6E7DC;color:#A8431F;display:grid;place-items:center}
+.ob-billing .f2-ic .su-ico,.ob-billing .f2-pop-ic .su-ico{width:20px;height:20px;color:#A8431F}
+.ob-billing .pay-stack{display:flex;flex-direction:column;gap:10px}
+.ob-billing .pay-card{position:relative;background:#fff;border:1px solid #ECE5DA;border-radius:16px;box-shadow:var(--su-sh-1);padding:14px 16px;cursor:pointer;transition:box-shadow var(--su-mo-1) var(--su-ease),background-color var(--su-mo-1) var(--su-ease)}
+.ob-billing .pay-card.sel{background:#FFF8EE;box-shadow:var(--su-sh-1),0 0 0 2px var(--plan-c,#A8431F);border-color:transparent}
+.ob-billing .pay-card:focus-visible{outline:2px solid #05668D;outline-offset:3px}
+.ob-billing .pay-top{display:flex;align-items:center;gap:8px}
+.ob-billing .pay-name{font:600 20px/22px Khand,var(--mw-font-heading),sans-serif;color:#2B2622}
+.ob-billing .pay-amt{margin-left:auto;font:600 16px/20px Hind,var(--mw-font-body),sans-serif;color:#2B2622;white-space:nowrap}
+.ob-billing .pay-ck{flex:0 0 22px;width:22px;height:22px;border-radius:50%;border:1.5px solid #D9D2C7;display:grid;place-items:center;background:#fff}
+.ob-billing .pay-ck svg{opacity:0}
+.ob-billing .pay-card.sel .pay-ck{background:var(--plan-c,#A8431F);border-color:var(--plan-c,#A8431F)}
+.ob-billing .pay-card.sel .pay-ck svg{opacity:1}
+.ob-billing .pay-copy{margin:6px 0 0;font:400 14px/20px Hind,var(--mw-font-body),sans-serif;color:#4A433D}
+.ob-billing .f2-badge{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:0 8px;border-radius:999px;border:1px solid rgba(168,67,31,.45);background:#fff;color:#A8431F;font:600 12px/1 Hind,var(--mw-font-body),sans-serif;cursor:pointer;background-image:linear-gradient(to bottom,rgba(255,255,255,.55),rgba(255,255,255,0) 40%);box-shadow:var(--su-sh-1)}
+.ob-billing .f2-badge:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+/* hero badge pop-up look (Grok/Swatch spec) */
+.ob-billing{position:relative}
+.ob-billing .f2-pop{position:absolute;z-index:40;display:flex;gap:10px;align-items:flex-start;max-width:min(260px,calc(100vw - 32px));background:#FFF8EE;background-image:linear-gradient(to bottom,rgba(255,255,255,.55),rgba(255,255,255,0) 40%);border:1px solid #ECE5DA;border-radius:16px;padding:14px 16px;box-shadow:var(--su-sh-3);opacity:0;transform:translateY(-4px) scale(.98);transform-origin:top center;transition:opacity 160ms var(--su-ease-in),transform 160ms var(--su-ease-in)}
+.ob-billing .f2-pop.on{opacity:1;transform:none;transition:opacity 220ms var(--su-ease),transform 220ms var(--su-ease)}
+.ob-billing .f2-pop:focus{outline:none}
+.ob-billing .f2-pop:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.ob-billing .f2-pop-t{margin:0 0 2px;font:600 17px/20px Khand,var(--mw-font-heading),sans-serif;color:#2B2622}
+.ob-billing .f2-pop-b{margin:0;font:400 14px/20px Hind,var(--mw-font-body),sans-serif;color:#4A433D}
+
+/* 13. Reduced motion in onboarding (was 0 rules): opacity-only, no movement */
+@media (prefers-reduced-motion:reduce){
+  .ob *,.ob *::before,.ob *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .ob-billing .f2-pop,.ob-billing .f2-pop.on{transform:none;transition:opacity 120ms linear!important}
+}
+.ob.ob-review .qf-body,.ob.ob-billing .qf-body{justify-content:flex-start}
+.ob-review .bd-edit .link{text-transform:none;letter-spacing:0}
+.ob-billing .f2-pop[hidden]{display:none}
+
+/* Pay step: Due Today under the cards, same total as Review and Accept (Machan Nov 13 11:00 PM) */
+.ob-billing .pay-due{display:flex;justify-content:space-between;align-items:baseline;margin:12px 4px 0;font-family:Hind,sans-serif;font-size:14px;line-height:20px;color:#3d3d3d}
+.ob-billing .pay-due b{font-family:Khand,sans-serif;font-weight:700;font-size:22px;line-height:1;color:#1a1a1a}

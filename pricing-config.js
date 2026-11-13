@@ -44,9 +44,11 @@ window.SMART_UPKEEP_PRICING = {
   perUnit: { furnace: 184, ac: 178, tankWaterHeater: 140, tanklessWaterHeater: 318 },
   dryerVent: 171,                                // one per home, assumed
   gutters2Cleanings: { 1: 457, 2: 686, 3: 914 }, // by stories (Gold+)
-  /* Machan Nov 13: flat roof per visit = base by stories + $0.02 × home sq ft (Extra Flat Roof Cleaning = 1 visit). Plan add-on visit frequency not yet confirmed. */
+  /* Machan Nov 13: flat roof per visit = base by stories + $0.02 × home sq ft (Extra Flat Roof Cleaning = 1 visit).
+     Machan approved 2 visits/yr for the Flat Roof Inspection And Clean plan add-on on Nov 13 (annual = 2 × per visit). */
   flatRoofVisit: { 1: 150, 2: 195, 3: 240 },
   flatRoofPerSqFt: 0.02,
+  flatRoofPlanVisits: 2,
   /* Systems the member owns. Plan Services deck (Nov 2 2026): servicing them is an extra. If picked, it is added to ANY plan
      at the yearly price below (higher monthly price); the member can remove it on the Accept step. Draft prices unchanged. */
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
