@@ -2450,7 +2450,37 @@
     return AFTER_FOUNDING_PRICE.replace("{monthly}", money(monthly)).replace("{price}", money(annualPrepaidOf(monthly)));
   }
   function afterFoundingBlock(monthly) {
-    return '<div class="after-founding" data-after-founding><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div>';
+    /* house-build-1113: on tightened short screens (html.ob-hb-t) the block collapses to one tappable line that opens the same text, word for word, in a pop-up (bindAfPop) */
+    return '<div class="after-founding" data-after-founding><button type="button" class="af-open mw-hover" data-af-open aria-haspopup="dialog">Annual Option After Founding<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<div class="af-full"><p class="after-founding-line">' + AFTER_FOUNDING_LINE + '</p><p class="after-founding-price">' + afterFoundingPriceLine(monthly) + '</p></div></div>';
+  }
+  /* Annual Option After Founding pop-up: X, Esc, outside tap and browser Back close it; focus stays inside while open and returns to the line after. */
+  function bindAfPop() {
+    var bt = app.querySelector("[data-af-open]"), full = app.querySelector(".after-founding .af-full"); if (!bt || !full) return;
+    var old = document.getElementById("afPop"); if (old) old.remove();
+    var wrap = document.createElement("div"); wrap.id = "afPop"; wrap.className = "af-pop-wrap"; wrap.hidden = true;
+    wrap.innerHTML = '<div class="af-pop-bg" data-af-close></div><div class="af-pop" role="dialog" aria-modal="true" aria-labelledby="afPopT" tabindex="-1"><div class="af-pop-h"><h3 id="afPopT">Annual Option After Founding</h3>' +
+      '<button type="button" class="af-pop-x mw-hover" data-af-close aria-label="Close">' + X_SVG + '</button></div><div class="af-pop-b">' + full.innerHTML + '</div></div>';
+    document.body.appendChild(wrap);
+    var box = wrap.querySelector(".af-pop"), x = wrap.querySelector(".af-pop-x"), pushed = false;
+    function key(e) {
+      if (e.key === "Escape") { e.preventDefault(); shut(true); return; }
+      if (e.key === "Tab") { e.preventDefault(); x.focus(); }
+    }
+    function shut(fromUser) {
+      if (wrap.hidden) return;
+      wrap.hidden = true; document.removeEventListener("keydown", key, true); window.removeEventListener("popstate", onPop);
+      if (fromUser && pushed && history.state && history.state.afPop) { pushed = false; history.back(); } pushed = false;
+      if (document.body.contains(bt)) bt.focus({ preventScroll: true });
+    }
+    function onPop() { if (!history.state || !history.state.afPop) { pushed = false; shut(false); } }
+    wrap.querySelectorAll("[data-af-close]").forEach(function (c) { c.addEventListener("click", function (e) { e.preventDefault(); shut(true); }); });
+    bt.addEventListener("click", function (e) {
+      e.preventDefault(); wrap.hidden = false; void wrap.offsetWidth; wrap.classList.add("on");
+      try { history.pushState({ su: 1, s: S.screen, afPop: 1 }, "", location.pathname + location.search); pushed = true; } catch (x2) {}
+      document.addEventListener("keydown", key, true); window.addEventListener("popstate", onPop);
+      x.focus({ preventScroll: true });
+    });
   }
   function consentTail(tpl, from) { return tpl.slice(tpl.indexOf(from)); } /* the unchanged rest of an existing consent line */
   function sAmt(n) { return "<strong>" + money(n) + "</strong>"; }
@@ -2946,6 +2976,8 @@
   }
   function bindOb(s) {
     function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
+    var afp = document.getElementById("afPop"); if (afp && s !== "plan") afp.remove();
+    if (s === "plan") bindAfPop();
     var nx = app.querySelector("[data-ob-next]");
     app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-ob-go")); }); });
     if (s === "address") {
@@ -3555,9 +3587,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k4"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k5"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k4"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k5"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

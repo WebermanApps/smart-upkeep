@@ -987,6 +987,33 @@ html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-kicker{line-he
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .check-list{display:flex!important;flex-wrap:wrap!important;column-gap:14px!important;row-gap:0!important}
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .check-list li{flex:0 0 auto!important;width:auto!important;line-height:15px!important}
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-base{line-height:14px!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan > .qf-hero.stack.compact .qf-help{line-height:14px!important}
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-plan .plan-card .plan-cta:not(.filled){margin-top:4px!important}
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-review .bd-row{padding-top:3px!important;padding-bottom:3px!important}
 html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-review .bd-row .k small{line-height:15px!important}
+/* Annual Option After Founding (Swatch r4): the full after-Founding text shows by default. On tightened levels (ob-hb-t) it collapses to one tappable line
+   that opens the same text in a pop-up (app.js bindAfPop); ob-hb-afx hides the line too, only if even that won't fit. */
+.after-founding .af-open{display:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding{background:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-full{display:none}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-open{display:inline-flex;align-items:center;gap:4px;position:relative;min-height:32px;margin:6px 0 0;padding:4px 2px;background:none;border:0;cursor:pointer;
+  font:600 14px/20px Hind,var(--mw-font-body),sans-serif;color:#05668D;text-decoration:underline;text-underline-offset:3px}
+html.ob-hb-on.ob-hb-t .ob.ob-plan .after-founding .af-open svg{flex:none}
+html.ob-hb-on.ob-hb-afx .ob.ob-plan .after-founding{display:none}
+.af-pop-wrap{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}
+.af-pop-wrap[hidden]{display:none}
+.af-pop-bg{position:absolute;inset:0;background:rgba(43,38,34,.38);opacity:0;transition:opacity 220ms ease}
+.af-pop{position:relative;width:min(340px,100%);background:#FFFCF7;border:1px solid #ECE5DA;border-radius:16px;box-shadow:0 12px 32px rgba(43,38,34,.18);padding:14px 16px 16px;opacity:0;transform:translateY(8px);transition:opacity 220ms ease,transform 220ms ease}
+.af-pop-wrap.on .af-pop-bg{opacity:1}
+.af-pop-wrap.on .af-pop{opacity:1;transform:none}
+.af-pop:focus{outline:none}
+.af-pop-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
+.af-pop-h h3{margin:0;font:600 20px/24px Khand,var(--mw-font-heading),sans-serif;color:#2B2622}
+.af-pop-x{flex:none;width:44px;height:44px;margin:-8px -10px -8px 0;display:grid;place-items:center;background:none;border:0;border-radius:999px;color:#2B2622;cursor:pointer}
+.af-pop-x:focus-visible{outline:2px solid #05668D;outline-offset:-4px}
+.af-pop-b .after-founding-line,.af-pop-b .after-founding-price{margin:6px 0 0;font:400 15px/22px Hind,var(--mw-font-body),sans-serif;color:#2B2622;background:none}
+.af-pop-b .after-founding-price{font-weight:600}
+@media (prefers-reduced-motion:reduce){.af-pop,.af-pop-bg{transform:none!important;transition:opacity 150ms linear!important}}
+/* 44px hit areas without moving layout (Swatch r4): plan buttons on tightened levels (40px), Review Edit (28px), the after-Founding line (32px). */
+html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link{position:relative}
+html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta::before,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link::before,html.ob-hb-on .ob.ob-plan .after-founding .af-open::before{content:"";position:absolute;left:0;right:0;top:50%;height:44px;min-height:100%;transform:translateY(-50%);z-index:1}
