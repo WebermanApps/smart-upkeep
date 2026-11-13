@@ -406,7 +406,7 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
-    document.body.classList.toggle("on-home", s === "home");
+    document.body.classList.toggle("on-home", s === "home"); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -861,8 +861,8 @@
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div>' + fsAdBtn("fs-ad-plans") + '</section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), fsAdBtn("fs-ad-plans fs-ad-hdr") /* Machan Nov 13 4:17 PM: the warranties line sits top right on the Plans header row (no separate bar under the dots). */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "À La Carte Menu") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
@@ -1258,12 +1258,15 @@
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
     var z = zoomFactor(), arrow = sec.querySelector(":scope > .hs-arrow");
-    box.style.maxHeight = "none";
+    box.style.maxHeight = "none"; box.style.height = "";
     var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
     var limit = sec.getBoundingClientRect().top / z + sec.clientHeight - pb - (arrow ? arrow.getBoundingClientRect().height / z + 8 : 4);
     var h = Math.max(120, Math.floor(limit - box.getBoundingClientRect().top / z - 4));
     box.style.maxHeight = h + "px";
     for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); box.style.maxHeight = h + "px"; }
+    /* Machan Nov 13 4:17 PM: the list box grows into the whole section (fills down to the arrow over the flush bar), not just its rows. */
+    box.style.height = h + "px";
+    for (var k = 0; k < 3; k++) { var ov = sec.scrollHeight - sec.clientHeight; if (ov <= 0) break; h = Math.max(120, h - ov - 2); box.style.maxHeight = h + "px"; box.style.height = h + "px"; }
     saFade(box);
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
@@ -2579,6 +2582,36 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec): green band, logo centered -> 16px left over the first 80px of scroll
+     (transform only; reduced motion starts left, no animation), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
+  (function () {
+    var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
+    var rmq = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null, ticking = false;
+    function skirt() { return parseFloat(getComputedStyle(root).getPropertyValue("--su-skirt")) || 0; }
+    function sync() {
+      ticking = false;
+      if (!brand || !document.body.classList.contains("on-home")) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
+      if (rmq && rmq.matches) { root.style.setProperty("--su-lx", "0px"); root.style.setProperty("--su-ly", "0px"); return; }
+      var y = Math.max(0, window.scrollY || 0), p = Math.min(1, y / 80), z = zoomFactor();
+      var vw = document.documentElement.clientWidth / z, edge = 16, w = brand.offsetWidth || 0;
+      var sh = document.querySelector(".topbar .top-share"), stop = sh ? (sh.getBoundingClientRect().left / z) - 8 : vw; /* centered logo never runs under Share on narrow phones */
+      var lx = Math.max(0, (1 - p) * Math.min(vw / 2 - edge - w / 2, stop - edge - w)), ly = Math.max(0, skirt() - y / z) / 2;
+      root.style.setProperty("--su-lx", lx.toFixed(1) + "px"); root.style.setProperty("--su-ly", ly.toFixed(1) + "px");
+    }
+    function req() { if (!ticking) { ticking = true; requestAnimationFrame(sync); } }
+    window.addEventListener("scroll", req, { passive: true }); window.addEventListener("resize", req);
+    if (rmq && rmq.addEventListener) rmq.addEventListener("change", req);
+    window.suBandSync = req;
+    if (!btn || !menu) return;
+    function setOpen(o, back) {
+      menu.hidden = !o; btn.setAttribute("aria-expanded", o ? "true" : "false");
+      if (o) { var f = menu.querySelector("a,button"); if (f) f.focus(); } else if (back) btn.focus();
+    }
+    btn.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden, true); });
+    document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false, true); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { e.preventDefault(); setOpen(false, true); } });
+    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act")); }); });
+  })();
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
     var text = "Preventive home maintenance for Metro Detroit. Starting at $139/mo.";
