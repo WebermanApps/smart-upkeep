@@ -2356,3 +2356,150 @@ body.on-home.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!i
 body.on-home .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
 @media (max-width:374px){body.on-home .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
 @media (min-width:900px){body.on-home .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
+
+/* FAQ Rich Look Deck (Machan Nov 13 8:46 PM, receipt faq-rich-look-deck-20261113-2046-7104ce66).
+   Port the member /member/help/ FAQ look onto the public Home #hs-faq only. Chips and saFit stay.
+   À La Carte, Plans, the dock, and the header are unchanged. No green header band. No green chip icons. */
+body.on-home #hs-faq{background:#FCF9F4!important;justify-content:flex-start!important}
+body.on-home #hs-faq > .hm-faqs{
+  flex:0 0 auto!important;
+  display:flex!important;
+  flex-direction:column;
+  grid-template-columns:minmax(0,1fr)!important;
+  min-height:0;
+  width:100%;
+}
+body.on-home #hs-faq .sa-groups.sa-tabbed{
+  display:flex;
+  flex-direction:column;
+  flex:0 0 auto;
+  min-height:0;
+  width:auto!important;
+  max-width:100%!important;
+}
+body.on-home #hs-faq .sa-faq-wrap{position:relative;min-height:0;flex:0 0 auto}
+body.on-home #hs-faq .sa-list{
+  background:#fff;
+  border:1px solid #ECE5DA;
+  border-radius:16px;
+  padding:2px 12px 6px;
+  box-shadow:none;
+}
+body.on-home #hs-faq .sa-item + .sa-item{border-top:1px solid #ECE5DA}
+body.on-home #hs-faq .sa-q{
+  font:600 15px/1.3 Hind,var(--mw-font-body),sans-serif;
+  font-weight:600;
+  color:#3a352e;
+  min-height:48px;
+  padding:6px 0;
+  gap:10px;
+  background:none;
+  box-shadow:none;
+  border-radius:0;
+}
+body.on-home #hs-faq .sa-q .sa-n{color:#3a352e}
+body.on-home #hs-faq .sa-q .sa-chev{display:none}
+body.on-home #hs-faq .sa-q::after{
+  content:"";
+  flex:none;
+  margin-left:auto;
+  width:8px;
+  height:8px;
+  box-sizing:border-box;
+  border-right:2px solid #6B6B6B;
+  border-bottom:2px solid #6B6B6B;
+  transform:rotate(45deg);
+  transform-origin:center;
+  transition:transform 200ms ease;
+}
+body.on-home #hs-faq .sa-q[aria-expanded="true"]::after{transform:rotate(225deg)}
+@media (prefers-reduced-motion:reduce){body.on-home #hs-faq .sa-q::after{transition:none}}
+body.on-home #hs-faq .sa-a{
+  padding:0 0 8px;
+  font:500 14.5px/1.45 Hind,var(--mw-font-body),sans-serif;
+  color:#3a352e;
+}
+body.on-home #hs-faq .sa-a p{margin:0 0 8px}
+body.on-home #hs-faq .sa-a p:last-child{margin-bottom:0}
+body.on-home #hs-faq .sa-a .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-body),sans-serif;color:#6b6b6b}
+body.on-home #hs-faq .sa-emerg > .sa-q,
+body.on-home #hs-faq .sa-emerg > .sa-q .sa-n{color:#A8431F}
+/* 04 B: open answer is a warm terracotta tint, not a lagoon edge. No green as a header or main look. */
+body.on-home #hs-faq .sa-tabbed .sa-item:has(.sa-q[aria-expanded="true"]){
+  background:#F7EBE5;
+  box-shadow:none;
+  border-radius:10px;
+  margin:0 -12px;
+  padding:0 12px;
+  position:relative;
+}
+/* 03 A: topic icons on the chips. Line icons, charcoal. Safety shield is terracotta, never green. Selected chip icons invert to white. */
+body.on-home #hs-faq .sa-tab{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:48px;
+  padding:0 14px 0 12px;
+}
+body.on-home #hs-faq .sa-tab .faq-ico{
+  flex:none;
+  width:16px;
+  height:16px;
+  display:grid;
+  place-items:center;
+  color:#0A0A0A;
+}
+body.on-home #hs-faq .sa-tab .faq-ico .su-ico{
+  width:14px;
+  height:14px;
+  display:block;
+  color:currentColor;
+  stroke:currentColor;
+}
+body.on-home #hs-faq .sa-tab .faq-ico .su-ico .f-t,
+body.on-home #hs-faq .sa-tab .faq-ico .su-ico .f-l,
+body.on-home #hs-faq .sa-tab .faq-ico .su-ico .f-s,
+body.on-home #hs-faq .sa-tab .faq-ico .su-ico .f-j{
+  fill:none!important;
+  stroke:currentColor!important;
+  color:inherit;
+}
+body.on-home #hs-faq .sa-tab[data-faq-ico="shield"] .faq-ico{color:#C1502E}
+body.on-home #hs-faq .sa-tab[aria-selected="true"] .faq-ico{color:#fff}
+/* Member-style white fade on the wrap (not a CSS mask), only when the box can scroll. */
+body.on-home #hs-faq .sa-box.fade-b,
+body.on-home #hs-faq .sa-box.fade-t,
+body.on-home #hs-faq .sa-box.fade-t.fade-b{
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+}
+body.on-home #hs-faq .sa-faq-wrap.fade-b::after{
+  content:"";
+  position:absolute;
+  left:1px;
+  right:1px;
+  bottom:0;
+  height:28px;
+  pointer-events:none;
+  border-radius:0 0 15px 15px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff 70%);
+  z-index:1;
+}
+/* 05: small warm Contact Panel under the list, only when a short group leaves real empty space. */
+body.on-home #hs-faq .faq-contact{
+  flex:none;
+  margin-top:8px;
+  margin-bottom:0;
+  padding:8px 12px;
+  background:#FAF6EE;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,0) 50%);
+  border:1px solid #ECE5DA;
+  border-radius:14px;
+  color:#3a352e;
+}
+body.on-home #hs-faq .faq-contact p{
+  margin:0;
+  font:500 14.5px/1.4 Hind,var(--mw-font-body),sans-serif;
+  color:#3a352e;
+}
+body.on-home #hs-faq .faq-contact[hidden]{display:none!important}

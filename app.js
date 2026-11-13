@@ -878,7 +878,7 @@
       /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
         saTabsHtml("faqg", "faq-groups", "FAQ Topics", FAQ_ALL.map(function (g, gi) { return [g[0], g[1].map(function (q, qi) {
-          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1]); }).join("")]; })) +
+          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1], q[2] === "what-should-i-do-in-an-emergency" ? "sa-emerg" : ""); }).join(""), FAQ_ICONS[gi]]; })) +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
          full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
@@ -1156,8 +1156,8 @@
      Caps the first letter after a start, space, hyphen, slash, quote or "("; all-caps tokens (AC, CO) and numbers are left as they are. pricing-config.js is untouched. */
   function pcTitle(x) { x = String(x); return x.replace(/(^|[\s\-\/("])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); }); }
   /* Shared in-place accordion row (À La Carte rows and Home FAQ): a real button with aria-expanded/aria-controls, so Enter and Space work. */
-  function saItem(id, headHtml, bodyHtml) {
-    return '<div class="sa-item"><button type="button" class="sa-q mw-hover" id="' + id + '-b" aria-expanded="false" aria-controls="' + id + '">' + headHtml +
+  function saItem(id, headHtml, bodyHtml, cls) {
+    return '<div class="sa-item' + (cls ? " " + cls : "") + '"><button type="button" class="sa-q mw-hover" id="' + id + '-b" aria-expanded="false" aria-controls="' + id + '">' + headHtml +
       '<svg class="sa-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
       '<div class="sa-a" id="' + id + '" role="region" aria-labelledby="' + id + '-b" hidden>' + bodyHtml + '</div></div>';
   }
@@ -1195,17 +1195,24 @@
       }).join("")];
     }));
   }
+  /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM): topic icons on the six chips, not on each question. Live SUIcon set. */
+  var FAQ_ICONS = ["furnace", "shield", "gutter", "clipboard", "van", "tag"];
   /* Machan Nov 13 1:27 PM ("divided by section with the names of the sections at the top, and then if they click the section it shows the list of the items";
      "it all needs to fit in one screen"; "same with FAQ"): group names are a sideways chip row (role=tablist); only the chosen group's rows show below,
      in a box that scrolls inside itself only when that group is taller than the room left on the screen. First group is selected by default. */
   function saTabsHtml(pfx, cls, label, groups) {
+    var isFaq = cls === "faq-groups";
     return '<div class="sa-groups sa-tabbed ' + cls + '">' +
       '<div class="sa-tabs" role="tablist" aria-label="' + esc(label) + '" data-ptr-ignore>' + groups.map(function (G, i) {
-        return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '">' + esc(G[0]) + '</button>';
+        var ico = (isFaq && G[2]) ? '<span class="faq-ico" aria-hidden="true">' + I(G[2], "sm") + '</span>' : "";
+        return '<button type="button" class="sa-tab mw-hover" role="tab" id="' + pfx + '-t' + i + '" aria-controls="' + pfx + '-p' + i + '" aria-selected="' + (i ? "false" : "true") + '" tabindex="' + (i ? "-1" : "0") + '"' + (G[2] ? ' data-faq-ico="' + esc(G[2]) + '"' : "") + '>' + ico + esc(G[0]) + '</button>';
       }).join("") + '</div>' +
+      (isFaq ? '<div class="sa-faq-wrap">' : "") +
       '<div class="sa-box" data-ptr-ignore>' + groups.map(function (G, i) {
         return '<div class="sa-grp" role="tabpanel" id="' + pfx + '-p' + i + '" aria-labelledby="' + pfx + '-t' + i + '"' + (i ? " hidden" : "") + '><div class="sa-list">' + G[1] + '</div></div>';
-      }).join("") + '</div></div>';
+      }).join("") + '</div>' +
+      (isFaq ? '</div><div class="faq-contact" hidden><p>Give Us A Call Or Send A Message In The App.</p></div>' : "") +
+      '</div>';
   }
   function bindSaRows(root) {
     root.addEventListener("click", function (e) {
@@ -1247,6 +1254,8 @@
   function saFade(box) {
     var top = box.scrollTop > 2, more = box.scrollHeight - box.clientHeight - box.scrollTop > 2;
     box.classList.toggle("fade-t", top); box.classList.toggle("fade-b", more);
+    var wrap = box.parentElement;
+    if (wrap && wrap.classList.contains("sa-faq-wrap")) { wrap.classList.toggle("fade-t", top); wrap.classList.toggle("fade-b", more); }
   }
   function saIntoBox(box, item) {
     if (!item) return;
@@ -1261,17 +1270,39 @@
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
     var z = zoomFactor();
+    var contact = sec.id === "hs-faq" ? sec.querySelector(".faq-contact") : null;
+    if (contact) contact.hidden = true;
     var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.removeProperty("margin-top"); grp.style.removeProperty("margin-bottom"); }
     box.style.maxHeight = "none"; box.style.height = "";
     /* PR108 r3 (Swatch Nov 13 4:49 PM): title + chips + box (+ See arrow) are one block centered in the section. The box keeps its natural height when
-       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside. */
+       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside.
+       FAQ Rich Look: FAQ is top-aligned so leftover space sits under the list; reserve 8px above and below (16 total) and measure air to the dock. */
     var cs = getComputedStyle(sec), inner = sec.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
     var kids = [].filter.call(sec.children, function (c) { var k = getComputedStyle(c); return k.display !== "none" && k.position !== "absolute" && k.position !== "fixed"; });
     var total = kids.reduce(function (t, c) { var k = getComputedStyle(c); return t + c.getBoundingClientRect().height / z + (parseFloat(k.marginTop) || 0) + (parseFloat(k.marginBottom) || 0); }, 0);
-    var nat = box.getBoundingClientRect().height / z, others = total - nat, room = Math.floor(inner - others - 32);
+    var nat = box.getBoundingClientRect().height / z, others = total - nat, gap = sec.id === "hs-faq" ? 16 : 32, room = Math.floor(inner - others - gap);
     if (nat > room) box.style.maxHeight = Math.max(120, room) + "px";
     for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; var h = Math.max(120, box.getBoundingClientRect().height / z - over - 2); box.style.maxHeight = h + "px"; }
+    if (sec.id === "hs-faq") {
+      var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+      if (dock) {
+        var dockTop = dock.getBoundingClientRect().top, br = box.getBoundingClientRect(), overDock = (br.bottom - (dockTop - 8 * z)) / z;
+        if (overDock > 1) box.style.maxHeight = Math.max(120, br.height / z - overDock) + "px";
+      }
+      if (contact) saPlaceContact(sec, box, contact);
+    }
     saFade(box);
+  }
+  /* FAQ Rich Look 05: a small warm Contact Panel only when a short group leaves real empty space above the dock. No panel when the group fills the screen. Live line only; no phone number. */
+  function saPlaceContact(sec, box, contact) {
+    if (box.scrollHeight > box.clientHeight + 2) { contact.hidden = true; return; }
+    var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    if (!dock) { contact.hidden = true; return; }
+    var z = zoomFactor(), dockTop = dock.getBoundingClientRect().top, boxBottom = box.getBoundingClientRect().bottom;
+    contact.hidden = false;
+    var cr = contact.getBoundingClientRect(), need = cr.height / z + 8;
+    if ((dockTop - boxBottom) / z < need) { contact.hidden = true; return; }
+    if (dockTop - contact.getBoundingClientRect().bottom < 8 * z) contact.hidden = true;
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
   function pcScroll(top) { try { window.scrollTo({ top: Math.round(top), left: window.scrollX, behavior: "instant" }); } catch (x) { window.scrollTo(window.scrollX, Math.round(top)); } }
