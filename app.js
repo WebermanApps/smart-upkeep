@@ -406,7 +406,7 @@
     app.innerHTML = html;
     app.setAttribute("data-screen", s);
     bind();
-    document.body.classList.toggle("on-home", s === "home");
+    document.body.classList.toggle("on-home", s === "home"); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -634,7 +634,7 @@
   };
   /* Featured Service ad slot. FEATURED[0] shows; others can rotate in later. Entries start the Get Started flow. */
   var FEATURED = [
-    { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge on Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
+    { id: "warranty", art: "warranty", title: "Warranties Checked", hook: "A Badge On Your Home Record.", popTitle: "Warranties Checked", popText: "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record.", cta: "Free Quote in Minutes" },
     { id: "mold", art: "mold", title: "Mold and Moisture Scan", hook: "Whole Home, Every Visit.", popTitle: "Mold and Moisture Scan", popText: "Protects against mold and water leaks. Damp spots flagged early. Not a lab mold test.", cta: "Free Quote in Minutes" },
     { id: "wh", art: "wh", title: "Water Heater Flush", hook: "Less Sediment, Longer Tank Life.", popTitle: "Water Heater Flush", popText: "A yearly flush, or descale for tankless, to cut sediment and extend its life.", cta: "Free Quote in Minutes" },
     { id: "storm", art: "storm", title: "Storm Checks", hook: "After-Storm Checks, Up To 4 A Year.", popTitle: "Storm Checks", popText: "On Complete, we check your home after major storms, up to 4 a year, with a drone roof check and vent and ice dam clearing.", cta: "Free Quote in Minutes" }];
@@ -741,9 +741,9 @@
   }
   /* Machan Nov 13 1:43 PM ("teh same one we have at the bottom"): the same Featured Service bar also sits at the bottom of Plans; both open the one
      bottom-sheet pop-up (same motion, unchanged). Same markup and wording; only the extra class differs. */
-  function fsAdBtn(cls) {
+  function fsAdBtn(cls, hook) {
     var f = FEATURED[0], art = FS_ART[f.art];
-    return '<button type="button" class="fs-ad mw-hover' + (cls ? " " + cls : "") + '" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + f.hook + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>';
+    return '<button type="button" class="fs-ad mw-hover' + (cls ? " " + cls : "") + '" aria-haspopup="dialog" data-featured="' + f.id + '">' + art("fs-art") + '<span class="fs-tx"><span class="fs-tag">Featured Service</span><b>' + f.title + '</b><small>' + (hook || f.hook) + '</small></span><span class="fs-go" aria-hidden="true">&rsaquo;</span></button>';
   }
   function featuredAd() {
     var f = FEATURED[0], art = FS_ART[f.art];
@@ -861,8 +861,8 @@
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div>' + fsAdBtn("fs-ad-plans") + '</section>') + hsArrow("hs-alc", "See À La Carte") + '</section>' +
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), fsAdBtn("fs-ad-plans fs-ad-hdr", "And Logged In Your Member App") /* Machan Nov 13 4:33 PM wording, two lines */ /* Machan Nov 13 4:17 PM: the warranties line sits top right on the Plans header row (no separate bar under the dots). */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
+        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "À La Carte Menu") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
@@ -1104,10 +1104,13 @@
       var used = row ? row.getBoundingClientRect().height / z : 0;
       var room = budget(sec) - used;
       if (cards.length && room < 0 && sec.scrollHeight > sec.clientHeight) { /* nothing to shrink below content; CSS short-phone rules keep this from happening */ }
-      if (cards.length && room > 8) {
-        var h = cards[0].getBoundingClientRect().height / z + room;
-        setH(cards, Math.floor(h));
-      }
+      /* PR108 r3 (Swatch Nov 13 4:49 PM): tiles keep their own natural height (row align-items:flex-start in CSS); title + tiles + dots + See arrow
+         form one block centered in the section (CSS justify-content:center), so no JS gaps here. */
+      var sc = sec.querySelector(".hm-scroll"), dots = sec.querySelector(".pc-dots");
+      if (sc) sc.style.removeProperty("margin-top"); if (dots) dots.style.removeProperty("margin-bottom");
+      /* Warranties block: top right of the title row when both lines fit beside the title; otherwise its own row under the title (16px edge). */
+      var hh = sec.querySelector("#row-plans > .hm-row-h"), wb = hh && hh.querySelector(".fs-ad-hdr"), t2 = hh && hh.querySelector("h2");
+      if (hh && wb && t2) { hh.classList.remove("fs-stack"); if (t2.getBoundingClientRect().right + 10 * z > wb.getBoundingClientRect().left + 0.5 || wb.scrollWidth > wb.clientWidth + 1) hh.classList.add("fs-stack"); }
     })();
     /* Shop À La Carte and FAQ (Machan Nov 13 1:26-1:27 PM): chip row + one group at a time; the list box never runs past the section's one screen. */
     saFit(document.getElementById("hs-alc")); saFit(document.getElementById("hs-faq"));
@@ -1257,13 +1260,17 @@
   function saFit(sec) {
     if (!sec) return;
     var box = sec.querySelector(".sa-box"); if (!box) return;
-    var z = zoomFactor(), arrow = sec.querySelector(":scope > .hs-arrow");
-    box.style.maxHeight = "none";
-    var pb = parseFloat(getComputedStyle(sec).paddingBottom) || 0;
-    var limit = sec.getBoundingClientRect().top / z + sec.clientHeight - pb - (arrow ? arrow.getBoundingClientRect().height / z + 8 : 4);
-    var h = Math.max(120, Math.floor(limit - box.getBoundingClientRect().top / z - 4));
-    box.style.maxHeight = h + "px";
-    for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; h = Math.max(120, h - over - 2); box.style.maxHeight = h + "px"; }
+    var z = zoomFactor();
+    var grp = sec.querySelector(".sa-groups"); if (grp) { grp.style.removeProperty("margin-top"); grp.style.removeProperty("margin-bottom"); }
+    box.style.maxHeight = "none"; box.style.height = "";
+    /* PR108 r3 (Swatch Nov 13 4:49 PM): title + chips + box (+ See arrow) are one block centered in the section. The box keeps its natural height when
+       the group is shorter than the room; when it is longer, the box takes the room minus 16px above and below the block and scrolls inside. */
+    var cs = getComputedStyle(sec), inner = sec.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+    var kids = [].filter.call(sec.children, function (c) { var k = getComputedStyle(c); return k.display !== "none" && k.position !== "absolute" && k.position !== "fixed"; });
+    var total = kids.reduce(function (t, c) { var k = getComputedStyle(c); return t + c.getBoundingClientRect().height / z + (parseFloat(k.marginTop) || 0) + (parseFloat(k.marginBottom) || 0); }, 0);
+    var nat = box.getBoundingClientRect().height / z, others = total - nat, room = Math.floor(inner - others - 32);
+    if (nat > room) box.style.maxHeight = Math.max(120, room) + "px";
+    for (var n = 0; n < 3; n++) { var over = sec.scrollHeight - sec.clientHeight; if (over <= 0) break; var h = Math.max(120, box.getBoundingClientRect().height / z - over - 2); box.style.maxHeight = h + "px"; }
     saFade(box);
   }
   function pcHdr() { var t = document.querySelector(".topbar"); return t ? t.getBoundingClientRect().bottom : 0; }
@@ -2579,6 +2586,39 @@
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
   document.getElementById("shareBtn").addEventListener("click", function () { doShare(); });
+  /* ---------- Brand band header (Home, preview Nov 13 2026 4:15 PM, Swatch spec; r4 Warm White band, never green): logo centered -> 16px left over the first 80px of scroll
+     (transform only; reduced motion starts left, no animation), Share + Menu icons right. Menu: Log In, Sign Up (funnel start). ---------- */
+  (function () {
+    var root = document.documentElement, brand = document.getElementById("logoHome"), btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu");
+    var rmq = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null, ticking = false;
+    function skirt() { return parseFloat(getComputedStyle(root).getPropertyValue("--su-skirt")) || 0; }
+    function sync() {
+      ticking = false;
+      var onHome = document.body.classList.contains("on-home");
+      /* PR108 r4: warm shadow under the band once the skirt has scrolled away (band at its 56px/64px height). */
+      document.body.classList.toggle("su-band-scrolled", onHome && (window.scrollY || 0) >= Math.max(1, skirt() - 0.5));
+      if (!brand || !onHome) { root.style.removeProperty("--su-lx"); root.style.removeProperty("--su-ly"); return; }
+      if (rmq && rmq.matches) { root.style.setProperty("--su-lx", "0px"); root.style.setProperty("--su-ly", "0px"); return; }
+      var y = Math.max(0, window.scrollY || 0), p = Math.min(1, y / 80), z = zoomFactor();
+      var vw = document.documentElement.clientWidth / z, edge = 16, w = brand.offsetWidth || 0;
+      var sh = document.querySelector(".topbar .top-share"), stop = sh ? (sh.getBoundingClientRect().left / z) - 8 : vw; /* centered logo never runs under Share on narrow phones */
+      var lx = Math.max(0, (1 - p) * Math.min(vw / 2 - edge - w / 2, stop - edge - w)), ly = Math.max(0, skirt() - y / z) / 2;
+      root.style.setProperty("--su-lx", lx.toFixed(1) + "px"); root.style.setProperty("--su-ly", ly.toFixed(1) + "px");
+    }
+    function req() { if (!ticking) { ticking = true; requestAnimationFrame(sync); } }
+    window.addEventListener("scroll", req, { passive: true }); window.addEventListener("resize", req);
+    if (rmq && rmq.addEventListener) rmq.addEventListener("change", req);
+    window.suBandSync = req;
+    if (!btn || !menu) return;
+    function setOpen(o, back) {
+      menu.hidden = !o; btn.setAttribute("aria-expanded", o ? "true" : "false");
+      if (o) { var f = menu.querySelector("a,button"); if (f) f.focus(); } else if (back) btn.focus();
+    }
+    btn.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden, true); });
+    document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false, true); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { e.preventDefault(); setOpen(false, true); } });
+    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act")); }); });
+  })();
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
     var text = "Preventive home maintenance for Metro Detroit. Starting at $139/mo.";
