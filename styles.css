@@ -424,7 +424,6 @@ body.on-home .foot{padding-bottom:8.5rem}
 .hm-plan.rec{border-color:#A8431F;box-shadow:inset 0 3px 0 #A8431F}
 .hm-price{margin-top:auto;padding-top:.4rem;font-weight:600;color:#0B6E4F}
 .hm-plan .link{align-self:flex-start;background:none;border:0;padding:.2rem 0;color:#05668D;font:600 .85rem var(--mw-font-body);cursor:pointer}
-.hm-badge{display:inline-block;margin-right:.4rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;background:#A8431F;color:#fff;padding:.05rem .35rem}
 .hm-accs{margin-top:1.6rem}
 .hm-accs h2{margin-bottom:.4rem}
 .hm-acc summary{gap:.7rem;justify-content:flex-start}
@@ -594,12 +593,10 @@ body,body.on-home,.hm-search,body.on-home .topbar{background:#fff}
 .top-share{display:flex;align-items:center;gap:.5rem}
 .btn-share{min-height:40px;padding:.4rem 1rem;font-size:.78rem;border-color:#0a0a0a;color:#0a0a0a;background:#fff}
 .top-share .share-msg{font-size:.75rem;color:var(--mw-muted-text)}
-.hm-badge{background:#fff;border:1px solid #0a0a0a;color:#0a0a0a}
 /* Plan card */
 .hm-plan.pc{border:1px solid var(--mw-border);border-top:5px solid var(--mw-terracotta);box-shadow:none;border-radius:.6rem;gap:.2rem}
 .hm-plan.pc.rec{border-color:var(--mw-border);border-top-color:var(--mw-terracotta);box-shadow:0 4px 14px rgba(10,10,10,.08)}
 .pc-top{display:flex;align-items:center;justify-content:space-between;gap:.4rem;flex-wrap:wrap}
-.pc-top .hm-badge{margin:0}
 .pc-name{font-size:1.35rem!important;margin:0!important}
 .pc-price{display:flex;align-items:baseline;gap:.25rem;margin:.2rem 0 .1rem}
 .pc-from,.pc-per{font-size:.85rem;color:var(--mw-muted-text);font-weight:600}
@@ -640,8 +637,6 @@ body,body.on-home,.hm-search,body.on-home .topbar{background:#fff}
 .verify-result div{display:flex;flex-direction:column}
 @media(max-width:420px){.by-mw{font-size:.62rem;letter-spacing:.06em}.seal-ring{width:52px;height:52px}}
 .pc-top{flex-direction:column;align-items:flex-start;gap:.25rem}
-.pc-top .hm-badge{order:-1}
-.pc-ph{visibility:hidden}
 .hm-deal{background:#fff!important;border-color:var(--mw-border)!important;border-left-color:#C1502E!important;box-shadow:none!important;color:#A8431F}
 .start-at{border-color:#0a0a0a!important;color:#0a0a0a!important}
 .hm-row-h .link,.hm-acc .link{color:#0a0a0a;border-bottom-color:rgba(10,10,10,.35)}
@@ -1697,7 +1692,6 @@ body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-t
 .wi-tab.wt-gold.on{box-shadow:inset 0 -3px 0 #A8431F}
 .wi-tab.wt-platinum.on{box-shadow:inset 0 -3px 0 #05668D}
 .wi-tab:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
-.wi-badge{display:block;margin:.18rem auto 0;width:max-content;background:#A8431F;color:#fff;font:700 12px/1 Hind,sans-serif;padding:.14rem .4rem;border-radius:99px}
 .wi-tabbody{background:#fff;border:1px solid #e5e5e5;border-top:0;border-radius:0 0 12px 12px;padding:.55rem .7rem .65rem}
 .wi-meta{margin:0 0 .45rem;font:600 13px/1.35 Hind,sans-serif}
 .wi-core{margin:0 0 .5rem;background:#fff;border:1px solid #e5e5e5;border-top:4px solid #0B6E4F;border-radius:12px;padding:.42rem .65rem .48rem}
@@ -1724,7 +1718,6 @@ body.on-home .hm .hs-sec > .hm-row,body.on-home .hm .hs-sec > .hm-accs{padding-t
   .wi-table thead th.th-gold{border-top-color:#A8431F}
   .wi-table thead th.th-platinum{border-top-color:#05668D}
   .wi-table thead th.lab{border-top-color:#e5e5e5}
-  .wi-table .wi-badge{display:block;margin:.25rem auto 0}
   .wi-from{display:block;margin-top:.22rem;font:600 13px/1.2 Hind,sans-serif;color:#0a0a0a}
   .wi-table th.lab{text-align:left;width:34%;font:500 13.5px/1.35 Hind,sans-serif}
   .wi-table th.lab b{font-weight:600}
@@ -2058,8 +2051,7 @@ body.on-home .hm-plan.pc > .pc-more .pc-more-link{text-transform:none!important;
   body.on-home #hs-plans .hm-plan.pc{padding-top:12px!important;padding-bottom:10px!important}
   body.on-home #hs-plans .hm-plan .pc-inc:not(.pc-all) li{margin-bottom:1px!important}
   body.on-home #hs-plans .hm-plan .pc-top{min-height:0!important;margin-bottom:0!important}
-  body.on-home #hs-plans .hm-plan .pc-top .hm-badge{padding-top:1px!important;padding-bottom:1px!important}
-}
+  }
 @media (max-width:480px) and (max-height:660px){
   body.on-home #hs-plans .hm-plan .pc-inc:not(.pc-all) li{font-size:14px!important;line-height:1.15!important}
   body.on-home #hs-plans .hm-scroll{padding-top:0!important;padding-bottom:2px!important}
@@ -2177,31 +2169,9 @@ body.on-home #hs-alc,body.on-home #hs-faq{height:var(--su-sec-h)!important;max-h
   body.on-home .hm-hero .hm-lead{font-family:Hind,var(--mw-font-body),sans-serif!important;font-weight:500!important;font-size:16px!important;line-height:1.25!important;color:#3D3D3D!important;margin-top:var(--hero-pair,4px)!important;white-space:nowrap!important}
   body.on-home .hm-hero .hm-lead-l,body.on-home .hm-hero .hm-lead-s{font-family:inherit!important;font-weight:inherit!important;font-size:inherit!important;color:inherit!important}
 }
-/* 04 A Always-On Checks: cream plate, upper left of the hero video, clear of the play badge.
-   Light only. No motion (reduced-motion is a no-op). Stays visible on the poster and after the explainer is dismissed. */
-body.on-home .hm-hero .hm-thumb .hm-expand{z-index:4}
-body.on-home .hm-checks{position:absolute;inset:0;z-index:3;pointer-events:none;display:flex;flex-direction:column;align-items:stretch}
-body.on-home .hm-checks-plate{align-self:flex-start;margin:12px 14px 0;padding:8px 10px;background:rgba(255,252,247,.94);border:1px solid rgba(10,10,10,.08);border-radius:12px;box-shadow:0 4px 14px rgba(60,40,20,.08);max-width:calc(100% - 28px);color-scheme:light only}
-body.on-home .hm-checks-list{list-style:none;margin:0;padding:0}
-body.on-home .hm-checks-list li{display:flex;align-items:flex-start;gap:7px;margin:0 0 5px;font-family:Hind,var(--mw-font-body),sans-serif;font-weight:500;font-size:13px;line-height:1.2;color:#1A1A1A;text-transform:none;text-align:left}
-body.on-home .hm-checks-list li:last-child{margin-bottom:0}
-body.on-home .hm-checks-tick{flex:none;margin-top:1px}
-@media (max-width:480px){
-  /* Play badge is top-left on phones (left:.5rem + top:.7rem). Sit the plate clearly under it. */
-  body.on-home .hm-checks-plate{margin:52px 14px 0}
-}
+/* 30px nowrap 'Preventive Home Maintenance' overflows 5px at 360; 26px is the existing 360 fit valve and the deck's 360 frame. Price 22 and tagline 16 stay. */
 @media (max-width:360px){
-  /* 30px nowrap 'Preventive Home Maintenance' overflows 5px at 360; 26px is the existing 360 fit valve and the deck's 360 frame. Price 22 and tagline 16 stay. */
   body.on-home .hm-hero .hm-eb-t{font-size:26px!important}
-  body.on-home .hm-checks-list li{font-size:12px}
-  body.on-home .hm-checks-plate{margin-top:52px;padding:6px 8px;max-width:calc(100% - 24px)}
-}
-/* Phone 3:4 teaser has a clear upper field. The desktop 16:9 cut already paints 'Introducing Smart Upkeep' there, so the plate stays phone-only. */
-@media (min-width:481px){
-  body.on-home .hm-checks{display:none}
-}
-@media (prefers-reduced-motion:reduce){
-  body.on-home .hm-checks,body.on-home .hm-checks-plate{transition:none;animation:none}
 }
 /* 03 B Slower, Larger Pills: one set per 52s (JS reads this), 5px gap, slightly larger pills. Hand swipe/drag/wheel stays. */
 body.on-home .hm-hc-track{animation-duration:60.81s!important} /* was 52s for 6 badges (838.19px set); 7 badges = 980.22px, so 52 x 980.22/838.19 keeps the same 16.12px/s */
@@ -2223,6 +2193,8 @@ body.on-home .hm-dock .hm-tab-cta .hm-cta-arr{display:inline-block;font:700 16px
   --su-shine-faint:linear-gradient(to bottom,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 50%);
   --su-gloss:linear-gradient(100deg,#FAF3EB 0%,#fff 70%);          /* the bottom warranties bar's own gloss (.fs-ad), reused */
   --su-sh-card:0 1px 2px rgba(60,40,20,.06),0 4px 12px rgba(60,40,20,.06);
+  --su-sh-1:0 1px 2px rgba(60,40,20,.08),0 2px 6px rgba(60,40,20,.06);
+  --su-sh-3:0 2px 6px rgba(60,40,20,.08),0 16px 40px rgba(60,40,20,.16);
   --su-sh-bar:0 -4px 16px rgba(60,40,20,.08);
   --su-sh-btn:0 2px 6px rgba(60,40,20,.10);
   --su-hair:#E6E1D8;
@@ -2261,7 +2233,6 @@ body.on-home .hm-dock .hm-tab-cta{background-image:var(--su-shine),linear-gradie
 @keyframes suSheen{from{background-position:0 0,160% 0}to{background-position:0 0,-60% 0}}
 body.on-home .hm-dock button[data-hm-tab].on{background-image:var(--su-shine-faint)}
 .sa-tab[aria-selected="true"]{background-image:var(--su-shine-faint)}
-body.on-home #hs-plans .hm-plan .hm-badge:not(.pc-ph){background-image:var(--su-shine)}
 /* Plans warranties bar: same Featured Service bar and wording; white surface, 16px top corners, hairline top, bar shadow, Khand Title Case labels, the original gloss + shine.
    Rises from the bottom when Plans comes into view; it sits under the dots inside Plans, so it never covers a tile, See More, a price or Get Started. */
 body.on-home .fs-ad.fs-ad-plans{margin:8px 0 0;background-color:#fff;background-image:var(--su-shine),var(--su-gloss);border:1px solid var(--su-hair);border-radius:16px 16px 10px 10px;box-shadow:var(--su-sh-bar);padding:.3rem .8rem .3rem .35rem;flex:none}
@@ -2331,6 +2302,8 @@ body.su-band .hdr-menu a:hover,body.su-band .hdr-menu button:hover,body.su-band 
 body.su-band .hdr-menu a:focus-visible,body.su-band .hdr-menu button:focus-visible{outline:2px solid #05668D;outline-offset:-2px}
 body.su-band .hdr-menu button[data-menu-act="start"]{color:#0B6E4F}
 body.on-home main#app{display:flow-root!important;padding-top:0!important}
+/* Home has no scroll-away skirt: the white card sits flush under the 56px header (Machan / Swatch PR121 r2). */
+body.on-home{--su-skirt:0px}
 body.on-home{background-image:linear-gradient(var(--su-band),var(--su-band))!important;background-size:100% calc(var(--su-band-h) + env(safe-area-inset-top,0px) + var(--su-skirt) + var(--su-overlap))!important;background-repeat:no-repeat!important;background-position:0 0!important}
 body.on-home main#app > .hm{position:relative;margin-top:var(--su-skirt)!important;background:#fff!important;border-radius:20px 20px 0 0!important;box-shadow:0 -1px 0 rgba(60,40,20,.06),0 -4px 16px rgba(60,40,20,.06)!important}
 body.on-home .foot{background:#fff!important}
@@ -2373,10 +2346,10 @@ body.on-home #row-plans .hm-plan{align-self:flex-start!important}
 body.su-band .topbar{transition:box-shadow .16s ease}
 body.su-band.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10)!important;border-bottom:0!important}
 @media (prefers-reduced-motion:reduce){body.su-band .topbar{transition:none}}
-/* Machan Nov 13 7:31 PM ICT: "and maybe even just a tad larger, header same size." Logo +12% at every width; band heights unchanged (56/64px + skirt). */
-body.su-band .topbar .brand{width:189px;height:47px;margin-top:-23.5px!important}
-@media (max-width:374px){body.su-band .topbar .brand{width:168px;height:41.5px;margin-top:-20.75px!important}}
-@media (min-width:900px){body.su-band .topbar .brand{width:239px;height:59px;margin-top:-29.5px!important}}
+/* Machan Nov 13 10:07 PM ICT: logo slightly too big; ~6% smaller (halfway back to pre-PR109), whole-pixel box, band 56/64 unchanged. */
+body.su-band .topbar .brand{width:177px;height:44px;margin-top:-22px!important}
+@media (max-width:374px){body.su-band .topbar .brand{width:158px;height:39px;margin-top:-19px!important}}
+@media (min-width:900px){body.su-band .topbar .brand{width:226px;height:56px;margin-top:-28px!important}}
 /* Machan Nov 13 7:46 PM ICT: logo CENTERED at all times (no slide), Share top left, Menu top right, PR109 size kept (supersedes PR109's left logo).
    Machan Nov 13 7:41 PM ICT: the Home header runs on every onboarding/sign-up step (body.su-band is set on Home and on the 11 funnel steps; the rules above
    are shared, not forked). On the steps there is no white card to overlap, so the scroll-away skirt is 0: the band is the 56px/64px band, the step counter
@@ -2393,13 +2366,7 @@ button.hm-hchip{font-family:inherit;line-height:inherit;-webkit-appearance:none;
 button.hm-hchip:focus-visible{outline:2px solid #05668D;outline-offset:1px}
 .hm-hchips.hc-open .hm-hc-track{animation-play-state:paused!important}
 .hm-hcw{position:relative}
-.hm-hc-info{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:6;display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid #EADFCF;border-radius:12px;background:#fff;box-shadow:0 8px 22px rgba(60,40,20,.14),0 1px 3px rgba(60,40,20,.08);font:500 14px/1.35 Hind,var(--mw-font-body),sans-serif;color:#3d3d3d;text-align:left;opacity:0;transform:translate3d(0,-4px,0);transition:opacity .22s ease,transform .22s ease;pointer-events:none}
-.hm-hc-info.open{opacity:1;transform:none;pointer-events:auto}
-.hm-hc-info[hidden]{display:none!important}
-.hm-hc-info-t{font:600 14px/1.2 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a}
-@media (prefers-reduced-motion:reduce){.hm-hc-info{transition:none}}
 body.on-home .hm-hchip.on{box-shadow:inset 0 0 0 1.5px currentColor}
-.hm-hc-info.up{top:auto;bottom:calc(100% + 6px);transform:translate3d(0,4px,0)}.hm-hc-info.up.open{transform:none}
 /* Machan Nov 13 7:49 PM ICT: every onboarding step fits one screen on iPhone 14/15 (390x664 inside Safari). On short screens the step blocks keep
    tighter gaps (progress row, title, body), so Plan, Access, Start and Details no longer run 6-10px under the sticky Back/Next bar. Nothing removed. */
 @media (max-height:700px){
@@ -2639,12 +2606,12 @@ html.pc-lock body{overflow:visible!important}
   border:0;border-radius:24px;background:transparent;color:#0A0A0A;cursor:pointer;padding:0}
 .pc-sheet-x .x-ico{width:22px;height:22px}
 .pc-sheet-x:focus-visible,.pc-sheet-go:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
-.pc-sheet-hd .hm-badge{display:inline-block;margin:0 0 6px}
 .pc-sheet .pc-name{font-family:Khand,var(--mw-font-heading),sans-serif;font-weight:700;font-size:1.9rem!important;line-height:1.05;margin:0!important}
 .pc-sheet .pc-tag{display:block;margin:2px 0 6px}
 .pc-sheet .pc-price{display:flex;align-items:baseline;gap:6px}
 .pc-sheet .pc-big{font-size:2.6rem}
-.pc-sheet .pc-year{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:#4a4a4a;margin-top:4px}
+.pc-sheet .pc-year{font:600 13px/1.3 Hind,var(--mw-font-body),sans-serif;letter-spacing:0;text-transform:none;color:#4a4a4a;margin-top:4px}
+.pc-sheet .pc-year-n{font:700 15px/1 Khand,var(--mw-font-heading),sans-serif;color:var(--pc-ac,#A8431F)}
 .pc-sheet-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 20px 16px}
 .pc-sheet .pc-inc{font-size:15px;line-height:1.4;margin:0}
 .pc-sheet .pc-inc li{margin:.35rem 0}
@@ -2659,7 +2626,85 @@ html.pc-lock body{overflow:visible!important}
 .pc-sheet-go{width:100%;min-height:48px;border-radius:999px!important;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 @media (min-width:700px){.pc-sheet-hd{padding-left:max(20px,calc(50% - 300px))}}
 
+/* ===== Hero no-list + polish (Machan Nov 13 10:05–10:15, Swatch final) ===== */
+/* Badge-to-See Plans gap of at least 16px is set in hsBarFill (gap = --hs-4). */
+/* Badge shine (Machan: "badges should be shined too"): same gloss and warm --su-sh-1, no size change. */
+body.on-home .hm-hchip{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 45%);
+  box-shadow:var(--su-sh-1);
+  transition:transform 120ms ease;
+}
+body.on-home .hm-hchip:active{transform:scale(.97)}
+body.on-home button.hm-hchip:focus-visible{outline:2px solid rgba(168,67,31,.45);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .hm-hchip{transition:none}
+  body.on-home .hm-hchip:active{transform:none}
+}
 
+/* Badge explain pop-up (Swatch final). Light only, no green. */
+.hm-hc-info{position:fixed;inset:0;z-index:80;display:block;pointer-events:none;background:transparent;border:0;box-shadow:none;padding:0;opacity:1;transform:none}
+.hm-hc-info[hidden]{display:none!important}
+.hm-hc-scrim{position:absolute;inset:0;background:transparent;pointer-events:auto;min-width:44px;min-height:44px}
+.hm-hc-info-card{
+  position:absolute;z-index:1;box-sizing:border-box;max-width:min(260px, calc(100vw - 32px));
+  padding:14px 16px;border:1px solid #ECE5DA;border-radius:16px;background:#FFF8EE;
+  box-shadow:var(--su-sh-3);
+  color-scheme:light only;pointer-events:auto;
+  display:flex;align-items:flex-start;gap:10px;
+  opacity:0;transform:scale(.92);
+  transition:opacity 160ms ease-out,transform 160ms ease-out;
+}
+.hm-hc-info-card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%);
+}
+.hm-hc-info.open .hm-hc-info-card{opacity:1;transform:scale(1);transition:opacity 220ms ease-out,transform 220ms ease-out}
+.hm-hc-info-ico{
+  position:relative;z-index:1;flex:none;width:28px;height:28px;border-radius:50%;
+  background:#F6E7DC;color:#A8431F;display:grid;place-items:center;
+}
+.hm-hc-info-ico svg,.hm-hc-info-ico .su-ico{width:20px;height:20px;display:block;color:#A8431F}
+.hm-hc-info-body{position:relative;z-index:1;min-width:0;flex:1}
+.hm-hc-info-t{display:block;font:600 16px/1.15 Khand,var(--mw-font-heading),sans-serif;color:#2B2622;text-transform:none;letter-spacing:0}
+.hm-hc-info-x{display:block;margin-top:4px;font:400 14px/20px Hind,var(--mw-font-body),sans-serif;color:#4A433D}
+.hm-hc-info-caret{
+  position:absolute;z-index:0;width:12px;height:12px;background:#FFF8EE;border:1px solid #ECE5DA;
+  box-shadow:var(--su-sh-3);transform:rotate(45deg);pointer-events:none;
+}
+.hm-hc-info-caret.down{bottom:-6px;border-top:0;border-left:0;box-shadow:2px 2px 8px rgba(60,40,20,.08)}
+.hm-hc-info-caret.up{top:-6px;border-bottom:0;border-right:0;box-shadow:-2px -2px 8px rgba(60,40,20,.06)}
+.hm-hc-info-card.sheet{width:min(260px, calc(100vw - 32px))}
+@media (prefers-reduced-motion:reduce){
+  .hm-hc-info-card{transform:none;transition:opacity 160ms ease}
+  .hm-hc-info.open .hm-hc-info-card{transform:none;transition:opacity 220ms ease}
+}
+
+/* Visits / Year pill on Home plan tiles (Swatch merged final). Same terracotta on every tile, no green, no tile growth. */
+body.on-home #row-plans .hm-plan .pc-year,
+body.on-home #hs-plans .hm-plan .pc-year{
+  display:inline-flex;align-items:baseline;gap:6px;flex-wrap:nowrap;white-space:nowrap;
+  box-sizing:border-box;width:auto;max-width:100%;
+  margin:.15rem 0 .25rem;padding:4px 10px;border-radius:999px;
+  background:#F6E7DC;border:1px solid rgba(168,67,31,.18);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0) 45%);
+  text-transform:none;letter-spacing:0;color:#7A3418;min-height:0;
+}
+body.on-home #row-plans .hm-plan .pc-year-cal,
+body.on-home #hs-plans .hm-plan .pc-year-cal{
+  flex:none;width:14px;height:14px;color:#A8431F;align-self:center;display:block;
+}
+body.on-home #row-plans .hm-plan .pc-year-n,
+body.on-home #hs-plans .hm-plan .pc-year-n{
+  font:700 1.15em/1 Khand,var(--mw-font-heading),sans-serif;color:#A8431F;font-size:calc(13px * 1.15);
+}
+body.on-home #row-plans .hm-plan .pc-year-l,
+body.on-home #hs-plans .hm-plan .pc-year-l{
+  font:600 13px/1 Hind,var(--mw-font-body),sans-serif;color:#7A3418;
+}
+@media (max-width:360px){
+  body.on-home #row-plans .hm-plan .pc-year,
+  body.on-home #hs-plans .hm-plan .pc-year{white-space:nowrap}
+}
 
 /* ===== Home scroll polish + bottom bar (home-scroll-polish-1113, Machan 10:08–10:09, Swatch spec) ===== */
 /* One scroll path is JS ease-in-out (560ms). Keep CSS scroll-behavior auto so the two never fight. */
