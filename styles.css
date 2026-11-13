@@ -2867,3 +2867,93 @@ html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
 
 .addon-body .addon-note{margin:2px 0 0;font:500 12px/15px Hind,var(--mw-font-body),sans-serif;color:#737373}
 
+
+/* ===== Plans sheet: swipe between plans, plain list, exact-scope pop-up (Machan Nov 13 11:06-11:09 PM ICT) ===== */
+.pc-sheet-in{position:relative}
+.pc-sheet-in > .pc-sheet-grab,.pc-sheet-in > .pc-sheet-x{z-index:3}
+.pc-panes{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;touch-action:pan-y}
+.pc-pane{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
+.pc-nav-w:empty{display:none}
+.pc-nav{display:flex;align-items:center;justify-content:center;gap:10px;min-height:14px}
+.pc-pos{display:inline-flex;align-items:center;gap:7px}
+.pc-pos-d{width:6px;height:6px;border-radius:50%;background:#d6cec2;transition:background .2s,transform .2s}
+.pc-pos-d.on{background:var(--pc-ac);transform:scale(1.25)}
+.pc-nav-b{display:none;width:32px;height:32px;border:1px solid var(--su-hair,#E6E1D8);border-radius:50%;background:#fff;color:#2B2622;font:600 20px/1 Hind,var(--mw-font-body),sans-serif;
+  cursor:pointer;padding:0 0 2px;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.pc-nav-b:disabled{opacity:.35;cursor:default}
+.pc-nav-b:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.pc-nav-b{display:inline-flex}.pc-nav{min-height:32px}}
+.pc-sheet .pc-sum-key{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;margin:0 0 2px;font:500 12px/1.3 Hind,var(--mw-font-body),sans-serif;color:#6b6b6b}
+.pc-sheet .pc-sum-up{display:inline-flex;align-items:center;gap:6px;color:#3d342b}
+.pc-sheet .pc-sum-up::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--pc-ac)}
+.pc-sheet .pc-sum-g{margin:12px 0 0}
+.pc-sheet .pc-sum-h{display:flex;align-items:center;gap:6px;margin:0 0 5px;font:600 14px/1.2 Khand,var(--mw-font-heading),sans-serif;letter-spacing:.01em;color:#2B2622}
+.pc-sheet .pc-sum-h .pc-ico{display:inline-flex;color:var(--pc-ac)}
+.pc-sheet .pc-sum-l{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 14px}
+.pc-sheet .pc-sum-l li{position:relative;margin:0;padding-left:17px;font:500 14px/1.3 Hind,var(--mw-font-body),sans-serif;color:#1a1a1a}
+.pc-sheet .pc-sum-l li::before{content:"";position:absolute;left:2px;top:.3em;width:8px;height:4px;border-left:2px solid #8a7a68;border-bottom:2px solid #8a7a68;transform:rotate(-45deg)}
+.pc-sheet .pc-sum-l li.up{font-weight:600}
+.pc-sheet .pc-sum-l li.up::before{border:0;width:7px;height:7px;border-radius:50%;background:var(--pc-ac);transform:none;top:.38em;left:3px}
+.pc-sheet .pc-lg-row{margin:14px 0 2px;text-align:center}
+.pc-sheet .pc-lg-link{min-height:44px;font:600 15px/1.2 Hind,var(--mw-font-body),sans-serif;-webkit-tap-highlight-color:transparent}
+@media (max-width:359px){.pc-sheet .pc-sum-l{grid-template-columns:1fr}}
+/* exact-scope pop-up: the hero badge pop-up's cream card, border, radius, shine and icon chip */
+.pc-lg{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);overscroll-behavior:contain}
+.pc-lg[hidden]{display:none!important}
+.pc-lg-bg{position:absolute;inset:0;background:rgba(40,28,16,.32)}
+.pc-lg-card{position:relative;box-sizing:border-box;width:100%;max-width:480px;max-height:100%;display:flex;flex-direction:column;
+  border:1px solid #ECE5DA;border-radius:16px;background:#FFF8EE;box-shadow:var(--su-sh-3),0 12px 36px rgba(60,40,20,.16);color-scheme:light only}
+.pc-lg-card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%)}
+.pc-lg-hd{position:relative;display:flex;align-items:center;gap:10px;padding:14px 56px 10px 16px;border-bottom:1px solid #ECE5DA}
+.pc-lg-ico{flex:none;width:28px;height:28px;border-radius:50%;background:#F6E7DC;color:var(--pc-ac,#A8431F);display:grid;place-items:center}
+.pc-lg-ico svg{width:18px;height:18px;display:block}
+.pc-lg-hd h3{margin:0!important;font:600 18px/1.15 Khand,var(--mw-font-heading),sans-serif!important;color:#2B2622;letter-spacing:0;text-transform:none}
+.pc-lg-x{position:absolute;z-index:2;top:4px;right:4px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:22px;background:transparent;color:#0A0A0A;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
+.pc-lg-x .x-ico{width:20px;height:20px}
+.pc-lg-x:focus-visible,.pc-lg-body:focus-visible{outline:2px solid #0A0A0A;outline-offset:-2px}
+.pc-lg-body{position:relative;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:2px 16px 16px;font:400 14px/20px Hind,var(--mw-font-body),sans-serif;color:#4A433D}
+.pc-lg-s h4{margin:14px 0 4px;font:600 16px/1.2 Khand,var(--mw-font-heading),sans-serif;color:#2B2622}
+.pc-lg-s h5{margin:10px 0 2px;font:600 13px/1.3 Hind,var(--mw-font-body),sans-serif;color:#6b5a48}
+.pc-lg-s ul{margin:0;padding-left:18px}
+.pc-lg-s li{margin:3px 0}
+.pc-lg-s b{font-weight:600;color:#2B2622}
+@media (prefers-reduced-motion:reduce){.pc-pos-d{transition:none}}
+
+/* ===== Home sections fill the room between the header and the bar (Machan Nov 13 11:11-11:18 PM ICT) =====
+   min-height only (never a fixed height or overflow:hidden), so a section grows when its content is taller and nothing is cut off by the
+   header or the bar. --su-fill-h is set in JS (pcFitLines) from the live header bottom and bar top. */
+/* r3 (Swatch): Plans only; Tailor and FAQ stay content-sized (#121). */
+html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
+html body.on-home #hs-alc.hs-sec.su-measure > .hs-arrow{margin-top:8px!important}
+html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
+/* r2: the tiles take the leftover room (no auto gaps above the tiles or under the dots); items spread evenly inside each tile. */
+html body.on-home #hs-plans .hm-scroll{flex:1 1 auto!important;margin-top:0!important;margin-bottom:0!important;align-items:stretch!important}
+html body.on-home #hs-plans .pc-dots{margin-bottom:0!important}
+html body.on-home #hs-plans.pc-measure .hm-scroll{flex:0 0 auto!important}
+html body.on-home #row-plans .hm-plan .pc-inc{flex:1 0 auto!important;display:flex!important;flex-direction:column!important;justify-content:space-evenly!important}
+html body.on-home #hs-plans.pc-measure #row-plans .hm-plan .pc-inc{flex:0 0 auto!important;justify-content:flex-start!important}
+html body.on-home #hs-plans.pc-fs #row-plans .hm-plan .pc-inc:not(.pc-all) > li:not(.pc-key){font-size:var(--pc-li-fs,16px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key{font-size:12px!important;font-weight:500!important;color:#555!important;padding-left:14px!important;margin-top:0!important;margin-bottom:2px!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key::before,html body.on-home #row-plans .hm-plan .pc-inc > li.up::before{display:block!important;content:""!important;width:7px!important;height:7px!important;border:0!important;border-radius:50%!important;transform:none!important;background:var(--pc-ac,#A8431F)!important;left:.2rem!important;top:calc(.68em - 3.5px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.pc-key::before{left:0!important;top:calc(.7em - 3.5px)!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li.up{font-weight:600!important}
+html body.on-home #row-plans .hm-plan[data-tier="gold"]{--pc-ac:#A8431F}html body.on-home #row-plans .hm-plan[data-tier="platinum"]{--pc-ac:#05668D}
+.pc-lg-top{margin:0 0 10px;font-size:13px;line-height:1.4;color:#5a5048}
+html body.on-home #row-plans .hm-plan{align-self:stretch!important;display:flex!important;flex-direction:column!important}
+html body.on-home #row-plans .hm-plan .pc-more{margin-top:auto!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li{margin-top:var(--pc-li-pad,0px)!important;margin-bottom:calc(1px + var(--pc-li-pad,0px))!important}
+@media (min-height:780px) and (max-width:600px){html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:16px!important}html body.on-home #row-plans .hm-plan.pc{padding-top:16px!important;padding-bottom:16px!important}}
+@media (min-height:900px) and (max-width:600px){html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:17px!important}html body.on-home #row-plans .hm-plan .pc-big{font-size:3rem!important}}
+html body.on-home #hs-plans > .hs-arrow{margin-top:auto!important}
+/* Hero: same min-height so the Plans header never peeks under it on tall phones; any spare room sits above See Plans. */
+html body.on-home #hs-top.hs-sec{min-height:var(--su-fill-h,0px)!important}
+html body.on-home #hs-top.hs-sec > .hs-arrow{margin-top:auto!important}
+
+/* Header shine (Machan Nov 13 11:12 PM ICT, "the header should get the same shine that the sticky footer got"): the bar's exact finish. */
+html body.su-band .topbar{background-color:#FFFCF7!important;background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important}
+html body.su-band.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10),inset 0 1px 0 rgba(255,255,255,.9)!important}
+/* Bar tabs (Machan Nov 13 11:14 PM ICT, "i don't like the white box ... i want just the highlight"): no hover/tap lift, shadow or box on the
+   section buttons (it stuck after a tap on phones); the sliding highlight stays, and keyboard focus keeps its outline. */
+html body.on-home .hm-dock button[data-hm-tab]:hover,html body.on-home .hm-dock button[data-hm-tab]:active,html body.on-home .hm-dock button[data-hm-tab]:focus,html body.on-home .hm-dock button[data-hm-tab]:focus-visible{transform:none!important;box-shadow:none!important;background:transparent!important;background-image:none!important}
