@@ -2459,6 +2459,14 @@
      Machan Nov 13 11:22 PM (option B): after the founding spots fill (foundingFull in pricing-config.js, false today), the Annual card is the 10% off annual
      prepay (12 x monthly quote less annualDiscount, obBill "annual") instead of the 2-for-1. No 2-for-1 banner, badge or pop-up then. */
   var F2_POP = { t: "Founding 2-For-1", b: "Prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care. Offers do not stack." };
+  /* Annual card line 2 (Legal Nov 13, approved): amounts match the consent split. Neither -> no line. */
+  function payIncludesLine(yearly, oneTime) {
+    yearly = +yearly || 0; oneTime = +oneTime || 0;
+    if (yearly > 0 && oneTime > 0) return "Includes " + money(yearly) + " for yearly add-ons and " + money(oneTime) + " for one-time services, at full price.";
+    if (yearly > 0) return "Includes " + money(yearly) + " for yearly add-ons at full price.";
+    if (oneTime > 0) return "Includes " + money(oneTime) + " for one-time services at full price.";
+    return "";
+  }
   function obBilling() {
     var plan = obPlan(), t = P.tiers[S.tier], col = planColor(S.tier);
     var an = (function () { var s = S.plan; S.plan = "founding"; var r = obBill(); S.plan = s; return r; })();
@@ -2476,7 +2484,7 @@
     var banner = fOpen ? '<div class="f2-banner"><span class="f2-ic" aria-hidden="true">' + I("star", "xs") + '</span><p><b>Founding Member: 2 Years For The Price Of 1</b><br>Pay one year of your ' + esc(t.label) + ' plan' + (an.addonsAnnual ? ' and add-ons' : '') + ', get two years of care.</p></div>' : '';
     var cards = (fOpen ? card("founding", aSel, "Annual", money(an.today), "Paid today for 24 months of care.", badge) : '') +
       (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>',
-        yr.onceToday > 0 ? "Includes " + money(yr.onceToday) + " for one-time services at full price." : "") : '') + /* Legal Nov 13: second line only when one-time items exist */
+        payIncludesLine(yr.addonsFlatAnnual, yr.onceToday)) : '') + /* Legal Nov 13: second line only when yearly flats and/or one-time items are in the total */
       card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
     var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
     var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
