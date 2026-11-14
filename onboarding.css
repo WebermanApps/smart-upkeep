@@ -1559,5 +1559,4 @@ html body.on-ob .ob.qf.ob-plan :is(.ob-stage,.ob-pane,.qf-body){min-width:0;max-
 html body.on-ob .ob.qf.ob-plan .plan-stack{width:100%;max-width:100%;box-sizing:border-box;contain:inline-size}
 html body.on-ob .ob.qf.ob-plan .plan-card .plan-base{color:#5C534C} /* 4.5:1+ on the #F9F5EF swipe cards */
 html body.on-ob .ob.qf.ob-plan .plan-card .plan-price small{color:#5C534C} /* Swatch #148 r1 F7: /mo at 4.5:1+ on the #F9F5EF card */
-/* Plan step keeps a definite width: the swipe row and the Your Home strip both contain their inline size, so the section could shrink-wrap to 116px at 360 on heavy carts */
-html body.on-ob section.ob.qf.ob-plan{width:min(calc(100vw - 32px),420px);box-sizing:border-box}
+html body.on-ob section.ob.qf{width:min(calc(100vw - 32px),420px);box-sizing:border-box} /* Swatch #147 r2: every step keeps a definite width so the Your Home strip has room (no 24-44px address chip) */
