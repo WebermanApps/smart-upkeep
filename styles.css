@@ -1394,10 +1394,20 @@ body.on-home .hdr-van.vcross .tech{animation:techCross2 4.3s linear forwards}
 body.on-home .hdr-van.vcross .arm{animation:techWave .3s ease-in-out 2.5s infinite alternate}
 body.on-home .hdr-road.vcross{animation:roadCross2 4.3s ease-out forwards}
 @keyframes roadCross2{0%{opacity:.9;clip-path:inset(0 0 0 100%)}18.6%{opacity:.9;clip-path:inset(0 0 0 0)}77%{opacity:.8;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
-/* Oct 17 2026 (f): while the home video pop-up is open, keep the sticky header (and van) above its backdrop; pop-up content starts below the header */
-body.on-home:has(#videoModal:not([hidden])) .topbar{z-index:101}
+/* Oct 17 2026 (f): pop-up content starts below the (now blurred) header */
 body.on-home #videoModal{padding-top:calc(72px + .75rem)}
 @media (min-width:900px){body.on-home #videoModal{padding-top:calc(80px + .75rem)}}
+/* Machan Nov 14 9:04 PM ICT: while the intro video is open, blur the page, header, footer and Get Started bar with a light cream veil. The video and its controls stay sharp on top. One backdrop layer (not a filter on every element). */
+#videoModal{z-index:260!important;background:transparent}
+#videoModal::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:auto;background:rgba(251,246,238,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
+#videoModal.is-open::before{opacity:1}
+#videoModal.is-closing::before{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}
+#videoModal .modal-inner{position:relative;z-index:1;opacity:0;transition:opacity .25s ease}
+#videoModal.is-open .modal-inner{opacity:1}
+#videoModal.is-closing .modal-inner{opacity:0}
+@media (prefers-reduced-motion:reduce){
+  #videoModal::before,#videoModal .modal-inner{transition:none}
+}
 /* Oct 17 2026 (g): trim double bottom space on home. The empty footer reserved ~8rem on top of main's padding for the fixed bars. */
 body.on-home .foot{display:none}
 @media (max-width:899px){body.on-home main{padding-bottom:calc(9.5rem + env(safe-area-inset-bottom))!important}}
@@ -1422,7 +1432,7 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   #videoModal .modal-actions .btn{min-height:44px;padding:.5rem .6rem;font-size:.78rem}
 }
 @media (min-width:601px){#videoModal .modal-inner{border-radius:14px;max-height:calc(100vh - 110px)}#videoModal video{max-height:min(60vh,calc(100vh - 300px))!important;border-radius:10px!important}}
-@media (max-width:600px){#videoModal .vp-btn{width:44px;height:44px}}
+#videoModal .vp-btn{width:44px;height:44px}
 @media (min-width:601px){#videoModal .modal-x{position:absolute!important;top:.6rem;right:.7rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}#videoModal .vp-wrap{padding-top:52px}}
 #videoModal video{background:#fff!important}
 /* Oct 17 2026 (j): phone "Plans" cue under the hero (tap = smooth scroll to Plans), tighter hero bottom */
