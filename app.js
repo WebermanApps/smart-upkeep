@@ -1485,6 +1485,7 @@
       if (c.classList.contains("pc-exp")) { collapse(c); return; }
       collapseOthers(c, false);
       setExpMax(c);
+      var fin = c.querySelector(".pc-full-in"); if (fin) fin.scrollTop = 0;
       c.classList.add("pc-exp");
       c.setAttribute("aria-expanded", "true");
       var more = c.querySelector("[data-pc-more]"); if (more) more.setAttribute("aria-expanded", "true");
@@ -1783,6 +1784,8 @@
   }
   function hmHCar(t) {
     if (!t || !t.closest) return false;
+    /* The expanded plan list scrolls vertically inside its tile; it is not part of the carousel for paging. */
+    if (t.closest(".hm-plan.pc-exp .pc-full-in")) return false;
     return !!t.closest(".hm-scroll,.alc-car-scroll,.faq-car-scroll,.hm-hchips,.hm-hc-track");
   }
   function hmYBox(t) {
@@ -1871,8 +1874,11 @@
     if (g.axis === "x") return;
     if (g.box && !g.car) {
       var dir = dy < 0 ? 1 : -1;
-      var atEnd = dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0);
-      if (!atEnd) return;
+      if (g.yield == null) {
+        /* Decide once per gesture: if the inner box can still scroll this way, it owns the whole drag. */
+        g.yield = !(dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0));
+      }
+      if (g.yield) return;
     }
     if (e.cancelable) e.preventDefault();
     if (hmMenuOpen() || hmPageBusy()) return;
@@ -1889,7 +1895,7 @@
     var dy = y - g.y;
     var dt = Math.max(1, performance.now() - g.t);
     var v = dy / dt;
-    if (g.axis === "y" && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
+    if (g.axis === "y" && !g.yield && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
       hmPageBy(dy < 0 ? 1 : -1);
     }
     hmPage.gest = null;

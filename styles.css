@@ -3887,20 +3887,17 @@ html body.on-home #row-plans .hm-plan.pc.sel{
   overflow:visible;
   opacity:calc(0.6 + 0.4 * var(--lit));
   filter:grayscale(calc(1 - var(--lit)));
-  transform:scale(calc(0.97 + 0.03 * var(--lit)));
-  transform-origin:center center;
+  transform:none;
   border-width:1px!important;
   border-style:solid!important;
   border-color:var(--mw-border,#E6E0D6)!important;
   border-top-width:5px!important;
-  border-top-color:var(--mw-terracotta,#A8431F)!important;
-  box-shadow:none!important;
   will-change:auto;
 }
-html body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan.pc.sel{
-  /* outline comes from ::after; keep the top band in color on the lit tile */
-  border-top-color:var(--mw-terracotta,#C1502E)!important;
-}
+/* Top bands keep the live plan colors (live styles.css plan-color rules). */
+html body.on-home #row-plans .hm-plan.pc[data-tier="silver"]{border-top-color:#0B6E4F!important}
+html body.on-home #row-plans .hm-plan.pc[data-tier="gold"]{border-top-color:#A8431F!important}
+html body.on-home #row-plans .hm-plan.pc[data-tier="platinum"]{border-top-color:#05668D!important}
 html body.on-home #row-plans .hm-plan.pc::after{
   content:"";
   position:absolute;
@@ -3908,12 +3905,12 @@ html body.on-home #row-plans .hm-plan.pc::after{
   border-radius:inherit;
   pointer-events:none;
   z-index:2;
-  /* Existing selected outline (#C1502E 2px) + lift shadow, faded by --lit. Not animating box-shadow itself. */
-  box-shadow:0 0 0 2px #C1502E, 0 8px 22px rgba(193,80,46,.18);
+  /* Live selected outline (lagoon #05668D 2px) + live lift shadow, faded by --lit. Not animating box-shadow itself. */
+  box-shadow:0 0 0 2px #05668D, 0 8px 22px rgba(0,0,0,.12);
   opacity:var(--lit);
 }
 html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc{
-  transition:opacity 320ms ease-out, filter 320ms ease-out, transform 320ms ease-out;
+  transition:opacity 320ms ease-out, filter 320ms ease-out;
 }
 html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc::after{
   transition:opacity 320ms ease-out;
@@ -3928,7 +3925,7 @@ html body.on-home #row-plans .hm-scroll.pc-lit-drag .hm-plan.pc::after{
     transition:opacity 320ms ease, filter 320ms ease;
   }
   html body.on-home #row-plans .hm-plan.pc::after{
-    box-shadow:0 0 0 2px #C1502E;
+    box-shadow:0 0 0 2px #05668D;
     transition:opacity 320ms ease;
   }
 }
@@ -3959,6 +3956,8 @@ html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{
   max-height:calc(var(--pc-exp-max, 100%) - 8px);
   padding-bottom:8px;
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
 }
 html body.on-home #row-plans .hm-plan.pc-exp .pc-inc{display:none!important}
 html body.on-home #row-plans .hm-plan.pc-exp .pc-more{display:none!important}
