@@ -3597,3 +3597,17 @@ body.on-home .faq-sheet-body .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-b
   }
   body.on-home .faq-card{max-width:none}
 }
+
+
+/* Phone Home paging (Machan Nov 14 3:08 PM ICT): no free scroll, one section per gesture.
+   Snap is off so the page cannot stop mid-section. Desktop/tablet are unchanged. */
+@media (max-width:600px){
+  html.su-home-page.su-home-snap,
+  html.su-home-page.su-home-snap:not(.su-glide){
+    scroll-snap-type:none!important;
+    overscroll-behavior:none;
+  }
+  html.su-home-page.su-home-snap body.on-home{
+    overscroll-behavior:none;
+  }
+}
