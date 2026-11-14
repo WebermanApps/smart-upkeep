@@ -6,6 +6,8 @@
 
 /* ---- Get Started resume prompt (Machan Nov 14 3:12 PM): no menu dot or Continue row. ---- */
 html.rs-pop-open,html.rs-pop-open body{overflow:hidden!important;overscroll-behavior:none}
+html.bbm-has-bar.rs-pop-open:has(body.on-home),
+html.bbm-has-bar.rs-pop-open body.on-home{overflow:hidden!important;overscroll-behavior:none}
 .rs-pop-wrap{
   position:fixed;left:0;right:0;top:0;bottom:var(--su-dock-h,0px);z-index:220;
   display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;

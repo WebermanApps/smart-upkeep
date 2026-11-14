@@ -2779,12 +2779,6 @@
     var goBtn = wrap.querySelector("[data-rs-resume]");
     try { (goBtn || box).focus({ preventScroll: true }); } catch (x) { (goBtn || box).focus(); }
   }
-  function resumeCard() {
-    var done = Math.max(0, OB.indexOf(S.resume));
-    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' questions answered</small></div>' +
-      '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">' + X_SVG + '</button>' +
-      '<span class="hm-resume-btns"><button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button><button class="btn btn-outline mw-hover" data-act="startOver" type="button">Start Over</button></span></div>';
-  }
   var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", humidifier: "radon", softener: "meter" };
   /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
      Address > Home Basics > Systems > Add-Ons > Plan > Billing > Start Date > Details > Accept (Access removed Nov 13).
