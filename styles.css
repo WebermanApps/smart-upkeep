@@ -4088,9 +4088,23 @@ html body.on-home .alc-card[data-alc-g="5"] .sa-q .sa-n small{
   descent-override:20%;
   line-gap-override:0%;
 }
+/* Hind is slightly narrower than Arial/DejaVu (~175/186 on a 16px chip). A metric
+   fallback stops the remaining horizontal CLS on chips, "See Plans" arrows, offers
+   and the footer once the webfont swaps in. Heights already matched. */
+@font-face{
+  font-family:"Hind Fallback";
+  src:local("Arial"),local("Helvetica Neue"),local("Helvetica"),local("Liberation Sans"),local("DejaVu Sans"),local("Nimbus Sans L");
+  size-adjust:93.9%;
+  ascent-override:100%;
+  descent-override:35%;
+  line-gap-override:0%;
+}
 body.on-home .hm-hero .hm-eb-t,
 body.on-home .hm-hero h1{
   font-family:Khand,"Khand Fallback",var(--mw-font-heading),sans-serif!important;
+}
+body.on-home{
+  font-family:Hind,"Hind Fallback",var(--mw-font-body),sans-serif;
 }
 @media (min-width:900px){
   body.on-home .hm-hero .hm-eb-t{
