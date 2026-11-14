@@ -2354,7 +2354,7 @@
   var DYK = {
     systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
-    addons: "Every plan includes a Whole-Home Mold and Moisture Scan with a thermal camera.",
+    /* addons (Tailor Your Plan): Did You Know removed so the services list can use the height (Machan Nov 14). */
     details: "You've seen your price. We ask for these details so we can reach you about your visits."
   };
   /* Legal-approved First Visit blurb. Keep word for word. */
@@ -2537,7 +2537,8 @@
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
-  function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver">Start Over</button>'; }
+  function startOverBtn() { return '<button type="button" class="qf-startover mw-hover" data-act="startOver" aria-label="Start Over"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 0 1 12.7-5.4M19.5 12a7.5 7.5 0 0 1-12.7 5.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.2 3.8v4.2h-4.2M6.8 20.2v-4.2h4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Start Over</button>'; }
+  function homeBtn() { return '<button class="home-pill ob-bar-home mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Home</button>'; }
   /* House build band (house-build-1113): onboarding-house.js draws the county map on step 1 and the live house from step 2, from this read-only snapshot.
      Systems join the house once the Systems step has been reached (S._hbSys), so they're carried through Back and to the finish. No prices are read here. */
   function obHouseState() {
@@ -2589,11 +2590,14 @@
     var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
     /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps.
        Machan Nov 13 / Swatch: Start Over is a quiet link under Next, only when answers exist. */
-    var so = startOverBtn();
-    if (!obHasAnswers()) so = so.replace('class="', 'hidden class="');
-    return '<div class="ob-bar">' + backOnly() + so + nx + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
+    /* Machan Nov 14: one row of four equal buttons — Back, Home, Start Over, Next. Home uses go("home") and keeps S.resume. */
+    return '<div class="ob-bar">' + backOnly() + homeBtn() + startOverBtn() + nx + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
   }
-  function nextBtn(label, ok) { return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + '>' + label + '</button>'; }
+  function nextBtn(label, ok) {
+    var short = { "Next": "Next", "Skip For Now": "Skip", "Continue To Your Proposal": "Next", "Looks Good": "Next", "Continue To Payment": "Next", "Back To Your Plan": "Done" }[label] || "Next";
+    var aria = short === label ? "" : ' aria-label="' + label + '"';
+    return '<button class="btn btn-primary btn-big mw-hover" data-ob-next="1" type="button"' + (ok ? "" : " disabled") + aria + '>' + short + '</button>';
+  }
 
   /* 1. Address: first, required street address + ZIP, in-area check. Out of area shows the waitlist (Coming Soon, no date). */
   function addrOk() { var a = S.answers; return /\d+\s+\S+/.test(String(a.street || "").trim()) && /^\d{5}$/.test(String(a.zipcode || "")); }
@@ -2620,8 +2624,7 @@
     var st = String(a.stories);
     var body = '<div class="ob-home-form">' + '<div class="ob-size"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
       '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
-      '<div class="ob-stories"><div class="ob-stories-row"><p class="k" id="obStoriesK">Stories</p>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div>' +
-      '<p class="s">Sets gutter and ladder work</p><p class="priced-note">Both are priced into your plan.</p></div></div>';
+      '<div class="ob-stories"><div class="ob-stories-row"><p class="k" id="obStoriesK">Stories</p>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div></div></div>';
     return obShell("homesize", "", 0, "How Big Is Your Home?", "", body, nextBtn("Next", true)).replace('class="qf ob ob-homesize ', 'class="qf ob ob-address ob-homesize ');
   }
   function waitlistCard(z) {
@@ -2982,7 +2985,7 @@
     app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-ob-go")); }); });
     if (s === "address") {
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
-      function showSo() { var so = app.querySelector(".ob-bar .qf-startover"); if (so) so.hidden = !obHasAnswers(); }
+      function showSo() { /* Start Over stays visible in the four-button bar so the row stays even. */ }
       function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); showSo(); save(); }
       st.addEventListener("input", upd); zp.addEventListener("input", function () { upd(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
       [st, zp].forEach(function (el) {
@@ -3141,7 +3144,7 @@
     sec.classList.remove("sfit-ao-tight");
     sec.classList.add("sfit-ao"); /* apply border + padding before measuring rows */
     function overflowPx() {
-      /* house-build-1113: Did You Know can be hidden by the house band's cut order, and the priced note sits under the list; measure the lowest one shown */
+      /* Tailor Your Plan has no Did You Know (Machan Nov 14); the priced note may still sit under the list. Measure the lowest one shown so the list can use the freed height. */
       var low = 0; [dyk, list, sec.querySelector(".qf-body .priced-note")].forEach(function (e) { if (e && e.getClientRects().length) low = Math.max(low, e.getBoundingClientRect().bottom); });
       var over = Math.ceil(low + 8 - bar.getBoundingClientRect().top);
       var docOver = document.documentElement.scrollHeight - window.innerHeight;
@@ -3587,9 +3590,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k5"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k6"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k5"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k6"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

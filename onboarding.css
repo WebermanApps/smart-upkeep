@@ -1017,3 +1017,100 @@ html.ob-hb-on.ob-hb-afx .ob.ob-plan .after-founding{display:none}
 /* 44px hit areas without moving layout (Swatch r4): plan buttons on tightened levels (40px), Review Edit (28px), the after-Founding line (32px). */
 html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link{position:relative}
 html.ob-hb-on body.on-ob .ob.qf.ob-plan .plan-card .plan-cta::before,html.ob-hb-on body.on-ob .ob.qf.ob-review .bd-edit .link::before,html.ob-hb-on .ob.ob-plan .after-founding .af-open::before{content:"";position:absolute;left:0;right:0;top:50%;height:44px;min-height:100%;transform:translateY(-50%);z-index:1}
+
+/* ===== ob-nav-map-1114 (Machan Nov 14): four equal bar buttons; step 1 map ~2x, zoomed out to Michigan ===== */
+/* Bottom bar: one row, Back · Home · Start Over · Next, identical size (>=44px taps). Next stays primary (filled). */
+.ob .ob-bar{
+  display:grid !important;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  grid-template-rows:auto auto;
+  column-gap:6px;
+  row-gap:4px;
+  align-items:center;
+  flex-wrap:nowrap;
+  background:#FFFCF7 !important;
+  border-top:1px solid #E6E1D8;
+  padding-top:6px;
+  padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));
+  padding-left:0;
+  padding-right:0;
+}
+.ob .ob-bar .back-pill,
+.ob .ob-bar .home-pill,
+.ob .ob-bar .qf-startover,
+.ob .ob-bar .btn-big{
+  grid-row:1;
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:none;
+  margin:0;
+  padding:2px 2px 3px;
+  min-height:44px !important;
+  height:44px;
+  display:inline-flex !important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  border:2px solid var(--mw-terracotta,#C1502E);
+  border-radius:0 !important;
+  font:600 10px/1.1 Hind,var(--mw-font-body),sans-serif !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  text-decoration:none;
+  white-space:nowrap;
+  overflow:visible;
+  box-shadow:none;
+  cursor:pointer;
+}
+.ob .ob-bar .back-pill{grid-column:1;background:#FFFCF7;color:var(--mw-terracotta,#C1502E);flex:none}
+.ob .ob-bar .home-pill{grid-column:2;background:#FFFCF7;color:var(--mw-terracotta,#C1502E);border-radius:0 !important}
+.ob .ob-bar .qf-startover{grid-column:3;justify-self:stretch;background:#FFFCF7;color:var(--mw-terracotta,#C1502E)}
+.ob .ob-bar .btn-big{grid-column:4}
+.ob .ob-bar .back-pill svg,
+.ob .ob-bar .home-pill svg,
+.ob .ob-bar .qf-startover svg,
+.ob .ob-bar .btn-big svg{display:block;width:16px;height:16px;flex:none}
+.ob .ob-bar .qf-startover[hidden]{display:inline-flex !important} /* keep the four-wide row even if hidden is set */
+.ob .ob-bar .ob-built{grid-column:1/-1;grid-row:2;margin:0;padding-top:0;text-align:center}
+/* Start Over is a longer label; allow a two-line wrap inside the same 44px tile */
+.ob .ob-bar .qf-startover{white-space:normal;text-align:center;line-height:1.05 !important}
+
+/* Step 1 only: almost-double map band (art 224 + caption 16 = 240). Other steps stay 120. Keyboard mini stays 48px. */
+.ob-hb[data-mode="map"]{height:240px}
+.ob-hb[data-mode="map"] .ob-hb-art{height:224px}
+html.ob-hb-mini .ob-hb,
+html.ob-hb-mini .ob-hb-art,
+html.ob-hb-mini .ob-hb[data-mode="map"],
+html.ob-hb-mini .ob-hb[data-mode="map"] .ob-hb-art{height:48px}
+
+/* Step 1 tighten when the taller map leaves less than 8px of air (fit() adds ob-hb-t). */
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address > .qf-hero.stack.compact,
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address > .qf-hero.qf-hero-plain{margin:0 0 4px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .qf-h,
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .qf-hero.compact .qf-h{font-size:22px!important;line-height:1.1!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-home-form{gap:8px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-fields .fl{margin:4px 0 2px!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-fields .fl:first-child{margin-top:0!important}
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-area{margin-top:2px!important}
+
+/* Bar inset: full-bleed top rule, but keep the four buttons in the 16px content gutter (not flush to the screen). */
+.ob .ob-bar{
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+
+/* Tailor Your Plan: 8px air above the bar; let the services list grow into the height freed by removing Did You Know. */
+.ob-addons .qf-body{
+  flex:1 1 auto !important;
+  min-height:0;
+  margin-bottom:0 !important;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start !important;
+}
+.ob-addons.sfit-ao-tight .qf-body{margin-bottom:0 !important}
+.ob-addons .ob-bar{margin-top:8px !important}
+.ob-addons .ob-ao-groups{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.ob-addons .ob-ao-list{flex:1 1 auto;min-height:0}
