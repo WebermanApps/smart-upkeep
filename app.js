@@ -1280,6 +1280,7 @@
       if ("onscrollend" in window) {
         hmGlide.onEnd = done;
         window.addEventListener("scrollend", done, { once: true });
+        setTimeout(done, 120);
       } else setTimeout(done, 32);
     }
     hmGlide.raf = requestAnimationFrame(step);
@@ -1429,7 +1430,10 @@
     hsBarSync();
   }
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
-  window.addEventListener("resize", function () { var r = app.querySelector(".hm"); if (r) { hmHdrSync(); hsBarFill(r); } });
+  function hmRefit() { var r = app.querySelector(".hm"); if (!r) return; hmHdrSync(); hsBarFill(r); }
+  window.addEventListener("resize", hmRefit);
+  [60, 300, 800].forEach(function (ms) { setTimeout(hmRefit, ms); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { hmRefit(); }).catch(function () {});
   /* Plan tile And More / Show Less: expands the tile in place, no jump; scroll position stays put. The one-screen Plans rule relaxes only while a tile is open. */
   /* Machan Nov 13 11:09 AM: the expanded And More list is grouped under short Title Case headers. Real plan features only (pricing-config.js untouched);
      a feature goes to the first group whose pattern matches; empty groups are left out. No icons yet (Swatch deck pending). */
@@ -1482,9 +1486,9 @@
     ["Inside The Home", /bath fan|radon|appliance|doorbell/i],
     ["Seasonal Equipment", /generator|mower|snowblower/i]
   ];
-  function alcDetail(a, monthly) {
+  function alcDetail(a, monthly, skipDesc) {
     var d = [];
-    if (a.desc) d.push('<p>' + esc(a.desc) + '</p>');
+    if (a.desc && !skipDesc) d.push('<p>' + esc(a.desc) + '</p>');
     if (a.note) d.push('<p>' + esc(a.note) + '</p>');
     var cfg = (P.addons || []).concat(P.lastMinute || []).filter(function (x) { return x.id === a.id || x.id + "_once" === a.id; })[0];
     var lk = cfg ? cfg.id : (/window/i.test(a.label) ? "windows" : /christmas/i.test(a.label) ? "lights" : "");
@@ -1506,7 +1510,7 @@
       '<div class="alc-car-scroll" data-ptr-ignore>' + groups.map(function (G, i) {
         var list = G[1].map(function (r) {
           var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.desc ? '<span class="sa-desc">' + esc(r.a.desc) + '</span>' : '') + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m, true));
         }).join("");
         return '<article class="alc-card" data-alc-g="' + i + '"><div class="alc-ghd"><span class="alc-gico" aria-hidden="true">' + alcIco(G[0], 28) + '</span><p>' + esc(G[0]) + '</p></div><div class="sa-list">' + list + '</div></article>';
       }).join("") + '</div>' +
