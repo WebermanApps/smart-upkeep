@@ -677,8 +677,8 @@
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
-  /* Nov 14 (Machan: gutter cleaning scene): phone 3:4 and wide 16:9, five even scenes (2.65s each, 13.267s / 398 frames), v10 cut, native loop at 1x from frame 0. No seek or rate change. One breakpoint: max-width 480px. */
-  var HERO_PHONE = { src: "video/teaser-v10-phone-5svc-even-3x4.mp4?v=h9z2", poster: "video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2", wh: 'width="1080" height="1440"' };
+  /* Nov 14 (Machan: gutter cleaning scene): phone 3:4 v10.1 reframe and wide 16:9 v10, five even scenes (2.65s each, 13.267s / 398 frames), native loop at 1x from frame 0. No seek or rate change. One breakpoint: max-width 480px. */
+  var HERO_PHONE = { src: "video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2", poster: "video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2", wh: 'width="1080" height="1440"' };
   var HERO_WIDE = { src: "video/teaser-v10-5svc-even-16x9.mp4?v=h9z2", poster: "video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2", wh: 'width="1920" height="1080"' };
   function hmHeroPhone() { return !!(window.matchMedia && matchMedia("(max-width: 480px)").matches); }
   function heroPick() { return hmHeroPhone() ? HERO_PHONE : HERO_WIDE; }
