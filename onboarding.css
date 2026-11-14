@@ -1522,3 +1522,4 @@ html.ob-hb-on .ob-hb .hb-it:is([data-k="f1"],[data-k="f2"],[data-k="a1"],[data-k
 .ob-hb .hb-orb{position:absolute;width:24px;height:24px;margin:0 -12px;border-radius:50%;background:#FFFCF7;border:1px solid #E4D5C6;box-shadow:0 2px 6px rgba(42,36,28,.1);display:grid;place-items:center;font:600 11px/1 Hind,system-ui,sans-serif;color:#A8431F}
 .ob-hb .hb-orb svg{width:14px;height:14px;fill:none;stroke:#A8431F;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 html.ob-hb-mini .ob-hb .hb-orbit{display:none}
+html body.on-ob section.ob.qf{width:min(calc(100vw - 32px),420px);box-sizing:border-box} /* Swatch #147 r2: every step keeps a definite width so the Your Home strip has room (no 24-44px address chip) */
