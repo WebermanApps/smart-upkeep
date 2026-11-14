@@ -2152,7 +2152,9 @@
       rs.setProperty("--pc-li-fs", Math.max(13, fs) + "px");
     }
     var slack = fill - natural();
-    if (slack > 4) rs.setProperty("--pc-li-pad", Math.min(6, Math.floor(slack * 0.5 / lines / 2 * 10) / 10) + "px");
+    /* Machan Nov 14: tighten Essentials lines to the top; ~8-10px item gaps at 430 (pad 4 => gap 9), proportional on narrower phones. */
+    var padCap = Math.round(4 * Math.min(window.innerWidth, 430) / 430 * 10) / 10;
+    if (slack > 4) rs.setProperty("--pc-li-pad", Math.min(padCap, Math.floor(slack * 0.5 / lines / 2 * 10) / 10) + "px");
   }
 
   /* Badge carousel (Machan Nov 13 1:24 PM: "i want to be able to scroll the badges as they are passing"). The CSS keyframe loop is swapped for a

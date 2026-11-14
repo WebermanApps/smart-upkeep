@@ -2924,8 +2924,8 @@ html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
    min-height only (never a fixed height or overflow:hidden), so a section grows when its content is taller and nothing is cut off by the
    header or the bar. --su-fill-h is set in JS (pcFitLines) from the live header bottom and bar top. */
 /* r3 (Swatch): Plans only; Tailor and FAQ stay content-sized (#121). */
-html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
-html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
+html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:var(--su-fill-h,0px)!important;max-height:var(--su-fill-h,0px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important;height:auto!important;max-height:none!important;overflow:visible!important}
 html body.on-home #hs-alc.hs-sec.su-measure > .hs-arrow{margin-top:8px!important}
 html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
 /* r2: the tiles take the leftover room (no auto gaps above the tiles or under the dots); items spread evenly inside each tile. */
@@ -3184,6 +3184,10 @@ body.on-home .faq-card.is-emerg .faq-card-q{color:#A8431F}
 html body.on-home #hs-plans .hm-scroll{align-items:center!important}
 html body.on-home #row-plans .hm-plan{align-self:center!important}
 html body.on-home #row-plans .hm-plan .pc-inc{flex:0 1 auto!important;justify-content:flex-start!important}
+/* Tighten plan item lines to the top (Machan Nov 14: Essentials gaps ~8-10px at 430, no loose gap above the list). */
+html body.on-home #row-plans .hm-plan .pc-inc{margin-top:0!important;margin-bottom:0!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li:first-child{margin-top:0!important}
+html body.on-home #hs-plans .hm-plan .pc-year{margin-bottom:6px!important}
 html body.on-home #row-plans .hm-plan .pc-name{font-size:1.22rem!important}
 html body.on-home #row-plans .hm-plan .pc-big{font-size:2.18rem!important}
 html body.on-home #row-plans .hm-plan.pc{padding:14px 14px!important}
