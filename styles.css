@@ -3745,7 +3745,7 @@ html body.su-band .topbar .brand::after{
   position:absolute;
   inset:0;
   pointer-events:none;
-  background:linear-gradient(105deg,rgba(255,255,255,0) 18%,rgba(255,255,255,.55) 44%,rgba(255,255,255,.12) 52%,rgba(255,255,255,0) 76%);
+  background:linear-gradient(105deg,rgba(255,255,255,0) 18%,rgba(255,255,255,.35) 44%,rgba(255,255,255,.12) 52%,rgba(255,255,255,0) 76%);
   -webkit-mask:url(assets/logo-band.svg?v=1) center/contain no-repeat;
   mask:url(assets/logo-band.svg?v=1) center/contain no-repeat;
   -webkit-mask-size:contain;
@@ -3782,4 +3782,60 @@ html body.su-band .topbar .top-menu::after{
 @media (prefers-reduced-motion:reduce){
   html body.su-band .topbar,
   html body.su-band.su-band-scrolled .topbar{transition:none}
+}
+
+/* Background / card sheen (Machan Nov 14 7:14 PM ICT; Swatch #137 r1 spec):
+   static low-alpha page sheen, peak .10, background-attachment scroll (not fixed);
+   card top-edge ::before highlight at .38; first-paint fade only, off under
+   prefers-reduced-motion. No scroll-linked work, no gold, no dark. Do not
+   replace the existing --su-band skirt layer; stack a second image.
+   !important on the page background-image/size/repeat/attachment is required
+   so this stacked sheen wins over the earlier body.on-home skirt rule. */
+html body.on-home{
+  background-color:#F5EDDF!important;
+  background-image:
+    linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.10) 22%,
+      rgba(255,255,255,.06) 48%,
+      rgba(255,255,255,0) 78%),
+    linear-gradient(var(--su-band), var(--su-band)) !important;
+  background-size:
+    100% 100%,
+    100% calc(var(--su-band-h) + env(safe-area-inset-top, 0px) + var(--su-skirt) + var(--su-overlap)) !important;
+  background-repeat:no-repeat!important;
+  background-attachment:scroll, scroll!important;
+}
+/* Hero frame + product cards: a top-edge highlight only, as a ::before so existing
+   card fills (including the FAQ tints) are not overwritten. pointer-events none. */
+html body.on-home main#app > .hm,
+html body.on-home #row-plans .hm-plan,
+html body.on-home .alc-card,
+html body.on-home .faq-card{
+  position:relative;
+}
+html body.on-home main#app > .hm::before,
+html body.on-home #row-plans .hm-plan::before,
+html body.on-home .alc-card::before,
+html body.on-home .faq-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  z-index:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.38) 0%, rgba(255,255,255,0) 36%);
+}
+@media (prefers-reduced-motion:no-preference){
+  html body.on-home main#app > .hm::before,
+  html body.on-home #row-plans .hm-plan::before,
+  html body.on-home .alc-card::before,
+  html body.on-home .faq-card::before{animation:suSheenIn 700ms ease both}
+  @keyframes suSheenIn{from{opacity:0}to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home main#app > .hm::before,
+  html body.on-home #row-plans .hm-plan::before,
+  html body.on-home .alc-card::before,
+  html body.on-home .faq-card::before{animation:none}
 }
