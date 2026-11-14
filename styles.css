@@ -1426,7 +1426,7 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   #videoModal .modal-actions .btn{min-height:44px;padding:.5rem .6rem;font-size:.78rem}
 }
 @media (min-width:601px){#videoModal .modal-inner{border-radius:14px;max-height:calc(100vh - 110px)}#videoModal video{max-height:min(60vh,calc(100vh - 300px))!important;border-radius:10px!important}}
-@media (max-width:600px){#videoModal .vp-btn{width:44px;height:44px}}
+#videoModal .vp-btn{width:44px;height:44px}
 @media (min-width:601px){#videoModal .modal-x{position:absolute!important;top:.6rem;right:.7rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}#videoModal .vp-wrap{padding-top:52px}}
 #videoModal video{background:#fff!important}
 /* Oct 17 2026 (j): phone "Plans" cue under the hero (tap = smooth scroll to Plans), tighter hero bottom */
