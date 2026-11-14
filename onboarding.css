@@ -501,7 +501,9 @@ body.on-qf.on-ob .foot{display:none}
 .ob-accept .sfit-rows .paybox p{margin:0!important}
 .ob-accept .sfit-hold{display:none!important}
 .ob-accept .sfit-sheet .item-card,.ob-accept .sfit-sheet .accept-compact{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important}
-.ob-accept .sfit-sheet .beta-pay-notice{margin:0 0 10px!important}
+.ob-accept .sfit-sheet .beta-pay-notice{margin:0 0 8px!important;padding:8px 10px}
+.ob-accept .sfit-sheet .beta-pay-notice h3{display:none}
+.ob-accept .sfit-sheet .beta-pay-notice p{font-size:14px;line-height:1.4}
 .ob-accept .sfit-sheet .checkrow{margin:0!important}
 .ob-accept .sfit-sheet .ob-slot{display:inline-block;margin:0 0 10px}
 .ob-accept .sfit-tail{text-align:center;margin:8px 0 0}

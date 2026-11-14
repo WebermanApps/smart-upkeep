@@ -3160,10 +3160,12 @@
     onceQuote = onceQuote.filter(function (a) { return !/^(furnace|ac) tune up$/.test(suNorm(a.label)); });
     var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
       (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
-    var addMoSum = addonsNoteMonthly(), addYrSum = addonsFlatAnnual(), addSpread = 0;
-    if (obPlan() === "monthly") { addSpread = addonsFlatMonthly(); addMoSum = cents(addMoSum + addSpread); addYrSum = 0; }
-    var aoNoteBits = [];
-    if (addMoSum) aoNoteBits.push("+" + money(addMoSum) + "/mo" + (addSpread ? " (yearly add-ons spread over 12 months)" : ""));
+    var addMoOnly = addonsNoteMonthly(), addYrSum = addonsFlatAnnual(), addSpread = 0, addMoSum = addMoOnly;
+    if (obPlan() === "monthly") { addSpread = addonsFlatMonthly(); addMoSum = cents(addMoOnly + addSpread); addYrSum = 0; }
+    /* Legal Nov 14: three Tailor notes, chosen by what's selected. Consent strings stay as they are. */
+    var aoNoteBits = [], paren = "";
+    if (obPlan() === "monthly" && addSpread) paren = addMoOnly ? " (includes yearly add-ons spread over 12 months)" : " (yearly add-ons spread over 12 months)";
+    if (addMoSum) aoNoteBits.push("+" + money(addMoSum) + "/mo" + paren);
     if (addYrSum) aoNoteBits.push(money(addYrSum) + "/yr");
     var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Tailor Your Plan">' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Plan Add-Ons</button>' +
@@ -4032,7 +4034,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p2"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p3"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9p2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
