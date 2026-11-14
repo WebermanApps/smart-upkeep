@@ -1256,7 +1256,7 @@ body.on-home .hdr-van.moving .vb{animation:vanBob .3s ease-in-out infinite alter
   .hm-hero .hm-thumb{grid-column:2!important;grid-row:1/span 4!important;margin:0;align-self:center}
 }
 .hm-hero{background:#FBF6EE!important;border-color:#EADFCF!important;border-top-color:#C1502E!important}
-.hm-hero .hm-thumb{background:#FBF6EE url(assets/teaser-v7-poster.jpg?v=v7a) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+.hm-hero .hm-thumb{background:#FBF6EE url(video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
 .hm-hero .hm-teaser{filter:saturate(1.15) contrast(1.06) sepia(.06);background:transparent}
 .hm-hero .start-at{border-color:#C1502E!important}
 /* Oct 16 2026 (e): waving tech on drive-off, bigger logo, more space between home sections */
@@ -1977,7 +1977,7 @@ body.on-home .hm-hero .hm-lead{font-size:16px!important;line-height:1.25!importa
 @media (max-width:480px){
   body.on-home .hs-top{padding-top:0}
   body.on-home .hm-hero{padding-top:var(--hero-gap)!important}
-  body.on-home .hm-hero .hm-thumb{width:calc(100% - 36px)!important;max-width:none;margin:0 auto!important;aspect-ratio:3/4!important;border-radius:18px!important}
+  body.on-home .hm-hero .hm-thumb{width:calc(100% - 36px)!important;max-width:none;margin:0 auto!important;aspect-ratio:3/4!important;border-radius:18px!important;background:#FBF6EE url(video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2) center/cover no-repeat}
   body.on-home .hm-hero .hm-thumb img,body.on-home .hm-hero .hm-thumb video{object-fit:cover!important;object-position:50% 46%}
   /* Text starts over the video's empty floor (bottom fade); --hero-ov is set from the fitted video height in hsBarFill. */
   body.on-home .hm-hero .hm-hero-txt{margin-top:calc(-1 * var(--hero-ov,56px))!important;padding:var(--hero-ov-pad,32px) 18px 0!important;

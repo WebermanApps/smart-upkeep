@@ -656,8 +656,8 @@
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Nov 14 (Machan: gutter cleaning scene): phone 3:4 and wide 16:9, five even scenes (2.65s each, 13.267s / 398 frames), v10 cut, native loop at 1x from frame 0. No seek or rate change. One breakpoint: max-width 480px. */
-  var HERO_PHONE = { src: "video/teaser-v10-phone-5svc-even-3x4.mp4?v=h9z1", poster: "video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z1", wh: 'width="1080" height="1440"' };
-  var HERO_WIDE = { src: "video/teaser-v10-5svc-even-16x9.mp4?v=h9z1", poster: "video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z1", wh: 'width="1920" height="1080"' };
+  var HERO_PHONE = { src: "video/teaser-v10-phone-5svc-even-3x4.mp4?v=h9z2", poster: "video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2", wh: 'width="1080" height="1440"' };
+  var HERO_WIDE = { src: "video/teaser-v10-5svc-even-16x9.mp4?v=h9z2", poster: "video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2", wh: 'width="1920" height="1080"' };
   function hmHeroPhone() { return !!(window.matchMedia && matchMedia("(max-width: 480px)").matches); }
   function heroPick() { return hmHeroPhone() ? HERO_PHONE : HERO_WIDE; }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
@@ -665,7 +665,11 @@
     var T = heroPick(), poster = T.poster, tsrc = T.src, wh = T.wh;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
-    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted loop autoplay playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
+    /* Phones hold the poster until the first touch/scroll/key (same as main). Src is withheld
+       so the mp4 is not requested up front. After release, play natively at 1x from frame 0.
+       No seek, no playbackRate change. Desktop autoplays as on main. */
+    var hold = hmHeroPhone() && !window.__suFirst;
+    return '<video class="hm-teaser" ' + (hold ? 'data-hold="1" data-src="' + esc(tsrc) + '" poster="' + esc(poster) + '" preload="none"' : 'src="' + esc(tsrc) + '" poster="' + esc(poster) + '" autoplay preload="auto"') + ' muted loop playsinline disablepictureinpicture ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
 
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
@@ -679,6 +683,67 @@
      Follow-up Nov 13: the six chips wrap in place so no label is cut. The earlier
      edge-fading marquee is retired; CSS on .hm-hchips does the wrap. */
 
+  function heroFillVideo(v, T, hold) {
+    v.className = "hm-teaser";
+    v.setAttribute("poster", T.poster);
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute("muted", "");
+    v.setAttribute("loop", "");
+    v.setAttribute("playsinline", "");
+    v.setAttribute("disablepictureinpicture", "");
+    v.setAttribute("aria-hidden", "true");
+    v.setAttribute("tabindex", "-1");
+    v.style.filter = "saturate(1.15) contrast(1.06) sepia(.06)";
+    applyHeroWh(v, T);
+    if (hold) {
+      v.setAttribute("data-hold", "1");
+      v.setAttribute("data-src", T.src);
+      v.removeAttribute("src");
+      v.removeAttribute("autoplay");
+      v.preload = "none";
+      v.setAttribute("preload", "none");
+    } else {
+      v.removeAttribute("data-hold");
+      v.removeAttribute("data-src");
+      v.setAttribute("autoplay", "");
+      v.preload = "auto";
+      v.setAttribute("preload", "auto");
+      if (v.getAttribute("src") !== T.src) v.setAttribute("src", T.src);
+    }
+  }
+  function applyHeroWh(el, T) {
+    var m = /width="(\d+)" height="(\d+)"/.exec(T.wh);
+    if (!m) return;
+    el.setAttribute("width", m[1]);
+    el.setAttribute("height", m[2]);
+  }
+  /* Phone: hold the poster until first interaction, then play natively at 1x from frame 0.
+     No currentTime seek, no playbackRate write. Keeps main's first-interaction set and su:first. */
+  (function heroHold() {
+    function playNative(v) {
+      var src = v.getAttribute("data-src") || v.getAttribute("src");
+      v.removeAttribute("data-hold");
+      v.removeAttribute("data-src");
+      v.setAttribute("autoplay", "");
+      v.preload = "auto";
+      v.setAttribute("preload", "auto");
+      if (src && v.getAttribute("src") !== src) v.setAttribute("src", src);
+      var p = v.play(); if (p && p.catch) p.catch(function () {});
+    }
+    function first(e) {
+      if (window.__suFirst) return;
+      var m = document.getElementById("videoModal"); if (m && !m.hidden) return;
+      if (document.body.classList.contains("gate-locked") || (e && e.target && e.target.tagName === "INPUT" && e.target.type === "password")) return;
+      if (e && e.type === "scroll" && e.target !== document && e.target !== window) return;
+      if (e && e.target && e.target.closest && e.target.closest("#videoModal")) return;
+      window.__suFirst = true;
+      ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.removeEventListener(t, first, true); });
+      document.querySelectorAll(".hm-teaser[data-hold]").forEach(function (v) { playNative(v); });
+      try { window.dispatchEvent(new Event("su:first")); } catch (err) {}
+    }
+    ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
+  })();
   /* Swap the hero source once when the 480px breakpoint is crossed (resize or orientation). The same source is left alone so it is not loaded twice. */
   (function heroSwap() {
     function reduced() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
@@ -710,30 +775,16 @@
       }
       if (media.tagName !== "VIDEO") {
         var v = document.createElement("video");
-        v.className = "hm-teaser";
-        v.setAttribute("poster", T.poster);
-        v.muted = true;
-        v.defaultMuted = true;
-        v.setAttribute("muted", "");
-        v.setAttribute("loop", "");
-        v.setAttribute("autoplay", "");
-        v.setAttribute("playsinline", "");
-        v.setAttribute("disablepictureinpicture", "");
-        v.setAttribute("preload", "auto");
-        v.setAttribute("aria-hidden", "true");
-        v.setAttribute("tabindex", "-1");
-        v.style.filter = "saturate(1.15) contrast(1.06) sepia(.06)";
-        applyWh(v, T);
-        v.setAttribute("src", T.src);
+        heroFillVideo(v, T, hmHeroPhone() && !window.__suFirst);
         media.parentNode.replaceChild(v, media);
-        var p = v.play(); if (p && p.catch) p.catch(function () {});
+        if (!v.getAttribute("data-hold")) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
         return;
       }
-      if (media.getAttribute("src") === T.src) return;
-      media.setAttribute("poster", T.poster);
-      applyWh(media, T);
-      media.setAttribute("src", T.src);
-      var pr = media.play(); if (pr && pr.catch) pr.catch(function () {});
+      var curSrc = media.getAttribute("src") || media.getAttribute("data-src") || "";
+      if (curSrc === T.src) return;
+      var hold = hmHeroPhone() && !window.__suFirst && media.paused;
+      heroFillVideo(media, T, hold);
+      if (!hold) { var pr = media.play(); if (pr && pr.catch) pr.catch(function () {}); }
     }
     function onChange() { apply(); }
     var mq = window.matchMedia && matchMedia("(max-width: 480px)");
