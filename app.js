@@ -760,11 +760,11 @@
       if (e && e.type === "scroll" && e.target !== document && e.target !== window) return;
       if (e && e.target && e.target.closest && e.target.closest("#videoModal")) return;
       window.__suFirst = true;
-      ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.removeEventListener(t, first, true); });
+      ["scroll", "wheel", "touchstart", "pointerdown", "keydown"].forEach(function (t) { window.removeEventListener(t, first, true); });
       document.querySelectorAll(".hm-teaser[data-hold]").forEach(function (v) { playNative(v); });
       try { window.dispatchEvent(new Event("su:first")); } catch (err) {}
     }
-    ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
+    ["scroll", "wheel", "touchstart", "pointerdown", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
   })();
   /* Swap the hero source once when the 480px breakpoint is crossed (resize or orientation). The same source is left alone so it is not loaded twice. */
   (function heroSwap() {
