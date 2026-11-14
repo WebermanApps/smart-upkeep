@@ -622,6 +622,28 @@
   function ul(items) { return '<ul class="hm-list">' + items.map(function (t) { return '<li>' + t + '</li>'; }).join("") + '</ul>'; }
   /* Deck 4 plan card: white, terracotta top bar, big per-tier From price, check list of what's included, the year shown as visits. */
   var selK = null, HM_SVC = [];
+  /* Machan Nov 14 7:19 PM ICT: Home plan selection persists in the session (scroll away and
+     back, or a mid-session Home re-render). A full reload always starts on Essentials.
+     Visual default is Essentials selected; the funnel only reads .sel after a user tap
+     (see act("start")), so the default visual pick does not change S.tier (still gold). */
+  var PLAN_SEL_KEY = "smartUpkeep.planSel";
+  var PLAN_SEL_USER_KEY = "smartUpkeep.planSelUser";
+  (function resetPlanSelOnLoad() {
+    try {
+      sessionStorage.setItem(PLAN_SEL_KEY, "silver");
+      sessionStorage.removeItem(PLAN_SEL_USER_KEY);
+    } catch (e) {}
+  })();
+  function currentPlanSel() {
+    try {
+      var v = sessionStorage.getItem(PLAN_SEL_KEY);
+      if (v === "" || v === "silver" || v === "gold" || v === "platinum") return v;
+    } catch (e) {}
+    return "silver";
+  }
+  function planSelWasUser() {
+    try { return sessionStorage.getItem(PLAN_SEL_USER_KEY) === "1"; } catch (e) { return false; }
+  }
   var TIER_NOTE = { silver: "Every Plan", gold: "Plus and Up", platinum: "Complete Plan" };
   /* Small tech-at-work illustration: shared tech figure + the service's equipment icon. */
   function techArt(ic) {
@@ -1034,7 +1056,7 @@
       ["chimney", "Roof", "chimney", "Yearly roof and flashing inspection to catch leaks early.", "platinum"]];
     HM_SVC = svc;
     var tiers = tierKeys();
-    selK = tiers.filter(function (k) { return P.tiers[k].recommended; })[0] || tiers[0];
+    selK = currentPlanSel();
         var phoneOrder = tiers.slice(); /* Max: Essentials, Plus, Complete on every screen size */
     var trust = [["shield", "Certified Techs", "State license checked, insured, background checked yearly."], ["refund", "Cancel Anytime", "No fee. Full refund before your first visit, then a refund for paid services not yet done."], ["clipboard", "Home Reports", "Written report with photos saved to your Home Record."], ["user", "Background-Checked Yearly", "Third-party background check, renewed every year."], ["meter", "Moisture Scan Every Visit", "Whole-home moisture meter and thermal camera check every visit."], ["doc", "Licensed & Insured", "Licensed partners for work that needs a Michigan license, and insured techs."], ["shield", "Warranties Checked", "We check the warranties on your equipment and add a Warranties Checked badge to your Home Record."]];
     trust = HERO_CHIPS.map(function (c) { return trust.filter(function (t) { return t[1] === c[1]; })[0]; }).filter(Boolean);
@@ -1055,8 +1077,8 @@
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
-      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:09 PM ICT ("its already on the badge in hero ... so i guess we just remove from plans section"): the Warranties Checked header bar is gone from Plans. */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        hsArrowUp("hs-top")).replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "Tailor Your Plan") + '</section>' +
+      '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), hsArrowUp("hs-top") /* Machan Nov 14 7:17 PM ICT: up arrow lives in the Plans header so it never sits on a tile. */ /* Machan Nov 13 11:09 PM ICT ("its already on the badge in hero ... so i guess we just remove from plans section"): the Warranties Checked header bar is gone from Plans. */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */
+        ).replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "Tailor Your Plan") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
@@ -1080,16 +1102,13 @@
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
-  /* Plans phone snap (Machan Nov 14 3:36-3:37 PM ICT): Essentials stays left-aligned on landing
-     (he did not ask to change that). Plus and Complete snap to the center. Plus shows a peek of
-     Essentials and Complete; Complete shows a Plus peek on the left and empty space on the right.
+  /* Plans phone snap (Machan Nov 14 7:04 PM ICT): Essentials, Plus and Complete all snap to
+     the viewport center. Essentials may show blank space on its left. Plus peeks neighbors
+     on both sides; Complete peeks Plus on the left and leaves blank space on the right.
      Tile width is unchanged from the Nov 13 22% peek formula, plus the Nov 14 9% tighten. */
   function hmPlanCards(sc) { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
   function hmPlanSnapLeft(sc, card) {
     var sr = sc.getBoundingClientRect(), cr = card.getBoundingClientRect();
-    var first = hmPlanCards(sc)[0];
-    var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
-    if (card === first) return sc.scrollLeft + (cr.left - sr.left - padL);
     return sc.scrollLeft + (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
   }
   function hmPlanGo(sc, card, behavior) {
@@ -1105,7 +1124,7 @@
     var mq = window.matchMedia("(max-width:600px)");
     var armed = false, quiet = false;
     function cards() { return hmPlanCards(sc); }
-    function arm() { if (armed) return; armed = true; sc.classList.add("pc-dimmed"); sync(); }
+    function arm() { if (armed) return; armed = true; sync(); }
     function sync() {
       if (!mq.matches) return;
       var best = null, d = 1e9, cs = cards(), sr = sc.getBoundingClientRect(), midX = sr.left + sr.width / 2;
@@ -1125,7 +1144,10 @@
       return w;
     }
     function size() {
-      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.scrollPadding = ""; return; }
+      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.paddingLeft = ""; sc.style.scrollPadding = ""; return; }
+      /* Reset left pad to the stylesheet value before measuring tile width, so the
+         centering pad below does not shrink the cards on later size() passes. */
+      sc.style.paddingLeft = "";
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
       var view = viewW();
       /* Machan Nov 14 9:25 AM: Plans tiles and text slightly smaller (~9% narrower). */
@@ -1133,8 +1155,10 @@
       if (w < 200) w = Math.max(200, Math.floor(view * 0.72));
       if (w > view - 24) w = Math.max(200, view - 48);
       sc.style.setProperty("--pc-w", w + "px");
-      /* Right pad so Complete's center can reach the viewport center. */
-      sc.style.paddingRight = Math.max(0, Math.round((view - w) / 2)) + "px";
+      /* Side pads so Essentials and Complete can both sit at the viewport center. */
+      var side = Math.max(0, Math.round((view - w) / 2));
+      sc.style.paddingLeft = side + "px";
+      sc.style.paddingRight = side + "px";
       sc.style.scrollPadding = "0px";
     }
     function start() {
@@ -1373,16 +1397,37 @@
       }, { passive: true });
     }
   }
-  /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
+  /* One tap selects a plan card (one at a time); tapping the selected card unselects it.
+     On phones a new selection also scrolls that card to center. Swiping the row does not change selection. */
   function bindPlanSelect(root) {
     var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
     var cards = [].slice.call(sc.querySelectorAll(".hm-plan"));
     var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    function pick(c) {
-      cards.forEach(function (x) { var on = x === c; x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on ? "true" : "false"); });
-      if (sc.hmPlanArm) sc.hmPlanArm();
-      if (window.matchMedia("(max-width:600px)").matches) hmPlanGo(sc, c, smooth);
+    function applySel(tier, isUser) {
+      cards.forEach(function (x) {
+        var on = !!tier && x.getAttribute("data-tier") === tier;
+        x.classList.toggle("sel", on);
+        x.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      sc.classList.toggle("pc-has-sel", !!tier);
+      try {
+        sessionStorage.setItem(PLAN_SEL_KEY, tier || "");
+        if (isUser) {
+          if (tier) sessionStorage.setItem(PLAN_SEL_USER_KEY, "1");
+          else sessionStorage.removeItem(PLAN_SEL_USER_KEY);
+        }
+      } catch (e) {}
     }
+    function pick(c) {
+      var cur = cards.filter(function (x) { return x.classList.contains("sel"); })[0];
+      var next = (c === cur) ? "" : c.getAttribute("data-tier");
+      applySel(next, true);
+      if (next) {
+        if (sc.hmPlanArm) sc.hmPlanArm();
+        if (window.matchMedia("(max-width:600px)").matches) hmPlanGo(sc, c, smooth);
+      }
+    }
+    applySel(currentPlanSel(), false);
     cards.forEach(function (c) {
       c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
       c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
@@ -4319,7 +4364,9 @@
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : OB[0]); }
     if (a === "start") {
       if (hasResume()) { openResumePrompt(from); return; }
-      var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier");
+      var sc = app.querySelector("#row-plans .hm-plan.sel");
+      /* Funnel follows a user tap only. The landing Essentials .sel is visual; S.tier stays gold until they pick a plan. */
+      if (planSelWasUser() && sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier");
       try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {}
       return go(OB[0]);
     }
