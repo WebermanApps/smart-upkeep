@@ -1031,7 +1031,14 @@
     function size() {
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
       var view = viewW();
-      var raw = (view - padL - gap) / (1 + PEEK / 100);
+      var raw;
+      /* Home FAQ Section Look Deck (Machan Nov 14): Slim Peek is 326px at a 390 viewport, about 39px of the next card. Scale with the viewport; keep the desktop cap. */
+      if (sc.closest("#hs-faq")) {
+        var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        raw = 326 * vw / 390;
+      } else {
+        raw = (view - padL - gap) / (1 + PEEK / 100);
+      }
       sc.style.setProperty("--car-w", Math.max(200, Math.min(Math.floor(raw), capW(view))) + "px");
       sc.style.scrollPaddingLeft = padL + "px";
     }
@@ -1077,8 +1084,12 @@
     }
     var raf = 0;
     sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
-    window.addEventListener("resize", function () { size(); sync(); });
-    start(); requestAnimationFrame(function () { start(); });
+    function refit() { size(); sync(); }
+    window.addEventListener("resize", refit);
+    if (window.visualViewport) visualViewport.addEventListener("resize", refit);
+    start();
+    requestAnimationFrame(function () { start(); });
+    [60, 300, 800].forEach(function (ms) { setTimeout(refit, ms); });
   }
   function bindAlcCar(root) {
     var sc = root.querySelector("#hs-alc .alc-car-scroll"); if (!sc) return;
@@ -1087,37 +1098,72 @@
   function bindFaqCar(root) {
     var sc = root.querySelector("#hs-faq .faq-car-scroll"); if (!sc) return;
     var lab = root.querySelector("#hs-faq .faq-car-lab");
-    var pos = root.querySelector("#hs-faq .faq-car-pos");
+    var bar = root.querySelector("#hs-faq .faq-car-bar");
     bindPeekSwipe(sc, ".faq-card", [], function (best, i, cs) {
       if (lab && best) lab.textContent = best.getAttribute("data-faq-topic") || "";
-      if (pos) pos.textContent = (i + 1) + " / " + cs.length;
+      if (!bar) return;
+      var n = cs.length, html = "", k;
+      if (bar.children.length !== n) {
+        for (k = 0; k < n; k++) html += "<i></i>";
+        bar.innerHTML = html;
+      }
+      bar.setAttribute("aria-label", "Section " + (i + 1) + " of " + n);
+      [].forEach.call(bar.children, function (s, j) {
+        s.classList.toggle("is-done", j < i);
+        s.classList.toggle("is-on", j === i);
+      });
     });
     sc.setAttribute("aria-label", "FAQ sections");
-    function closeItem(item) {
-      var btn = item.querySelector(".faq-item-q"), pnl = item.querySelector(".faq-item-a");
-      if (!btn || !pnl || pnl.hidden) return;
-      btn.setAttribute("aria-expanded", "false");
-      item.classList.remove("is-open");
-      if (pnl._an) { pnl._an.cancel(); pnl._an = null; pnl.style.overflow = ""; }
-      saAnim(pnl, false);
+    var wrap = root.querySelector("#hs-faq .faq-sheet-wrap");
+    var sheet = wrap && wrap.querySelector(".faq-sheet");
+    var lastBtn = null, y0 = null, dy = 0;
+    function placeSheet() {
+      if (!wrap) return;
+      var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+      var h = 0;
+      if (dock) h = Math.max(0, Math.round(window.innerHeight - dock.getBoundingClientRect().top));
+      wrap.style.setProperty("--su-dock-h", h + "px");
     }
-    function openItem(item) {
-      var btn = item.querySelector(".faq-item-q"), pnl = item.querySelector(".faq-item-a");
-      if (!btn || !pnl) return;
-      root.querySelectorAll("#hs-faq .faq-item.is-open").forEach(function (o) { if (o !== item) closeItem(o); });
-      if (!pnl.hidden) return;
-      if (pnl._an) { pnl._an.cancel(); pnl._an = null; pnl.style.overflow = ""; }
-      pnl.hidden = false;
-      btn.setAttribute("aria-expanded", "true");
-      item.classList.add("is-open");
-      saAnim(pnl, true);
-      var body = item.closest(".faq-card-body");
-      if (body) item.scrollIntoView({ block: "nearest", behavior: saReduced() ? "auto" : "smooth" });
+    function faqFocusables() {
+      if (!sheet) return [];
+      return [].slice.call(sheet.querySelectorAll('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])'));
+    }
+    function setExpanded(btn) {
+      root.querySelectorAll("#hs-faq .faq-item-q[aria-expanded='true']").forEach(function (b) {
+        if (b !== btn) b.setAttribute("aria-expanded", "false");
+      });
+      if (btn) btn.setAttribute("aria-expanded", "true");
+    }
+    function closeSheet() {
+      if (!wrap || wrap.hidden) return;
+      wrap.hidden = true;
+      document.documentElement.classList.remove("faq-sheet-open");
+      if (sheet) sheet.style.transform = "";
+      setExpanded(null);
+      var back = lastBtn; lastBtn = null;
+      if (back) back.focus();
+    }
+    function openSheet(btn) {
+      if (!wrap || !sheet || !btn) return;
+      var id = btn.getAttribute("data-faq-id");
+      var data = faqSheetData[id]; if (!data) return;
+      lastBtn = btn;
+      var secEl = wrap.querySelector("#faqSheetSec"), titleEl = wrap.querySelector("#faqSheetT"), bodyEl = wrap.querySelector("#faqSheetA");
+      if (secEl) secEl.textContent = data.topic || "";
+      if (titleEl) titleEl.textContent = data.q || "";
+      if (bodyEl) bodyEl.innerHTML = data.a || "";
+      setExpanded(btn);
+      placeSheet();
+      sheet.style.transform = "";
+      wrap.hidden = false;
+      document.documentElement.classList.add("faq-sheet-open");
+      var x = wrap.querySelector(".faq-sheet-x");
+      if (x) x.focus();
     }
     sc.addEventListener("click", function (e) {
       var btn = e.target.closest(".faq-item-q"); if (!btn || !sc.contains(btn)) return;
-      var item = btn.closest(".faq-item"); if (!item) return;
-      if (btn.getAttribute("aria-expanded") === "true") closeItem(item); else openItem(item);
+      if (btn.getAttribute("aria-expanded") === "true" && wrap && !wrap.hidden) closeSheet();
+      else openSheet(btn);
     });
     sc.addEventListener("keydown", function (e) {
       if (e.target === sc) return;
@@ -1126,6 +1172,38 @@
       e.preventDefault();
       sc.dispatchEvent(new KeyboardEvent("keydown", { key: e.key, bubbles: false, cancelable: true }));
     });
+    if (wrap && sheet) {
+      wrap.addEventListener("click", function (e) {
+        if (e.target.closest("[data-faq-close]")) { e.preventDefault(); closeSheet(); }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (wrap.hidden) return;
+        if (e.key === "Escape") { e.preventDefault(); closeSheet(); return; }
+        if (e.key !== "Tab") return;
+        var fs = faqFocusables();
+        if (!fs.length) { e.preventDefault(); sheet.focus(); return; }
+        var i = fs.indexOf(document.activeElement);
+        if (e.shiftKey) {
+          if (i <= 0) { e.preventDefault(); fs[fs.length - 1].focus(); }
+        } else if (i === -1 || i === fs.length - 1) { e.preventDefault(); fs[0].focus(); }
+      });
+      sheet.addEventListener("touchstart", function (e) {
+        var body = wrap.querySelector(".faq-sheet-body");
+        y0 = (!body || body.scrollTop <= 0) ? e.touches[0].clientY : null;
+        dy = 0;
+      }, { passive: true });
+      sheet.addEventListener("touchmove", function (e) {
+        if (y0 === null) return;
+        dy = e.touches[0].clientY - y0;
+        if (dy > 0) sheet.style.transform = "translateY(" + dy + "px)";
+      }, { passive: true });
+      sheet.addEventListener("touchend", function () {
+        if (y0 !== null && dy > 90) closeSheet();
+        else if (sheet) sheet.style.transform = "";
+        y0 = null;
+      });
+      window.addEventListener("resize", function () { if (!wrap.hidden) placeSheet(); });
+    }
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
   function bindPlanSelect(root) {
@@ -1639,6 +1717,7 @@
     "should-i-be-concerned-with-air-quality": "Should I Be Concerned With Air Quality?"
   };
   /* Home FAQ carousel (Machan Nov 14 10:17 AM): one card per section, questions expand in place. Home section only; /faq/ is unchanged. */
+  var faqSheetData = {};
   function faqCarouselHtml() {
     var bySlug = {}, used = {};
     var topicIco = {};
@@ -1683,18 +1762,27 @@
       (g[1] || []).forEach(function (q) { var c = take(q[2]); if (c) items.push(c); });
       pushSec(g[0], FAQ_ICONS[gi] || "tag", items);
     });
+    faqSheetData = {};
     return '<div class="faq-car">' +
       '<div class="faq-car-scroll" data-ptr-ignore>' + sections.map(function (sec, i) {
         return '<article class="faq-card" data-faq-i="' + i + '" data-faq-topic="' + esc(sec.topic) + '">' +
           '<h3 class="faq-card-topic"><span class="faq-ico" aria-hidden="true">' + I(sec.ico, "sm") + '</span>' + esc(sec.topic) + '</h3>' +
           '<div class="faq-card-body">' + sec.items.map(function (c, j) {
             var id = "hfq-" + i + "-" + j;
+            faqSheetData[id] = { q: c.q, a: c.a, topic: sec.topic, slug: c.slug };
             return '<div class="faq-item' + (c.emerg ? " is-emerg" : "") + '" data-faq-slug="' + esc(c.slug) + '">' +
-              '<button type="button" class="faq-item-q" id="' + id + '-q" aria-expanded="false" aria-controls="' + id + '-a">' + esc(c.q) + '</button>' +
-              '<div class="faq-item-a" id="' + id + '-a" role="region" aria-labelledby="' + id + '-q" hidden>' + c.a + '</div></div>';
+              '<button type="button" class="faq-item-q" id="' + id + '-q" data-faq-id="' + id + '" aria-haspopup="dialog" aria-expanded="false" aria-controls="faqSheet">' + esc(c.q) + '</button></div>';
           }).join("") + '</div></article>';
       }).join("") + '</div>' +
-      '<div class="faq-car-nav"><p class="faq-car-lab" aria-live="polite"></p><p class="faq-car-pos" aria-hidden="true"></p></div></div>';
+      '<div class="faq-car-nav"><div class="faq-car-bar" role="img" aria-label="Section 1 of 6"></div><p class="faq-car-lab" aria-live="polite"></p></div>' +
+      '<div class="faq-sheet-wrap" hidden><div class="faq-sheet-bg" data-faq-close></div>' +
+        '<div class="faq-sheet" id="faqSheet" role="dialog" aria-modal="true" aria-labelledby="faqSheetT" tabindex="-1">' +
+          '<div class="faq-sheet-grab" aria-hidden="true"></div>' +
+          '<button type="button" class="faq-sheet-x mw-hover" data-faq-close aria-label="Close">' + X_SVG + '</button>' +
+          '<p class="faq-sheet-sec" id="faqSheetSec"></p>' +
+          '<h3 class="faq-sheet-t" id="faqSheetT"></h3>' +
+          '<div class="faq-sheet-body" id="faqSheetA"></div>' +
+        '</div></div></div>';
   }
   /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM): topic icons on the six chips, not on each question. Live SUIcon set. */
   var FAQ_ICONS = ["furnace", "shield", "gutter", "clipboard", "van", "tag"];
