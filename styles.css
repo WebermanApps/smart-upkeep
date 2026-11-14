@@ -2596,13 +2596,6 @@ body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(-
   body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0;overscroll-behavior-x:contain;touch-action:pan-x}
   body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:center!important}
   /* Essentials, Plus and Complete all snap to center. Blank space to the left of Essentials is intended. */
-  /* Dimming starts only after a tap or swipe (pc-dimmed). On first land all three stay equal.
-     Active snap tile is full; others sit at 76% with a light desaturation. No green. */
-  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{opacity:.76;filter:saturate(.85);transition:opacity .2s ease,filter .2s ease}
-  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan.pc-on{opacity:1;filter:none}
-}
-@media (max-width:600px) and (prefers-reduced-motion:reduce){
-  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{transition:none}
 }
 body.on-home .hm-plan .pc-inc li[hidden]{display:none!important}
 body.on-home #row-plans .hm-plan,body.on-home #row-plans .pc-more-link{-webkit-tap-highlight-color:transparent} /* no blue tile flash on tap before the sheet grows */
@@ -3292,6 +3285,32 @@ body.on-home .hs-arrow-up:focus-visible{opacity:1}
 /* Plans keeps the collapsed margin so 7 items still fit. Tailor and FAQ have room, so don't pull cards up over the arrow. */
 body.on-home #hs-alc .hs-arrow-up,
 body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
+
+/* Machan Nov 14 7:17 PM ICT: the Plans up arrow sat on the Essentials tile. Keep it in the
+   Plans header row so it never overlaps a tile, without taking vertical space from the 7-item fit. */
+body.on-home #hs-plans .hm-row-h .hs-arrow-up{
+  margin:0 0 0 4px!important;
+  position:relative;
+  z-index:2;
+  flex:none;
+  align-self:center;
+}
+
+/* Machan Nov 14 7:18-7:19 PM ICT: unselected tiles get a real gray-out (grayscale + ~0.6 opacity)
+   once a plan is selected. The selected tile stays full color, including its top band.
+   Unselect (tap the selected tile again) removes the gray so all three are full color. */
+body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{
+  opacity:.6;
+  filter:grayscale(1);
+  transition:opacity .2s ease,filter .2s ease;
+}
+body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan.sel{
+  opacity:1;
+  filter:none;
+}
+@media (prefers-reduced-motion:reduce){
+  body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{transition:none}
+}
 
 
 /* ===== r4 Swatch QA (Nov 14): CTA stacking, flush parks, Plans fill, FAQ full-bleed, 44px Plans down arrow ===== */
