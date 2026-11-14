@@ -1437,7 +1437,7 @@ html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-start .ob-pane > .qf-body{margin-bo
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-start .qf-hero.stack.compact{margin:0 0 4px!important}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-start .ob-cal{padding-top:2px!important;padding-bottom:2px!important;margin-bottom:4px!important}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-start #obDateL{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-plan .qf-hero .qf-help,html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-systems .qf-hero .qf-help{display:none}
+html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-plan .qf-hero .qf-help,html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-systems .qf-hero .qf-help{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-plan .qf-hero{margin-bottom:6px}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-billing .f2-banner{margin-bottom:8px;padding-top:10px;padding-bottom:10px}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-billing .pay-card{padding-top:10px;padding-bottom:10px}
