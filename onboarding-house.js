@@ -94,7 +94,99 @@
   function build() {
     band = document.createElement("div");
     band.className = "ob-hb";
-    band.innerHTML = '<div class="ob-hb-art"><div class="ob-hb-map">' + MAP + '</div><div class="ob-hb-house">' + houseSvg() + '</div></div><p class="ob-hb-cap" aria-live="polite"></p>';
+    band.innerHTML = '<div class="ob-hb-art"><div class="ob-hb-map">' + MAP + '</div><div class="ob-hb-house">' + houseSvg() + '</div><div class="hb-orbit" aria-hidden="true"></div></div><p class="ob-hb-cap" aria-live="polite"></p>';
+    var ms = band.querySelector(".hb-map-svg"); if (ms) ms.insertAdjacentHTML("beforeend", PIN);
+  }
+  /* Onboarding Polish B card 5 (Machan Nov 14 9:15 PM ICT, Pin Drop): once a street and an in-area ZIP are entered, a terracotta pin lands on the
+     service-area box on the state map. It marks the area we serve, not a geocoded spot; nothing is looked up or sent. */
+  var PIN = '<g class="hb-drop" transform="translate(176.5 161.7) scale(.75)" style="display:none"><ellipse class="hb-drop-sh" cx="14" cy="34" rx="6" ry="2" fill="rgba(42,36,28,.25)"/>' +
+    '<g class="hb-drop-in"><path d="M14 1.5c6.2 0 11 4.8 11 11.2 0 8.4-11 21-11 21S3 21.1 3 12.7C3 6.3 7.8 1.5 14 1.5z" fill="#A8431F" stroke="#FFFCF7" stroke-width="1.6"/><circle cx="14" cy="12.2" r="4.2" fill="#FFFCF7"/></g></g>';
+  /* Onboarding Polish B card 4 (Your Home Strip): the answers so far as small chips on the house caption line, so the band keeps its height.
+     Only answers already given are shown; the newest chip pops in once. */
+  function chipsOf(st) {
+    var out = [], street = String(st.street || "").split(",")[0].trim();
+    if (street) out.push(["addr", street, "Address: " + street]);
+    if (st.sizeLabel) { var sz = String(st.sizeLabel).replace(/\bto\b/g, "To").replace(/\bover\b/i, "Over").replace(/\bunder\b/i, "Under"); out.push(["size", sz, "Home size: " + sz]); }
+    if (st.storiesSet) { var n = Math.max(1, Math.min(3, +st.stories || 1)), t = n === 1 ? "1 Story" : n + " Stories"; out.push(["stories", t, t]); }
+    if (st.sys) {
+      var f = +st.furnaces || 0, a = +st.acs || 0, w = (st.wh || []).length, tot = f + a + w;
+      out.push(["sys", tot === 1 ? "1 System" : tot + " Systems", f + " Furnace" + (f === 1 ? "" : "s") + ", " + a + " AC" + (a === 1 ? "" : "s") + ", " + w + " Water Heater" + (w === 1 ? "" : "s")]);
+    }
+    return out;
+  }
+  function escH(x) { return String(x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  var lastChips = null;
+  function paintChips(capEl, st, animate, rm) {
+    var cs = chipsOf(st);
+    if (!cs.length) { capEl.classList.remove("hb-chips"); capEl.textContent = cap(st); lastChips = {}; return; }
+    var prev = lastChips || {}, now = {};
+    capEl.classList.add("hb-chips");
+    capEl.setAttribute("aria-label", "Your Home: " + cs.map(function (c) { return c[2]; }).join(", "));
+    capEl.innerHTML = cs.map(function (c) { now[c[0]] = c[1]; return '<span class="hb-chip" data-c="' + c[0] + '" aria-hidden="true">' + escH(c[1]) + '</span>'; }).join("");
+    if (animate && lastChips) cs.forEach(function (c) {
+      if (prev[c[0]] === c[1]) return;
+      var node = capEl.querySelector('[data-c="' + c[0] + '"]'); if (!node) return;
+      anim(node, rm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "scale(.8)" }, { opacity: 1, transform: "scale(1.08)", offset: .6 }, { opacity: 1, transform: "scale(1)" }], rm ? 150 : 300, rm ? "linear" : EASE_POP);
+    });
+    lastChips = now;
+  }
+  /* Onboarding Polish B card 7 (House Reacts): counted systems glow in the house (CSS), and each picked extra or add-on gets a small line icon
+     around the house. The band keeps its height; icons pop in and out once (transform and opacity), reduced motion fades. */
+  var ORB_ICO = {
+    water: '<path d="M8 2.5c2.6 3.2 4 5.3 4 7.1a4 4 0 0 1-8 0c0-1.8 1.4-3.9 4-7.1z"/>',
+    roof: '<path d="M2.5 8.5 8 3.5l5.5 5M4.5 7v5.5h7V7"/>',
+    power: '<path d="M9 2 4.5 9h3.2L7 14l4.5-7H8.3z"/>',
+    yard: '<path d="M3 13c0-5 3-8.5 10-9.5-.5 6.5-4 9.5-9 9.5M3 13l5-5"/>',
+    other: '<path d="M8 2.8l1.6 3.3 3.6.5-2.6 2.5.6 3.6L8 11l-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/>'
+  };
+  var ORB_KIND = { irrigation: "water", sump: "water", sumpbackup: "water", softener: "water", leak: "water", bibs: "water", testkit: "water", humidifier: "water",
+    gutters: "roof", flatroof: "roof", chimney: "roof", windows: "roof", generator: "power", lights: "power", doorbell: "power", thermostat: "power", bathfan: "power",
+    mower: "yard", snowblower: "yard" };
+  var ORB_SLOTS = [[5, 6], [95, 6], [15, 32], [85, 32], [5, 50], [95, 50]];
+  function keyOf(l) { var s = String(l || "").toLowerCase(); for (var i = 0; i < LABEL_MAP.length; i++) if (LABEL_MAP[i][0].test(s)) return LABEL_MAP[i][1]; return "generic"; }
+  function paintOrbit(st, mode, animate, rm) {
+    var lay = el(".hb-orbit"); if (!lay) return;
+    var labels = mode === "house" ? (st.labels || []) : [], want = {}, order = [];
+    labels.forEach(function (l) { var k = String(l).toLowerCase(); if (!want[k]) { want[k] = l; order.push(k); } });
+    var vis = order.slice(0, ORB_SLOTS.length), more = order.length - vis.length;
+    if (more > 0) { vis = order.slice(0, ORB_SLOTS.length - 1); more = order.length - vis.length; }
+    [].slice.call(lay.children).forEach(function (o) {
+      var k = o.getAttribute("data-l"); if (vis.indexOf(k) > -1 || (k === "__more" && more > 0)) return;
+      if (!animate || o._hbHiding) { if (!animate) o.parentNode.removeChild(o); return; }
+      o._hbHiding = true;
+      anim(o, rm ? [{ opacity: 1 }, { opacity: 0 }] : [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.4)" }], rm ? 150 : 200, rm ? "linear" : "ease-in", function () { if (o.parentNode) o.parentNode.removeChild(o); }, true);
+    });
+    function place(o, i) { o.style.left = ORB_SLOTS[i][0] + "%"; o.style.top = ORB_SLOTS[i][1] + "%"; }
+    vis.forEach(function (k, i) {
+      var o = lay.querySelector('[data-l="' + k.replace(/"/g, "") + '"]');
+      if (o && !o._hbHiding) { place(o, i); return; }
+      o = document.createElement("span"); o.className = "hb-orb"; o.setAttribute("data-l", k);
+      o.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">' + ORB_ICO[ORB_KIND[keyOf(want[k])] || "other"] + '</svg>';
+      place(o, i); lay.appendChild(o);
+      if (animate) anim(o, rm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "scale(1.15)", offset: .6 }, { opacity: 1, transform: "scale(1)" }], rm ? 150 : 300, rm ? "linear" : EASE_POP);
+    });
+    var m = lay.querySelector('[data-l="__more"]');
+    if (more > 0) {
+      if (!m || m._hbHiding) { m = document.createElement("span"); m.className = "hb-orb hb-orb-more"; m.setAttribute("data-l", "__more"); lay.appendChild(m); if (animate) anim(m, rm ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "scale(1)" }], rm ? 150 : 260, rm ? "linear" : EASE_POP); }
+      m.textContent = "+" + more; place(m, ORB_SLOTS.length - 1);
+    }
+  }
+  var pinWas = false;
+  function paintPin(st, mode, animate, rm) {
+    var g = band.querySelector(".hb-drop"); if (!g) return;
+    var on = mode === "map" && !!st.addrOk, inner = g.querySelector(".hb-drop-in"), sh = g.querySelector(".hb-drop-sh");
+    if (on && (!pinWas || g.style.display === "none")) {
+      g.style.display = "";
+      if (animate) {
+        if (rm) anim(g, [{ opacity: 0 }, { opacity: 1 }], 150, "linear");
+        else { anim(inner, [{ opacity: 0, transform: "translateY(-46px)" }, { opacity: 1, transform: "translateY(0)", offset: .7 }, { transform: "translateY(-5px)", offset: .85 }, { transform: "translateY(0)" }], 280, "cubic-bezier(.3,0,.4,1)");
+          anim(sh, [{ opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "scale(1)" }], 280, "ease-out"); }
+      }
+    } else if (!on && g.style.display !== "none") {
+      if (!animate) g.style.display = "none";
+      else anim(g, [{ opacity: 1 }, { opacity: 0 }], rm ? 150 : 200, "linear", function () { if (!(pinWas)) g.style.display = "none"; }, true);
+    }
+    pinWas = on;
   }
   function reduced() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } }
   function anim(node, frames, ms, easing, after, hold) {
@@ -178,7 +270,10 @@
       if (g.classList.contains("hb-badge")) { var t = g.querySelector("text"), v = on ? String(items[k]) : ""; changed = t.textContent !== v && on && g.style.display !== "none"; if (on) t.textContent = v; show(g, on, live, rm); if (changed && live) anim(g, rm ? [{ opacity: .3 }, { opacity: 1 }] : [{ transform: "scale(1)" }, { transform: "scale(1.3)", offset: .5 }, { transform: "scale(1)" }], rm ? 150 : 240, rm ? "linear" : EASE_POP); return; }
       show(g, on, live, rm);
     });
-    el(".ob-hb-cap").textContent = mode === "map" ? "Wayne, Oakland And Macomb" : cap(st);
+    if (mode === "map") { var ce = el(".ob-hb-cap"); ce.classList.remove("hb-chips"); ce.removeAttribute("aria-label"); ce.textContent = "Wayne, Oakland And Macomb"; }
+    else paintChips(el(".ob-hb-cap"), st, animate, rm);
+    paintPin(st, mode, animate, rm);
+    paintOrbit(st, mode, live, rm);
     /* Finish Reveal (deck pick B): the finished house fades and eases in once, when the last step of the sequence opens (st.last from app.js obSeq()). */
     var fin = st.last || "accept";
     if (mode === "house" && st.screen === fin && lastScreen !== fin) {
