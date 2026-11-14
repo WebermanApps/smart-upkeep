@@ -1836,7 +1836,7 @@ body.on-home .hm-tabs .hm-tab-cta{
   font:600 12px/1 Hind,var(--mw-font-body),sans-serif;white-space:nowrap;border-radius:999px;
 }
 /* Arrow guard: hide Get Started only, never the tabs. Keep its slot so the pill does not jump. */
-body.on-home .hm-tabs.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+body.on-home .hm-tabs.arrow-off .hm-tab-cta{opacity:1;visibility:visible;pointer-events:auto}
 
 /* Desktop floating pill from 1100px up: min(560px, 90vw), centered, bottom 1rem, border and shadow. */
 @media (min-width:1100px){
@@ -2018,7 +2018,7 @@ body.on-home .hm-tabs.hm-dock{background:transparent!important;border:0!importan
 body.on-home .hm-tabs.hm-dock > *{pointer-events:auto}
 body.on-home .hm-dock .hm-tab-cta{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:52px;height:52px;margin:0!important;padding:0 1rem!important;border-radius:999px!important;font:600 15px/1 Hind,var(--mw-font-body),sans-serif!important;letter-spacing:.06em;box-shadow:0 8px 20px rgba(168,67,31,.22);transition:opacity .2s ease,visibility .2s}
 body.on-home .hm-dock .hm-pill{display:flex;flex-direction:column;background:#fff;border:1px solid #E6E0D6;border-radius:28px;box-shadow:var(--su-sh-2);overflow:hidden}
-body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:1;visibility:visible;pointer-events:auto}
 body.on-home.hs-bar-off .hm-tabs{opacity:1!important;visibility:visible!important;pointer-events:none!important;transform:none!important}
 @media (min-width:1100px){body.on-home.hs-bar-off .hm-tabs{transform:translateX(-50%)!important}}
 /* Shop À La Carte section and FAQ section (Machan 9:09-9:11 AM) */
@@ -2272,7 +2272,7 @@ body.on-home .fs-ad:not(.fs-ad-plans){background-image:var(--su-shine),var(--su-
   body.on-home .fs-ad.fs-ad-plans{padding-top:2px;padding-bottom:2px}
   body.on-home #hs-plans .pc-dots{margin-top:0!important;margin-bottom:0!important}
   body.on-home #hs-plans .hm-scroll{padding-bottom:2px!important}
-  body.on-home #hs-plans > .hs-arrow{min-height:36px!important;height:36px!important;padding-top:2px!important;padding-bottom:2px!important}
+  body.on-home #hs-plans > .hs-arrow{min-height:44px!important;height:auto!important;min-width:44px!important;padding-top:.35rem!important;padding-bottom:.35rem!important}
 }
 body.on-home #hs-faq .sa-groups.sa-tabbed,body.on-home #hs-alc .sa-groups.sa-tabbed{width:auto!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
 body.on-home #hs-faq > .hm-faqs{grid-template-columns:minmax(0,1fr)!important;column-gap:0!important}
@@ -2728,7 +2728,7 @@ html.su-glide,html.su-glide body{scroll-snap-type:none!important}
 body.on-home .hs-sec,body.on-home .hs-sec.hs-top{scroll-margin-top:var(--su-hdr-h,56px);scroll-snap-align:start}
 /* Header height stays fixed (56/64 + safe area). Shrink is transform-only (--su-ly). */
 body.su-band .topbar{height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;min-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;max-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important}
-/* Bottom bar: keep existing height/padding/--tb (Get Started 44 + 6 gap + tabs 48 + 8/4 pad). Flush, not floating. Light only, no green. */
+/* Bottom bar: keep existing height/padding/--tb (tabs 48 + 6 gap + Get Started 44 + 8/4 pad). Flush, not floating. Light only, no green. Order flipped Nov 14 (tabs first). */
 html body.on-home .hm-tabs.hm-dock,html body.on-home.hs-bar-off .hm-tabs.hm-dock{
   background-color:#FFFCF7!important;
   background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;
@@ -2924,8 +2924,8 @@ html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
    min-height only (never a fixed height or overflow:hidden), so a section grows when its content is taller and nothing is cut off by the
    header or the bar. --su-fill-h is set in JS (pcFitLines) from the live header bottom and bar top. */
 /* r3 (Swatch): Plans only; Tailor and FAQ stay content-sized (#121). */
-html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:auto!important;max-height:none!important;overflow:visible!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
-html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
+html body.on-home #hs-plans.hs-sec{min-height:var(--su-fill-h,0px)!important;height:var(--su-fill-h,0px)!important;max-height:var(--su-fill-h,0px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important}
+html body.on-home #hs-plans.hs-sec.pc-measure,html body.on-home #hs-alc.hs-sec.su-measure,html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important;height:auto!important;max-height:none!important;overflow:visible!important}
 html body.on-home #hs-alc.hs-sec.su-measure > .hs-arrow{margin-top:8px!important}
 html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
 /* r2: the tiles take the leftover room (no auto gaps above the tiles or under the dots); items spread evenly inside each tile. */
@@ -2957,3 +2957,644 @@ html body.su-band.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.
 /* Bar tabs (Machan Nov 13 11:14 PM ICT, "i don't like the white box ... i want just the highlight"): no hover/tap lift, shadow or box on the
    section buttons (it stuck after a tap on phones); the sliding highlight stays, and keyboard focus keeps its outline. */
 html body.on-home .hm-dock button[data-hm-tab]:hover,html body.on-home .hm-dock button[data-hm-tab]:active,html body.on-home .hm-dock button[data-hm-tab]:focus,html body.on-home .hm-dock button[data-hm-tab]:focus-visible{transform:none!important;box-shadow:none!important;background:transparent!important;background-image:none!important}
+
+
+/* ===== Tailor + Home FAQ carousels (Machan Nov 14) =====
+   Plans is left as-is. Tailor and Home FAQ are their own carousels (22% peek, snap, dots)
+   with cards designed for their content. Both sections fill the room between the header
+   and the bar so the next section's header does not peek above the dock. */
+html body.on-home #hs-alc.hs-sec,
+html body.on-home #hs-faq.hs-sec{
+  min-height:var(--su-fill-h,0px)!important;
+  height:var(--su-fill-h,0px)!important;
+  max-height:var(--su-fill-h,0px)!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:flex-start!important;
+  padding-bottom:0!important;
+}
+html body.on-home #hs-alc.hs-sec.su-measure,
+html body.on-home #hs-faq.hs-sec.su-measure{min-height:0!important}
+html body.on-home #hs-alc > .hm-row,
+html body.on-home #hs-faq > .hm-faqs{
+  flex:1 1 auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  padding-top:16px!important;
+  margin-top:0!important;
+}
+html body.on-home #hs-alc > .hs-arrow{margin-top:auto!important}
+
+body.on-home .alc-car,
+body.on-home .faq-car{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
+  margin:0;
+}
+@media (max-width:600px){
+  body.on-home .alc-car,
+  body.on-home .faq-car{margin:0 calc(-1 * var(--su-edge,16px));}
+}
+body.on-home .alc-car-scroll,
+body.on-home .faq-car-scroll{
+  flex:1 1 auto;
+  display:flex;
+  align-items:stretch;
+  gap:.6rem;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  padding:2px var(--su-edge,16px) 8px;
+  scroll-padding-left:var(--su-edge,16px);
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  touch-action:pan-x pan-y;
+}
+body.on-home .faq-car-scroll{align-items:stretch}
+body.on-home .alc-car-scroll::-webkit-scrollbar,
+body.on-home .faq-car-scroll::-webkit-scrollbar{display:none}
+body.on-home .alc-car-scroll:focus,
+body.on-home .faq-car-scroll:focus{outline:none}
+body.on-home .alc-car-scroll:focus-visible,
+body.on-home .faq-car-scroll:focus-visible{outline:2px solid #A8431F;outline-offset:-2px}
+
+body.on-home .alc-card,
+body.on-home .faq-card{
+  flex:0 0 var(--car-w,82%);
+  width:var(--car-w,82%);
+  min-width:0;
+  max-width:100%;
+  height:auto;
+  max-height:100%;
+  align-self:stretch;
+  scroll-snap-align:start;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow:hidden;
+  border:1px solid #ECE5DA;
+  border-radius:16px;
+  box-shadow:var(--su-sh-card,var(--su-sh-2));
+  color-scheme:light only;
+}
+body.on-home .alc-card{
+  background:#FFFCF7;
+  padding:0 0 8px;
+}
+body.on-home .alc-card .alc-ghd{
+  margin:12px 12px 8px;
+  height:auto;
+  min-height:44px;
+  padding:8px 12px;
+  border-radius:12px;
+  flex:none;
+}
+body.on-home .alc-card .sa-list{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:0 16px 8px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  gap:2px;
+}
+body.on-home .alc-dots,
+body.on-home .faq-dots{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:.4rem;
+  margin:4px 0 0;
+  flex:none;
+  padding:0 var(--su-edge,16px);
+  border:0;
+  background:transparent;
+}
+body.on-home .alc-dot,
+body.on-home .faq-dot{
+  width:7px;
+  height:7px;
+  padding:0;
+  margin:0;
+  border:0;
+  border-radius:50%;
+  background:#d4d4d4;
+  flex:none;
+  cursor:pointer;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .2s,transform .2s;
+}
+body.on-home .alc-dot::after,
+body.on-home .faq-dot::after{
+  content:"";
+  position:absolute;
+  inset:-10px;
+}
+body.on-home .alc-dot.on,
+body.on-home .faq-dot.on{background:#0a0a0a;transform:scale(1.2)}
+body.on-home .alc-dot:focus-visible,
+body.on-home .faq-dot:focus-visible{outline:2px solid #05668D;outline-offset:3px}
+
+body.on-home .faq-car-nav{
+  flex:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  margin:4px 0 8px;
+  padding:0 var(--su-edge,16px);
+}
+body.on-home .faq-car-lab{
+  margin:0;
+  font:600 13px/1.2 Hind,var(--mw-font-body),sans-serif;
+  color:#6B625A;
+  text-align:center;
+}
+body.on-home .faq-car-pos{
+  margin:0;
+  font:600 14px/1.2 Khand,var(--mw-font-heading),sans-serif;
+  color:#1A1A1A;
+  letter-spacing:.02em;
+  text-align:center;
+}
+
+body.on-home .faq-card{
+  background:#FFF8EE;
+  padding:14px 14px 10px;
+  align-self:stretch;
+  height:auto;
+  max-height:100%;
+}
+body.on-home .faq-card-topic{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 8px;
+  padding:0 0 8px;
+  border-bottom:1px solid #ECE5DA;
+  font:600 20px/1.15 Khand,var(--mw-font-heading),sans-serif;
+  color:#1A1A1A;
+  letter-spacing:0;
+  flex:none;
+}
+body.on-home .faq-card-topic .faq-ico,
+body.on-home .faq-card-topic .su-ico{width:18px;height:18px;flex:none;color:#A8431F}
+body.on-home .faq-card-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+body.on-home .faq-item + .faq-item{border-top:1px solid #ECE5DA}
+body.on-home .faq-item-q{
+  display:flex;
+  align-items:center;
+  width:100%;
+  min-height:44px;
+  margin:0;
+  padding:8px 0;
+  gap:10px;
+  border:0;
+  background:none;
+  box-shadow:none;
+  border-radius:0;
+  text-align:left;
+  cursor:pointer;
+  font:600 15px/1.3 Hind,var(--mw-font-body),sans-serif;
+  color:#3a352e;
+  -webkit-tap-highlight-color:transparent;
+}
+body.on-home .faq-item-q::after{
+  content:"";
+  flex:none;
+  margin-left:auto;
+  width:8px;
+  height:8px;
+  box-sizing:border-box;
+  border-right:2px solid #6B6B6B;
+  border-bottom:2px solid #6B6B6B;
+  border-right-color:#A8431F;
+  border-bottom-color:#A8431F;
+  transform:rotate(-45deg);
+  transform-origin:center;
+}
+body.on-home .faq-item-a,
+body.on-home .faq-card-a{
+  padding:0 0 10px;
+  font:400 15px/1.45 Hind,var(--mw-font-body),sans-serif;
+  color:#4A433D;
+}
+body.on-home .faq-item-a p,
+body.on-home .faq-card-a p{margin:0 0 8px}
+body.on-home .faq-item-a p:last-child,
+body.on-home .faq-card-a p:last-child{margin-bottom:0}
+body.on-home .faq-item-a ul,
+body.on-home .faq-item-a ol,
+body.on-home .faq-card-a ul,
+body.on-home .faq-card-a ol{margin:0 0 8px;padding-left:18px}
+body.on-home .faq-item-a li,
+body.on-home .faq-card-a li{margin:3px 0}
+body.on-home .faq-item-a .fq-note,
+body.on-home .faq-card-a .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-body),sans-serif;color:#6b6b6b}
+body.on-home .faq-item.is-emerg .faq-item-q{color:#A8431F}
+@media (max-height:700px){
+  body.on-home .faq-card-topic{font-size:18px}
+  body.on-home .faq-card{padding:12px 12px 8px}
+  body.on-home .alc-card .alc-ghd{margin:8px 10px 6px;min-height:40px}
+}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .alc-dot,
+  body.on-home .faq-dot{transition:none}
+  body.on-home .faq-dots{scroll-behavior:auto}
+}
+
+
+/* ===== Plans tiles slightly smaller (Machan Nov 14 9:25 AM) =====
+   ~9% narrower tiles, slightly smaller title/price/item type and padding.
+   Item body text stays at least 13px; And More / sheet taps stay 44px+.
+   Tiles size to their content instead of stretching the leftover room, so they
+   read smaller; the section still fills between the header and the bar. */
+html body.on-home #hs-plans .hm-scroll{align-items:stretch!important}
+html body.on-home #row-plans .hm-plan{align-self:stretch!important}
+html body.on-home #row-plans .hm-plan .pc-inc{flex:0 1 auto!important;justify-content:flex-start!important}
+/* Tighten plan item lines to the top (Machan Nov 14: Essentials gaps ~8-10px at 430, no loose gap above the list). */
+html body.on-home #row-plans .hm-plan .pc-inc{margin-top:0!important;margin-bottom:0!important}
+html body.on-home #row-plans .hm-plan .pc-inc > li:first-child{margin-top:0!important}
+html body.on-home #hs-plans .hm-plan .pc-year{margin-bottom:6px!important}
+html body.on-home #row-plans .hm-plan .pc-name{font-size:1.22rem!important}
+html body.on-home #row-plans .hm-plan .pc-big{font-size:2.18rem!important}
+html body.on-home #row-plans .hm-plan.pc{padding:14px 14px!important}
+html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:13px!important;line-height:1.25!important}
+html body.on-home #hs-plans.pc-fs #row-plans .hm-plan .pc-inc:not(.pc-all) > li:not(.pc-key){font-size:var(--pc-li-fs,13px)!important}
+@media (max-height:700px){
+  html body.on-home #row-plans .hm-plan.pc{padding:11px 12px!important}
+}
+@media (min-height:780px) and (max-width:600px){
+  html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:14px!important}
+  html body.on-home #row-plans .hm-plan.pc{padding-top:14px!important;padding-bottom:14px!important}
+}
+@media (min-height:900px) and (max-width:600px){
+  html body.on-home #row-plans .hm-plan .pc-inc:not(.pc-all) > li{font-size:15px!important}
+  html body.on-home #row-plans .hm-plan .pc-big{font-size:2.7rem!important}
+}
+
+/* ===== Quiet up arrows under Plans / Tailor / FAQ headers (Machan Nov 14 9:26 AM) =====
+   Same terracotta chevron family as the down arrows, no label, 44px tap, aria-label Previous Section.
+   Sits under the section title and does not use margin-top:auto (that stays on the down arrow only). */
+/* Keep a 44px tap, but collapse its layout height so Plans still fits 7 items and the next header does not peek. */
+body.on-home .hs-arrow-up{
+  display:flex!important;
+  flex:none!important;
+  position:relative;
+  z-index:2;
+  margin:-12px auto -32px!important;
+  padding:0 16px!important;
+  min-height:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  opacity:.48;
+  color:#A8431F;
+}
+body.on-home .hs-arrow-up svg{margin:0!important;width:20px;height:20px}
+body.on-home .hs-arrow-up:hover,
+body.on-home .hs-arrow-up:focus-visible{opacity:1}
+@media (prefers-reduced-motion:reduce){body.on-home .hs-arrow-up{transition:none}}
+/* Plans keeps the collapsed margin so 7 items still fit. Tailor and FAQ have room, so don't pull cards up over the arrow. */
+body.on-home #hs-alc .hs-arrow-up,
+body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
+
+
+/* ===== r4 Swatch QA (Nov 14): CTA stacking, flush parks, Plans fill, FAQ full-bleed, 44px Plans down arrow ===== */
+html body.on-home .hm-tabs.hm-dock,
+html body.on-home.hs-bar-off .hm-tabs.hm-dock{
+  z-index:200!important;
+  isolation:isolate;
+}
+html body.on-home .hm-dock .hm-tab-cta,
+html body.on-home .hm-tabs.arrow-off .hm-tab-cta,
+html body.on-home .hm-dock.arrow-off .hm-tab-cta{
+  position:relative;
+  z-index:3;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  display:flex!important;
+}
+body.on-home .hs-sec{z-index:0}
+html.su-home-snap:not(.su-glide){scroll-snap-type:y proximity!important}
+html.su-glide,html.su-glide body{scroll-snap-type:none!important}
+body.on-home .hs-sec,body.on-home .hs-sec.hs-top{
+  scroll-snap-align:start!important;
+  scroll-snap-stop:always!important;
+  scroll-margin-top:var(--su-hdr-h,56px)!important;
+}
+/* FAQ cream is full-bleed, past the .hm 16px edge, so no white side strips. Content stays on the edge. */
+html body.on-home #hs-faq.hs-sec{
+  margin-left:calc(-1 * var(--su-edge,16px))!important;
+  margin-right:calc(-1 * var(--su-edge,16px))!important;
+  padding-left:var(--su-edge,16px)!important;
+  padding-right:var(--su-edge,16px)!important;
+  width:auto!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  background:#FCF9F4!important;
+}
+html body.on-home .faq-card{align-self:stretch!important;height:auto!important;max-height:100%!important}
+/* Leftover room goes into the Plans tiles, not into empty bands above/below them. */
+html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;min-height:0!important}
+html body.on-home #hs-plans .hm-scroll{flex:1 1 auto!important;align-items:stretch!important}
+html body.on-home #row-plans .hm-plan{align-self:stretch!important;height:auto!important}
+html body.on-home #hs-plans > .hs-arrow{
+  margin-top:8px!important;
+  min-height:44px!important;
+  height:auto!important;
+  min-width:44px!important;
+}
+
+
+/* ===== Tailor Your Plan Look Deck picks (Machan Nov 14 10:19 AM) =====
+   Row Spacing B: roomy rows with catalog description and a hairline.
+   Tighten at 360x640 if a section card would overflow; the list may scroll inside the card.
+   Price Style B: right-aligned plain Khand price, Quote in terracotta (no pill).
+   Section Icons A: icon on each section card.
+   Add-On Labels A: Plan Add-On / One-Time Add-On tag on each row.
+   Section Header B: larger section name with a terracotta underline.
+   No green header band. No new prices. */
+html body.on-home .alc-card .alc-ghd{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:4px 0 0!important;
+  padding:12px 16px 10px!important;
+  min-height:44px!important;
+  height:auto!important;
+  border-radius:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:2px solid #C1502E!important;
+  box-shadow:none!important;
+}
+html body.on-home .alc-card .alc-ghd p{
+  margin:0!important;
+  font:600 22px/1.15 Khand,var(--mw-font-heading),sans-serif!important;
+  color:#1A1A1A!important;
+  letter-spacing:0!important;
+}
+html body.on-home .alc-card .alc-gico,
+html body.on-home .alc-card .alc-gico svg{
+  flex:none;
+  width:28px;
+  height:28px;
+  color:#A8431F;
+}
+html body.on-home .alc-card .sa-list{
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding:0 16px 10px!important;
+  gap:0!important;
+}
+html body.on-home .alc-card .sa-item + .sa-item{border-top:1px solid #E6E0D6!important}
+html body.on-home .alc-card .sa-q{
+  align-items:flex-start!important;
+  min-height:44px!important;
+  padding:14px 0!important;
+  gap:10px!important;
+}
+html body.on-home .alc-card .sa-q .sa-n{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  font:600 16px/1.25 Hind,var(--mw-font-body),sans-serif;
+  color:#1A1A1A;
+}
+html body.on-home .alc-card .sa-q:hover .sa-n,
+html body.on-home .alc-card .sa-q:focus-visible .sa-n{color:#1A1A1A}
+html body.on-home .alc-card .sa-q .sa-desc,
+html body.on-home .alc-card .sa-q .sa-note{
+  display:block;
+  font:400 13.5px/1.35 Hind,var(--mw-font-body),sans-serif!important;
+  color:#6B625A!important;
+  font-weight:400!important;
+}
+html body.on-home .alc-card .sa-q .sa-n small{
+  display:block;
+  margin-top:1px;
+  font:500 12px/1.25 Hind,var(--mw-font-body),sans-serif!important;
+  color:#8A8178!important;
+}
+html body.on-home .alc-card .sa-q .sa-p{
+  flex:none;
+  margin-top:1px;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:none!important;
+  box-shadow:none!important;
+  font:600 18px/1.1 Khand,var(--mw-font-heading),sans-serif!important;
+  color:#1A1A1A!important;
+  white-space:nowrap;
+}
+html body.on-home .alc-card .sa-q .sa-p.is-quote{
+  color:#C1502E!important;
+  background:none!important;
+}
+html body.on-home .alc-card .sa-q .sa-chev{margin-top:4px;color:#6B625A}
+/* Tighten roomy rows on the short 360x640 panel so more of the list fits; the card body can still scroll. */
+@media (max-width:360px) and (max-height:640px){
+  html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
+  html body.on-home .alc-card .alc-ghd p{font-size:20px!important}
+  html body.on-home .alc-card .sa-list{padding:0 12px 8px!important}
+  html body.on-home .alc-card .sa-q{padding:9px 0!important}
+  html body.on-home .alc-card .sa-q .sa-n{font-size:15px!important;gap:2px}
+  html body.on-home .alc-card .sa-q .sa-desc,
+  html body.on-home .alc-card .sa-q .sa-note{font-size:12.5px!important;line-height:1.3!important}
+  html body.on-home .alc-card .sa-q .sa-p{font-size:16px!important}
+}
+
+
+html body.on-home #hs-faq.hs-sec{scroll-snap-stop:normal!important}
+
+/* #127 sets overflow-x:hidden and overflow-y:auto on both html and body,
+   which unsticks the Home header (jumps then measure the wrong header
+   bottom and skip a section). Scroll on html only, and pin the header. */
+html.bbm-has-bar:has(body.on-home){
+  overflow-x:clip!important;
+  overflow-y:auto!important;
+}
+html.bbm-has-bar body.on-home{
+  overflow-x:clip!important;
+  overflow-y:visible!important;
+}
+html body.on-home .topbar{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  z-index:40!important;
+}
+html body.on-home main#app{padding-top:var(--su-hdr-h,56px)!important}
+
+/* Home FAQ Section Look Deck (Machan Nov 14 10:33 ICT): sheet answers, progress bar, slim peek, per-section tints. */
+body.on-home .faq-car-bar{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:min(280px,72%);
+  margin:2px auto 0;
+  min-height:8px;
+}
+body.on-home .faq-car-bar i{
+  flex:1 1 0;
+  height:4px;
+  border-radius:2px;
+  background:#E6E1D8;
+  display:block;
+}
+body.on-home .faq-car-bar i.is-done{background:#E0B8A8}
+body.on-home .faq-car-bar i.is-on{background:#C1502E}
+body.on-home .faq-car-pos{display:none!important}
+body.on-home .faq-card[data-faq-i="0"]{background:#FFFCF7}
+body.on-home .faq-card[data-faq-i="1"]{background:#F7EBE5}
+body.on-home .faq-card[data-faq-i="2"]{background:#EEF4F8}
+body.on-home .faq-card[data-faq-i="3"]{background:#FCF9F4}
+body.on-home .faq-card[data-faq-i="4"]{background:#F8F1EA}
+body.on-home .faq-card[data-faq-i="5"]{background:#F3E6DF}
+html.faq-sheet-open,html.faq-sheet-open body{overflow:hidden!important;overscroll-behavior:none}
+html.bbm-has-bar.faq-sheet-open:has(body.on-home),
+html.bbm-has-bar.faq-sheet-open body.on-home{overflow:hidden!important;overscroll-behavior:none}
+body.on-home .faq-sheet-wrap{
+  position:fixed;
+  left:0;
+  right:0;
+  top:0;
+  bottom:var(--su-dock-h,0px);
+  z-index:180;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  pointer-events:none;
+}
+body.on-home .faq-sheet-wrap[hidden]{display:none!important}
+body.on-home .faq-sheet-bg{
+  position:absolute;
+  inset:0;
+  background:rgba(40,28,16,.28);
+  pointer-events:auto;
+  touch-action:none;
+}
+body.on-home .faq-sheet{
+  position:relative;
+  width:100%;
+  max-width:640px;
+  margin:0 auto;
+  max-height:100%;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background-color:#FFFCF7;
+  background-image:var(--su-shine),var(--su-gloss);
+  border-radius:16px 16px 0 0;
+  box-shadow:var(--su-sh-sheet,0 -8px 28px rgba(40,28,16,.18));
+  box-sizing:border-box;
+  pointer-events:auto;
+  color-scheme:light only;
+  transition:transform .2s ease;
+}
+body.on-home .faq-sheet-grab{
+  flex:none;
+  width:36px;
+  height:4px;
+  margin:8px auto 0;
+  border-radius:2px;
+  background:#d8d0c4;
+}
+body.on-home .faq-sheet-x{
+  position:absolute;
+  top:6px;
+  right:8px;
+  width:48px;
+  height:48px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#1A1A1A;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+body.on-home .faq-sheet-x .x-ico{width:22px;height:22px}
+body.on-home .faq-sheet-x:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
+body.on-home .faq-sheet-sec{
+  flex:none;
+  margin:4px 64px 0 20px;
+  font:600 13px/1.3 Hind,var(--mw-font-body),sans-serif;
+  color:#C1502E;
+}
+body.on-home .faq-sheet-t{
+  flex:none;
+  margin:2px 64px 8px 20px;
+  font:700 24px/1.15 Khand,var(--mw-font-heading),sans-serif;
+  color:#1A1A1A;
+  letter-spacing:0;
+}
+body.on-home .faq-sheet-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  padding:0 20px 20px;
+  font:400 15px/1.45 Hind,var(--mw-font-body),sans-serif;
+  color:#4A433D;
+}
+body.on-home .faq-sheet-body p{margin:0 0 8px}
+body.on-home .faq-sheet-body p:last-child{margin-bottom:0}
+body.on-home .faq-sheet-body ul,
+body.on-home .faq-sheet-body ol{margin:0 0 8px;padding-left:18px}
+body.on-home .faq-sheet-body li{margin:3px 0}
+body.on-home .faq-sheet-body .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-body),sans-serif;color:#6b6b6b}
+@media (prefers-reduced-motion:reduce){
+  body.on-home .faq-sheet{transition:none}
+}
+
+@media (max-width:600px){
+  body.on-home .faq-car{
+    width:auto!important;
+    max-width:none!important;
+    margin-left:calc(-1 * var(--su-edge,16px))!important;
+    margin-right:calc(-1 * var(--su-edge,16px))!important;
+  }
+  body.on-home .faq-card{max-width:none}
+}
