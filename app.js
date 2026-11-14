@@ -3615,7 +3615,9 @@
     labels = labels.filter(function (l) { var k = String(l).toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; });
     var sys = !!S._hbSys;
     var seq = obSeq();
-    return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels };
+    return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels,
+      /* Onboarding Polish B: Your Home chips (answers already given) and the step 1 pin (street + in-area ZIP). */
+      street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
   }
   window.suHouseState = obHouseState;
   /* Called by onboarding-house.js fit() for each cut-order level: re-size the Add-Ons list for that level, and only accept the level if the list keeps at least ~3 rows. */
@@ -3672,12 +3674,17 @@
   function obAddress() {
     var a = S.answers, out = S._outZip && S._outZip === a.zipcode;
     /* Size and stories are asked on step 2 with no preselected value (Machan Nov 14 8:45 PM ICT). */
-    var body = '<div class="ob-home-form"><div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
+    /* Onboarding Polish B card 5 (Machan Nov 14 9:15 PM ICT, Pin Drop, Then An Address Card): a saved in-area address shows as a short card with Edit;
+       the fields stay in the page (hidden) so Next reads the same values. Typing keeps the fields; leaving them with a good address snaps the card in. */
+    var card = addrOk() && inArea(a.zipcode) && !out && !obAddrEdit;
+    var body = '<div class="ob-home-form' + (card ? ' pb-carded' : '') + '">' + '<div class="pb-addr-card" role="group" aria-label="Your Address"><span class="pb-addr-t"><b id="pbAddrS">' + esc(String(a.street || "").trim()) + '</b><span id="pbAddrZ">ZIP ' + esc(a.zipcode || "") + '</span></span><button type="button" class="pb-addr-edit mw-hover" data-pb-addr-edit="1" aria-label="Edit Address">Edit</button></div>' +
+      '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
       '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
       '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") + '</div>';
     return obShell("address", "", 0, "Where's Your Home?", "", body, nextBtn("Next", addrOk() && !out));
   }
+  var obAddrEdit = false;
   function sizePicked() { var v = S.answers && S.answers.sqft; return SIZE_OPTS.some(function (o) { return o[0] === String(v); }); }
   function storiesPicked() { var v = S.answers && S.answers.stories; return STORY_OPTS.some(function (o) { return o[0] === String(v); }); }
   /* Step 2: Home Size and How Many Stories as two distinct questions. No preselected value; a saved resume keeps the pick. Pricing and the house band still use a.stories || "1". */
@@ -4091,7 +4098,24 @@
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
       function showSo() { /* Start Over stays visible in the four-button bar so the row stays even. */ }
       function upd() { S.answers.street = st.value; S.answers.zipcode = zp.value.replace(/\D/g, "").slice(0, 5); S.answers.zip = (S.answers.street.trim() + " " + S.answers.zipcode).trim(); er.textContent = ""; if (nx) nx.disabled = !addrOk(); showSo(); save(); }
-      st.addEventListener("input", upd); zp.addEventListener("input", function () { upd(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
+      var form = app.querySelector(".ob-home-form"), pinOk = addrOk() && inArea(S.answers.zipcode);
+      function pinSync() { var ok = addrOk() && inArea(S.answers.zipcode); if (ok !== pinOk) { pinOk = ok; if (window.suHouse) window.suHouse.sync(obHouseState()); } }
+      function cardIn() {
+        if (!form || form.classList.contains("pb-carded") || !addrOk() || !inArea(S.answers.zipcode) || S._outZip) return;
+        var a = document.getElementById("pbAddrS"), z = document.getElementById("pbAddrZ"); if (a) a.textContent = S.answers.street.trim(); if (z) z.textContent = "ZIP " + S.answers.zipcode;
+        obAddrEdit = false; form.classList.add("pb-carded");
+        var cd = form.querySelector(".pb-addr-card");
+        if (cd && cd.animate) cd.animate(obReducedMot() ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "translateY(8px) scale(.97)" }, { opacity: 1, transform: "translateY(0) scale(1)" }], { duration: obReducedMot() ? 200 : 280, easing: "cubic-bezier(.2,.8,.2,1)" });
+        if (window.suHouse && window.suHouse.fit) window.suHouse.fit();
+      }
+      var edb = app.querySelector("[data-pb-addr-edit]");
+      if (edb) edb.addEventListener("click", function () { obAddrEdit = true; form.classList.remove("pb-carded"); if (window.suHouse && window.suHouse.fit) window.suHouse.fit(); st.focus(); });
+      var blurT = 0;
+      if (form) {
+        form.addEventListener("focusin", function () { clearTimeout(blurT); });
+        form.addEventListener("focusout", function (e) { if (e.relatedTarget && form.contains(e.relatedTarget)) return; clearTimeout(blurT); blurT = setTimeout(function () { if (S.screen === "address" && !form.contains(document.activeElement) && form.isConnected) cardIn(); }, 350); });
+      }
+      st.addEventListener("input", function () { obAddrEdit = true; upd(); pinSync(); }); zp.addEventListener("input", function () { obAddrEdit = true; upd(); pinSync(); if (S._outZip && S._outZip !== S.answers.zipcode) { var w = app.querySelector(".ob-wait"); if (w) w.remove(); } });
       [st, zp].forEach(function (el) {
         el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); if (el === st) zp.focus(); else if (nx && !nx.disabled) nx.click(); } });
         el.addEventListener("blur", function () { upd(); if (!addrOk() && (st.value.trim() || zp.value.trim())) er.textContent = "Enter your street address and 5-digit ZIP."; });
@@ -4101,7 +4125,7 @@
         upd();
         if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
         if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
-        S._outZip = ""; go("homesize");
+        S._outZip = ""; obAddrEdit = false; go("homesize");
       });
       return;
     }
@@ -4716,9 +4740,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s0"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
