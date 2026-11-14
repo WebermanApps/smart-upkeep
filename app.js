@@ -655,16 +655,17 @@
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
-  /* Late build Nov 12: phone hero box is ~335x449 (3:4) with object-fit: cover. A later 4-scene cut is a one-line swap here. */
-  var HERO_PHONE = { src: "video/teaser-v7-phone-4svc-fill-3x4.mp4?v=f4", poster: "assets/teaser-v7-phone-4svc-fill-3x4-poster.jpg?v=p4", wh: 'width="1080" height="1440"' };
+  /* Nov 14 (Machan: "Yes, put the new hero loop live"): phone 3:4 and wide 16:9, four even scenes, native loop at 1x from frame 0. One breakpoint: max-width 480px. */
+  var HERO_PHONE = { src: "video/teaser-v8-phone-4svc-even-3x4-r3.mp4?v=h9u1", poster: "video/teaser-v8-phone-4svc-even-3x4-r3-poster.jpg?v=h9u1", wh: 'width="1080" height="1440"' };
+  var HERO_WIDE = { src: "video/teaser-v8-4svc-even-16x9-r3.mp4?v=h9u1", poster: "video/teaser-v8-4svc-even-16x9-r3-poster.jpg?v=h9u1", wh: 'width="1920" height="1080"' };
+  function hmHeroPhone() { return !!(window.matchMedia && matchMedia("(max-width: 480px)").matches); }
+  function heroPick() { return hmHeroPhone() ? HERO_PHONE : HERO_WIDE; }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
   function heroMedia() {
-    var T = P.teaser || {}, port = !!(window.matchMedia && matchMedia("(max-width: 480px)").matches) /* Oct 17: phone square hero crops the 9:16 teaser */, /* Max 20:34 ICT Oct 15: home thumbnail/teaser always horizontal 16:9; the opened video still picks 9:16 or 16:9 (vSrc) */ poster = (port ? T.posterV : T.poster) || "assets/poster-16x9.jpg", tsrc = port ? T.srcV : T.src, wh = port ? 'width="360" height="640"' : 'width="640" height="360"';
+    var T = heroPick(), poster = T.poster, tsrc = T.src, wh = T.wh;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (port) { /* Oct 17 08:00: phone hero loops word-free in-home work scenes (V7 9:16 24.5-25.9 fridge filter, 26.6-28.4 furnace filter, 29.0-30.9 moisture scan) */ tsrc = HERO_PHONE.src; poster = HERO_PHONE.poster; wh = HERO_PHONE.wh; }
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
-    var hold = port && !window.__suFirst; /* Oct 17: phone holds the van-at-house poster until first interaction */
-    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted ' + (hold ? 'data-hold="1" preload="metadata"' : 'autoplay') + ' playsinline disablepictureinpicture ' + (hold ? '' : 'preload="auto" ') + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
+    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" muted loop autoplay playsinline disablepictureinpicture preload="auto" ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
 
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
@@ -678,25 +679,70 @@
      Follow-up Nov 13: the six chips wrap in place so no label is cut. The earlier
      edge-fading marquee is retired; CSS on .hm-hchips does the wrap. */
 
-  /* Hero C: start teaser at 0.6s (skip white fade-in) and loop from there */
-  (function heroSeek() {
-    var S = 0.6;
-    /* Home First Section Deck card 01 B (Machan Nov 13 1:34 PM): the Home loop plays at about 0.75x (deck retimed 6.3s -> 8.4s). */
-    function go(v) { try { v.currentTime = S; } catch (e) {} try { v.defaultPlaybackRate = 0.75; v.playbackRate = 0.75; } catch (e) {} var p = v.play(); if (p && p.catch) p.catch(function () {}); }
-    document.addEventListener("loadedmetadata", function (e) { var v = e.target; if (v && v.classList && v.classList.contains("hm-teaser") && !v.getAttribute("data-hold")) go(v); }, true);
-    /* first interaction (scroll, touch, mouse/cursor move, key): release held teaser + start the header van */
-    function first(e) {
-      if (window.__suFirst) return;
-      var m = document.getElementById("videoModal"); if (m && !m.hidden) return;
-      if (document.body.classList.contains("gate-locked") || (e && e.target && e.target.tagName === "INPUT" && e.target.type === "password")) return; /* password gate typing doesn't count */
-      if (e && e.type === "scroll" && e.target !== document && e.target !== window) return; /* inner scrollers (chip carousel) don't count */ /* closing the video pop-up doesn't count */
-      if (e && e.target && e.target.closest && e.target.closest("#videoModal")) return; window.__suFirst = true;
-      ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.removeEventListener(t, first, true); });
-      document.querySelectorAll(".hm-teaser[data-hold]").forEach(function (v) { v.removeAttribute("data-hold"); v.preload = "auto"; if (v.readyState >= 1) go(v); else v.load(); });
-      try { window.dispatchEvent(new Event("su:first")); } catch (e) {}
+  /* Swap the hero source once when the 480px breakpoint is crossed (resize or orientation). The same source is left alone so it is not loaded twice. */
+  (function heroSwap() {
+    function reduced() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+    function applyWh(el, T) {
+      var m = /width="(\d+)" height="(\d+)"/.exec(T.wh);
+      if (!m) return;
+      el.setAttribute("width", m[1]);
+      el.setAttribute("height", m[2]);
     }
-    ["scroll", "wheel", "touchstart", "pointerdown", "pointermove", "mousemove", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
-    document.addEventListener("ended", function (e) { var v = e.target; if (v && v.classList && v.classList.contains("hm-teaser")) go(v); }, true);
+    function apply() {
+      var T = heroPick(), reduce = reduced();
+      var box = document.querySelector(".hm-hero .hm-thumb") || document.querySelector(".hm-thumb");
+      if (!box) return;
+      var media = box.querySelector("video.hm-teaser, img");
+      if (!media) return;
+      if (reduce) {
+        if (media.tagName === "IMG") {
+          if (media.getAttribute("src") !== T.poster) { media.setAttribute("src", T.poster); applyWh(media, T); }
+          return;
+        }
+        try { media.pause(); } catch (e) {}
+        var img = document.createElement("img");
+        img.setAttribute("src", T.poster);
+        img.setAttribute("alt", "");
+        img.setAttribute("loading", "eager");
+        applyWh(img, T);
+        media.parentNode.replaceChild(img, media);
+        return;
+      }
+      if (media.tagName !== "VIDEO") {
+        var v = document.createElement("video");
+        v.className = "hm-teaser";
+        v.setAttribute("poster", T.poster);
+        v.muted = true;
+        v.defaultMuted = true;
+        v.setAttribute("muted", "");
+        v.setAttribute("loop", "");
+        v.setAttribute("autoplay", "");
+        v.setAttribute("playsinline", "");
+        v.setAttribute("disablepictureinpicture", "");
+        v.setAttribute("preload", "auto");
+        v.setAttribute("aria-hidden", "true");
+        v.setAttribute("tabindex", "-1");
+        v.style.filter = "saturate(1.15) contrast(1.06) sepia(.06)";
+        applyWh(v, T);
+        v.setAttribute("src", T.src);
+        media.parentNode.replaceChild(v, media);
+        var p = v.play(); if (p && p.catch) p.catch(function () {});
+        return;
+      }
+      if (media.getAttribute("src") === T.src) return;
+      media.setAttribute("poster", T.poster);
+      applyWh(media, T);
+      media.setAttribute("src", T.src);
+      var pr = media.play(); if (pr && pr.catch) pr.catch(function () {});
+    }
+    function onChange() { apply(); }
+    var mq = window.matchMedia && matchMedia("(max-width: 480px)");
+    if (mq) {
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    }
+    window.addEventListener("orientationchange", onChange);
+    window.addEventListener("resize", onChange);
   })();
   /* ---------- What We Take Care Of: Direction A (swipeable category carousel), What's Included row, Featured Service ---------- */
   function wwIco(n, cls) { return '<svg class="su-ico ' + (cls || "") + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' + (window.SUIconBody ? window.SUIconBody(n) : "") + '</svg>'; }
