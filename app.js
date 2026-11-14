@@ -784,7 +784,7 @@
   }
   function planCard(k, ord) {
     var t = P.tiers[k], inc = (HOME_KEYPOINTS[k] || k === "silver" || k === "gold") ? homeKeypoints(k) : t.keyPointsOnCard && t.keyPoints ? t.keyPoints : t.features.slice(0, 3).map(function (f) { return f.split(":")[0].split(" (")[0]; });
-    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-pressed="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + '">' +
+    return '<div class="hm-card card hm-plan pc mw-hover' + (t.recommended ? " rec" : "") + (k === selK ? " sel" : "") + '" data-tier="' + k + '" tabindex="0" role="button" aria-expanded="false" aria-current="' + (k === selK ? "true" : "false") + '" style="--po:' + (ord || 0) + ';--lit:' + (k === selK ? "1" : "0") + '">' +
       '<div class="pc-top"><strong class="pc-name">' + t.label + '</strong></div>' +
       '<span class="pc-tag muted small">' + t.tagline + '</span>' +
       '<button type="button" class="pc-offer" data-offer="1" aria-haspopup="dialog">' + I("tag", "xs") + '<span>Welcome Offer</span></button>' +
@@ -792,7 +792,9 @@
       '<div class="pc-year"><svg class="pc-year-cal" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 3.5v3.5M16 3.5v3.5M3.5 10h17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="pc-year-n">' + t.visits + '</span><span class="pc-year-l">Visits / Year</span></div>' +
             '<ul class="pc-inc">' + (HOME_KEYPOINTS[k] && HOME_KEYPOINTS[k].add ? '<li class="pc-lead pc-key" aria-hidden="true">Added In ' + t.label + '</li>' : '') + inc.filter(function (f) { return f !== "And More"; }).map(function (f, i) { var up = HOME_KEYPOINTS[k] && HOME_KEYPOINTS[k].add && HOME_KEYPOINTS[k].add.indexOf(f) > -1; return /Plus:$|and:$/.test(f) ? '<li class="pc-lead">' + f + '</li>' : '<li data-i="' + i + '"' + (up ? ' class="up"' : '') + '>' + esc(f) + (up ? '<span class="sr-only"> (added in ' + esc(t.label) + ')</span>' : '') + '</li>'; }).join("") + '</ul>' +
       /* Plans Expand: And More opens the full-screen sheet (bindPlanMore); the old in-tile list and inner scroll are gone. */
-      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false" aria-haspopup="dialog">See More</button></p>' : '') + '</div>';
+      (inc.indexOf("And More") > -1 ? '<p class="pc-more"><button class="link mw-hover pc-more-link" type="button" data-pc-more="' + k + '" aria-expanded="false">See More</button></p>' : '') +
+      '<button type="button" class="pc-exp-x mw-hover" data-pc-collapse aria-label="Close">' + X_SVG + '</button>' +
+      '<div class="pc-full"><div class="pc-full-in">' + pcSheetList(k) + '</div></div></div>';
   }
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
@@ -806,11 +808,11 @@
     var T = heroPick(), poster = T.poster, tsrc = T.src, wh = T.wh;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
-    /* Phones hold the poster until the first touch/scroll/key (same as main). Src is withheld
-       so the mp4 is not requested up front. After release, play natively at 1x from frame 0.
-       No seek, no playbackRate change. Desktop autoplays as on main. */
-    var hold = hmHeroPhone() && !window.__suFirst;
-    return '<video class="hm-teaser" ' + (hold ? 'data-hold="1" data-src="' + esc(tsrc) + '" poster="' + esc(poster) + '" preload="none"' : 'src="' + esc(tsrc) + '" poster="' + esc(poster) + '" autoplay preload="auto"') + ' muted loop playsinline disablepictureinpicture ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
+    /* Machan 9:22–9:23 PM ICT: autoplay on load on phones and desktop, muted,
+       playsinline, looping. play() is called on load; a rejected promise (for
+       example iOS Low Power Mode) keeps the poster and falls back to the first
+       touch. Reduced motion still returns the poster image above. */
+    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" autoplay preload="auto" muted loop playsinline disablepictureinpicture ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
 
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
@@ -859,8 +861,9 @@
     el.setAttribute("width", m[1]);
     el.setAttribute("height", m[2]);
   }
-  /* Phone: hold the poster until first interaction, then play natively at 1x from frame 0.
-     No currentTime seek, no playbackRate write. Keeps main's first-interaction set and su:first. */
+  /* Autoplay on load. If play() is rejected (Low Power Mode / autoplay policy),
+     keep the poster and start on the first touch/scroll/key, as before.
+     No currentTime seek, no playbackRate write. su:first still fires on first interaction. */
   (function heroHold() {
     function playNative(v) {
       var src = v.getAttribute("data-src") || v.getAttribute("src");
@@ -871,6 +874,16 @@
       v.setAttribute("preload", "auto");
       if (src && v.getAttribute("src") !== src) v.setAttribute("src", src);
       var p = v.play(); if (p && p.catch) p.catch(function () {});
+    }
+    function tryPlay(v) {
+      if (!v || v.tagName !== "VIDEO") return;
+      var p = v.play();
+      if (p && p.then) {
+        p.then(function () { v.removeAttribute("data-hold"); }).catch(function () {
+          v.setAttribute("data-hold", "1");
+          try { v.pause(); } catch (e) {}
+        });
+      }
     }
     function first(e) {
       if (window.__suFirst) return;
@@ -883,6 +896,11 @@
       document.querySelectorAll(".hm-teaser[data-hold]").forEach(function (v) { playNative(v); });
       try { window.dispatchEvent(new Event("su:first")); } catch (err) {}
     }
+    function boot() {
+      document.querySelectorAll("video.hm-teaser").forEach(tryPlay);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+    else boot();
     ["scroll", "wheel", "touchstart", "pointerdown", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
   })();
   /* Swap the hero source once when the 480px breakpoint is crossed (resize or orientation). The same source is left alone so it is not loaded twice. */
@@ -916,16 +934,15 @@
       }
       if (media.tagName !== "VIDEO") {
         var v = document.createElement("video");
-        heroFillVideo(v, T, hmHeroPhone() && !window.__suFirst);
+        heroFillVideo(v, T, false);
         media.parentNode.replaceChild(v, media);
         if (!v.getAttribute("data-hold")) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
         return;
       }
       var curSrc = media.getAttribute("src") || media.getAttribute("data-src") || "";
       if (curSrc === T.src) return;
-      var hold = hmHeroPhone() && !window.__suFirst && media.paused;
-      heroFillVideo(media, T, hold);
-      if (!hold) { var pr = media.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      heroFillVideo(media, T, false);
+      var pr = media.play(); if (pr && pr.catch) pr.catch(function () { media.setAttribute("data-hold", "1"); try { media.pause(); } catch (e) {} });
     }
     function onChange() { apply(); }
     var mq = window.matchMedia && matchMedia("(max-width: 480px)");
@@ -1192,7 +1209,7 @@
         '<div class="hm-hero-txt"><p class="hm-eb"><span class="hm-eb-t">Preventive Home Maintenance</span></p><h1>Starting At ' + money(P.minMonthly || 139) + '/mo</h1>' +
         '<p class="hm-lead"><span class="hm-lead-l">Home Care, On Schedule</span><span class="hm-lead-s">Home Care, On Schedule</span></p>' +
         /* Machan Nov 13 9:12 AM: the bottom bar is always visible, so the hero's own CTA (Get Started on desktop, Free Quote In Minutes on phones) is removed. */
-        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="dialog" aria-modal="true" aria-live="polite" aria-label="Badge Details" hidden><div class="hm-hc-scrim" data-hc-close="1"></div><div class="hm-hc-info-card"><span class="hm-hc-info-ico" aria-hidden="true"></span><div class="hm-hc-info-body"><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div><span class="hm-hc-info-caret" aria-hidden="true"></span></div></div></div></div>' +
+        '<div class="hm-hcw"><button type="button" class="hm-hc-arr l" data-hc="l" aria-label="Move badges left">&lsaquo;</button><div class="hm-hchips" aria-label="Why Trust Us" data-ptr-ignore><div class="hm-hc-track">' + [0, 1].map(function (k) { return '<div class="hm-hc-set"' + (k ? ' aria-hidden="true"' : '') + '>' + HERO_CHIPS.map(function (c, i) { return '<button type="button" class="hm-hchip t' + (i % 4) + '" data-hc-info="' + esc(c[1]) + '" aria-controls="hcInfo" aria-expanded="false"' + (k ? ' tabindex="-1"' : '') + '><span>' + c[1] + '</span></button>'; }).join("") + '</div>'; }).join("") + '</div></div><button type="button" class="hm-hc-arr r" data-hc="r" aria-label="Move badges right">&rsaquo;</button><div class="hm-hc-info" id="hcInfo" role="dialog" aria-modal="true" aria-live="polite" aria-label="Badge Details" hidden><div class="hm-hc-scrim" data-hc-close="1"></div><div class="hm-hc-info-card"><button type="button" class="hm-hc-info-close mw-hover" data-hc-x aria-label="Close">' + X_SVG + '</button><span class="hm-hc-info-ico" aria-hidden="true"></span><div class="hm-hc-info-body"><b class="hm-hc-info-t"></b><span class="hm-hc-info-x"></span></div><span class="hm-hc-info-caret" aria-hidden="true"></span></div></div></div></div>' +
       '</section>' +
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
@@ -1519,37 +1536,133 @@
   /* One tap selects a plan card (one at a time); tapping the selected card unselects it.
      On phones a new selection also scrolls that card to center. Swiping the row does not change selection. */
   function bindPlanSelect(root) {
+    /* Machan Nov 14 8:38-8:40 PM ICT: the tile in view is lit (current gray on the rest), with a blended
+       --lit transition and the selected outline. A tap expands the tile; it does not set a user pick
+       (planSelUser is left alone so Get Started / act("start") still behave as on live main). */
     var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
     var cards = [].slice.call(sc.querySelectorAll(".hm-plan"));
-    var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    function applySel(tier, isUser) {
-      cards.forEach(function (x) {
-        var on = !!tier && x.getAttribute("data-tier") === tier;
-        x.classList.toggle("sel", on);
-        x.setAttribute("aria-pressed", on ? "true" : "false");
-      });
-      sc.classList.toggle("pc-has-sel", !!tier);
-      try {
-        sessionStorage.setItem(PLAN_SEL_KEY, tier || "");
-        if (isUser) {
-          if (tier) sessionStorage.setItem(PLAN_SEL_USER_KEY, "1");
-          else sessionStorage.removeItem(PLAN_SEL_USER_KEY);
+    var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    var smooth = reduce ? "auto" : "smooth";
+    var litRaf = 0, restT = 0, box = [];
+    sc.classList.add("pc-has-sel");
+    function midX() { var r = sc.getBoundingClientRect(); return r.left + r.width / 2; }
+    function isCentered(c) {
+      var r = c.getBoundingClientRect();
+      return Math.abs((r.left + r.width / 2) - midX()) <= 12;
+    }
+    function clampLit(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+    function paintLit() {
+      /* Read all geometry first, then write --lit (no layout reads in the write loop). */
+      var mid = midX(), n = cards.length, i, r, dx, span, t, best = 0, bestV = -1, vals = [];
+      var noSwipe = sc.scrollWidth <= sc.clientWidth + 1;
+      var want = currentPlanSel();
+      for (i = 0; i < n; i++) {
+        r = cards[i].getBoundingClientRect();
+        box[i] = r;
+        if (noSwipe) {
+          t = cards[i].getAttribute("data-tier") === want ? 1 : 0;
+        } else {
+          dx = (r.left + r.width / 2) - mid;
+          span = Math.max(48, r.width * 0.9);
+          t = clampLit(1 - Math.abs(dx) / span);
+          t = t * t * (3 - 2 * t);
         }
-      } catch (e) {}
-    }
-    function pick(c) {
-      var cur = cards.filter(function (x) { return x.classList.contains("sel"); })[0];
-      var next = (c === cur) ? "" : c.getAttribute("data-tier");
-      applySel(next, true);
-      if (next) {
-        if (sc.hmPlanArm) sc.hmPlanArm();
-        if (window.matchMedia("(max-width:600px)").matches) hmPlanGo(sc, c, smooth);
+        vals[i] = t;
+        if (t > bestV) { bestV = t; best = i; }
       }
+      for (i = 0; i < n; i++) {
+        cards[i].style.setProperty("--lit", vals[i].toFixed(3));
+        var on = i === best;
+        cards[i].classList.toggle("sel", on);
+        cards[i].setAttribute("aria-current", on ? "true" : "false");
+      }
+      var tier = cards[best] ? cards[best].getAttribute("data-tier") : "";
+      try { sessionStorage.setItem(PLAN_SEL_KEY, tier || "silver"); } catch (e) {}
+      return cards[best] || null;
     }
-    applySel(currentPlanSel(), false);
+    function onRowScroll() {
+      sc.classList.add("pc-lit-drag");
+      if (!litRaf) litRaf = requestAnimationFrame(function () { litRaf = 0; paintLit(); });
+      clearTimeout(restT);
+      restT = setTimeout(function () {
+        sc.classList.remove("pc-lit-drag");
+        var best = paintLit();
+        if (best) collapseOthers(best, true);
+      }, 90);
+    }
+    function collapse(c) {
+      if (!c || !c.classList.contains("pc-exp")) return;
+      c.classList.remove("pc-exp");
+      c.setAttribute("aria-expanded", "false");
+      var more = c.querySelector("[data-pc-more]"); if (more) more.setAttribute("aria-expanded", "false");
+    }
+    function collapseOthers(keep, onlyIfSwiped) {
+      cards.forEach(function (x) {
+        if (x === keep) return;
+        if (!x.classList.contains("pc-exp")) return;
+        if (onlyIfSwiped && isCentered(x)) return;
+        collapse(x);
+      });
+    }
+    function setExpMax(c) {
+      var sec = document.getElementById("hs-plans");
+      var hdr = document.querySelector(".topbar");
+      var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+      var top = hdr ? hdr.getBoundingClientRect().bottom : 0;
+      var bot = dock && dock.getBoundingClientRect().height ? dock.getBoundingClientRect().top : innerHeight;
+      var row = sc.getBoundingClientRect();
+      var maxH = Math.max(160, Math.min(row.height, bot - top - 8));
+      c.style.setProperty("--pc-exp-max", maxH + "px");
+    }
+    function expand(c) {
+      if (!c) return;
+      if (c.classList.contains("pc-exp")) { collapse(c); return; }
+      collapseOthers(c, false);
+      setExpMax(c);
+      var fin = c.querySelector(".pc-full-in"); if (fin) fin.scrollTop = 0;
+      c.classList.add("pc-exp");
+      c.setAttribute("aria-expanded", "true");
+      var more = c.querySelector("[data-pc-more]"); if (more) more.setAttribute("aria-expanded", "true");
+    }
+    function onTap(c) {
+      if (!c) return;
+      try { sessionStorage.setItem(PLAN_SEL_KEY, c.getAttribute("data-tier") || "silver"); } catch (e) {}
+      paintLit();
+      if (sc.hmPlanArm) sc.hmPlanArm();
+      if (!isCentered(c) && window.matchMedia("(max-width:600px)").matches) {
+        hmPlanGo(sc, c, smooth);
+        var n = 0;
+        (function wait() {
+          if (isCentered(c) || n++ > 24) expand(c);
+          else requestAnimationFrame(wait);
+        })();
+      } else expand(c);
+    }
+    root._planTap = onTap;
+    var want = currentPlanSel(), wantCard = cards.filter(function (c) { return c.getAttribute("data-tier") === want; })[0];
+    if (wantCard) {
+      if (sc.hmPlanArm) sc.hmPlanArm();
+      hmPlanGo(sc, wantCard, "auto");
+    }
+    paintLit();
+    sc.addEventListener("scroll", onRowScroll, { passive: true });
+    window.addEventListener("resize", function () {
+      cards.forEach(function (c) { if (c.classList.contains("pc-exp")) setExpMax(c); });
+      if (!litRaf) litRaf = requestAnimationFrame(function () { litRaf = 0; paintLit(); });
+    });
     cards.forEach(function (c) {
-      c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
-      c.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); pick(c); } });
+      c.addEventListener("click", function (e) {
+        if (e.target.closest(".pc-see, [data-hs-next], [data-offer], [data-pc-legal], .pc-lg-link, .pc-exp-x, [data-pc-collapse], [data-pc-more], .pc-more-link")) return;
+        if (e.target.closest("[data-pc-collapse], .pc-exp-x")) { e.preventDefault(); collapse(c); return; }
+        onTap(c);
+      });
+      c.addEventListener("keydown", function (e) {
+        if ((e.key === "Enter" || e.key === " ") && (e.target === c || e.target.closest("[data-pc-more]"))) { e.preventDefault(); onTap(c); }
+        if (e.key === "Escape" && c.classList.contains("pc-exp")) { e.preventDefault(); collapse(c); }
+      });
+    });
+    root.querySelectorAll("[data-pc-collapse], .pc-exp-x").forEach(function (b) {
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); collapse(b.closest(".hm-plan")); });
     });
     root.querySelectorAll("[data-hm-back]").forEach(function (b) { b.addEventListener("click", function () { hmJumpSec(root.querySelector("#hs-plans") || root.querySelector("#row-plans")); }); });
   }
@@ -1805,6 +1918,8 @@
   }
   function hmHCar(t) {
     if (!t || !t.closest) return false;
+    /* The expanded plan list scrolls vertically inside its tile; it is not part of the carousel for paging. */
+    if (t.closest(".hm-plan.pc-exp .pc-full-in")) return false;
     return !!t.closest(".hm-scroll,.alc-car-scroll,.faq-car-scroll,.hm-hchips,.hm-hc-track");
   }
   function hmYBox(t) {
@@ -1893,8 +2008,11 @@
     if (g.axis === "x") return;
     if (g.box && !g.car) {
       var dir = dy < 0 ? 1 : -1;
-      var atEnd = dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0);
-      if (!atEnd) return;
+      if (g.yield == null) {
+        /* Decide once per gesture: if the inner box can still scroll this way, it owns the whole drag. */
+        g.yield = !(dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0));
+      }
+      if (g.yield) return;
     }
     if (e.cancelable) e.preventDefault();
     if (hmMenuOpen() || hmPageBusy()) return;
@@ -1911,7 +2029,7 @@
     var dy = y - g.y;
     var dt = Math.max(1, performance.now() - g.t);
     var v = dy / dt;
-    if (g.axis === "y" && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
+    if (g.axis === "y" && !g.yield && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
       hmPageBy(dy < 0 ? 1 : -1);
     }
     hmPage.gest = null;
@@ -2655,6 +2773,36 @@
       sec("Service Area", ul([PC_LG_FAQ.area])) +
       sec("Good To Know", ul(good));
   }
+  function bindPlanLegal(root) {
+    var host = null;
+    function shut() {
+      if (!host) return;
+      host.remove(); host = null;
+      document.removeEventListener("keydown", esc, true);
+    }
+    function esc(e) { if (e.key === "Escape") { e.preventDefault(); shut(); } }
+    root.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-pc-legal]");
+      if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      var card = b.closest(".hm-plan"); if (!card) return;
+      var k = card.getAttribute("data-tier"); if (!P.tiers[k]) return;
+      shut();
+      host = document.createElement("div");
+      host.className = "pc-lg";
+      host.setAttribute("role", "dialog");
+      host.setAttribute("aria-modal", "true");
+      host.setAttribute("aria-labelledby", "pcLgT");
+      host.innerHTML = '<div class="pc-lg-bg" data-lg-close></div><div class="pc-lg-card">' +
+        '<button type="button" class="pc-lg-x mw-hover" data-lg-close aria-label="Close">' + X_SVG + '</button>' +
+        '<div class="pc-lg-hd"><span class="pc-lg-ico" aria-hidden="true">' + (PC_ICONS["Records And Perks"] || "") + '</span><h3 id="pcLgT">See Exactly What\'s Included</h3></div>' +
+        '<div class="pc-lg-body" tabindex="0">' + pcLegalHtml(k) + '</div></div>';
+      document.body.appendChild(host);
+      host.addEventListener("click", function (ev) { if (ev.target.closest("[data-lg-close]")) shut(); });
+      document.addEventListener("keydown", esc, true);
+      var x = host.querySelector(".pc-lg-x"); if (x) try { x.focus({ preventScroll: true }); } catch (err) { x.focus(); }
+    });
+  }
   function bindPlanMore(root) {
     /* Sheet motion (Machan Nov 13 8:40 PM ICT, "make the close really smooth"): the sheet surface is clipped (clip-path inset, the radius
        interpolated from 0 to the tile's own corner radius) between the full screen and the tile's rect; content moves only by opacity/transform.
@@ -2905,7 +3053,7 @@
     root.querySelectorAll("[data-pc-more]").forEach(function (b) {
       ["pointerdown", "keydown"].forEach(function (ev) { b.addEventListener(ev, function (e) { e.stopPropagation(); }); });
       b.setAttribute("aria-haspopup", "dialog"); b.removeAttribute("aria-controls");
-      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); open(b.closest(".hm-plan"), b); });
+      b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); if (root._planTap) root._planTap(b.closest(".hm-plan")); });
     });
   }
   /* Plans fills one screen (Machan Nov 13 11:09-11:11 PM ICT, "our goal for how many items we fit on the plans preview should be 6-8" ... "we have more
@@ -2954,6 +3102,61 @@
   /* Machan Nov 13 7:48 PM ICT: tapping any hero badge opens a short explanation (one shared overlay card under the badge row, so the hero never grows).
      Copy lives in HERO_INFO (live FAQ + Warranties pop-up wording). Closes on a second tap, a tap outside or Esc; the strip pauses while open.
      A tap right after a swipe drag is ignored. */
+  /* Anchor a badge note next to its trigger (Machan Nov 14 8:37 PM ICT: "near the badge not far away").
+     Flip above/below from available room, clamp with an 8px viewport margin, and stay clear of the sticky header and dock. */
+  function placeBadgePopover(card, badgeEl, caret) {
+    if (!card || !badgeEl) return;
+    var vw = innerWidth, vh = innerHeight, pad = 8, gap = 8, maxW = Math.min(280, vw - pad * 2);
+    card.style.position = "fixed";
+    card.style.maxWidth = maxW + "px";
+    var hdr = document.querySelector(".topbar");
+    var dock = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    var minY = Math.max(pad, (hdr ? hdr.getBoundingClientRect().bottom : 0) + pad);
+    var dR = dock && dock.getBoundingClientRect();
+    var maxBot = Math.min(vh - pad, dR && dR.height ? dR.top - pad : vh - pad);
+    var bR = badgeEl.getBoundingClientRect();
+    var cw = Math.min(card.offsetWidth || maxW, maxW); if (cw < 80) cw = maxW;
+    var ch = card.offsetHeight || 120;
+    var belowTop = bR.bottom + gap, aboveTop = bR.top - gap - ch, top, below;
+    if (belowTop + ch <= maxBot + 0.5) { top = belowTop; below = true; }
+    else if (aboveTop >= minY - 0.5) { top = aboveTop; below = false; }
+    else if ((maxBot - belowTop) >= (bR.top - gap - minY)) { below = true; top = Math.min(belowTop, Math.max(minY, maxBot - ch)); }
+    else { below = false; top = Math.max(minY, aboveTop); }
+    if (top + ch > maxBot) top = Math.max(minY, maxBot - ch);
+    if (top < minY) top = minY;
+    var left = bR.left + bR.width / 2 - cw / 2;
+    if (left < pad) left = pad;
+    if (left + cw > vw - pad) left = Math.max(pad, vw - pad - cw);
+    left = Math.round(left); top = Math.round(top);
+    card.style.left = left + "px";
+    card.style.top = top + "px";
+    var ox = bR.left + bR.width / 2 - left, oy = bR.top + bR.height / 2 - top;
+    card.style.transformOrigin = ox + "px " + oy + "px";
+    if (caret) {
+      var cx = bR.left + bR.width / 2 - left - 6;
+      cx = Math.max(16, Math.min(Math.max(22, cw) - 22, cx));
+      caret.classList.toggle("up", below);
+      caret.classList.toggle("down", !below);
+      caret.style.left = Math.round(cx) + "px";
+      caret.style.right = "auto";
+    }
+  }
+  function closeOpenBadgePops(except) {
+    if (except !== "hero") {
+      var hc = document.getElementById("hcInfo");
+      if (hc && hc.classList.contains("open")) {
+        var ev = document.createEvent("Event"); ev.initEvent("su-close-badge", true, false);
+        hc.dispatchEvent(ev);
+      }
+    }
+    if (except !== "f2") {
+      var f2 = document.getElementById("f2Pop");
+      if (f2 && !f2.hidden) {
+        var ev2 = document.createEvent("Event"); ev2.initEvent("su-close-badge", true, false);
+        f2.dispatchEvent(ev2);
+      }
+    }
+  }
   function bindBadgeInfo(c) {
     var wrapEl = c.closest(".hm-hcw"), panel = wrapEl && wrapEl.querySelector(".hm-hc-info");
     if (!panel || c.dataset.hcInfo) return; c.dataset.hcInfo = "1";
@@ -2969,73 +3172,14 @@
     }
     function place() {
       if (!card || !cur || !badgeEl) return;
-      var vw = innerWidth, vh = innerHeight, pad = 16, maxW = Math.min(260, vw - 32);
       card.classList.remove("sheet");
-      card.style.maxWidth = maxW + "px";
-      card.style.left = pad + "px"; card.style.top = "0px";
-      var cw = Math.min(card.offsetWidth || maxW, maxW), ch = card.offsetHeight || 120;
-      var thumb = document.querySelector(".hm-hero .hm-thumb");
-      var arrow = document.querySelector("#hs-top > .hs-arrow");
-      var dock = document.querySelector(".hm-dock");
-      var vR = thumb && thumb.getBoundingClientRect();
-      var aR = arrow && arrow.getBoundingClientRect();
-      var dR = dock && dock.getBoundingClientRect();
-      var bR = badgeEl.getBoundingClientRect();
-      var minX = pad, maxX = vw - pad;
-      /* .hm-hero-txt is a tall fade box; measure the actual type lines. */
-      var typeTop = Infinity, typeBottom = 0;
-      [".hm-hero .hm-eb-t", ".hm-hero h1", ".hm-hero .hm-lead"].forEach(function (sel) {
-        var el = document.querySelector(sel);
-        if (!el) return;
-        var r = el.getBoundingClientRect();
-        if (r.height < 1) return;
-        if (r.top < typeTop) typeTop = r.top;
-        if (r.bottom > typeBottom) typeBottom = r.bottom;
-      });
-      var arrowTop = aR ? aR.top : (dR ? dR.top : vh);
-      var dockTop = dR && dR.height ? dR.top : vh;
-      var limitBottom = Math.min(vh - pad, arrowTop - 8, dockTop - 8);
-      if (typeTop !== Infinity) limitBottom = Math.min(limitBottom, typeTop - 8);
-      /* Prefer the clear video field above the eyebrow/price/tagline, never over See Plans. */
-      var minY = Math.max(pad, vR ? vR.top + 8 : pad);
-      var maxY = Math.min(limitBottom, vR ? Math.min(vR.bottom - 8, typeTop === Infinity ? vR.bottom - 8 : typeTop - 8) : limitBottom);
-      var left, top, sheet = false;
-      if (maxY - minY >= ch) {
-        top = minY + Math.max(0, (maxY - minY - ch) / 2);
-        left = bR.left + bR.width / 2 - cw / 2;
-      } else if (vR && (vR.bottom - Math.max(minY, vR.top + 8) >= ch) && (Math.max(minY, vR.top + 8) + ch <= limitBottom)) {
-        top = Math.max(minY, vR.top + 8);
-        left = bR.left + bR.width / 2 - cw / 2;
-      } else {
-        sheet = true;
-      }
-      if (sheet) {
-        card.classList.add("sheet");
-        cw = Math.min(vw - 32, Math.max(cw, Math.min(260, vw - 32)));
-        card.style.maxWidth = cw + "px";
-        ch = card.offsetHeight || ch;
-        top = Math.min(limitBottom, arrowTop - 8) - ch;
-        left = (vw - cw) / 2;
-        if (top < pad) top = pad;
-      }
-      if (left < minX) left = minX;
-      if (left + cw > maxX) left = maxX - cw;
-      if (top + ch > limitBottom) top = Math.max(pad, limitBottom - ch);
-      if (top < pad) top = pad;
-      left = Math.round(left); top = Math.round(top);
-      card.style.left = left + "px";
-      card.style.top = top + "px";
-      var ox = bR.left + bR.width / 2 - left, oy = bR.top + bR.height / 2 - top;
-      card.style.transformOrigin = ox + "px " + oy + "px";
-      if (caret) {
-        var cx = bR.left + bR.width / 2 - left - 6;
-        cx = Math.max(16, Math.min(cw - 22, cx));
-        var below = bR.top > top + ch / 2;
-        caret.classList.toggle("up", !below && !sheet);
-        caret.classList.toggle("down", below || sheet);
-        caret.style.left = Math.round(cx) + "px";
-        caret.style.right = "auto";
-      }
+      placeBadgePopover(card, badgeEl, caret);
+    }
+    function onMove() {
+      if (!cur || !badgeEl) return;
+      var r = badgeEl.getBoundingClientRect(), vh = innerHeight;
+      if (r.bottom < 8 || r.top > vh - 8) close(false);
+      else place();
     }
     function close(refocus) {
       if (!cur) return; var was = cur; cur = ""; badgeEl = null;
@@ -3049,6 +3193,7 @@
       chips().forEach(function (b) { var on = b.getAttribute("data-hc-info") === lbl; b.setAttribute("aria-expanded", on ? "true" : "false"); b.classList.toggle("on", on); });
       tEl.textContent = lbl; xEl.textContent = txt;
       if (icoEl) icoEl.innerHTML = I(chipIcon(lbl));
+      closeOpenBadgePops("hero");
       cur = lbl; badgeEl = from || chips(lbl).filter(function (x) { return !x.closest("[aria-hidden]"); })[0];
       clearTimeout(hideT);
       panel.hidden = false; panel.classList.remove("open");
@@ -3073,7 +3218,11 @@
       e.preventDefault(); e.stopPropagation(); close(false);
     }, true); /* capture so the first outside tap cannot pass through to See Plans */
     document.addEventListener("keydown", function (e) { if (cur && e.key === "Escape") { e.preventDefault(); close(true); } });
-    window.addEventListener("resize", function () { if (cur) place(); });
+    window.addEventListener("resize", onMove);
+    window.addEventListener("scroll", onMove, true);
+    var xBtn = panel.querySelector("[data-hc-x]");
+    if (xBtn) xBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); close(true); });
+    panel.addEventListener("su-close-badge", function () { close(false); });
   }
   function bindBadgeStrip(c) {
     var track = c.querySelector(".hm-hc-track"), set = track && track.querySelector(".hm-hc-set");
@@ -3128,7 +3277,7 @@
   }
   function bindHome() {
     var root = app.querySelector(".hm"); if (!root) return;
-    bindPlanMore(root);
+    bindPlanMore(root); bindPlanLegal(root);
     bindSaRows(root);
     root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip); root.querySelectorAll(".hm-hchips").forEach(bindBadgeInfo);
     hmHdrSync();
@@ -3882,7 +4031,7 @@
       (fFull ? card("annual", ySel, "Annual", money(yr.today), "Paid today for 12 months of care, 10% off your monthly price of " + money(yr.perCharge) + "/mo.", '<span class="f2-badge pay-off">10% Off</span>',
         payIncludesLine(yr.addonsFlatAnnual, yr.onceToday)) : '') + /* Legal Nov 13: second line only when yearly flats and/or one-time items are in the total */
       card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
-    var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
+    var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><button type="button" class="f2-pop-x mw-hover" data-f2-x aria-label="Close">' + X_SVG + '</button><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div class="f2-pop-body"><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div><span class="hm-hc-info-caret f2-pop-caret" aria-hidden="true"></span></div>' : '';
     var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (monthly Due Today = first month incl. spread yearly add-ons + one-time) */
     var body = banner + '<div class="pay-stack" role="radiogroup" aria-label="How to pay">' + cards + '</div>' +
       '<p class="pay-due" aria-live="polite"><span>Due Today</span><b>' + money(dueNow) + '</b></p>' + pop;
@@ -4036,15 +4185,27 @@
      the first outside tap only closes it, Esc closes and returns focus to the badge. */
   function bindF2Pop() {
     var bt = app.querySelector("[data-f2-open]"), pop = document.getElementById("f2Pop"); if (!bt || !pop) return;
-    function place() { var r = bt.getBoundingClientRect(), host = pop.offsetParent || document.body, hr = host.getBoundingClientRect(), w = pop.offsetWidth, x = Math.min(Math.max(16, r.left + r.width / 2 - w / 2), innerWidth - 16 - w); pop.style.left = Math.round(x - hr.left) + "px"; pop.style.top = Math.round(r.bottom - hr.top + 8) + "px"; }
-    function shut(back) { if (pop.hidden || pop.classList.contains("closing")) return; pop.classList.remove("on"); pop.classList.add("closing"); bt.setAttribute("aria-expanded", "false"); document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", esc, true);
+    var caret = pop.querySelector(".f2-pop-caret");
+    function place() { placeBadgePopover(pop, bt, caret); }
+    function onMove() {
+      if (pop.hidden || pop.classList.contains("closing")) return;
+      var r = bt.getBoundingClientRect(), vh = innerHeight;
+      if (r.bottom < 8 || r.top > vh - 8) shut(false);
+      else place();
+    }
+    function shut(back) { if (pop.hidden || pop.classList.contains("closing")) return; pop.classList.remove("on"); pop.classList.add("closing"); bt.setAttribute("aria-expanded", "false"); document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", esc, true); window.removeEventListener("resize", onMove); window.removeEventListener("scroll", onMove, true);
       setTimeout(function () { pop.hidden = true; pop.classList.remove("closing"); }, 160); if (back) bt.focus({ preventScroll: true }); }
     function outside(e) { if (pop.contains(e.target)) return; if (e.target === bt || bt.contains(e.target)) return; e.preventDefault(); e.stopPropagation(); shut(false);
       var swallow = function (ev) { ev.preventDefault(); ev.stopPropagation(); document.removeEventListener("click", swallow, true); }; document.addEventListener("click", swallow, true); setTimeout(function () { document.removeEventListener("click", swallow, true); }, 500); }
     function esc(e) { if (e.key === "Escape") { e.preventDefault(); shut(true); } }
     bt.addEventListener("click", function (e) { e.stopPropagation(); if (!pop.hidden && !pop.classList.contains("closing")) { shut(true); return; }
+      closeOpenBadgePops("f2");
       pop.hidden = false; place(); void pop.offsetWidth; pop.classList.add("on"); bt.setAttribute("aria-expanded", "true"); pop.focus({ preventScroll: true });
-      document.addEventListener("pointerdown", outside, true); document.addEventListener("keydown", esc, true); });
+      document.addEventListener("pointerdown", outside, true); document.addEventListener("keydown", esc, true);
+      window.addEventListener("resize", onMove); window.addEventListener("scroll", onMove, true); });
+    var xBtn = pop.querySelector("[data-f2-x]");
+    if (xBtn) xBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); shut(true); });
+    pop.addEventListener("su-close-badge", function () { shut(false); });
   }
   function bindOb(s) {
     function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
@@ -4571,6 +4732,32 @@
   /* Browsers block unmuted autoplay, so the video starts muted (speaker button + Sound arrow in video-pause.js). */
   function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + jungle arrow live in video-pause.js */
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
+  /* Machan Nov 14 9:04 PM ICT: blur the page behind the intro video (#videoModal / #explainer), not the inline hero teaser. */
+  var vidBlurTimer = 0, vidBlurFocus = null, vidBlurScroll = 0;
+  function vidReduce() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function vidPageInert(on) {
+    ["header.topbar", "main#app", "footer.foot"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (!el) return;
+      if (on) { el.setAttribute("inert", ""); el.setAttribute("aria-hidden", "true"); }
+      else { el.removeAttribute("inert"); el.removeAttribute("aria-hidden"); }
+    });
+  }
+  function vidBlurFinish(opts) {
+    opts = opts || {};
+    modal.hidden = true;
+    modal.classList.remove("is-open", "is-closing");
+    document.body.style.overflow = "";
+    vidPageInert(false);
+    if (!opts.skipRestore) {
+      try { window.scrollTo(0, vidBlurScroll || 0); } catch (e) {}
+      if (vidBlurFocus && typeof vidBlurFocus.focus === "function") {
+        try { vidBlurFocus.focus({ preventScroll: true }); } catch (e2) {}
+      }
+    }
+    vidBlurFocus = null;
+    if (typeof opts.after === "function") opts.after();
+  }
   function openVideo(userAsked) {
     var src = vSrc();
     if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v7-9x16.jpg?v=v7a" : "assets/poster-v7-16x9.jpg?v=v7a"); }
@@ -4585,18 +4772,57 @@
       var actions = modal.querySelector(".modal-actions");
       if (actions) actions.parentNode.insertBefore(badge, actions);
     }
-    modal.hidden = false; document.body.style.overflow = "hidden";
+    if (vidBlurTimer) { clearTimeout(vidBlurTimer); vidBlurTimer = 0; }
+    vidBlurFocus = document.activeElement;
+    vidBlurScroll = window.scrollY || 0;
+    modal.hidden = false;
+    modal.classList.remove("is-closing");
+    if (vidReduce()) {
+      modal.classList.add("is-open");
+    } else {
+      modal.classList.remove("is-open");
+      void modal.offsetWidth;
+      modal.classList.add("is-open");
+    }
+    document.body.style.overflow = "hidden";
+    vidPageInert(true);
     try { vid.currentTime = 0; } catch (e) {}
     var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; syncTfs(); vid.play().catch(function () {}); });
     document.getElementById("skipBtn").focus({ preventScroll: true });
   }
-  function closeVideo() { vid.pause(); modal.hidden = true; document.body.style.overflow = ""; try { sessionStorage.setItem(VKEY, "1"); } catch (e) {} }
-  document.getElementById("videoClose").addEventListener("click", closeVideo);
-  document.getElementById("skipBtn").addEventListener("click", closeVideo);
+  function closeVideo(opts) {
+    opts = opts || {};
+    vid.pause();
+    try { sessionStorage.setItem(VKEY, "1"); } catch (e) {}
+    if (vidBlurTimer) { clearTimeout(vidBlurTimer); vidBlurTimer = 0; }
+    if (modal.hidden || vidReduce() || !modal.classList.contains("is-open")) {
+      vidBlurFinish(opts);
+      return;
+    }
+    modal.classList.remove("is-open");
+    modal.classList.add("is-closing");
+    vidBlurTimer = setTimeout(function () { vidBlurTimer = 0; vidBlurFinish(opts); }, 250);
+  }
+  document.getElementById("videoClose").addEventListener("click", function () { closeVideo(); });
+  document.getElementById("skipBtn").addEventListener("click", function () { closeVideo(); });
   unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
-  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("hs-plans") || document.getElementById("row-plans"); if (pl) setTimeout(function () { hmJumpSec(pl); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
+  vid.addEventListener("ended", function () { /* Funnel Deck: after the video, back to the home page plans, once the blur has cleared. */
+    closeVideo({ skipRestore: true, after: function () {
+      var pl = document.getElementById("hs-plans") || document.getElementById("row-plans");
+      if (pl) hmJumpSec(pl);
+    } });
+  });
   modal.addEventListener("click", function (e) { if (e.target === modal) closeVideo(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
+  modal.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab" || modal.hidden) return;
+    var nodes = modal.querySelectorAll("button, [href], video, input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    var list = [].filter.call(nodes, function (el) { return !el.disabled && el.getClientRects().length; });
+    if (!list.length) return;
+    var first = list[0], last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
@@ -4680,9 +4906,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s0"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s4"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s0"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s4"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
