@@ -1,0 +1,1042 @@
+{
+  "checks": [
+    {
+      "name": "badge inventory non-empty",
+      "ok": true,
+      "info": "[{\"kind\": \"hero\", \"label\": \"Background-Checked Yearly\"}, {\"kind\": \"hero\", \"label\": \"Licensed & Insured\"}, {\"kind\": \"hero\", \"label\": \"Warranties Checked\"}, {\"kind\": \"hero\", \"label\": \"Moisture Scan Every Visit\"}, {\"kind\": \"hero\", \"label\": \"Cancel Anytime\"}, {\"kind\": \"hero\", \"label\": \"Home Reports\"}, {\"kind\": \"hero\", \"label\": \"Certified Techs\"}]"
+    },
+    {
+      "name": "arrow centered 360x640",
+      "ok": true,
+      "info": "{'vw': 360, 'arrow': {'left': 154, 'right': 206, 'top': 57, 'bottom': 101, 'mid': 180, 'w': 52, 'h': 44}, 'center': 180, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "arrow 52x44 360x640",
+      "ok": true,
+      "info": "{'left': 154, 'right': 206, 'top': 57, 'bottom': 101, 'mid': 180, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow no tile overlap 360x640",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}]"
+    },
+    {
+      "name": "arrow no title/hdr overlap 360x640",
+      "ok": true,
+      "info": "{'vw': 360, 'arrow': {'left': 154, 'right': 206, 'top': 57, 'bottom': 101, 'mid': 180, 'w': 52, 'h': 44}, 'center': 180, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "hm-row-h ~23.09 at 360",
+      "ok": true,
+      "info": "23.09"
+    },
+    {
+      "name": "Essentials 7/7 at 360x640",
+      "ok": true,
+      "info": "['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test']"
+    },
+    {
+      "name": "arrow centered hs-plans 360",
+      "ok": true,
+      "info": "{'id': 'hs-plans', 'mid': 180, 'center': 180, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-alc 360",
+      "ok": true,
+      "info": "{'id': 'hs-alc', 'mid': 180, 'center': 180, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-faq 360",
+      "ok": true,
+      "info": "{'id': 'hs-faq', 'mid': 180, 'center': 180, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "fresh load Essentials lit 360",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "others dim gray 360",
+      "ok": true,
+      "info": "[{'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "swipe lights Plus 360",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "lit persists after leave 360",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "tap expands Essentials 360",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 102.984375, 'bottom': 451.40625, 'hdrB': 56, 'dockT': 529, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand stays in panel 360",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 102.984375, 'bottom': 451.40625, 'hdrB': 56, 'dockT': 529, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand has full list + legal link 360",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 102.984375, 'bottom': 451.40625, 'hdrB': 56, 'dockT': 529, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand X visible 44 360",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44}"
+    },
+    {
+      "name": "X collapses 360",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "one expanded at a time (plus) 360",
+      "ok": true,
+      "info": "['gold']"
+    },
+    {
+      "name": "swipe collapses expand 360",
+      "ok": true,
+      "info": "[]"
+    },
+    {
+      "name": "FAQ one tint 360",
+      "ok": true,
+      "info": "['rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)']"
+    },
+    {
+      "name": "ALC header tints distinct 360",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "ALC not a full-tile wash 360",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "popover open 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 40, 'right': 320, 'top': 307, 'bottom': 419.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 87.5, 'right': 272.5, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 275, 'right': 319, 'top': 308, 'bottom': 352, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover near badge 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 40, 'right': 320, 'top': 307, 'bottom': 419.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 87.5, 'right': 272.5, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 275, 'right': 319, 'top': 308, 'bottom': 352, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover in view 8px 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 40, 'right': 320, 'top': 307, 'bottom': 419.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 87.5, 'right': 272.5, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 275, 'right': 319, 'top': 308, 'bottom': 352, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 40, 'right': 320, 'top': 307, 'bottom': 419.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 87.5, 'right': 272.5, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 275, 'right': 319, 'top': 308, 'bottom': 352, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover X 44 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 275, 'right': 319, 'top': 308, 'bottom': 352, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Background-Checked Yearly' 360",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Warranties Checked' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 31.7, 'right': 168.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover near badge 'Warranties Checked' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 31.7, 'right': 168.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover in view 8px 'Warranties Checked' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 31.7, 'right': 168.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Warranties Checked' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 31.7, 'right': 168.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover X 44 'Warranties Checked' 360",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 288, 'bottom': 332, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Warranties Checked' 360",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 72, 'right': 352, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 169.7, 'right': 334.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 307, 'right': 351, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover near badge 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 72, 'right': 352, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 169.7, 'right': 334.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 307, 'right': 351, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover in view 8px 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 72, 'right': 352, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 169.7, 'right': 334.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 307, 'right': 351, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 72, 'right': 352, 'top': 287, 'bottom': 419.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 169.7, 'right': 334.7, 'top': 427.5, 'bottom': 455.3}, 'gap': 8.09, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 307, 'right': 351, 'top': 288, 'bottom': 332, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover X 44 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 307, 'right': 351, 'top': 288, 'bottom': 332, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Moisture Scan Every Visit' 360",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "arrow centered 390x844",
+      "ok": true,
+      "info": "{'vw': 390, 'arrow': {'left': 169, 'right': 221, 'top': 57, 'bottom': 101, 'mid': 195, 'w': 52, 'h': 44}, 'center': 195, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "arrow 52x44 390x844",
+      "ok": true,
+      "info": "{'left': 169, 'right': 221, 'top': 57, 'bottom': 101, 'mid': 195, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow no tile overlap 390x844",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}]"
+    },
+    {
+      "name": "arrow no title/hdr overlap 390x844",
+      "ok": true,
+      "info": "{'vw': 390, 'arrow': {'left': 169, 'right': 221, 'top': 57, 'bottom': 101, 'mid': 195, 'w': 52, 'h': 44}, 'center': 195, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "Essentials items 390",
+      "ok": true,
+      "info": "['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test']"
+    },
+    {
+      "name": "arrow centered hs-plans 390",
+      "ok": true,
+      "info": "{'id': 'hs-plans', 'mid': 195, 'center': 195, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-alc 390",
+      "ok": true,
+      "info": "{'id': 'hs-alc', 'mid': 195, 'center': 195, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-faq 390",
+      "ok": true,
+      "info": "{'id': 'hs-faq', 'mid': 195, 'center': 195, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "fresh load Essentials lit 390",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "others dim gray 390",
+      "ok": true,
+      "info": "[{'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "swipe lights Plus 390",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "lit persists after leave 390",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "tap expands Essentials 390",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 650.390625, 'hdrB': 56, 'dockT': 733, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand stays in panel 390",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 650.390625, 'hdrB': 56, 'dockT': 733, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand has full list + legal link 390",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 650.390625, 'hdrB': 56, 'dockT': 733, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand X visible 44 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44}"
+    },
+    {
+      "name": "X collapses 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "one expanded at a time (plus) 390",
+      "ok": true,
+      "info": "['gold']"
+    },
+    {
+      "name": "swipe collapses expand 390",
+      "ok": true,
+      "info": "[]"
+    },
+    {
+      "name": "FAQ one tint 390",
+      "ok": true,
+      "info": "['rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)']"
+    },
+    {
+      "name": "ALC header tints distinct 390",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "ALC not a full-tile wash 390",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "popover open 'Cancel Anytime' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 138, 'right': 252, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover near badge 'Cancel Anytime' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 138, 'right': 252, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover in view 8px 'Cancel Anytime' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 138, 'right': 252, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Cancel Anytime' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 138, 'right': 252, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover X 44 'Cancel Anytime' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Cancel Anytime' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "Esc closes popover 390",
+      "ok": true,
+      "info": "{'opened': True}"
+    },
+    {
+      "name": "outside tap closes popover 390",
+      "ok": true,
+      "info": "{'opened': True}"
+    },
+    {
+      "name": "popover open 'Home Reports' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 142.5, 'right': 247.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover near badge 'Home Reports' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 142.5, 'right': 247.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover in view 8px 'Home Reports' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 142.5, 'right': 247.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Home Reports' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 142.5, 'right': 247.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover X 44 'Home Reports' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 493, 'bottom': 537, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Home Reports' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Licensed & Insured' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 56.2, 'right': 186.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Licensed & Insured'}"
+    },
+    {
+      "name": "popover near badge 'Licensed & Insured' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 56.2, 'right': 186.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Licensed & Insured'}"
+    },
+    {
+      "name": "popover in view 8px 'Licensed & Insured' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 56.2, 'right': 186.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Licensed & Insured'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Licensed & Insured' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 8, 'right': 288, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 56.2, 'right': 186.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Licensed & Insured'}"
+    },
+    {
+      "name": "popover X 44 'Licensed & Insured' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 243, 'right': 287, 'top': 453, 'bottom': 497, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Licensed & Insured' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 102, 'right': 382, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 187.2, 'right': 352.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 337, 'right': 381, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover near badge 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 102, 'right': 382, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 187.2, 'right': 352.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 337, 'right': 381, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover in view 8px 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 102, 'right': 382, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 187.2, 'right': 352.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 337, 'right': 381, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 102, 'right': 382, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 187.2, 'right': 352.2, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 337, 'right': 381, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover X 44 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 337, 'right': 381, 'top': 473, 'bottom': 517, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Moisture Scan Every Visit' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Warranties Checked' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 126.5, 'right': 263.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover near badge 'Warranties Checked' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 126.5, 'right': 263.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover in view 8px 'Warranties Checked' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 126.5, 'right': 263.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Warranties Checked' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 472, 'bottom': 604.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 126.5, 'right': 263.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 473, 'bottom': 517, 'visible': True}, 'title': 'Warranties Checked'}"
+    },
+    {
+      "name": "popover X 44 'Warranties Checked' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 473, 'bottom': 517, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Warranties Checked' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 102.5, 'right': 287.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 45.3, 'h': 45.3, 'left': 289.3, 'right': 334.7, 'top': 491.3, 'bottom': 536.7, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover near badge 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 102.5, 'right': 287.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 45.3, 'h': 45.3, 'left': 289.3, 'right': 334.7, 'top': 491.3, 'bottom': 536.7, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover in view 8px 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 102.5, 'right': 287.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 45.3, 'h': 45.3, 'left': 289.3, 'right': 334.7, 'top': 491.3, 'bottom': 536.7, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 492, 'bottom': 604.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 102.5, 'right': 287.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 45.3, 'h': 45.3, 'left': 289.3, 'right': 334.7, 'top': 491.3, 'bottom': 536.7, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover X 44 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": "{'w': 45.3, 'h': 45.3, 'left': 289.3, 'right': 334.7, 'top': 491.3, 'bottom': 536.7, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Background-Checked Yearly' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Certified Techs' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 140.5, 'right': 249.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover near badge 'Certified Techs' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 140.5, 'right': 249.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover in view 8px 'Certified Techs' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 140.5, 'right': 249.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Certified Techs' 390",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 55, 'right': 335, 'top': 452, 'bottom': 604.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 140.5, 'right': 249.5, 'top': 611.7, 'bottom': 639.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 453, 'bottom': 497, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover X 44 'Certified Techs' 390",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 290, 'right': 334, 'top': 453, 'bottom': 497, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Certified Techs' 390",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "Get Started goes to address",
+      "ok": true,
+      "info": "{'scr': 'su-band share-in on-ob on-qf', 'hasTitle': True}"
+    },
+    {
+      "name": "arrow centered 430x932",
+      "ok": true,
+      "info": "{'vw': 430, 'arrow': {'left': 189, 'right': 241, 'top': 57, 'bottom': 101, 'mid': 215, 'w': 52, 'h': 44}, 'center': 215, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "arrow 52x44 430x932",
+      "ok": true,
+      "info": "{'left': 189, 'right': 241, 'top': 57, 'bottom': 101, 'mid': 215, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow no tile overlap 430x932",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}]"
+    },
+    {
+      "name": "arrow no title/hdr overlap 430x932",
+      "ok": true,
+      "info": "{'vw': 430, 'arrow': {'left': 189, 'right': 241, 'top': 57, 'bottom': 101, 'mid': 215, 'w': 52, 'h': 44}, 'center': 215, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "Essentials items 430",
+      "ok": true,
+      "info": "['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test']"
+    },
+    {
+      "name": "arrow centered hs-plans 430",
+      "ok": true,
+      "info": "{'id': 'hs-plans', 'mid': 215, 'center': 215, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-alc 430",
+      "ok": true,
+      "info": "{'id': 'hs-alc', 'mid': 215, 'center': 215, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-faq 430",
+      "ok": true,
+      "info": "{'id': 'hs-faq', 'mid': 215, 'center': 215, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "fresh load Essentials lit 430",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "others dim gray 430",
+      "ok": true,
+      "info": "[{'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "swipe lights Plus 430",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "lit persists after leave 430",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'gold', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "tap expands Essentials 430",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 738.34375, 'hdrB': 56, 'dockT': 821, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand stays in panel 430",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 738.34375, 'hdrB': 56, 'dockT': 821, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand has full list + legal link 430",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 103.09375, 'bottom': 738.34375, 'hdrB': 56, 'dockT': 821, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand X visible 44 430",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44}"
+    },
+    {
+      "name": "X collapses 430",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "one expanded at a time (plus) 430",
+      "ok": true,
+      "info": "['gold']"
+    },
+    {
+      "name": "swipe collapses expand 430",
+      "ok": true,
+      "info": "[]"
+    },
+    {
+      "name": "FAQ one tint 430",
+      "ok": true,
+      "info": "['rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)']"
+    },
+    {
+      "name": "ALC header tints distinct 430",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "ALC not a full-tile wash 430",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "popover open 'Home Reports' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 700, 'bottom': 812.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 162.5, 'right': 267.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.52, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 701, 'bottom': 745, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover near badge 'Home Reports' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 700, 'bottom': 812.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 162.5, 'right': 267.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.52, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 701, 'bottom': 745, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover in view 8px 'Home Reports' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 700, 'bottom': 812.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 162.5, 'right': 267.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.52, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 701, 'bottom': 745, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Home Reports' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 700, 'bottom': 812.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 162.5, 'right': 267.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.52, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 701, 'bottom': 745, 'visible': True}, 'title': 'Home Reports'}"
+    },
+    {
+      "name": "popover X 44 'Home Reports' 430",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 701, 'bottom': 745, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Home Reports' 430",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 525, 'bottom': 657.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 132.5, 'right': 297.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 526, 'bottom': 570, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover near badge 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 525, 'bottom': 657.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 132.5, 'right': 297.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 526, 'bottom': 570, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover in view 8px 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 525, 'bottom': 657.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 132.5, 'right': 297.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 526, 'bottom': 570, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 525, 'bottom': 657.4, 'w': 280, 'h': 132.4}, 'badge': {'left': 132.5, 'right': 297.5, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 526, 'bottom': 570, 'visible': True}, 'title': 'Moisture Scan Every Visit'}"
+    },
+    {
+      "name": "popover X 44 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 526, 'bottom': 570, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Moisture Scan Every Visit' 430",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Certified Techs' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 29, 'right': 309, 'top': 505, 'bottom': 657.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 114.2, 'right': 223.2, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 264, 'right': 308, 'top': 506, 'bottom': 550, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover near badge 'Certified Techs' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 29, 'right': 309, 'top': 505, 'bottom': 657.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 114.2, 'right': 223.2, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 264, 'right': 308, 'top': 506, 'bottom': 550, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover in view 8px 'Certified Techs' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 29, 'right': 309, 'top': 505, 'bottom': 657.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 114.2, 'right': 223.2, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 264, 'right': 308, 'top': 506, 'bottom': 550, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Certified Techs' 430",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 29, 'right': 309, 'top': 505, 'bottom': 657.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 114.2, 'right': 223.2, 'top': 664.7, 'bottom': 692.5}, 'gap': 7.3, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 264, 'right': 308, 'top': 506, 'bottom': 550, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover X 44 'Certified Techs' 430",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 264, 'right': 308, 'top': 506, 'bottom': 550, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Certified Techs' 430",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "arrow centered 1280x800",
+      "ok": true,
+      "info": "{'vw': 1280, 'arrow': {'left': 614, 'right': 666, 'top': 65, 'bottom': 109, 'mid': 640, 'w': 52, 'h': 44}, 'center': 640, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "arrow 52x44 1280x800",
+      "ok": true,
+      "info": "{'left': 614, 'right': 666, 'top': 65, 'bottom': 109, 'mid': 640, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow no tile overlap 1280x800",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}]"
+    },
+    {
+      "name": "arrow no title/hdr overlap 1280x800",
+      "ok": true,
+      "info": "{'vw': 1280, 'arrow': {'left': 614, 'right': 666, 'top': 65, 'bottom': 109, 'mid': 640, 'w': 52, 'h': 44}, 'center': 640, 'dx': 0, 'rowH': 23.09, 'titleHit': False, 'hdrHit': False, 'tileHits': [{'tier': 'silver', 'hit': False}, {'tier': 'gold', 'hit': False}, {'tier': 'platinum', 'hit': False}], 'essCount': 7, 'essTexts': ['Furnace/AC Tune-Up', 'Water Heater Flush/Descale', 'Appliance Filter Cleaning/Changes', 'Mold And Moisture Scan', 'Roof Inspections', 'Dryer Vent Cleaning', 'Sump Pump Test'], 'hasSump': True}"
+    },
+    {
+      "name": "arrow centered hs-plans 1280",
+      "ok": true,
+      "info": "{'id': 'hs-plans', 'mid': 640, 'center': 640, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-alc 1280",
+      "ok": true,
+      "info": "{'id': 'hs-alc', 'mid': 640, 'center': 640, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "arrow centered hs-faq 1280",
+      "ok": true,
+      "info": "{'id': 'hs-faq', 'mid': 640, 'center': 640, 'dx': 0, 'w': 52, 'h': 44}"
+    },
+    {
+      "name": "fresh load Essentials lit 1280",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 1, 'sel': True, 'exp': False, 'opacity': 1, 'filter': 'grayscale(0)', 'ariaCur': 'true'}, {'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "others dim gray 1280",
+      "ok": true,
+      "info": "[{'tier': 'gold', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "tap expands Essentials 1280",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 111.09375, 'bottom': 620.21875, 'hdrB': 64, 'dockT': 689, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand stays in panel 1280",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 111.09375, 'bottom': 620.21875, 'hdrB': 64, 'dockT': 689, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand has full list + legal link 1280",
+      "ok": true,
+      "info": "{'exp': True, 'aria': 'true', 'top': 111.09375, 'bottom': 620.21875, 'hdrB': 64, 'dockT': 689, 'overflow': False, 'nList': 30, 'legal': True, 'x': {'w': 44, 'h': 44}}"
+    },
+    {
+      "name": "expand X visible 44 1280",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44}"
+    },
+    {
+      "name": "X collapses 1280",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "one expanded at a time (plus) 1280",
+      "ok": true,
+      "info": "['gold']"
+    },
+    {
+      "name": "FAQ one tint 1280",
+      "ok": true,
+      "info": "['rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)', 'rgb(255, 252, 247)']"
+    },
+    {
+      "name": "ALC header tints distinct 1280",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "ALC not a full-tile wash 1280",
+      "ok": true,
+      "info": "[{'i': '0', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(247, 235, 229)', 'list': 'rgb(255, 255, 255)'}, {'i': '1', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(238, 244, 248)', 'list': 'rgb(255, 255, 255)'}, {'i': '2', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(248, 241, 234)', 'list': 'rgb(255, 255, 255)'}, {'i': '3', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(252, 249, 244)', 'list': 'rgb(255, 255, 255)'}, {'i': '4', 'card': 'rgb(255, 252, 247)', 'hdr': 'rgb(243, 230, 223)', 'list': 'rgb(255, 255, 255)'}]"
+    },
+    {
+      "name": "popover open 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 500, 'right': 780, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 547.5, 'right': 732.5, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 735, 'right': 779, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover near badge 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 500, 'right': 780, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 547.5, 'right': 732.5, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 735, 'right': 779, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover in view 8px 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 500, 'right': 780, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 547.5, 'right': 732.5, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 735, 'right': 779, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 500, 'right': 780, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 547.5, 'right': 732.5, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 735, 'right': 779, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Background-Checked Yearly'}"
+    },
+    {
+      "name": "popover X 44 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 735, 'right': 779, 'top': 291, 'bottom': 335, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Background-Checked Yearly' 1280",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Certified Techs' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 290, 'bottom': 442.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 160.7, 'right': 269.7, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover near badge 'Certified Techs' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 290, 'bottom': 442.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 160.7, 'right': 269.7, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover in view 8px 'Certified Techs' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 290, 'bottom': 442.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 160.7, 'right': 269.7, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Certified Techs' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 75, 'right': 355, 'top': 290, 'bottom': 442.4, 'w': 280, 'h': 152.4}, 'badge': {'left': 160.7, 'right': 269.7, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Certified Techs'}"
+    },
+    {
+      "name": "popover X 44 'Certified Techs' 1280",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 310, 'right': 354, 'top': 291, 'bottom': 335, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Certified Techs' 1280",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "popover open 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 187, 'right': 467, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 270.2, 'right': 384.2, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 422, 'right': 466, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover near badge 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 187, 'right': 467, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 270.2, 'right': 384.2, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 422, 'right': 466, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover in view 8px 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 187, 'right': 467, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 270.2, 'right': 384.2, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 422, 'right': 466, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover not under hdr/dock 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": "{'open': True, 'card': {'left': 187, 'right': 467, 'top': 290, 'bottom': 402.4, 'w': 280, 'h': 112.4}, 'badge': {'left': 270.2, 'right': 384.2, 'top': 254, 'bottom': 281.8}, 'gap': 8.17, 'inView': True, 'marginOk': True, 'hdrHit': False, 'dockHit': False, 'x': {'w': 44, 'h': 44, 'left': 422, 'right': 466, 'top': 291, 'bottom': 335, 'visible': True}, 'title': 'Cancel Anytime'}"
+    },
+    {
+      "name": "popover X 44 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": "{'w': 44, 'h': 44, 'left': 422, 'right': 466, 'top': 291, 'bottom': 335, 'visible': True}"
+    },
+    {
+      "name": "X closes popover 'Cancel Anytime' 1280",
+      "ok": true,
+      "info": ""
+    },
+    {
+      "name": "mid-swipe two tiles partly lit",
+      "ok": true,
+      "info": "[{'tier': 'silver', 'lit': 0.462, 'sel': True, 'exp': False, 'opacity': 0.785, 'filter': 'grayscale(0.53664)', 'ariaCur': 'true'}, {'tier': 'gold', 'lit': 0.284, 'sel': False, 'exp': False, 'opacity': 0.713, 'filter': 'grayscale(0.71736)', 'ariaCur': 'false'}, {'tier': 'platinum', 'lit': 0, 'sel': False, 'exp': False, 'opacity': 0.6, 'filter': 'grayscale(1)', 'ariaCur': 'false'}]"
+    },
+    {
+      "name": "swipe rAF p95 <= 16.7ms (4x CPU)",
+      "ok": true,
+      "info": "{'n': 80, 'p95': 16.700000000000273, 'max': 16.800000000000182, 'long50': [], 'mean': 16.447500000018625}"
+    },
+    {
+      "name": "no long frames >50ms",
+      "ok": true,
+      "info": "[]"
+    },
+    {
+      "name": "reduced motion no scale",
+      "ok": true,
+      "info": "{'transform': 'none', 'trans': 'opacity 0.32s ease-out, filter 0.32s ease-out, transform 0.32s ease-out', 'afterShadow': 'rgb(193, 80, 46) 0px 0px 0px 2px'}"
+    }
+  ],
+  "fails": [],
+  "badges": [
+    {
+      "kind": "hero",
+      "label": "Background-Checked Yearly"
+    },
+    {
+      "kind": "hero",
+      "label": "Licensed & Insured"
+    },
+    {
+      "kind": "hero",
+      "label": "Warranties Checked"
+    },
+    {
+      "kind": "hero",
+      "label": "Moisture Scan Every Visit"
+    },
+    {
+      "kind": "hero",
+      "label": "Cancel Anytime"
+    },
+    {
+      "kind": "hero",
+      "label": "Home Reports"
+    },
+    {
+      "kind": "hero",
+      "label": "Certified Techs"
+    }
+  ],
+  "frames": {
+    "midlit": [
+      {
+        "tier": "silver",
+        "lit": 0.462,
+        "sel": true,
+        "exp": false,
+        "opacity": 0.785,
+        "filter": "grayscale(0.53664)",
+        "ariaCur": "true"
+      },
+      {
+        "tier": "gold",
+        "lit": 0.284,
+        "sel": false,
+        "exp": false,
+        "opacity": 0.713,
+        "filter": "grayscale(0.71736)",
+        "ariaCur": "false"
+      },
+      {
+        "tier": "platinum",
+        "lit": 0,
+        "sel": false,
+        "exp": false,
+        "opacity": 0.6,
+        "filter": "grayscale(1)",
+        "ariaCur": "false"
+      }
+    ],
+    "step_ms": [
+      0.0031999952625483274,
+      57.812043000012636,
+      68.66625600378029,
+      54.637713998090476,
+      49.98515400075121,
+      50.2446320024319,
+      49.81613999552792,
+      49.88474799756659,
+      51.24188500485616,
+      49.32949700014433,
+      293.9770969969686,
+      39.89691100287018,
+      48.72590999730164,
+      50.63134100055322,
+      48.83388100279262,
+      51.69906999799423,
+      48.97739500302123,
+      51.11285899329232,
+      49.71183500310872,
+      49.77408800186822
+    ],
+    "p95_step": 282.7115549473092,
+    "raf": {
+      "n": 80,
+      "p95": 16.700000000000273,
+      "max": 16.800000000000182,
+      "long50": [],
+      "mean": 16.447500000018625
+    }
+  },
+  "notes": {}
+}

@@ -3284,43 +3284,40 @@ body.on-home .hs-arrow-up:focus-visible{opacity:1}
 @media (prefers-reduced-motion:reduce){body.on-home .hs-arrow-up{transition:none}}
 /* Plans keeps the collapsed margin so 7 items still fit. Tailor and FAQ have room, so don't pull cards up over the arrow. */
 body.on-home #hs-alc .hs-arrow-up,
-body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
+body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important;position:relative;left:auto;right:auto}
+body.on-home .hs-arrow-up{left:auto;right:auto}
 
 /* Machan Nov 14 7:17 PM ICT: the Plans up arrow sat on the Essentials tile. Keep it in the
    Plans header row so it never overlaps a tile, without taking vertical space from the 7-item fit.
    r3 (Swatch): the 44px tap was in flow and grew .hm-row-h from 23px to 44px, hiding Sump Pump
    Test at 360x640. Take the arrow out of flow; reserve its hit width so it cannot cover the title. */
+/* Machan Nov 14 8:38 PM ICT: "up arrow of sections to always be on center".
+   Stay out of the title-row flow so .hm-row-h stays 23.09px and Essentials still fits 7/7.
+   The arrow's containing block is #hs-plans (already position:relative), not the
+   23px title row, so the 52x44 hit sits 1px below the section top — in the ~47px
+   header-to-tile gap — horizontally centered. That keeps it off the tiles and off
+   the left-aligned Plans title. */
 body.on-home #hs-plans .hm-row-h{
   align-items:center;
-  padding-right:52px;
+  padding-right:0;
 }
-/* Out of flow against #hs-plans (already position:relative). A 44px hit centered
-   on the 23px title row overflowed the tiles by ~4px; the topbar-to-tile gap is
-   45px, so pin the hit 1px below the top of the section (just under the sticky bar). */
-body.on-home #hs-plans .hm-row-h .hs-arrow-up{
+body.on-home #hs-plans .hs-arrow-up{
   margin:0!important;
   position:absolute;
-  right:0;
+  left:50%;
   top:1px;
-  transform:none;
+  transform:translateX(-50%);
   z-index:2;
+  width:52px!important;
+  min-width:52px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
 }
 
-/* Machan Nov 14 7:18-7:19 PM ICT: unselected tiles get a real gray-out (grayscale + ~0.6 opacity)
-   once a plan is selected. The selected tile stays full color, including its top band.
-   Unselect (tap the selected tile again) removes the gray so all three are full color. */
-body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{
-  opacity:.6;
-  filter:grayscale(1);
-  transition:opacity .2s ease,filter .2s ease;
-}
-body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan.sel{
-  opacity:1;
-  filter:none;
-}
-@media (prefers-reduced-motion:reduce){
-  body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{transition:none}
-}
+/* Machan Nov 14 8:38-8:40 PM ICT: the in-view tile is lit from --lit 0..1 (scroll-tied).
+   Dim stays the live gray (grayscale(1), opacity .6). Outline blends with --lit; no layout shift. */
+
 
 
 /* ===== r4 Swatch QA (Nov 14): CTA stacking, flush parks, Plans fill, FAQ full-bleed, 44px Plans down arrow ===== */
@@ -3583,12 +3580,10 @@ body.on-home .faq-car-bar i{
 body.on-home .faq-car-bar i.is-done{background:#E0B8A8}
 body.on-home .faq-car-bar i.is-on{background:#C1502E}
 body.on-home .faq-car-pos{display:none!important}
-body.on-home .faq-card[data-faq-i="0"]{background:#FFFCF7}
-body.on-home .faq-card[data-faq-i="1"]{background:#F7EBE5}
-body.on-home .faq-card[data-faq-i="2"]{background:#EEF4F8}
-body.on-home .faq-card[data-faq-i="3"]{background:#FCF9F4}
-body.on-home .faq-card[data-faq-i="4"]{background:#F8F1EA}
-body.on-home .faq-card[data-faq-i="5"]{background:#F3E6DF}
+/* Machan Nov 14 8:41 PM ICT: FAQ keeps one light cream; distinct per-tile tints move to Tailor Your Plan. */
+body.on-home .faq-card,
+/* Machan Nov 14 8:41 PM ICT: FAQ keeps one shared light color; distinct tints move to Tailor. */
+body.on-home .faq-card[data-faq-i]{background:#FFFCF7}
 html.faq-sheet-open,html.faq-sheet-open body{overflow:hidden!important;overscroll-behavior:none}
 html.bbm-has-bar.faq-sheet-open:has(body.on-home),
 html.bbm-has-bar.faq-sheet-open body.on-home{overflow:hidden!important;overscroll-behavior:none}
@@ -3838,4 +3833,223 @@ html body.on-home .faq-card::before{
   html body.on-home #row-plans .hm-plan::before,
   html body.on-home .alc-card::before,
   html body.on-home .faq-card::before{animation:none}
+}
+
+
+/* ===== badge-pop-1114 (Machan Nov 14 8:37-8:41 PM ICT) ===== */
+
+/* Badge notes: anchored popover + close X (44px hit, smaller grey glyph). */
+.hm-hc-info-card,
+.f2-pop{
+  padding-right:48px!important;
+}
+.hm-hc-info-close,
+.f2-pop-x,
+.pc-exp-x{
+  position:absolute;
+  top:0;
+  right:0;
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#6B625A;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:3;
+  border-radius:0;
+  box-shadow:none;
+}
+.hm-hc-info-close .x-ico,
+.f2-pop-x .x-ico,
+.pc-exp-x .x-ico{width:16px;height:16px;stroke-width:1.8}
+.hm-hc-info-close:focus-visible,
+.f2-pop-x:focus-visible,
+.pc-exp-x:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.hm-hc-info-card{position:absolute}
+.f2-pop{position:fixed!important;z-index:90!important}
+.f2-pop .f2-pop-caret{position:absolute;width:12px;height:12px;background:inherit;border:inherit;transform:rotate(45deg);pointer-events:none}
+@media (prefers-reduced-motion:reduce){
+  .hm-hc-info-card,.f2-pop{transition:opacity 160ms ease!important;transform:none!important}
+}
+
+/* Plans lit + outline + expand. */
+html body.on-home #row-plans .hm-plan.pc,
+html body.on-home #row-plans .hm-plan.pc.sel{
+  --lit: 0;
+  position:relative;
+  overflow:visible;
+  opacity:calc(0.6 + 0.4 * var(--lit));
+  filter:grayscale(calc(1 - var(--lit)));
+  transform:scale(calc(0.97 + 0.03 * var(--lit)));
+  transform-origin:center center;
+  border-width:1px!important;
+  border-style:solid!important;
+  border-color:var(--mw-border,#E6E0D6)!important;
+  border-top-width:5px!important;
+  border-top-color:var(--mw-terracotta,#A8431F)!important;
+  box-shadow:none!important;
+  will-change:auto;
+}
+html body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan.pc.sel{
+  /* outline comes from ::after; keep the top band in color on the lit tile */
+  border-top-color:var(--mw-terracotta,#C1502E)!important;
+}
+html body.on-home #row-plans .hm-plan.pc::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  pointer-events:none;
+  z-index:2;
+  /* Existing selected outline (#C1502E 2px) + lift shadow, faded by --lit. Not animating box-shadow itself. */
+  box-shadow:0 0 0 2px #C1502E, 0 8px 22px rgba(193,80,46,.18);
+  opacity:var(--lit);
+}
+html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc{
+  transition:opacity 320ms ease-out, filter 320ms ease-out, transform 320ms ease-out;
+}
+html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc::after{
+  transition:opacity 320ms ease-out;
+}
+html body.on-home #row-plans .hm-scroll.pc-lit-drag .hm-plan.pc,
+html body.on-home #row-plans .hm-scroll.pc-lit-drag .hm-plan.pc::after{
+  transition:none;
+}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home #row-plans .hm-plan.pc{
+    transform:none!important;
+    transition:opacity 320ms ease, filter 320ms ease;
+  }
+  html body.on-home #row-plans .hm-plan.pc::after{
+    box-shadow:0 0 0 2px #C1502E;
+    transition:opacity 320ms ease;
+  }
+}
+
+/* In-tile expand (Machan: "clicking it should expand it to see more"). */
+html body.on-home #row-plans .hm-plan .pc-exp-x{
+  display:none;
+  color:#6B625A;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-exp-x{display:inline-flex}
+html body.on-home #row-plans .hm-plan .pc-full{
+  display:grid;
+  grid-template-rows:0fr;
+  min-height:0;
+  transition:grid-template-rows 320ms ease-out;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-full{grid-template-rows:1fr}
+html body.on-home #row-plans .hm-plan .pc-full-in{
+  overflow:hidden;
+  min-height:0;
+}
+html body.on-home #row-plans .hm-plan.pc-exp{
+  max-height:var(--pc-exp-max,100%);
+  z-index:3;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{
+  overflow:auto;
+  max-height:calc(var(--pc-exp-max, 100%) - 8px);
+  padding-bottom:8px;
+  -webkit-overflow-scrolling:touch;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-inc{display:none!important}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-more{display:none!important}
+html body.on-home #row-plans .hm-plan .pc-full .pc-sum,
+html body.on-home #row-plans .hm-plan .pc-full .pc-sum-l{margin:0}
+html body.on-home #row-plans .hm-plan .pc-lg-row{margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home #row-plans .hm-plan .pc-full{transition:none}
+  html body.on-home #row-plans .hm-plan .pc-full-in{transition:opacity 320ms ease}
+  html body.on-home #row-plans .hm-plan:not(.pc-exp) .pc-full-in{opacity:0}
+  html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{opacity:1}
+}
+
+/* ===== Tailor Your Plan Polish Deck (Machan 8:57 PM ICT, receipt 2ae3ac08) =====
+   Tint B: tinted header + edge, list stays white. Hexes are the live FAQ card set.
+     0 Heating And Cooling  #F7EBE5 / edge #E8D0C6
+     1 Water And Plumbing   #EEF4F8 / edge #D3DEE6  (light lagoon wash, not green)
+     2 Roof And Outside     #F8F1EA / edge #E4D5C6
+     3 Inside The Home      #FCF9F4 / edge #E6E1D8
+     4 Seasonal Equipment   #F3E6DF / edge #E0C9BC
+     5 More Services        #FAF3EB / edge #E6E1D8  (warm leftover if that card appears)
+   Price B: terracotta #A8431F, still right-aligned (incl. Quote).
+   Open Row B: inset cream detail panel.
+   Add-On Tag B: soft tint chip, text #5C534C (live #8A8178 fails 4.5:1).
+   Row Mark A (Swatch): Name Only — no pip, row name font/size/color/left padding unchanged. */
+body.on-home .alc-card[data-alc-g="0"]{ --alc-tint:#F7EBE5; --alc-edge:#E8D0C6; }
+body.on-home .alc-card[data-alc-g="1"]{ --alc-tint:#EEF4F8; --alc-edge:#D3DEE6; }
+body.on-home .alc-card[data-alc-g="2"]{ --alc-tint:#F8F1EA; --alc-edge:#E4D5C6; }
+body.on-home .alc-card[data-alc-g="3"]{ --alc-tint:#FCF9F4; --alc-edge:#E6E1D8; }
+body.on-home .alc-card[data-alc-g="4"]{ --alc-tint:#F3E6DF; --alc-edge:#E0C9BC; }
+body.on-home .alc-card[data-alc-g="5"]{ --alc-tint:#FAF3EB; --alc-edge:#E6E1D8; }
+
+html body.on-home .alc-card{
+  background:#FFFCF7!important;
+  border:1.5px solid var(--alc-edge, #ECE5DA)!important;
+}
+html body.on-home .alc-card .alc-ghd{
+  background:var(--alc-tint, #FCF9F4)!important;
+  margin:0!important;
+  padding:12px 16px 10px!important;
+  border-top-left-radius:14px!important;
+  border-top-right-radius:14px!important;
+  border-bottom:2px solid #C1502E!important;
+}
+html body.on-home .alc-card .sa-list{
+  background:#fff!important;
+}
+@media (max-width:360px) and (max-height:640px){
+  html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
+}
+@media (max-width:430px) and (max-height:700px){
+  html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
+}
+
+html body.on-home .alc-card .sa-q .sa-p{
+  color:#A8431F!important;
+}
+html body.on-home .alc-card .sa-q .sa-p.is-quote{
+  color:#A8431F!important;
+}
+
+html body.on-home .alc-card .sa-a{
+  margin:0 0 8px;
+  padding:10px 12px 12px!important;
+  background:#FCF9F4;
+  border:1px solid #E6E1D8;
+  border-radius:10px;
+}
+html body.on-home .alc-card .sa-item:has(.sa-q[aria-expanded="true"]){
+  border-top-color:transparent!important;
+}
+html body.on-home .alc-card .sa-item:has(.sa-q[aria-expanded="true"]) + .sa-item{
+  border-top-color:transparent!important;
+}
+
+html body.on-home .alc-card .sa-q .sa-n small{
+  display:inline-block!important;
+  margin-top:0!important;
+  padding:0 6px;
+  line-height:1.2!important;
+  border-radius:999px;
+  background:#F3E6DF;
+  color:#5C534C!important;
+  font-weight:600!important;
+  white-space:nowrap;
+}
+html body.on-home .alc-card[data-alc-g="1"] .sa-q .sa-n small{
+  background:#E3EDF3;
+}
+html body.on-home .alc-card[data-alc-g="2"] .sa-q .sa-n small,
+html body.on-home .alc-card[data-alc-g="3"] .sa-q .sa-n small,
+html body.on-home .alc-card[data-alc-g="5"] .sa-q .sa-n small{
+  background:#F3E6DF;
 }
