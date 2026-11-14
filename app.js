@@ -1640,10 +1640,10 @@
      collapsed row. Official catalog labels and all scope copy live in the expansion.
      pricing-config.js is untouched. */
   var HOME_ALC_SHORT = {
-    "Flat Roof Inspection And Clean": "Flat Roof Inspection",
+    "Flat Roof Inspection And Clean": "Flat Roof Inspect And Clean",
     "Irrigation System Startup Or Shutdown": "Irrigation Start Or Shutdown",
-    "Exterior Window Washing": "Window Washing",
-    "Christmas Lights Up And Down": "Christmas Lights",
+    "Exterior Window Washing": "Exterior Windows",
+    "Christmas Lights Up And Down": "Hang Christmas Lights",
     "Water Leak Sensor Setup": "Leak Sensor Setup",
     "Generator Annual Service": "Generator Service",
     "Extra Flat Roof Cleaning": "Extra Flat Roof Clean",
