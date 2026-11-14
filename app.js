@@ -1059,7 +1059,7 @@
       o.addEventListener("click", function () { go(o.getAttribute("data-dot") != null ? +o.getAttribute("data-dot") : j); });
     });
     if (sc.tabIndex < 0) sc.tabIndex = 0;
-    if (!sc.getAttribute("aria-label")) sc.setAttribute("aria-label", sc.closest("#hs-faq") ? "FAQ questions" : "Tailor Your Plan groups");
+    if (!sc.getAttribute("aria-label")) sc.setAttribute("aria-label", sc.closest("#hs-faq") ? "FAQ sections" : "Tailor Your Plan groups");
     sc.addEventListener("keydown", function (e) {
       if (e.altKey || e.metaKey || e.ctrlKey) return;
       if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
@@ -1091,6 +1091,40 @@
     bindPeekSwipe(sc, ".faq-card", [], function (best, i, cs) {
       if (lab && best) lab.textContent = best.getAttribute("data-faq-topic") || "";
       if (pos) pos.textContent = (i + 1) + " / " + cs.length;
+    });
+    sc.setAttribute("aria-label", "FAQ sections");
+    function closeItem(item) {
+      var btn = item.querySelector(".faq-item-q"), pnl = item.querySelector(".faq-item-a");
+      if (!btn || !pnl || pnl.hidden) return;
+      btn.setAttribute("aria-expanded", "false");
+      item.classList.remove("is-open");
+      if (pnl._an) { pnl._an.cancel(); pnl._an = null; pnl.style.overflow = ""; }
+      saAnim(pnl, false);
+    }
+    function openItem(item) {
+      var btn = item.querySelector(".faq-item-q"), pnl = item.querySelector(".faq-item-a");
+      if (!btn || !pnl) return;
+      root.querySelectorAll("#hs-faq .faq-item.is-open").forEach(function (o) { if (o !== item) closeItem(o); });
+      if (!pnl.hidden) return;
+      if (pnl._an) { pnl._an.cancel(); pnl._an = null; pnl.style.overflow = ""; }
+      pnl.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      item.classList.add("is-open");
+      saAnim(pnl, true);
+      var body = item.closest(".faq-card-body");
+      if (body) item.scrollIntoView({ block: "nearest", behavior: saReduced() ? "auto" : "smooth" });
+    }
+    sc.addEventListener("click", function (e) {
+      var btn = e.target.closest(".faq-item-q"); if (!btn || !sc.contains(btn)) return;
+      var item = btn.closest(".faq-item"); if (!item) return;
+      if (btn.getAttribute("aria-expanded") === "true") closeItem(item); else openItem(item);
+    });
+    sc.addEventListener("keydown", function (e) {
+      if (e.target === sc) return;
+      if (e.altKey || e.metaKey || e.ctrlKey) return;
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
+      e.preventDefault();
+      sc.dispatchEvent(new KeyboardEvent("keydown", { key: e.key, bubbles: false, cancelable: true }));
     });
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
@@ -1600,9 +1634,9 @@
     "what-happens-during-an-ac-tune-up": "What Happens During An AC Tune-Up?",
     "should-i-be-concerned-with-air-quality": "Should I Be Concerned With Air Quality?"
   };
-  /* Home FAQ carousel (Machan Nov 14 9:13 AM): one card per question. Home section only; /faq/ is unchanged. */
+  /* Home FAQ carousel (Machan Nov 14 10:17 AM): one card per section, questions expand in place. Home section only; /faq/ is unchanged. */
   function faqCarouselHtml() {
-    var bySlug = {}, cards = [], used = {};
+    var bySlug = {}, used = {};
     var topicIco = {};
     HOME_FAQ_SECTIONS.forEach(function (sec) { topicIco[sec.topic] = sec.ico; });
     FAQ_ALL.forEach(function (g, gi) {
@@ -1614,30 +1648,47 @@
       var r = HOME_FAQ_REUSED[slug];
       if (!bySlug[slug]) bySlug[slug] = { topic: "", ico: "tag", q: HOME_FAQ_TITLES[slug] || r.q, a: HOME_FAQ_SHORT[slug] || r.a, slug: slug, emerg: false };
     });
-    function add(slug, topic) {
-      var c = bySlug[slug]; if (!c || used[slug]) return; used[slug] = 1;
+    function take(slug, topic) {
+      var c = bySlug[slug]; if (!c || used[slug]) return null; used[slug] = 1;
       if (topic) c = Object.assign({}, c, { topic: topic, ico: topicIco[topic] || c.ico });
-      cards.push(c);
+      return c;
+    }
+    var sections = [];
+    function pushSec(topic, ico, items) {
+      var qs = items.filter(Boolean);
+      if (!qs.length) return;
+      sections.push({ topic: topic, ico: ico, items: qs });
     }
     HOME_FAQ_SECTIONS.forEach(function (sec) {
+      var items = [];
       sec.items.forEach(function (item) {
         if (!item.live || HOME_FAQ_PENDING[item.slug]) return;
-        add(item.slug, sec.topic);
+        var c = take(item.slug, sec.topic); if (c) items.push(c);
       });
       FAQ_ALL.forEach(function (g) {
-        if (g[0] === sec.sourceGroup) (g[1] || []).forEach(function (q) { add(q[2], sec.topic); });
+        if (g[0] === sec.sourceGroup) (g[1] || []).forEach(function (q) {
+          var c = take(q[2], sec.topic); if (c) items.push(c);
+        });
       });
+      pushSec(sec.topic, sec.ico, items);
     });
-    FAQ_ALL.forEach(function (g) {
+    FAQ_ALL.forEach(function (g, gi) {
       var pinned = HOME_FAQ_SECTIONS.some(function (sec) { return sec.sourceGroup === g[0]; });
-      if (!pinned) (g[1] || []).forEach(function (q) { add(q[2]); });
+      if (pinned) return;
+      var items = [];
+      (g[1] || []).forEach(function (q) { var c = take(q[2]); if (c) items.push(c); });
+      pushSec(g[0], FAQ_ICONS[gi] || "tag", items);
     });
     return '<div class="faq-car">' +
-      '<div class="faq-car-scroll" data-ptr-ignore>' + cards.map(function (c, i) {
-        return '<article class="faq-card' + (c.emerg ? " is-emerg" : "") + '" data-faq-i="' + i + '" data-faq-topic="' + esc(c.topic) + '" data-faq-slug="' + esc(c.slug) + '">' +
-          '<p class="faq-card-topic"><span class="faq-ico" aria-hidden="true">' + I(c.ico, "sm") + '</span>' + esc(c.topic) + '</p>' +
-          '<h3 class="faq-card-q">' + esc(c.q) + '</h3>' +
-          '<div class="faq-card-a">' + c.a + '</div></article>';
+      '<div class="faq-car-scroll" data-ptr-ignore>' + sections.map(function (sec, i) {
+        return '<article class="faq-card" data-faq-i="' + i + '" data-faq-topic="' + esc(sec.topic) + '">' +
+          '<h3 class="faq-card-topic"><span class="faq-ico" aria-hidden="true">' + I(sec.ico, "sm") + '</span>' + esc(sec.topic) + '</h3>' +
+          '<div class="faq-card-body">' + sec.items.map(function (c, j) {
+            var id = "hfq-" + i + "-" + j;
+            return '<div class="faq-item' + (c.emerg ? " is-emerg" : "") + '" data-faq-slug="' + esc(c.slug) + '">' +
+              '<button type="button" class="faq-item-q" id="' + id + '-q" aria-expanded="false" aria-controls="' + id + '-a">' + esc(c.q) + '</button>' +
+              '<div class="faq-item-a" id="' + id + '-a" role="region" aria-labelledby="' + id + '-q" hidden>' + c.a + '</div></div>';
+          }).join("") + '</div></article>';
       }).join("") + '</div>' +
       '<div class="faq-car-nav"><p class="faq-car-lab" aria-live="polite"></p><p class="faq-car-pos" aria-hidden="true"></p></div></div>';
   }

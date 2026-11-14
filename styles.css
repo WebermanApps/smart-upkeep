@@ -3026,7 +3026,7 @@ body.on-home .faq-car-scroll{
   overscroll-behavior-x:contain;
   touch-action:pan-x pan-y;
 }
-body.on-home .faq-car-scroll{align-items:flex-start}
+body.on-home .faq-car-scroll{align-items:stretch}
 body.on-home .alc-car-scroll::-webkit-scrollbar,
 body.on-home .faq-car-scroll::-webkit-scrollbar{display:none}
 body.on-home .alc-car-scroll:focus,
@@ -3141,51 +3141,90 @@ body.on-home .faq-car-pos{
 
 body.on-home .faq-card{
   background:#FFF8EE;
-  padding:16px 16px 14px;
-  align-self:flex-start;
+  padding:14px 14px 10px;
+  align-self:stretch;
   height:auto;
   max-height:100%;
 }
 body.on-home .faq-card-topic{
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:8px;
   margin:0 0 8px;
-  font:600 13px/1.2 Hind,var(--mw-font-body),sans-serif;
-  color:#A8431F;
-}
-body.on-home .faq-card-topic .faq-ico,
-body.on-home .faq-card-topic .su-ico{width:16px;height:16px;flex:none;color:#A8431F}
-body.on-home .faq-card-q{
-  margin:0 0 10px;
-  font:600 22px/1.15 Khand,var(--mw-font-heading),sans-serif;
+  padding:0 0 8px;
+  border-bottom:1px solid #ECE5DA;
+  font:600 20px/1.15 Khand,var(--mw-font-heading),sans-serif;
   color:#1A1A1A;
   letter-spacing:0;
-  text-transform:none;
+  flex:none;
 }
-body.on-home .faq-card-a{
+body.on-home .faq-card-topic .faq-ico,
+body.on-home .faq-card-topic .su-ico{width:18px;height:18px;flex:none;color:#A8431F}
+body.on-home .faq-card-body{
   flex:1 1 auto;
   min-height:0;
+  overflow-x:hidden;
   overflow-y:auto;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
+}
+body.on-home .faq-item + .faq-item{border-top:1px solid #ECE5DA}
+body.on-home .faq-item.is-open{background:#F7EBE5;margin:0 -6px;padding:0 6px;border-radius:8px}
+body.on-home .faq-item-q{
+  display:flex;
+  align-items:center;
+  width:100%;
+  min-height:44px;
+  margin:0;
+  padding:8px 0;
+  gap:10px;
+  border:0;
+  background:none;
+  box-shadow:none;
+  border-radius:0;
+  text-align:left;
+  cursor:pointer;
+  font:600 15px/1.3 Hind,var(--mw-font-body),sans-serif;
+  color:#3a352e;
+  -webkit-tap-highlight-color:transparent;
+}
+body.on-home .faq-item-q::after{
+  content:"";
+  flex:none;
+  margin-left:auto;
+  width:8px;
+  height:8px;
+  box-sizing:border-box;
+  border-right:2px solid #6B6B6B;
+  border-bottom:2px solid #6B6B6B;
+  transform:rotate(45deg);
+  transform-origin:center;
+  transition:transform 200ms ease;
+}
+body.on-home .faq-item-q[aria-expanded="true"]::after{transform:rotate(225deg)}
+@media (prefers-reduced-motion:reduce){body.on-home .faq-item-q::after{transition:none}}
+body.on-home .faq-item-a,
+body.on-home .faq-card-a{
+  padding:0 0 10px;
   font:400 15px/1.45 Hind,var(--mw-font-body),sans-serif;
   color:#4A433D;
 }
+body.on-home .faq-item-a p,
 body.on-home .faq-card-a p{margin:0 0 8px}
+body.on-home .faq-item-a p:last-child,
 body.on-home .faq-card-a p:last-child{margin-bottom:0}
+body.on-home .faq-item-a ul,
+body.on-home .faq-item-a ol,
 body.on-home .faq-card-a ul,
 body.on-home .faq-card-a ol{margin:0 0 8px;padding-left:18px}
+body.on-home .faq-item-a li,
 body.on-home .faq-card-a li{margin:3px 0}
+body.on-home .faq-item-a .fq-note,
 body.on-home .faq-card-a .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-body),sans-serif;color:#6b6b6b}
-body.on-home .faq-card.is-emerg{
-  border-color:#E8C8BA;
-  box-shadow:inset 3px 0 0 #A8431F,var(--su-sh-card,var(--su-sh-2));
-}
-body.on-home .faq-card.is-emerg .faq-card-q{color:#A8431F}
+body.on-home .faq-item.is-emerg .faq-item-q{color:#A8431F}
 @media (max-height:700px){
-  body.on-home .faq-card-q{font-size:20px}
-  body.on-home .faq-card{padding:12px 14px 12px}
+  body.on-home .faq-card-topic{font-size:18px}
+  body.on-home .faq-card{padding:12px 12px 8px}
   body.on-home .alc-card .alc-ghd{margin:8px 10px 6px;min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -3285,7 +3324,7 @@ html body.on-home #hs-faq.hs-sec{
   box-sizing:border-box!important;
   background:#FCF9F4!important;
 }
-html body.on-home .faq-card{align-self:flex-start!important}
+html body.on-home .faq-card{align-self:stretch!important;height:auto!important;max-height:100%!important}
 /* Leftover room goes into the Plans tiles, not into empty bands above/below them. */
 html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;min-height:0!important}
 html body.on-home #hs-plans .hm-scroll{flex:1 1 auto!important;align-items:stretch!important}
