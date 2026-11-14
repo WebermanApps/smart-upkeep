@@ -4070,3 +4070,113 @@ html body.on-home .alc-card[data-alc-g="3"] .sa-q .sa-n small,
 html body.on-home .alc-card[data-alc-g="5"] .sa-q .sa-n small{
   background:#F3E6DF;
 }
+
+/* ===== Polish Ideas 1115 (agreed Develop + Swatch, Nov 14 2026) ===== */
+:root{
+  --su-focus:#1A1A1A;
+  --ease-ui:250ms cubic-bezier(.2,.7,.2,1);
+}
+/* Reserve Khand's condensed width before the webfont swaps in (desktop Home CLS).
+   At 1280 the text column is ~471px. Fallback sans is ~573px for the eyebrow and wraps;
+   Khand is ~448px and stays on one line. size-adjust 78% matches that width (448/573).
+   local() lists common system sans, including DejaVu on Linux QA boxes (Arial is often missing). */
+@font-face{
+  font-family:"Khand Fallback";
+  src:local("Arial"),local("Helvetica Neue"),local("Helvetica"),local("Liberation Sans"),local("DejaVu Sans"),local("Nimbus Sans L");
+  size-adjust:78.2%;
+  ascent-override:95%;
+  descent-override:20%;
+  line-gap-override:0%;
+}
+body.on-home .hm-hero .hm-eb-t,
+body.on-home .hm-hero h1{
+  font-family:Khand,"Khand Fallback",var(--mw-font-heading),sans-serif!important;
+}
+@media (min-width:900px){
+  body.on-home .hm-hero .hm-eb-t{
+    min-height:calc(1.05 * clamp(34px,3.1vw,44px));
+    white-space:nowrap;
+  }
+  body.on-home .hm-hero h1{
+    min-height:calc(1.1 * clamp(24px,2.1vw,30px));
+    white-space:nowrap;
+  }
+  /* Don't stretch the badge row to the leftover grid track — that made .hm-hcw grow from
+     ~141px to ~183px when the chips went from 0 to 40px after fonts. */
+  body.on-home .hm-hero .hm-hcw{
+    min-height:40px!important;
+    height:auto!important;
+    align-self:start!important;
+  }
+  body.on-home .hm-hero .hm-hchips{min-height:40px!important;display:block!important}
+  html body.on-home .hm-hero{
+    grid-template-rows:42px 38px 32px minmax(40px,1fr)!important;
+  }
+}
+
+/* Focus-visible ink rings only (no ring on touch). 2px / 2px offset so overflow:hidden tiles do not clip a thicker ring. */
+html body :is(a,button,input,select,textarea,summary,[role="button"],[tabindex]:not([tabindex="-1"])):focus{outline:none}
+html body :is(a,button,input,select,textarea,summary,[role="button"],[tabindex]:not([tabindex="-1"])):focus-visible{
+  outline:2px solid #1A1A1A;
+  outline-offset:2px;
+}
+
+/* Press: scale .98 over 120ms; none under reduced motion. Skip Plans lit/expand (those use transform for layout). */
+@media (prefers-reduced-motion:no-preference){
+  .mw-hover:active{transform:scale(.98);transition:transform 120ms ease}
+}
+@media (prefers-reduced-motion:reduce){
+  .mw-hover:active{transform:none}
+}
+body.on-home .hm-plan.pc:active,
+body.on-home .hm-plan.pc-exp:active,
+body.on-home .hm-plan.pc.sel:active,
+html body.on-home .hm-dock button[data-hm-tab]:active{
+  transform:none;
+}
+
+/* Shared motion token: badge popover, intro-video blur close. */
+.hm-hc-info-card,
+.hm-hc-info.open .hm-hc-info-card{transition:opacity var(--ease-ui),transform var(--ease-ui)}
+#videoModal::before,
+#videoModal .modal-inner{transition:opacity var(--ease-ui),backdrop-filter var(--ease-ui),-webkit-backdrop-filter var(--ease-ui)}
+@media (prefers-reduced-motion:reduce){
+  .hm-hc-info-card,
+  .hm-hc-info.open .hm-hc-info-card,
+  #videoModal::before,
+  #videoModal .modal-inner{transition:opacity 160ms ease;transform:none!important}
+}
+
+/* N3: on short phones keep the Tailor up-arrow in flow so its 44px hit does not overlap the subtitle or the first card. */
+@media (max-width:430px) and (max-height:700px){
+  html body.on-home #hs-alc .hs-arrow-up{
+    margin:0 auto 0!important;
+    position:relative;
+    z-index:2;
+  }
+}
+
+/* Home dock already includes safe-area padding; restate it here so a later rule cannot drop it. */
+html body.on-home .hm-tabs.hm-dock,
+html body.on-home.hs-bar-off .hm-tabs.hm-dock{
+  padding:8px var(--su-edge) calc(4px + env(safe-area-inset-bottom,0px))!important;
+}
+
+/* Waitlist inputs: 16px font, at least 44px tall, with autocomplete set in markup. */
+.hm-wait-f input{font-size:16px;min-height:44px}
+
+/* 44px hit for the plan expand "See More" toggle. The visible link stays a 24px text line. */
+body.on-home .hm-plan .pc-more-link{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+}
+body.on-home .hm-plan .pc-more-link::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:max(100%,44px);
+  height:44px;
+  transform:translate(-50%,-50%);
+}

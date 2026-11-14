@@ -561,8 +561,8 @@
     obTxLock = true;
     window.scrollTo(0, 0);
     var reduce = obReducedMot();
-    var ms = reduce ? 200 : 320;
-    var ease = reduce ? "ease" : "cubic-bezier(0.22, 1, 0.36, 1)";
+    var ms = reduce ? 200 : 250;
+    var ease = reduce ? "ease" : "cubic-bezier(.2,.7,.2,1)"; /* --ease-ui */
     var dx = reduce ? 0 : (24 * dir);
     var oldProg = oldSec.querySelector(".qf-prog");
     var newProg = neu.querySelector(".qf-prog");
@@ -3200,6 +3200,8 @@
       panel.hidden = false; panel.classList.remove("open");
       place();
       c.classList.add("hc-open"); void panel.offsetWidth; panel.classList.add("open");
+      var xOpen = panel.querySelector("[data-hc-x]");
+      if (xOpen) xOpen.focus({ preventScroll: true });
     }
     function hit(e) {
       var b = e.target.closest && e.target.closest(".hm-hchip"); if (b && c.contains(b)) return b;
@@ -3209,7 +3211,7 @@
     c.addEventListener("click", function (e) {
       if (performance.now() - (c._dragEnd || 0) < 350) return; /* a swipe is not a tap */
       var b = hit(e); if (!b) return;
-      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(false); else open(lbl, b);
+      var lbl = b.getAttribute("data-hc-info"); if (cur === lbl) close(true); else open(lbl, b);
     });
     if (scrim) scrim.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); close(false); });
     panel.addEventListener("click", function (e) { if (e.target === panel) { e.preventDefault(); e.stopPropagation(); close(false); } });
@@ -3327,7 +3329,7 @@
         if (on) o.setAttribute("aria-current", "page");
         else o.removeAttribute("aria-current");
       });
-      placeInd(id, !!locked && !root.querySelector(".hm-tab-ind").dataset.ready);
+      placeInd(id, !!locked); /* instant after scrollTo(0)/locked jumps, not only on first paint */
     }
     window.suMarkTab = markTab;
     root.querySelectorAll("[data-hm-tab]").forEach(function (b) { b.addEventListener("click", function () {
@@ -3828,7 +3830,7 @@
        the fields stay in the page (hidden) so Next reads the same values. Typing keeps the fields; leaving them with a good address snaps the card in. */
     var card = addrOk() && inArea(a.zipcode) && !out && !obAddrEdit;
     var body = '<div class="ob-home-form' + (card ? ' pb-carded' : '') + '">' + '<div class="pb-addr-card" role="group" aria-label="Your Address"><span class="pb-addr-t"><b id="pbAddrS">' + esc(String(a.street || "").trim()) + '</b><span id="pbAddrZ">ZIP ' + esc(a.zipcode || "") + '</span></span><button type="button" class="pb-addr-edit mw-hover" data-pb-addr-edit="1" aria-label="Edit Address">Edit</button></div>' +
-      '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
+      '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="street-address" inputmode="text" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
       '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
       '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") + '</div>';
@@ -3851,7 +3853,7 @@
   }
   function waitlistCard(z) {
     return '<section class="hm-wait qt-wait ob-wait" id="row-waitlist"><div class="card hm-wait-card"><h3>Coming Soon</h3><p class="small muted">We don\'t serve ZIP ' + esc(z) + ' yet. Join the waitlist and we\'ll email you when we\'re coming to your area. While founding spots last, founding members get 2 years for the price of 1.</p>' +
-      '<form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join The Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
+      '<form class="hm-wait-f" data-wait><input type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" placeholder="ZIP" aria-label="ZIP code" value="' + esc(z) + '"><input type="email" inputmode="email" autocomplete="email" placeholder="Email" aria-label="Email"><button class="btn btn-outline mw-hover" type="submit">Join The Waitlist</button></form><p class="small hm-wait-msg" aria-live="polite"></p></div></section>';
   }
 
   /* -/+ stepper. Deck card 1: A inline pill, B big circles (CSS only, see onboarding.css .ob-stepper-a / .ob-stepper-b). */
@@ -4087,7 +4089,7 @@
   function obDetails() {
     var su = S.signup || {}, a = S.answers, hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
-    function fld(id, lab, type, ac, ph, v) { return '<label class="fl" for="' + id + '">' + lab + '</label>' + fe(id) + '<input id="' + id + '" type="' + type + '" autocomplete="' + ac + '"' + (ph ? ' placeholder="' + ph + '"' : '') + (DETAIL_HINTS[id] ? ' aria-describedby="h-' + id + '"' : '') + ' value="' + esc(v || "") + '">' + (DETAIL_HINTS[id] ? '<p class="det-hint" id="h-' + id + '">' + DETAIL_HINTS[id] + '</p>' : ''); }
+    function fld(id, lab, type, ac, ph, v) { var mode = type === "tel" ? ' inputmode="tel"' : type === "email" ? ' inputmode="email"' : ""; return '<label class="fl" for="' + id + '">' + lab + '</label>' + fe(id) + '<input id="' + id + '" type="' + type + '" autocomplete="' + ac + '"' + mode + (ph ? ' placeholder="' + ph + '"' : '') + (DETAIL_HINTS[id] ? ' aria-describedby="h-' + id + '"' : '') + ' value="' + esc(v || "") + '">' + (DETAIL_HINTS[id] ? '<p class="det-hint" id="h-' + id + '">' + DETAIL_HINTS[id] + '</p>' : ''); }
     var body = '<form id="obDF" novalidate class="ob-details-form"><div class="card det-card">' +
       '<div class="det-addr"><span class="det-addr-k">Service Address</span><b>' + esc((a.street || "") + ", " + (a.zipcode || "")) + '</b><button type="button" class="link mw-hover" data-ob-go="address">Edit</button></div>' +
       fld("sName", "Full Name", "text", "name", "", su.name) +
@@ -4199,23 +4201,40 @@
   function bindF2Pop() {
     var bt = app.querySelector("[data-f2-open]"), pop = document.getElementById("f2Pop"); if (!bt || !pop) return;
     var caret = pop.querySelector(".f2-pop-caret");
+    var ro = null;
     function place() { placeBadgePopover(pop, bt, caret); }
+    function follow() {
+      if (pop.hidden || pop.classList.contains("closing")) return;
+      place();
+      requestAnimationFrame(function () { if (!pop.hidden && !pop.classList.contains("closing")) place(); });
+    }
     function onMove() {
       if (pop.hidden || pop.classList.contains("closing")) return;
       var r = bt.getBoundingClientRect(), vh = innerHeight;
       if (r.bottom < 8 || r.top > vh - 8) shut(false);
-      else place();
+      else follow();
     }
-    function shut(back) { if (pop.hidden || pop.classList.contains("closing")) return; pop.classList.remove("on"); pop.classList.add("closing"); bt.setAttribute("aria-expanded", "false"); document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", esc, true); window.removeEventListener("resize", onMove); window.removeEventListener("scroll", onMove, true);
+    function stopFollow() {
+      document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", esc, true); window.removeEventListener("resize", onMove); window.removeEventListener("scroll", onMove, true);
+      if (ro) { try { ro.disconnect(); } catch (e) {} ro = null; }
+    }
+    function shut(back) { if (pop.hidden || pop.classList.contains("closing")) return; pop.classList.remove("on"); pop.classList.add("closing"); bt.setAttribute("aria-expanded", "false"); stopFollow();
       setTimeout(function () { pop.hidden = true; pop.classList.remove("closing"); }, 160); if (back) bt.focus({ preventScroll: true }); }
     function outside(e) { if (pop.contains(e.target)) return; if (e.target === bt || bt.contains(e.target)) return; e.preventDefault(); e.stopPropagation(); shut(false);
       var swallow = function (ev) { ev.preventDefault(); ev.stopPropagation(); document.removeEventListener("click", swallow, true); }; document.addEventListener("click", swallow, true); setTimeout(function () { document.removeEventListener("click", swallow, true); }, 500); }
     function esc(e) { if (e.key === "Escape") { e.preventDefault(); shut(true); } }
     bt.addEventListener("click", function (e) { e.stopPropagation(); if (!pop.hidden && !pop.classList.contains("closing")) { shut(true); return; }
       closeOpenBadgePops("f2");
-      pop.hidden = false; place(); void pop.offsetWidth; pop.classList.add("on"); bt.setAttribute("aria-expanded", "true"); pop.focus({ preventScroll: true });
+      pop.hidden = false; follow(); void pop.offsetWidth; pop.classList.add("on"); bt.setAttribute("aria-expanded", "true");
+      var xOpen = pop.querySelector("[data-f2-x]"); if (xOpen) xOpen.focus({ preventScroll: true }); else pop.focus({ preventScroll: true });
       document.addEventListener("pointerdown", outside, true); document.addEventListener("keydown", esc, true);
-      window.addEventListener("resize", onMove); window.addEventListener("scroll", onMove, true); });
+      window.addEventListener("resize", onMove); window.addEventListener("scroll", onMove, true);
+      if (window.ResizeObserver) {
+        ro = new ResizeObserver(follow);
+        var step = app.querySelector("section.ob") || app;
+        try { ro.observe(step); if (document.body) ro.observe(document.body); } catch (err) {}
+      }
+    });
     var xBtn = pop.querySelector("[data-f2-x]");
     if (xBtn) xBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); shut(true); });
     pop.addEventListener("su-close-badge", function () { shut(false); });
@@ -4622,8 +4641,8 @@
       '<form id="acF" novalidate class="stack">' +
       '<div class="card"><h3>Booking Request</h3>' +
       '<label class="fl" for="acName">Full Name</label><input id="acName" type="text" autocomplete="name" value="' + esc(bk.name || "") + '">' +
-      '<div class="grid2"><div><label class="fl" for="acPhone">Phone</label><input id="acPhone" type="tel" autocomplete="tel" value="' + esc(bk.phone || "") + '"></div>' +
-      '<div><label class="fl" for="acEmail">Email</label><input id="acEmail" type="email" autocomplete="email" value="' + esc(bk.email || "") + '"></div></div>' +
+      '<div class="grid2"><div><label class="fl" for="acPhone">Phone</label><input id="acPhone" type="tel" inputmode="tel" autocomplete="tel" value="' + esc(bk.phone || "") + '"></div>' +
+      '<div><label class="fl" for="acEmail">Email</label><input id="acEmail" type="email" inputmode="email" autocomplete="email" value="' + esc(bk.email || "") + '"></div></div>' +
       '<label class="fl" for="acDates">Preferred Dates</label><textarea id="acDates" rows="3" placeholder="e.g. Week of Oct 20, or any Tuesday morning">' + esc(bk.dates || "") + '</textarea>' +
       '<label class="fl" for="acNotes">Notes (Optional)</label><textarea id="acNotes" rows="2" placeholder="Gate code, pets, access notes…">' + esc(bk.notes || "") + '</textarea></div>' +
       '<div class="err" id="acErr" role="alert"></div>' +
@@ -5012,7 +5031,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s3"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p1"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {

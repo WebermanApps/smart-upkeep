@@ -1560,3 +1560,78 @@ html body.on-ob .ob.qf.ob-plan .plan-stack{width:100%;max-width:100%;box-sizing:
 html body.on-ob .ob.qf.ob-plan .plan-card .plan-base{color:#5C534C} /* 4.5:1+ on the #F9F5EF swipe cards */
 html body.on-ob .ob.qf.ob-plan .plan-card .plan-price small{color:#5C534C} /* Swatch #148 r1 F7: /mo at 4.5:1+ on the #F9F5EF card */
 html body.on-ob section.ob.qf{width:min(calc(100vw - 32px),420px);box-sizing:border-box} /* Swatch #147 r2: every step keeps a definite width so the Your Home strip has room (no 24-44px address chip) */
+
+/* ===== Polish Ideas 1115 (agreed Develop + Swatch, Nov 14 2026) ===== */
+/* Contrast: "Cancel Anytime, No Fee" was #C1502E on #F5EDDF (4.05:1 at 12px). Brand deep terracotta is 5.69:1. */
+html body.on-ob .ob-accept .su-cancel-line,
+html body.on-ob .ob-accept .su-cancel-line a,
+html body.on-ob .ob-accept .su-cancel-line .link{
+  color:#A8431F !important;
+}
+
+/* Inputs stay at least 16px / 44px tall, including tight fit cuts (must beat later 40/42px !important rules). */
+html body.on-ob .ob input[type=text],
+html body.on-ob .ob input[type=tel],
+html body.on-ob .ob input[type=email],
+html body.on-ob .ob textarea,
+html body.on-ob .ob.qf.ob-details .det-card input[type=text],
+html body.on-ob .ob.qf.ob-details .det-card input[type=tel],
+html body.on-ob .ob.qf.ob-details .det-card input[type=email],
+html body.on-ob .ob.qf.ob-address input[type=text],
+html body.on-ob .ob.qf.ob-address .ob-fields input{
+  font-size:16px !important;
+  min-height:44px !important;
+  height:44px !important;
+}
+
+/* 44px hit slops for controls whose layout size was cut to keep air (Tank/Tankless, Annual Option, Review Edit, calendar, Accept rows). Visual size stays; the pointer box is at least 44px. */
+html body.on-ob .ob .type-seg button,
+html body.on-ob .ob-review .bd-edit .link,
+html body.on-ob .ob .after-founding .af-open,
+html body.on-ob .ob .cal-d,
+html body.on-ob .ob .cal-nav,
+html body.on-ob .ob-accept .sfit-r,
+html body.on-ob .ob-accept .checkrow{
+  position:relative;
+}
+html body.on-ob .ob .type-seg button::before,
+html body.on-ob .ob-review .bd-edit .link::before,
+html body.on-ob .ob .after-founding .af-open::before,
+html body.on-ob .ob .cal-d::before,
+html body.on-ob .ob .cal-nav::before,
+html body.on-ob .ob-accept .sfit-r::before,
+html body.on-ob .ob-accept .checkrow::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:max(100%,44px);
+  height:44px;
+  transform:translate(-50%,-50%);
+  z-index:1;
+}
+
+/* Onboarding bar already includes safe-area padding; restate the winning #140 rule so it cannot be dropped. */
+html body.on-ob .ob .ob-bar,
+html.ob-hb-on body.on-ob .ob .ob-bar,
+html body.on-ob .ob-accept .ob-bar,
+html body.on-ob .ob-accept.sfit-accept .ob-bar,
+html.ob-hb-on .ob-accept .ob-bar{
+  padding:8px 16px calc(4px + env(safe-area-inset-bottom,0px)) !important;
+}
+
+@media (prefers-reduced-motion:reduce){
+  body.on-ob .ob-pane,
+  body.on-ob .plan-card,
+  body.on-ob .f2-pop,
+  body.on-ob .qt,
+  body.on-ob .size-chip{
+    transition-property:opacity !important;
+    transform:none !important;
+  }
+}
+
+/* Tight-fit Q/A cut: 44px details inputs are 2px taller than the previous 42px tight height,
+   which left Details 0.36px under the 8px air floor at 360x640. Reclaim 2px from the card's
+   top padding (cut order: Q/A sizing first). Did You Know is already hidden on this path. */
+html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-details .det-card{padding-top:6px!important}
