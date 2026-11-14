@@ -221,12 +221,21 @@
     }
     return max;
   }
+  /* #140 r2 (Swatch r1 item 5): the page's own Built by Machan footer sits under the step, so scrollHeight - innerHeight was 36 on every step and
+     every cut level was always applied. The real one-screen test is the step itself: the section (which holds the sticky bar) must end inside the viewport. */
+  function docOver() {
+    var sec = document.querySelector("section.ob");
+    if (!sec) { var se = document.scrollingElement || document.documentElement; return se.scrollHeight - window.innerHeight; }
+    return Math.ceil(sec.getBoundingClientRect().bottom + (window.scrollY || 0) - window.innerHeight - 0.5);
+  }
+  /* 9px, not 8: fit() and the QA air probe walk slightly different leaf sets, so keep 1px of margin over the 8px floor. */
+  var AIR = 9;
   function fitsNow(sec) {
-    var bar = sec.querySelector(".ob-bar"), ih = window.innerHeight, se = document.scrollingElement || document.documentElement;
+    var bar = sec.querySelector(".ob-bar"), ih = window.innerHeight;
     var ok = true; if (window.suHouseRefit) { try { ok = window.suHouseRefit() !== false; } catch (x) {} }
-    if (!ok || se.scrollHeight - ih > 0) return false;
+    if (!ok || docOver() > 0) return false;
     var bt = bar ? Math.min(ih, bar.getBoundingClientRect().top) : ih;
-    return bt - contentBottom(sec, bar) >= 8;
+    return bt - contentBottom(sec, bar) >= AIR;
   }
   function fit() {
     var html = document.documentElement, sec = document.querySelector("section.ob");
@@ -258,6 +267,6 @@
   window.addEventListener("resize", queue);
   window.addEventListener("resize", fitLater);
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fit(); }); } catch (x) {}
-  window.suHouse = { sync: sync, itemsOf: itemsOf, fit: fit };
+  window.suHouse = { sync: sync, itemsOf: itemsOf, fit: fit, docOver: docOver };
   if (window.suHouseState) sync(window.suHouseState());
 })();

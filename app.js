@@ -3657,8 +3657,9 @@
     var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
     /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps.
        Machan Nov 13 / Swatch: Start Over is a quiet link under Next, only when answers exist. */
-    /* Machan Nov 14: one row of four equal buttons — Back, Home, Start Over, Next. Home uses go("home") and keeps S.resume. */
-    return '<div class="ob-bar">' + backOnly() + homeBtn() + startOverBtn() + nx + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
+    /* Sign-Up Bar Deck (Machan Nov 14 9:20 PM ICT, "next over the tabs, opposite as Home Screen"): full-width Next on top, then Back / Home / Start Over tabs.
+       Next comes first in the markup too, so reading and tab order match what's on screen. Home uses go("home") and keeps S.resume. */
+    return '<div class="ob-bar">' + nx + backOnly() + homeBtn() + startOverBtn() + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
   }
   function nextBtn(label, ok) {
     var short = { "Next": "Next", "Skip For Now": "Skip", "Continue To Your Proposal": "Next", "Looks Good": "Next", "Continue To Payment": "Next", "Back To Your Plan": "Done" }[label] || "Next";
@@ -3685,10 +3686,10 @@
     var si = -1; if (hasSz) SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
     var st = hasSt ? String(a.stories) : "";
     var body = '<div class="ob-home-form ob-home-split">' +
-      '<div class="ob-qcard ob-size" id="obSizeCard" tabindex="-1"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
-      '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div><p class="ferr ob-qerr" id="obSizeErr" role="alert"></p></div>' +
-      '<div class="ob-qcard ob-stories" id="obStoriesCard" tabindex="-1"><div class="meta"><p class="k" id="obStoriesK">How Many Stories?</p></div>' +
-      '<div class="story-chips" role="radiogroup" aria-labelledby="obStoriesK">' + STORY_OPTS.map(function (o) { var on = st === o[0]; return '<button type="button" class="story-chip mw-hover' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-ob-story="' + o[0] + '" aria-label="' + o[1] + (o[2] ? ", " + o[2] : "") + '">' + o[1] + '</button>'; }).join("") + '</div><p class="ferr ob-qerr" id="obStoriesErr" role="alert"></p></div></div>';
+      '<div class="ob-qcard ob-size" id="obSizeCard" tabindex="-1"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p><p class="ferr ob-qerr" id="obSizeErr" role="alert"></p></div>' +
+      '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
+      '<div class="ob-qcard ob-stories" id="obStoriesCard" tabindex="-1"><div class="meta"><p class="k" id="obStoriesK">How Many Stories?</p><p class="ferr ob-qerr" id="obStoriesErr" role="alert"></p></div>' +
+      '<div class="story-chips" role="radiogroup" aria-labelledby="obStoriesK">' + STORY_OPTS.map(function (o) { var on = st === o[0]; return '<button type="button" class="story-chip mw-hover' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-ob-story="' + o[0] + '" aria-label="' + o[1] + (o[2] ? ", " + o[2] : "") + '">' + o[1] + '</button>'; }).join("") + '</div></div></div>'; /* #140 r2: the nudge sits on the card's title line, so a miss never adds height above the bar */
     return obShell("homesize", "", 0, "How Big Is Your Home?", "", body, nextBtn("Next", true)).replace('class="qf ob ob-homesize ', 'class="qf ob ob-address ob-homesize ');
   }
   function waitlistCard(z) {
@@ -4213,7 +4214,7 @@
     card.classList.add("sfit-hold");
     var pay = form.querySelector(".paybox"); if (pay) rows.appendChild(pay);
     form.insertBefore(rows, form.firstChild);
-    var join = form.querySelector('button[type="submit"]'); if (join) { join.setAttribute("form", "obF"); bar.insertBefore(join, built); }
+    var join = form.querySelector('button[type="submit"]'); if (join) { join.setAttribute("form", "obF"); bar.insertBefore(join, bar.firstChild); } /* Next-over-tabs bar: the CTA leads */
     var tail = document.createElement("div"); tail.className = "sfit-tail"; [q(".ob-soon"), q(".su-cancel-line")].forEach(function (n) { if (n) tail.appendChild(n); }); form.appendChild(tail);
     /* errors on submit open the first box that needs a fix */
     form.addEventListener("submit", function () { setTimeout(function () { var m = [["agree", "agree"], ["chargeOk", "charge"], ["agreeSig", "sig"]].filter(function (x) { var e = document.getElementById("e-" + x[0]); return e && e.textContent; })[0]; if (m) api.open(m[1]); }, 0); });
@@ -4230,7 +4231,7 @@
       /* Tailor Your Plan has no Did You Know (Machan Nov 14); the priced note may still sit under the list. Measure the lowest one shown so the list can use the freed height. */
       var low = 0; [dyk, list, sec.querySelector(".qf-body .priced-note")].forEach(function (e) { if (e && e.getClientRects().length) low = Math.max(low, e.getBoundingClientRect().bottom); });
       var over = Math.ceil(low + 8 - bar.getBoundingClientRect().top);
-      var docOver = document.documentElement.scrollHeight - window.innerHeight;
+      var docOver = (window.suHouse && window.suHouse.docOver) ? window.suHouse.docOver() : document.documentElement.scrollHeight - window.innerHeight; /* #140 r2: the 36px page footer under the bar isn't overflow */
       return Math.max(over, docOver);
     }
     var over = overflowPx();
@@ -4679,9 +4680,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9m4"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s0"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9p2"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s0"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
