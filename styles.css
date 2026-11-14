@@ -8,6 +8,7 @@
   --su-ease:cubic-bezier(.2,.8,.2,1);--su-ease-in:cubic-bezier(.4,0,1,1);--su-ease-sheet:cubic-bezier(.22,.8,.26,1);
   --su-mo-1:160ms;--su-mo-2:240ms;--su-mo-3:360ms;--su-mo-3x:280ms;
   --su-r-s:12px;--su-r-m:16px;--su-r-l:20px;
+  --su-muted:#6B635C;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -945,7 +946,7 @@ body.on-qf main{padding-bottom:0}
 @media (min-width:900px){.topbar .brand img{height:58px}}
 @media (max-width:600px){.hm-hero{grid-template-columns:50% 1fr}}
 @media (min-width:601px){.hm-hero{grid-template-columns:1.22fr 1fr}}
-.pc-offer{display:none;position:absolute;top:.55rem;right:.55rem;z-index:2;align-items:center;gap:.25rem;margin:0;min-height:28px;padding:.1rem .55rem;border:1px solid var(--mw-terracotta,#C1502E);border-radius:999px;background:#fff7f2;color:#C1502E;font-family:inherit;font-weight:700;font-size:.62rem;line-height:1;letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;cursor:pointer}
+.pc-offer{display:none;position:absolute;top:.55rem;right:.55rem;z-index:2;align-items:center;gap:.25rem;margin:0;min-height:28px;padding:.1rem .55rem;border:1px solid var(--mw-terracotta,#C1502E);border-radius:999px;background:#fff7f2;color:#A8431F;font-family:inherit;font-weight:700;font-size:.62rem;line-height:1;letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;cursor:pointer}
 .hm-plan.sel .pc-offer{display:inline-flex}
 .hm-offer-pop{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}.hm-offer-pop[hidden]{display:none}
 .hm-offer-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
@@ -1256,7 +1257,12 @@ body.on-home .hdr-van.moving .vb{animation:vanBob .3s ease-in-out infinite alter
   .hm-hero .hm-thumb{grid-column:2!important;grid-row:1/span 4!important;margin:0;align-self:center}
 }
 .hm-hero{background:#FBF6EE!important;border-color:#EADFCF!important;border-top-color:#C1502E!important}
-.hm-hero .hm-thumb{background:#FBF6EE url(video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+.hm-hero .hm-thumb{background-color:#FBF6EE;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+/* N1: do not put the 16x9 poster url on the shared rule — phones would fetch it
+   even after the 3x4 override. Desktop (min-width 481px) keeps the 16x9 poster. */
+@media (min-width:481px){
+  .hm-hero .hm-thumb{background:#FBF6EE url(video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2) center/cover no-repeat}
+}
 .hm-hero .hm-teaser{filter:saturate(1.15) contrast(1.06) sepia(.06);background:transparent}
 .hm-hero .start-at{border-color:#C1502E!important}
 /* Oct 16 2026 (e): waving tech on drive-off, bigger logo, more space between home sections */
@@ -1388,10 +1394,20 @@ body.on-home .hdr-van.vcross .tech{animation:techCross2 4.3s linear forwards}
 body.on-home .hdr-van.vcross .arm{animation:techWave .3s ease-in-out 2.5s infinite alternate}
 body.on-home .hdr-road.vcross{animation:roadCross2 4.3s ease-out forwards}
 @keyframes roadCross2{0%{opacity:.9;clip-path:inset(0 0 0 100%)}18.6%{opacity:.9;clip-path:inset(0 0 0 0)}77%{opacity:.8;clip-path:inset(0 0 0 0)}100%{opacity:0;clip-path:inset(0 0 0 0)}}
-/* Oct 17 2026 (f): while the home video pop-up is open, keep the sticky header (and van) above its backdrop; pop-up content starts below the header */
-body.on-home:has(#videoModal:not([hidden])) .topbar{z-index:101}
+/* Oct 17 2026 (f): pop-up content starts below the (now blurred) header */
 body.on-home #videoModal{padding-top:calc(72px + .75rem)}
 @media (min-width:900px){body.on-home #videoModal{padding-top:calc(80px + .75rem)}}
+/* Machan Nov 14 9:04 PM ICT: while the intro video is open, blur the page, header, footer and Get Started bar with a light cream veil. The video and its controls stay sharp on top. One backdrop layer (not a filter on every element). */
+#videoModal{z-index:260!important;background:transparent}
+#videoModal::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:auto;background:rgba(251,246,238,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;transition:opacity .25s ease,backdrop-filter .25s ease,-webkit-backdrop-filter .25s ease}
+#videoModal.is-open::before{opacity:1}
+#videoModal.is-closing::before{opacity:0;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}
+#videoModal .modal-inner{position:relative;z-index:1;opacity:0;transition:opacity .25s ease}
+#videoModal.is-open .modal-inner{opacity:1}
+#videoModal.is-closing .modal-inner{opacity:0}
+@media (prefers-reduced-motion:reduce){
+  #videoModal::before,#videoModal .modal-inner{transition:none}
+}
 /* Oct 17 2026 (g): trim double bottom space on home. The empty footer reserved ~8rem on top of main's padding for the fixed bars. */
 body.on-home .foot{display:none}
 @media (max-width:899px){body.on-home main{padding-bottom:calc(9.5rem + env(safe-area-inset-bottom))!important}}
@@ -1416,7 +1432,7 @@ body.on-home .topbar .share-msg{position:absolute;right:46px;top:50%;transform:t
   #videoModal .modal-actions .btn{min-height:44px;padding:.5rem .6rem;font-size:.78rem}
 }
 @media (min-width:601px){#videoModal .modal-inner{border-radius:14px;max-height:calc(100vh - 110px)}#videoModal video{max-height:min(60vh,calc(100vh - 300px))!important;border-radius:10px!important}}
-@media (max-width:600px){#videoModal .vp-btn{width:44px;height:44px}}
+#videoModal .vp-btn{width:44px;height:44px}
 @media (min-width:601px){#videoModal .modal-x{position:absolute!important;top:.6rem;right:.7rem;width:44px;height:44px;z-index:6;border-radius:50%!important;border:1px solid #d6d0c6!important;background:#fff;display:flex;align-items:center;justify-content:center;padding:0}#videoModal .vp-wrap{padding-top:52px}}
 #videoModal video{background:#fff!important}
 /* Oct 17 2026 (j): phone "Plans" cue under the hero (tap = smooth scroll to Plans), tighter hero bottom */
@@ -3284,43 +3300,40 @@ body.on-home .hs-arrow-up:focus-visible{opacity:1}
 @media (prefers-reduced-motion:reduce){body.on-home .hs-arrow-up{transition:none}}
 /* Plans keeps the collapsed margin so 7 items still fit. Tailor and FAQ have room, so don't pull cards up over the arrow. */
 body.on-home #hs-alc .hs-arrow-up,
-body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
+body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important;position:relative;left:auto;right:auto}
+body.on-home .hs-arrow-up{left:auto;right:auto}
 
 /* Machan Nov 14 7:17 PM ICT: the Plans up arrow sat on the Essentials tile. Keep it in the
    Plans header row so it never overlaps a tile, without taking vertical space from the 7-item fit.
    r3 (Swatch): the 44px tap was in flow and grew .hm-row-h from 23px to 44px, hiding Sump Pump
    Test at 360x640. Take the arrow out of flow; reserve its hit width so it cannot cover the title. */
+/* Machan Nov 14 8:38 PM ICT: "up arrow of sections to always be on center".
+   Stay out of the title-row flow so .hm-row-h stays 23.09px and Essentials still fits 7/7.
+   The arrow's containing block is #hs-plans (already position:relative), not the
+   23px title row, so the 52x44 hit sits 1px below the section top — in the ~47px
+   header-to-tile gap — horizontally centered. That keeps it off the tiles and off
+   the left-aligned Plans title. */
 body.on-home #hs-plans .hm-row-h{
   align-items:center;
-  padding-right:52px;
+  padding-right:0;
 }
-/* Out of flow against #hs-plans (already position:relative). A 44px hit centered
-   on the 23px title row overflowed the tiles by ~4px; the topbar-to-tile gap is
-   45px, so pin the hit 1px below the top of the section (just under the sticky bar). */
-body.on-home #hs-plans .hm-row-h .hs-arrow-up{
+body.on-home #hs-plans .hs-arrow-up{
   margin:0!important;
   position:absolute;
-  right:0;
+  left:50%;
   top:1px;
-  transform:none;
+  transform:translateX(-50%);
   z-index:2;
+  width:52px!important;
+  min-width:52px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
 }
 
-/* Machan Nov 14 7:18-7:19 PM ICT: unselected tiles get a real gray-out (grayscale + ~0.6 opacity)
-   once a plan is selected. The selected tile stays full color, including its top band.
-   Unselect (tap the selected tile again) removes the gray so all three are full color. */
-body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{
-  opacity:.6;
-  filter:grayscale(1);
-  transition:opacity .2s ease,filter .2s ease;
-}
-body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan.sel{
-  opacity:1;
-  filter:none;
-}
-@media (prefers-reduced-motion:reduce){
-  body.on-home #row-plans .hm-scroll.pc-has-sel .hm-plan{transition:none}
-}
+/* Machan Nov 14 8:38-8:40 PM ICT: the in-view tile is lit from --lit 0..1 (scroll-tied).
+   Dim stays the live gray (grayscale(1), opacity .6). Outline blends with --lit; no layout shift. */
+
 
 
 /* ===== r4 Swatch QA (Nov 14): CTA stacking, flush parks, Plans fill, FAQ full-bleed, 44px Plans down arrow ===== */
@@ -3440,7 +3453,7 @@ html body.on-home .alc-card .sa-q .sa-n small{
   display:block;
   margin-top:0;
   font:500 11px/1.2 Hind,var(--mw-font-body),sans-serif!important;
-  color:#8A8178!important;
+  color:var(--su-muted,#6B635C)!important;
   white-space:nowrap;
 }
 html body.on-home .alc-card .sa-q .sa-p{
@@ -3583,12 +3596,10 @@ body.on-home .faq-car-bar i{
 body.on-home .faq-car-bar i.is-done{background:#E0B8A8}
 body.on-home .faq-car-bar i.is-on{background:#C1502E}
 body.on-home .faq-car-pos{display:none!important}
-body.on-home .faq-card[data-faq-i="0"]{background:#FFFCF7}
-body.on-home .faq-card[data-faq-i="1"]{background:#F7EBE5}
-body.on-home .faq-card[data-faq-i="2"]{background:#EEF4F8}
-body.on-home .faq-card[data-faq-i="3"]{background:#FCF9F4}
-body.on-home .faq-card[data-faq-i="4"]{background:#F8F1EA}
-body.on-home .faq-card[data-faq-i="5"]{background:#F3E6DF}
+/* Machan Nov 14 8:41 PM ICT: FAQ keeps one light cream; distinct per-tile tints move to Tailor Your Plan. */
+body.on-home .faq-card,
+/* Machan Nov 14 8:41 PM ICT: FAQ keeps one shared light color; distinct tints move to Tailor. */
+body.on-home .faq-card[data-faq-i]{background:#FFFCF7}
 html.faq-sheet-open,html.faq-sheet-open body{overflow:hidden!important;overscroll-behavior:none}
 html.bbm-has-bar.faq-sheet-open:has(body.on-home),
 html.bbm-has-bar.faq-sheet-open body.on-home{overflow:hidden!important;overscroll-behavior:none}
@@ -3838,4 +3849,224 @@ html body.on-home .faq-card::before{
   html body.on-home #row-plans .hm-plan::before,
   html body.on-home .alc-card::before,
   html body.on-home .faq-card::before{animation:none}
+}
+
+
+/* ===== badge-pop-1114 (Machan Nov 14 8:37-8:41 PM ICT) ===== */
+
+/* Badge notes: anchored popover + close X (44px hit, smaller grey glyph). */
+.hm-hc-info-card,
+.f2-pop{
+  padding-right:48px!important;
+}
+.hm-hc-info-close,
+.f2-pop-x,
+.pc-exp-x{
+  position:absolute;
+  top:0;
+  right:0;
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#6B625A;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:3;
+  border-radius:0;
+  box-shadow:none;
+}
+.hm-hc-info-close .x-ico,
+.f2-pop-x .x-ico,
+.pc-exp-x .x-ico{width:16px;height:16px;stroke-width:1.8}
+.hm-hc-info-close:focus-visible,
+.f2-pop-x:focus-visible,
+.pc-exp-x:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.hm-hc-info-card{position:absolute}
+.f2-pop{position:fixed!important;z-index:90!important}
+.f2-pop .f2-pop-caret{position:absolute;width:12px;height:12px;background:inherit;border:inherit;transform:rotate(45deg);pointer-events:none}
+@media (prefers-reduced-motion:reduce){
+  .hm-hc-info-card,.f2-pop{transition:opacity 160ms ease!important;transform:none!important}
+}
+
+/* Plans lit + outline + expand. */
+html body.on-home #row-plans .hm-plan.pc,
+html body.on-home #row-plans .hm-plan.pc.sel{
+  --lit: 0;
+  position:relative;
+  overflow:visible;
+  opacity:calc(0.6 + 0.4 * var(--lit));
+  filter:grayscale(calc(1 - var(--lit)));
+  transform:none;
+  border-width:1px!important;
+  border-style:solid!important;
+  border-color:var(--mw-border,#E6E0D6)!important;
+  border-top-width:5px!important;
+  will-change:auto;
+}
+/* Top bands keep the live plan colors (live styles.css plan-color rules). */
+html body.on-home #row-plans .hm-plan.pc[data-tier="silver"]{border-top-color:#0B6E4F!important}
+html body.on-home #row-plans .hm-plan.pc[data-tier="gold"]{border-top-color:#A8431F!important}
+html body.on-home #row-plans .hm-plan.pc[data-tier="platinum"]{border-top-color:#05668D!important}
+html body.on-home #row-plans .hm-plan.pc::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  pointer-events:none;
+  z-index:2;
+  /* Live selected outline (lagoon #05668D 2px) + live lift shadow, faded by --lit. Not animating box-shadow itself. */
+  box-shadow:0 0 0 2px #05668D, 0 8px 22px rgba(0,0,0,.12);
+  opacity:var(--lit);
+}
+html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc{
+  transition:opacity 320ms ease-out, filter 320ms ease-out;
+}
+html body.on-home #row-plans .hm-scroll:not(.pc-lit-drag) .hm-plan.pc::after{
+  transition:opacity 320ms ease-out;
+}
+html body.on-home #row-plans .hm-scroll.pc-lit-drag .hm-plan.pc,
+html body.on-home #row-plans .hm-scroll.pc-lit-drag .hm-plan.pc::after{
+  transition:none;
+}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home #row-plans .hm-plan.pc{
+    transform:none!important;
+    transition:opacity 320ms ease, filter 320ms ease;
+  }
+  html body.on-home #row-plans .hm-plan.pc::after{
+    box-shadow:0 0 0 2px #05668D;
+    transition:opacity 320ms ease;
+  }
+}
+
+/* In-tile expand (Machan: "clicking it should expand it to see more"). */
+html body.on-home #row-plans .hm-plan .pc-exp-x{
+  display:none;
+  color:#6B625A;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-exp-x{display:inline-flex}
+/* Swatch r2 F4: keep the Welcome Offer pill clear of the 44px X on the expanded tile. */
+html body.on-home #row-plans .hm-plan.pc-exp .pc-offer{right:44px;padding:.1rem .45rem;letter-spacing:.02em}
+@media (max-width:374px){html body.on-home #row-plans .hm-plan.pc-exp .pc-offer{top:.3rem;min-height:24px;padding:0 .4rem;letter-spacing:0}} /* 360: keeps >=4px before the plan name and lifts the pill off the price */
+html body.on-home #row-plans .hm-plan .pc-full{
+  display:grid;
+  grid-template-rows:0fr;
+  min-height:0;
+  transition:grid-template-rows 320ms ease-out;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-full{grid-template-rows:1fr}
+html body.on-home #row-plans .hm-plan .pc-full-in{
+  overflow:hidden;
+  min-height:0;
+}
+html body.on-home #row-plans .hm-plan.pc-exp{
+  max-height:var(--pc-exp-max,100%);
+  z-index:3;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{
+  overflow:auto;
+  max-height:calc(var(--pc-exp-max, 100%) - 8px);
+  padding-bottom:8px;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-inc{display:none!important}
+html body.on-home #row-plans .hm-plan.pc-exp .pc-more{display:none!important}
+html body.on-home #row-plans .hm-plan .pc-full .pc-sum,
+html body.on-home #row-plans .hm-plan .pc-full .pc-sum-l{margin:0}
+html body.on-home #row-plans .hm-plan .pc-lg-row{margin:8px 0 0}
+@media (prefers-reduced-motion:reduce){
+  html body.on-home #row-plans .hm-plan .pc-full{transition:none}
+  html body.on-home #row-plans .hm-plan .pc-full-in{transition:opacity 320ms ease}
+  html body.on-home #row-plans .hm-plan:not(.pc-exp) .pc-full-in{opacity:0}
+  html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{opacity:1}
+}
+
+/* ===== Tailor Your Plan Polish Deck (Machan 8:57 PM ICT, receipt 2ae3ac08) =====
+   Tint B: tinted header + edge, list stays white. Hexes are the live FAQ card set.
+     0 Heating And Cooling  #F7EBE5 / edge #E8D0C6
+     1 Water And Plumbing   #EEF4F8 / edge #D3DEE6  (light lagoon wash, not green)
+     2 Roof And Outside     #F8F1EA / edge #E4D5C6
+     3 Inside The Home      #FCF9F4 / edge #E6E1D8
+     4 Seasonal Equipment   #F3E6DF / edge #E0C9BC
+     5 More Services        #FAF3EB / edge #E6E1D8  (warm leftover if that card appears)
+   Price B: terracotta #A8431F, still right-aligned (incl. Quote).
+   Open Row B: inset cream detail panel.
+   Add-On Tag B: soft tint chip, text #5C534C (live #8A8178 fails 4.5:1).
+   Row Mark A (Swatch): Name Only — no pip, row name font/size/color/left padding unchanged. */
+body.on-home .alc-card[data-alc-g="0"]{ --alc-tint:#F7EBE5; --alc-edge:#E8D0C6; }
+body.on-home .alc-card[data-alc-g="1"]{ --alc-tint:#EEF4F8; --alc-edge:#D3DEE6; }
+body.on-home .alc-card[data-alc-g="2"]{ --alc-tint:#F8F1EA; --alc-edge:#E4D5C6; }
+body.on-home .alc-card[data-alc-g="3"]{ --alc-tint:#FCF9F4; --alc-edge:#E6E1D8; }
+body.on-home .alc-card[data-alc-g="4"]{ --alc-tint:#F3E6DF; --alc-edge:#E0C9BC; }
+body.on-home .alc-card[data-alc-g="5"]{ --alc-tint:#FAF3EB; --alc-edge:#E6E1D8; }
+
+html body.on-home .alc-card{
+  background:#FFFCF7!important;
+  border:1.5px solid var(--alc-edge, #ECE5DA)!important;
+}
+html body.on-home .alc-card .alc-ghd{
+  background:var(--alc-tint, #FCF9F4)!important;
+  margin:0!important;
+  padding:12px 16px 10px!important;
+  border-top-left-radius:14px!important;
+  border-top-right-radius:14px!important;
+  border-bottom:2px solid #C1502E!important;
+}
+html body.on-home .alc-card .sa-list{
+  background:#fff!important;
+}
+@media (max-width:360px) and (max-height:640px){
+  html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
+}
+@media (max-width:430px) and (max-height:700px){
+  html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
+}
+
+html body.on-home .alc-card .sa-q .sa-p{
+  color:#A8431F!important;
+}
+html body.on-home .alc-card .sa-q .sa-p.is-quote{
+  color:#A8431F!important;
+}
+
+html body.on-home .alc-card .sa-a{
+  margin:0 0 8px;
+  padding:10px 12px 12px!important;
+  background:#FCF9F4;
+  border:1px solid #E6E1D8;
+  border-radius:10px;
+}
+html body.on-home .alc-card .sa-item:has(.sa-q[aria-expanded="true"]){
+  border-top-color:transparent!important;
+}
+html body.on-home .alc-card .sa-item:has(.sa-q[aria-expanded="true"]) + .sa-item{
+  border-top-color:transparent!important;
+}
+
+html body.on-home .alc-card .sa-q .sa-n small{
+  display:inline-block!important;
+  margin-top:0!important;
+  padding:0 6px;
+  line-height:1.2!important;
+  border-radius:999px;
+  background:#F3E6DF;
+  color:#5C534C!important;
+  font-weight:600!important;
+  white-space:nowrap;
+}
+html body.on-home .alc-card[data-alc-g="1"] .sa-q .sa-n small{
+  background:#E3EDF3;
+}
+html body.on-home .alc-card[data-alc-g="2"] .sa-q .sa-n small,
+html body.on-home .alc-card[data-alc-g="3"] .sa-q .sa-n small,
+html body.on-home .alc-card[data-alc-g="5"] .sa-q .sa-n small{
+  background:#F3E6DF;
 }
