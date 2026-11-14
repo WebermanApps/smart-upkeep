@@ -1636,6 +1636,22 @@
     ["Inside The Home", /bath fan|radon|appliance|doorbell/i],
     ["Seasonal Equipment", /generator|mower|snowblower/i]
   ];
+  /* Home Tailor list (Machan Nov 14 3:38 PM ICT): shorter Title Case names on the
+     collapsed row. Official catalog labels and all scope copy live in the expansion.
+     pricing-config.js is untouched. */
+  var HOME_ALC_SHORT = {
+    "Flat Roof Inspection And Clean": "Flat Roof Inspection",
+    "Irrigation System Startup Or Shutdown": "Irrigation Start Or Shutdown",
+    "Exterior Window Washing": "Window Washing",
+    "Christmas Lights Up And Down": "Christmas Lights",
+    "Water Leak Sensor Setup": "Leak Sensor Setup",
+    "Generator Annual Service": "Generator Service",
+    "Extra Flat Roof Cleaning": "Extra Flat Roof Clean",
+    "Bath Fans Clean And Check": "Bath Fan Clean And Check",
+    "Sump Pump Battery Backup": "Sump Battery Backup",
+    "Lawn Mower Winterizing": "Mower Winterizing"
+  };
+  function alcRowName(label) { return pcTitle(HOME_ALC_SHORT[label] || label); }
   function alcDetail(a, monthly, skipDesc) {
     var d = [];
     if (a.desc && !skipDesc) d.push('<p>' + esc(a.desc) + '</p>');
@@ -1660,7 +1676,9 @@
       '<div class="alc-car-scroll" data-ptr-ignore>' + groups.map(function (G, i) {
         var list = G[1].map(function (r) {
           var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.desc ? '<span class="sa-desc">' + esc(r.a.desc) + '</span>' : '') + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m, true));
+          var official = r.a.label, name = alcRowName(official);
+          var body = (name !== official ? '<p class="sa-full-name">' + esc(official) + '</p>' : '') + alcDetail(r.a, r.m, false);
+          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(name) + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', body);
         }).join("");
         return '<article class="alc-card" data-alc-g="' + i + '"><div class="alc-ghd"><span class="alc-gico" aria-hidden="true">' + alcIco(G[0], 28) + '</span><p>' + esc(G[0]) + '</p></div><div class="sa-list">' + list + '</div></article>';
       }).join("") + '</div>' +
