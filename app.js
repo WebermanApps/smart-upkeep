@@ -1134,10 +1134,16 @@
       });
       if (btn) btn.setAttribute("aria-expanded", "true");
     }
+    var lockY = 0;
+    function pinY() {
+      var y = lockY;
+      try { window.scrollTo({ top: y, left: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, y); }
+    }
     function closeSheet() {
       if (!wrap || wrap.hidden) return;
       wrap.hidden = true;
       document.documentElement.classList.remove("faq-sheet-open");
+      pinY();
       if (sheet) sheet.style.transform = "";
       setExpanded(null);
       var back = lastBtn; lastBtn = null;
@@ -1155,8 +1161,10 @@
       setExpanded(btn);
       placeSheet();
       sheet.style.transform = "";
+      lockY = window.scrollY || document.documentElement.scrollTop || 0;
       wrap.hidden = false;
       document.documentElement.classList.add("faq-sheet-open");
+      pinY();
       var x = wrap.querySelector(".faq-sheet-x");
       if (x) x.focus();
     }
@@ -1203,6 +1211,18 @@
         y0 = null;
       });
       window.addEventListener("resize", function () { if (!wrap.hidden) placeSheet(); });
+      function lockPageScroll(e) {
+        if (wrap.hidden) return;
+        var body = wrap.querySelector(".faq-sheet-body");
+        if (body && body.contains(e.target)) return;
+        e.preventDefault();
+      }
+      document.addEventListener("wheel", lockPageScroll, { passive: false, capture: true });
+      document.addEventListener("touchmove", lockPageScroll, { passive: false, capture: true });
+      window.addEventListener("scroll", function () {
+        if (wrap.hidden) return;
+        if (Math.abs((window.scrollY || 0) - lockY) > 0.5) pinY();
+      }, { passive: true });
     }
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
