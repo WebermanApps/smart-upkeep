@@ -1016,17 +1016,31 @@
     if (!sc) return;
     var PEEK = 22;
     function cards() { return [].slice.call(sc.querySelectorAll(cardSel)); }
+    /* Visible width only (never the content width). On desktop, cap cards to one Plans-tile width (3-col grid at >=700px). */
+    function viewW() {
+      var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      var w = sc.clientWidth, host = sc.parentElement;
+      if (host && host.clientWidth && w > host.clientWidth + 1) w = host.clientWidth;
+      if (w > vw + 1) w = vw;
+      return w;
+    }
+    function capW(view) {
+      if (view < 700) return 10000;
+      return Math.max(280, Math.floor((view - 32 - 22) / 3));
+    }
     function size() {
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
-      var w = (sc.clientWidth - padL - gap) / (1 + PEEK / 100);
-      sc.style.setProperty("--car-w", Math.max(200, Math.floor(w)) + "px");
+      var view = viewW();
+      var raw = (view - padL - gap) / (1 + PEEK / 100);
+      sc.style.setProperty("--car-w", Math.max(200, Math.min(Math.floor(raw), capW(view))) + "px");
       sc.style.scrollPaddingLeft = padL + "px";
     }
     function sync() {
       var best = null, d = 1e9, cs = cards();
       var sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0);
       cs.forEach(function (c) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; best = c; } });
-      if (cs.length && sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
+      /* Only treat the last card as current when the row has actually been scrolled to its end (not when content fits or width exploded). */
+      if (cs.length && sc.scrollLeft > 4 && sc.scrollWidth - sc.clientWidth > 8 && sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
       var i = best ? cs.indexOf(best) : 0;
       if (dots) dots.forEach(function (o, j) {
         var on = (o.getAttribute("data-dot") != null ? o.getAttribute("data-dot") === String(i) : j === i);
@@ -1036,13 +1050,23 @@
       if (onChange) onChange(best, i, cs);
     }
     function go(i) {
-      var cs = cards(), c = cs[i]; if (!c) return;
+      var cs = cards(), c = cs[Math.max(0, Math.min(cs.length - 1, i))]; if (!c) return;
       var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
       var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
       sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - padL, behavior: smooth });
     }
     if (dots) dots.forEach(function (o, j) {
       o.addEventListener("click", function () { go(o.getAttribute("data-dot") != null ? +o.getAttribute("data-dot") : j); });
+    });
+    if (sc.tabIndex < 0) sc.tabIndex = 0;
+    if (!sc.getAttribute("aria-label")) sc.setAttribute("aria-label", sc.closest("#hs-faq") ? "FAQ questions" : "Tailor Your Plan groups");
+    sc.addEventListener("keydown", function (e) {
+      if (e.altKey || e.metaKey || e.ctrlKey) return;
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Home" && e.key !== "End") return;
+      var cs = cards(), sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0), cur = 0, d = 1e9;
+      cs.forEach(function (c, j) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; cur = j; } });
+      e.preventDefault();
+      go(e.key === "Home" ? 0 : e.key === "End" ? cs.length - 1 : e.key === "ArrowRight" ? cur + 1 : cur - 1);
     });
     function start() {
       size();
@@ -1054,7 +1078,7 @@
     var raf = 0;
     sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
     window.addEventListener("resize", function () { size(); sync(); });
-    start(); requestAnimationFrame(start);
+    start(); requestAnimationFrame(function () { start(); });
   }
   function bindAlcCar(root) {
     var sc = root.querySelector("#hs-alc .alc-car-scroll"); if (!sc) return;

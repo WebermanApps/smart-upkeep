@@ -2982,6 +2982,9 @@ html body.on-home #hs-faq > .hm-faqs{
   display:flex!important;
   flex-direction:column!important;
   min-height:0!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
   padding-top:16px!important;
   margin-top:0!important;
 }
@@ -2993,7 +2996,15 @@ body.on-home .faq-car{
   display:flex;
   flex-direction:column;
   min-height:0;
-  margin:0 calc(-1 * var(--su-edge,16px));
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
+  margin:0;
+}
+@media (max-width:600px){
+  body.on-home .alc-car,
+  body.on-home .faq-car{margin:0 calc(-1 * var(--su-edge,16px));}
 }
 body.on-home .alc-car-scroll,
 body.on-home .faq-car-scroll{
@@ -3001,6 +3012,10 @@ body.on-home .faq-car-scroll{
   display:flex;
   align-items:stretch;
   gap:.6rem;
+  min-width:0;
+  max-width:100%;
+  width:100%;
+  box-sizing:border-box;
   overflow-x:auto;
   overflow-y:hidden;
   scroll-snap-type:x mandatory;
@@ -3014,6 +3029,10 @@ body.on-home .faq-car-scroll{
 body.on-home .faq-car-scroll{align-items:center}
 body.on-home .alc-car-scroll::-webkit-scrollbar,
 body.on-home .faq-car-scroll::-webkit-scrollbar{display:none}
+body.on-home .alc-car-scroll:focus,
+body.on-home .faq-car-scroll:focus{outline:none}
+body.on-home .alc-car-scroll:focus-visible,
+body.on-home .faq-car-scroll:focus-visible{outline:2px solid #A8431F;outline-offset:-2px}
 
 body.on-home .alc-card,
 body.on-home .faq-card{
