@@ -3287,13 +3287,23 @@ body.on-home #hs-alc .hs-arrow-up,
 body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
 
 /* Machan Nov 14 7:17 PM ICT: the Plans up arrow sat on the Essentials tile. Keep it in the
-   Plans header row so it never overlaps a tile, without taking vertical space from the 7-item fit. */
+   Plans header row so it never overlaps a tile, without taking vertical space from the 7-item fit.
+   r3 (Swatch): the 44px tap was in flow and grew .hm-row-h from 23px to 44px, hiding Sump Pump
+   Test at 360x640. Take the arrow out of flow; reserve its hit width so it cannot cover the title. */
+body.on-home #hs-plans .hm-row-h{
+  align-items:center;
+  padding-right:52px;
+}
+/* Out of flow against #hs-plans (already position:relative). A 44px hit centered
+   on the 23px title row overflowed the tiles by ~4px; the topbar-to-tile gap is
+   45px, so pin the hit 1px below the top of the section (just under the sticky bar). */
 body.on-home #hs-plans .hm-row-h .hs-arrow-up{
-  margin:0 0 0 4px!important;
-  position:relative;
+  margin:0!important;
+  position:absolute;
+  right:0;
+  top:1px;
+  transform:none;
   z-index:2;
-  flex:none;
-  align-self:center;
 }
 
 /* Machan Nov 14 7:18-7:19 PM ICT: unselected tiles get a real gray-out (grayscale + ~0.6 opacity)
