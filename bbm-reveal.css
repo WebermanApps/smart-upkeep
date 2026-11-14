@@ -1,0 +1,285 @@
+/* Pull-to-reveal Built by Machan (Machan Nov 14 2026).
+   The credit sits behind the sticky/fixed bottom bar, or just below the
+   fold when a page has no bar. It stays hidden in normal scroll and
+   shows only when the user pulls up, rubber-bands, or scrolls the last
+   sliver past the bar. Text is "Built by Machan", no link, Hind.
+   Existing mascot marks (Home, Watch, and other pages that already
+   have them) are left in place. --bbm-under is the visible bar height,
+   set by bbm-reveal.js (0 when there is no bottom bar). */
+:root{--bbm-h:36px;--bbm-under:0px}
+html,body{overscroll-behavior-y:auto}
+
+footer.foot,
+footer.faq-ft,
+footer.ft,
+footer:has(.mw-machan),
+footer:has(.machan-ft),
+footer:has(.built-by){
+  box-sizing:border-box;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:0!important;
+  margin:0!important;
+  border:0!important;
+  border-top:0!important;
+  background:transparent!important;
+  color:#525252;
+  text-align:center;
+  font-family:Hind,var(--mw-font-body),system-ui,sans-serif;
+  font-weight:500;
+  font-size:13px;
+  line-height:17px;
+  position:relative;
+  z-index:1;
+  padding:0 16px!important;
+  min-height:var(--bbm-h);
+  pointer-events:none;
+}
+footer.foot > .built-by,
+footer.foot > .machan-ft,
+footer.faq-ft > .machan-ft,
+footer.ft > .machan-ft,
+footer > .machan-ft,
+footer > .built-by{
+  box-sizing:border-box;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  margin:0!important;
+  min-height:var(--bbm-h);
+  height:var(--bbm-h);
+  pointer-events:auto;
+}
+footer.ft > span:empty,
+footer.ft > span#ftNote:empty{display:none}
+
+/* Pages with a bottom bar: tuck the credit into the reserved bar
+   clear, and add one bar-height of extra scroll so a pull lifts it
+   out from behind the bar. */
+html.bbm-has-bar footer.foot,
+html.bbm-has-bar footer.faq-ft,
+html.bbm-has-bar footer.ft,
+html.bbm-has-bar footer:has(.mw-machan),
+html.bbm-has-bar footer:has(.machan-ft),
+html.bbm-has-bar footer:has(.built-by){
+  /* Pull the credit down into the reserved bar clear; extra body/page
+     padding (below) is the sliver you scroll to lift it back out. */
+  margin-bottom:calc(0px - var(--bbm-under))!important;
+  padding-bottom:0!important;
+}
+
+/* Member subpages already pad the body for the bar; add reveal room. */
+html.bbm-has-bar body:has(nav.mbar){
+  padding-bottom:calc(78px + env(safe-area-inset-bottom,0px) + var(--bbm-under))!important;
+}
+
+/* Home dock is fixed; last .hm section is followed by a nearly-full-viewport
+   glide spacer. Pull the footer back to the start of that spacer (the
+   bottom of the last section) so it sits behind the dock when the last
+   section is parked. Further pull uses the existing spacer. */
+body.on-home .hm-tabs.hm-dock,
+body.on-home.hs-bar-off .hm-tabs.hm-dock{z-index:30!important}
+body.on-home > .foot,
+body.on-home main + .foot{
+  display:flex!important;
+  background:transparent!important;
+  margin-top:calc(0px - (100dvh - var(--su-hdr-h,56px)))!important;
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+  z-index:1;
+}
+/* Once JS moves the footer into the last section, pin it to the section
+   bottom (behind the dock) with a full-viewport-tall last section. */
+body.on-home .hs-sec.bbm-last{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:calc(100dvh - var(--su-hdr-h,56px))!important;
+  height:auto!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
+  padding-bottom:0!important;
+}
+body.on-home .hs-sec.bbm-last > .foot{
+  margin-top:auto!important;
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+  z-index:1;
+}
+
+/* Onboarding: hide the in-bar credit (frees a row for Back/Next/Start
+   Over) and use the site footer after #app, just below the one-screen
+   step, so a pull reveals it without changing .ob fit measurements. */
+.ob .ob-bar{z-index:15}
+.ob .ob-bar .ob-built{display:none!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+body.on-ob .foot{
+  display:flex!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+}
+
+/* Member app: #view already has --mbar-clear padding, so pull the
+   credit up into that padding (behind the bar) and keep a bar-height
+   of extra scroll after it for the reveal. */
+#s-app footer.ft{
+  margin-top:calc(0px - var(--mbar-clear, var(--bbm-under)))!important;
+  margin-bottom:0!important;
+  padding-bottom:var(--bbm-under)!important;
+}
+
+/* Short pages with no bar: make the document one credit-line taller than
+   the viewport and pin the footer to the end so the line starts below
+   the fold until the user pulls up. Long pages are unaffected because
+   the footer already follows the content. */
+html:not(.su-boot):not(.bbm-has-bar) body{
+  display:flex;
+  flex-direction:column;
+  min-height:calc(100dvh + var(--bbm-h));
+  box-sizing:border-box;
+  padding-bottom:0!important;
+}
+html:not(.su-boot):not(.bbm-has-bar) body > main,
+html:not(.su-boot):not(.bbm-has-bar) body > .phone{
+  flex:1 0 auto;
+  display:flex;
+  flex-direction:column;
+}
+/* FAQ footer lives inside main.fm */
+body.faqp{display:flex;flex-direction:column;min-height:calc(100dvh + var(--bbm-h));padding-bottom:0!important}
+body.faqp > .fm{flex:1 0 auto;display:flex;flex-direction:column;padding-bottom:0!important}
+body.faqp .faq-ft,
+html:not(.su-boot):not(.bbm-has-bar) body > footer,
+html:not(.su-boot):not(.bbm-has-bar) body > main > footer,
+html:not(.su-boot):not(.bbm-has-bar) body > .phone > footer,
+html:not(.su-boot):not(.bbm-has-bar) .scr.on footer{
+  margin-top:auto!important;
+}
+
+@media (prefers-reduced-motion:reduce){
+  footer .mw-machan-mark{transition:none}
+}
+
+/* Tech (and similar) login/screens: the footer lives inside a 100dvh
+   panel, so grow the panel by one credit-line to hide it at rest. */
+html:not(.bbm-has-bar) .scr.on,
+html:not(.bbm-has-bar) .phone{
+  min-height:calc(100dvh + var(--bbm-h))!important;
+  box-sizing:border-box!important;
+}
+/* Tech sign-in: .login's 24px bottom padding sat under the credit inside
+   the 100dvh+36 panel, so 24px of the line peeked at load. */
+html:not(.bbm-has-bar) .scr.on .login{padding-bottom:0!important}
+
+/* Billing and other subpages must be able to scroll the reveal sliver. */
+html.bbm-has-bar,html.bbm-has-bar body{overflow-x:hidden;overflow-y:auto}
+
+/* Member subpages (help, profile, notifications): pin the credit to the
+   bottom of the viewport, z-index under the bar, the same way Home does.
+   A one-bar-height translate is not enough when the in-flow footer sits
+   well above the bar on a short page. JS translates it up on pull. */
+html.bbm-has-bar body:has(nav.mbar) footer.ft:not(.bbm-sheet-ft){
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  margin:0!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  padding:0 16px!important;
+  z-index:1!important;
+  background:transparent!important;
+  min-height:var(--bbm-h)!important;
+  padding-bottom:0!important;
+}
+html.bbm-has-bar body:has(nav.mbar){
+  padding-bottom:calc(78px + env(safe-area-inset-bottom,0px) + var(--bbm-under))!important;
+  min-height:calc(100dvh + var(--bbm-under))!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+
+/* Billing in-app sheet: the document cannot scroll (maxScroll=0) and
+   dockSheetHeight sizes the sheet to its content, including the credit
+   already at the end of .sh-body. JS caps the sheet just above that
+   line so a pull inside .sh-body reveals it. */
+#sheet.on:has(footer.bbm-sheet-ft){
+  overflow:hidden;
+}
+#sheet.on .sh-body:has(footer.bbm-sheet-ft){
+  padding-bottom:0!important;
+}
+#sheet.on footer.bbm-sheet-ft,
+#sheet.acct-on footer.bbm-sheet-ft,
+#sheet.acct-on footer{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  margin:0!important;
+  margin-top:0!important;
+  padding:0 16px!important;
+  min-height:var(--bbm-h)!important;
+  height:auto!important;
+  transform:none!important;
+  z-index:1;
+  background:transparent!important;
+  box-sizing:border-box;
+}
+
+/* Onboarding: hide the in-bar credit even after onboarding.css is injected
+   last, and keep the site footer just below the fold at rest. */
+html body.on-ob .ob .ob-bar .ob-built,
+html body.on-ob .ob-bar .ob-built,
+html body.on-ob p.ob-built{
+  display:none!important;
+  height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  visibility:hidden!important;
+}
+
+/* Onboarding: fill the viewport with the step so the sticky bar sits on
+   the bottom edge, and leave one credit-line of scroll after #app. */
+body.on-ob{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:calc(100dvh + var(--bbm-h))!important;
+}
+body.on-ob .topbar{flex:none}
+body.on-ob main#app{flex:1 0 auto;min-height:0}
+body.on-ob .foot{flex:none;margin-top:0!important;padding-bottom:0!important}
+
+html.bbm-has-bar, html.bbm-has-bar body{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  height:auto!important;
+  max-height:none!important;
+}
+
+/* Home dock is position:fixed, so the credit is too: it sits in the same
+   bottom strip, z-index under the dock. JS translates it up as the user
+   pulls past the parked last section. */
+html body.on-home footer.foot,
+html body.on-home > footer.foot,
+html body.on-home main + footer.foot{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  margin:0!important;
+  margin-top:0!important;
+  margin-bottom:0!important;
+  padding:0 16px!important;
+  z-index:1!important;
+  background:transparent!important;
+  min-height:var(--bbm-h)!important;
+  padding-bottom:0!important;
+}
