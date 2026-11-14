@@ -1238,6 +1238,8 @@
           hmGlide.onEnd = null;
         }
         hmGlideStop(true);
+        window.scrollTo(0, top);
+        requestAnimationFrame(function () { if (gen === hmGlide.gen) window.scrollTo(0, top); });
         if (tabId && typeof window.suMarkTab === "function") window.suMarkTab(tabId, true);
         setTimeout(function () { if (gen === hmGlide.gen && !hmGlide.lock) hmGlide.tab = null; }, 80);
       }

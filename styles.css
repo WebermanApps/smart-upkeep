@@ -2272,7 +2272,7 @@ body.on-home .fs-ad:not(.fs-ad-plans){background-image:var(--su-shine),var(--su-
   body.on-home .fs-ad.fs-ad-plans{padding-top:2px;padding-bottom:2px}
   body.on-home #hs-plans .pc-dots{margin-top:0!important;margin-bottom:0!important}
   body.on-home #hs-plans .hm-scroll{padding-bottom:2px!important}
-  body.on-home #hs-plans > .hs-arrow{min-height:36px!important;height:36px!important;padding-top:2px!important;padding-bottom:2px!important}
+  body.on-home #hs-plans > .hs-arrow{min-height:44px!important;height:auto!important;min-width:44px!important;padding-top:.35rem!important;padding-bottom:.35rem!important}
 }
 body.on-home #hs-faq .sa-groups.sa-tabbed,body.on-home #hs-alc .sa-groups.sa-tabbed{width:auto!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
 body.on-home #hs-faq > .hm-faqs{grid-template-columns:minmax(0,1fr)!important;column-gap:0!important}
@@ -3026,7 +3026,7 @@ body.on-home .faq-car-scroll{
   overscroll-behavior-x:contain;
   touch-action:pan-x pan-y;
 }
-body.on-home .faq-car-scroll{align-items:center}
+body.on-home .faq-car-scroll{align-items:flex-start}
 body.on-home .alc-car-scroll::-webkit-scrollbar,
 body.on-home .faq-car-scroll::-webkit-scrollbar{display:none}
 body.on-home .alc-car-scroll:focus,
@@ -3142,7 +3142,7 @@ body.on-home .faq-car-pos{
 body.on-home .faq-card{
   background:#FFF8EE;
   padding:16px 16px 14px;
-  align-self:center;
+  align-self:flex-start;
   height:auto;
   max-height:100%;
 }
@@ -3200,8 +3200,8 @@ body.on-home .faq-card.is-emerg .faq-card-q{color:#A8431F}
    Item body text stays at least 13px; And More / sheet taps stay 44px+.
    Tiles size to their content instead of stretching the leftover room, so they
    read smaller; the section still fills between the header and the bar. */
-html body.on-home #hs-plans .hm-scroll{align-items:center!important}
-html body.on-home #row-plans .hm-plan{align-self:center!important}
+html body.on-home #hs-plans .hm-scroll{align-items:stretch!important}
+html body.on-home #row-plans .hm-plan{align-self:stretch!important}
 html body.on-home #row-plans .hm-plan .pc-inc{flex:0 1 auto!important;justify-content:flex-start!important}
 /* Tighten plan item lines to the top (Machan Nov 14: Essentials gaps ~8-10px at 430, no loose gap above the list). */
 html body.on-home #row-plans .hm-plan .pc-inc{margin-top:0!important;margin-bottom:0!important}
@@ -3248,3 +3248,51 @@ body.on-home .hs-arrow-up:focus-visible{opacity:1}
 /* Plans keeps the collapsed margin so 7 items still fit. Tailor and FAQ have room, so don't pull cards up over the arrow. */
 body.on-home #hs-alc .hs-arrow-up,
 body.on-home #hs-faq .hs-arrow-up{margin:-4px auto 0!important}
+
+
+/* ===== r4 Swatch QA (Nov 14): CTA stacking, flush parks, Plans fill, FAQ full-bleed, 44px Plans down arrow ===== */
+html body.on-home .hm-tabs.hm-dock,
+html body.on-home.hs-bar-off .hm-tabs.hm-dock{
+  z-index:200!important;
+  isolation:isolate;
+}
+html body.on-home .hm-dock .hm-tab-cta,
+html body.on-home .hm-tabs.arrow-off .hm-tab-cta,
+html body.on-home .hm-dock.arrow-off .hm-tab-cta{
+  position:relative;
+  z-index:3;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  display:flex!important;
+}
+body.on-home .hs-sec{z-index:0}
+html.su-home-snap:not(.su-glide){scroll-snap-type:y mandatory!important}
+html.su-glide,html.su-glide body{scroll-snap-type:none!important}
+body.on-home .hs-sec,body.on-home .hs-sec.hs-top{
+  scroll-snap-align:start!important;
+  scroll-snap-stop:always!important;
+  scroll-margin-top:var(--su-hdr-h,56px)!important;
+}
+/* FAQ cream is full-bleed, past the .hm 16px edge, so no white side strips. Content stays on the edge. */
+html body.on-home #hs-faq.hs-sec{
+  margin-left:calc(-1 * var(--su-edge,16px))!important;
+  margin-right:calc(-1 * var(--su-edge,16px))!important;
+  padding-left:var(--su-edge,16px)!important;
+  padding-right:var(--su-edge,16px)!important;
+  width:auto!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  background:#FCF9F4!important;
+}
+html body.on-home .faq-card{align-self:flex-start!important}
+/* Leftover room goes into the Plans tiles, not into empty bands above/below them. */
+html body.on-home #hs-plans > .hm-row{flex:1 1 auto!important;min-height:0!important}
+html body.on-home #hs-plans .hm-scroll{flex:1 1 auto!important;align-items:stretch!important}
+html body.on-home #row-plans .hm-plan{align-self:stretch!important;height:auto!important}
+html body.on-home #hs-plans > .hs-arrow{
+  margin-top:8px!important;
+  min-height:44px!important;
+  height:auto!important;
+  min-width:44px!important;
+}
