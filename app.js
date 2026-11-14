@@ -12,7 +12,14 @@
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.screen) { var o = Object.assign(fresh(), s); if (!Array.isArray(o.addons)) o.addons = []; if (!Array.isArray(o.lastMinute)) o.lastMinute = []; if (!Array.isArray(o.alacarte)) o.alacarte = []; return o; } } catch (e) {} return fresh(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+  function money(n) {
+    n = Math.round((Number(n) || 0) * 100) / 100;
+    if (Math.abs(n - Math.round(n)) < 1e-9) return "$" + Math.round(n).toLocaleString("en-US");
+    return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function cents(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+  /* Machan Nov 14 10:43 ICT (Option B, "Spread across months"): yearly flats billed monthly = approved /yr ÷ 12, rounded DOWN to the cent (Legal Nov 14: $275/yr is $22.91/mo, never more than the shown yearly price; no true-up). Do not use monthlyOf (whole dollars) or cents() (which rounds half-up). */
+  function monthlySpread(annual) { return Math.floor(Math.round((Number(annual) || 0) * 100) / 12) / 100; }
   function round(n) { return Math.round(n / P.roundTo) * P.roundTo; }
   function monthlyOf(annual) { return Math.round(Number(annual) / 12); }
   function makeReferralCode(name) {
@@ -62,9 +69,12 @@
     });
     return n;
   }
-  /* Machan approved flat annual prices (Nov 13 10:04 PM ICT). Show/charge the approved /yr amount, never a derived monthlyOf(flat). */
+  /* Machan approved flat annual prices (Nov 13 10:04 PM ICT). Annual and founding still charge the approved /yr amount in Due Today. On monthly (Machan Nov 14, Option B) the same approved /yr is spread with monthlySpread() into the monthly price. */
   function addonsFlatAnnual() {
     return selectedFunnelAddons().reduce(function (sum, a) { return sum + (isApprovedFlatAnnual(a) ? (+a.annual || 0) : 0); }, 0);
+  }
+  function addonsFlatMonthly() {
+    return selectedFunnelAddons().reduce(function (sum, a) { return cents(sum + (isApprovedFlatAnnual(a) ? monthlySpread(a.annual) : 0)); }, 0);
   }
   /* Machan Nov 13 11:00 PM: priced one-time add-ons (e.g. Water Leak Sensor $149) are charged in Due Today on every payment choice. Quote and range rows stay $0. */
   function addonsOnceToday() {
@@ -303,7 +313,7 @@
   function addMo(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
     if (hasRealMonthly(a)) return "+" + money(monthlyOf(a.annual)) + "/mo";
-    if (isApprovedFlatAnnual(a)) return yrLabel(a.annual);
+    if (isApprovedFlatAnnual(a)) return (obPlan() === "monthly") ? ("+" + money(monthlySpread(a.annual)) + "/mo") : yrLabel(a.annual);
     return QUOTE_LABEL;
   }
   function renderAddonList(items, selectedIds, dataAttr, priceFn, compact) {
@@ -2843,7 +2853,7 @@
   function planTag(k) { return [P.tiers[k || S.tier].label].concat(extraTags()).join(" · "); }
   function moLabel(annual) { return "+" + money(monthlyOf(annual)) + "/mo"; }
   /* Billing (Machan Nov 11, updated Nov 12): founding = pay 1 year of plan + add-ons, get 2 years (add-ons included in the 2-for-1).
-     monthly = plan + add-ons each month, first charge due at sign-up, then on that date each month.
+     monthly = plan + monthly add-ons + yearly flats spread across months (Machan Nov 14 Option B); Due Today = first month + one-time only.
      After the Founding 50 fill (FOUNDING_FULL): full-price annual = round(monthly incl add-ons x 12 x (1 - annualDiscount)). Never stack with platinumAnnualDiscount. */
   function annualDiscountRate() {
     var d = P && P.annualDiscount;
@@ -2859,7 +2869,8 @@
     S.plan = "monthly";
     var r = obBill(tier);
     S.plan = prev;
-    return r.perCharge;
+    /* After-founding teaser uses the 10%-off base (plan + monthly add-ons). Yearly flats stay at full /yr on the annual card, not in this line. */
+    return cents(r.monthly + r.addonsMonthly);
   }
   function fillAmt(tpl, amount) { return String(tpl).replace(/\{amount\}/g, money(amount)); }
   function afterFoundingPriceLine(monthly) {
@@ -2907,13 +2918,20 @@
     if (oneTime > 0) parts.push(sAmt(oneTime) + " for one-time services");
     return consentLead(live, amount) + ": " + parts.join(", plus ") + ".";
   }
-  /* Monthly (Legal follow-up A). amount = monthly charge (plan + monthly add-ons); yearly = /yr flats charged in full today (current build, pending Machan); oneTime = priced one-time services. */
-  function monthlyConsent(amount, yearly, oneTime) {
+  /* Monthly (Machan Nov 14 10:43 ICT, Option B; Legal Nov 14 approved wording). amount = monthly charge (plan + monthly add-ons + yearly flats spread across months). addonMonthly = those yearly flats only. oneTime = priced one-time services, still due today only. Yearly flats are not charged in full today on monthly. */
+  function monthlyConsent(amount, oneTime, addonMonthly) {
     var live = paymentsLive(), tpl = live ? MONTHLY_CONSENT_LIVE : MONTHLY_CONSENT_BETA, tail = consentTail(tpl, " My membership");
-    yearly = +yearly || 0; oneTime = +oneTime || 0;
-    if (!(yearly > 0) && !(oneTime > 0)) return consentLead(live, amount) + ", and " + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
-    return consentSplit(live, amount + yearly + oneTime, sAmt(amount) + " for my first month of membership", yearly, oneTime) +
-      " After that, " + (live ? "Smart Upkeep may charge me " : "I agree to pay ") + sAmt(amount) + " on this date <strong>each month</strong>" + (yearly > 0 ? ", and " + sAmt(yearly) + " for yearly add-ons on this date <strong>each year</strong>" : "") + "." + tail;
+    oneTime = +oneTime || 0; addonMonthly = +addonMonthly || 0;
+    var afterPay = live ? "Smart Upkeep may charge me " : "I agree to pay ";
+    if (addonMonthly > 0 && oneTime > 0) {
+      return consentLead(live, amount + oneTime) + ": " + sAmt(amount) + " for my first month of membership (including " + money(addonMonthly) + "/mo for yearly add-ons, spread over 12 months), plus " + sAmt(oneTime) + " for one-time services. After that, " + afterPay + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
+    }
+    if (addonMonthly > 0) {
+      return consentLead(live, amount) + ", and " + sAmt(amount) + " on this date <strong>each month</strong>. This includes " + money(addonMonthly) + "/mo for yearly add-ons, spread over 12 months." + tail;
+    }
+    if (!(oneTime > 0)) return consentLead(live, amount) + ", and " + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
+    return consentSplit(live, amount + oneTime, sAmt(amount) + " for my first month of membership", 0, oneTime) +
+      " After that, " + afterPay + sAmt(amount) + " on this date <strong>each month</strong>." + tail;
   }
   /* Annual 10% (Legal follow-up B): /yr flats are NOT 10% off (obBill: today = annualPrepaidOf(perCharge) + flat), so they are split out of the membership amount. */
   function annualConsent(amount, oneTime, yearly) {
@@ -2948,8 +2966,15 @@
       r.long = "Prepay 12 Months (10% Off Monthly)";
       r.termMonths = 12;
     }
-    else { r.label = "Monthly"; r.long = "Monthly, First Charge Today"; r.perCharge = r.monthly + r.addonsMonthly; r.today = r.perCharge + flat; r.termMonths = 12; }
-    r.today += r.onceToday;
+    else {
+      /* Machan Nov 14 10:43 ICT (Option B): spread approved yearly flats across months; Due Today = first month + one-time only. */
+      r.addonsSpread = addonsFlatMonthly();
+      r.label = "Monthly"; r.long = "Monthly, First Charge Today";
+      r.perCharge = cents(r.monthly + r.addonsMonthly + r.addonsSpread);
+      r.today = r.perCharge;
+      r.termMonths = 12;
+    }
+    r.today = cents(r.today + r.onceToday);
     return r;
   }
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
@@ -3108,7 +3133,7 @@
       return QUOTE_LABEL;
     }
     if (hasRealMonthly(a)) return moLabel(a.annual);
-    if (isApprovedFlatAnnual(a)) return yrLabel(a.annual);
+    if (isApprovedFlatAnnual(a)) return (obPlan() === "monthly") ? ("+" + money(monthlySpread(a.annual)) + "/mo") : yrLabel(a.annual);
     if (hasRealOncePrice(a)) return money(+a.price);
     return QUOTE_LABEL;
   }
@@ -3135,9 +3160,12 @@
     onceQuote = onceQuote.filter(function (a) { return !/^(furnace|ac) tune up$/.test(suNorm(a.label)); });
     var once = oncePriced.map(function (a) { return aoRow(a, sel); }).join("") +
       (onceQuote.length ? '<li class="ob-more-li"><details class="ob-more"><summary class="mw-hover">' + ONCE_MORE_LINE + '</summary><ul class="ob-more-list">' + onceQuote.map(function (a) { return '<li>' + esc(a.label) + '</li>'; }).join("") + '</ul></details></li>' : '');
-    var addMoSum = addonsNoteMonthly(), addYrSum = addonsFlatAnnual();
-    var aoNoteBits = [];
-    if (addMoSum) aoNoteBits.push("+" + money(addMoSum) + "/mo");
+    var addMoOnly = addonsNoteMonthly(), addYrSum = addonsFlatAnnual(), addSpread = 0, addMoSum = addMoOnly;
+    if (obPlan() === "monthly") { addSpread = addonsFlatMonthly(); addMoSum = cents(addMoOnly + addSpread); addYrSum = 0; }
+    /* Legal Nov 14: three Tailor notes, chosen by what's selected. Consent strings stay as they are. */
+    var aoNoteBits = [], paren = "";
+    if (obPlan() === "monthly" && addSpread) paren = addMoOnly ? " (includes yearly add-ons spread over 12 months)" : " (yearly add-ons spread over 12 months)";
+    if (addMoSum) aoNoteBits.push("+" + money(addMoSum) + "/mo" + paren);
     if (addYrSum) aoNoteBits.push(money(addYrSum) + "/yr");
     var tabs = '<div class="seg-toggle ob-ao-tabs" role="tablist" aria-label="Tailor Your Plan">' +
       '<button type="button" role="tab" class="mw-hover' + (tab === "monthly" ? " on" : "") + '" id="ob-ao-tab-monthly" aria-selected="' + (tab === "monthly") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="monthly">Plan Add-Ons</button>' +
@@ -3231,7 +3259,7 @@
         payIncludesLine(yr.addonsFlatAnnual, yr.onceToday)) : '') + /* Legal Nov 13: second line only when yearly flats and/or one-time items are in the total */
       card("monthly", !aSel && !ySel, "Monthly", money(mo.perCharge) + "/mo", "First charge today, then on this date each month.");
     var pop = fOpen ? '<div class="f2-pop" id="f2Pop" role="dialog" aria-label="' + F2_POP.t + '" tabindex="-1" hidden><span class="f2-pop-ic" aria-hidden="true">' + I("star", "xs") + '</span><div><p class="f2-pop-t">' + F2_POP.t + '</p><p class="f2-pop-b">' + F2_POP.b + '</p></div></div>' : '';
-    var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (incl. /yr flats and priced one-time add-ons) */
+    var dueNow = aSel ? an.today : (ySel ? yr.today : mo.today); /* same obBill total as Review and Accept (monthly Due Today = first month incl. spread yearly add-ons + one-time) */
     var body = banner + '<div class="pay-stack" role="radiogroup" aria-label="How to pay">' + cards + '</div>' +
       '<p class="pay-due" aria-live="polite"><span>Due Today</span><b>' + money(dueNow) + '</b></p>' + pop;
     return obShell("billing", "", 0, "Pick How You'd Like To Pay", "", body, nextBtn("Continue To Payment", true));
@@ -3341,7 +3369,7 @@
     var hasRef = !!(S.referralCodeIn || su.referralCodeIn);
     function fe(id) { return '<p class="ferr" id="e-' + id + '" aria-live="polite"></p>'; }
     /* Charge-consent text, verbatim. Founding 24-month: Legal review Nov 11. Monthly and full-price annual: Legal Nov 12 (beta uses 'due today' until PAYMENTS_LIVE). */
-    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge, b.addonsFlatAnnual, b.onceToday)
+    var consent = b.plan === "monthly" ? monthlyConsent(b.perCharge, b.onceToday, b.addonsSpread)
       : (b.plan === "annual" ? annualConsent(b.today, b.onceToday, b.addonsFlatAnnual)
       : foundingConsent(b.today, b.onceToday));
     /* Machan Nov 13 11:16 PM: nothing goes out to customers yet, so the flow is walkable for looks while the Member Agreement link is pending.
@@ -4006,9 +4034,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9k7"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p3"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9k7"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9p2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
