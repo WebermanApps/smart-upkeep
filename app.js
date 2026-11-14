@@ -983,16 +983,13 @@
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
-  /* Plans phone snap (Machan Nov 14 3:36-3:37 PM ICT): Essentials stays left-aligned on landing
-     (he did not ask to change that). Plus and Complete snap to the center. Plus shows a peek of
-     Essentials and Complete; Complete shows a Plus peek on the left and empty space on the right.
+  /* Plans phone snap (Machan Nov 14 7:04 PM ICT): Essentials, Plus and Complete all snap to
+     the viewport center. Essentials may show blank space on its left. Plus peeks neighbors
+     on both sides; Complete peeks Plus on the left and leaves blank space on the right.
      Tile width is unchanged from the Nov 13 22% peek formula, plus the Nov 14 9% tighten. */
   function hmPlanCards(sc) { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
   function hmPlanSnapLeft(sc, card) {
     var sr = sc.getBoundingClientRect(), cr = card.getBoundingClientRect();
-    var first = hmPlanCards(sc)[0];
-    var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
-    if (card === first) return sc.scrollLeft + (cr.left - sr.left - padL);
     return sc.scrollLeft + (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
   }
   function hmPlanGo(sc, card, behavior) {
@@ -1028,7 +1025,10 @@
       return w;
     }
     function size() {
-      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.scrollPadding = ""; return; }
+      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.paddingLeft = ""; sc.style.scrollPadding = ""; return; }
+      /* Reset left pad to the stylesheet value before measuring tile width, so the
+         centering pad below does not shrink the cards on later size() passes. */
+      sc.style.paddingLeft = "";
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
       var view = viewW();
       /* Machan Nov 14 9:25 AM: Plans tiles and text slightly smaller (~9% narrower). */
@@ -1036,8 +1036,10 @@
       if (w < 200) w = Math.max(200, Math.floor(view * 0.72));
       if (w > view - 24) w = Math.max(200, view - 48);
       sc.style.setProperty("--pc-w", w + "px");
-      /* Right pad so Complete's center can reach the viewport center. */
-      sc.style.paddingRight = Math.max(0, Math.round((view - w) / 2)) + "px";
+      /* Side pads so Essentials and Complete can both sit at the viewport center. */
+      var side = Math.max(0, Math.round((view - w) / 2));
+      sc.style.paddingLeft = side + "px";
+      sc.style.paddingRight = side + "px";
       sc.style.scrollPadding = "0px";
     }
     function start() {

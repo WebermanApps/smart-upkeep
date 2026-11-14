@@ -2595,8 +2595,7 @@ body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(-
 @media(max-width:600px){
   body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0;overscroll-behavior-x:contain;touch-action:pan-x}
   body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:center!important}
-  /* Essentials (first tile) keeps its left-aligned landing snap. Plus and Complete center. */
-  body.on-home #row-plans .hm-plan:first-child{scroll-snap-align:start!important}
+  /* Essentials, Plus and Complete all snap to center. Blank space to the left of Essentials is intended. */
   /* Dimming starts only after a tap or swipe (pc-dimmed). On first land all three stay equal.
      Active snap tile is full; others sit at 76% with a light desaturation. No green. */
   body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{opacity:.76;filter:saturate(.85);transition:opacity .2s ease,filter .2s ease}
