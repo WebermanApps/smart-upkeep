@@ -1553,3 +1553,4 @@ html body.on-ob .ob.qf.ob-plan .plan-card.sel{background:#FFFCF7!important;borde
 html body.on-ob .ob.qf.ob-plan :is(.ob-stage,.ob-pane,.qf-body){min-width:0;max-width:100%}
 html body.on-ob .ob.qf.ob-plan .plan-stack{width:100%;max-width:100%;box-sizing:border-box;contain:inline-size}
 html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta.filled,html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta{min-height:44px!important} /* taps stay 44px on every fit level */
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-base{color:#5C534C} /* 4.5:1+ on the #F9F5EF swipe cards */
