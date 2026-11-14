@@ -1503,7 +1503,8 @@
         { slug: "how-are-refunds-calculated", live: true },
         { slug: "can-i-pause-my-plan", live: true },
         { slug: "what-happens-if-i-move", live: true },
-        { slug: "who-sees-my-credit-card-information", live: false }
+        { slug: "is-there-a-cancellation-right-in-michigan", live: true },
+        { slug: "who-sees-my-credit-card-information", live: true }
       ]
     },
     {
@@ -1511,30 +1512,45 @@
       sourceGroup: "Heating, Cooling And Furnace Filters",
       ico: "furnace",
       items: [
-        { slug: "what-happens-during-a-furnace-tune-up", live: false },
-        { slug: "what-happens-during-an-ac-tune-up", live: false },
+        { slug: "what-happens-during-a-furnace-tune-up", live: true },
+        { slug: "what-happens-during-an-ac-tune-up", live: true },
         { slug: "how-often-should-i-change-my-furnace-filter", live: true },
         { slug: "is-skipped-maintenance-really-that-costly", live: true },
-        { slug: "should-i-be-concerned-with-air-quality", live: false }
+        { slug: "should-i-be-concerned-with-air-quality", live: true }
       ]
     }
   ];
-  /* Draft answers for hidden Home FAQ cards (Machan Nov 14 9:41 AM). All seven stay unrendered until Legal approves (item.live stays false).
-     The Residential Builder license card also stays unrendered after Legal until Smart Upkeep's own license is issued. Do not set that slug live before issuance. */
+  /* Hidden Home FAQ drafts. Only these three stay unrendered (item.live is false).
+     License card: do not set live until Smart Upkeep's own Residential Builder license is issued, then add the issued number and check it on the state's public lookup.
+     Liability card: do not set live until a certificate of insurance names Smart Upkeep LLC as the insured, with $1 million per occurrence and $2 million aggregate in force. A policy in another name does not count.
+     Employees card: keep this title for now. If Machan confirms the techs are W-2 employees of Smart Upkeep LLC, prefix the answer with "Yes. " and keep the title. If they are not, retitle the card to "Who Does The Work On A Visit?" and keep the answer as written (no Yes.). */
   var HOME_FAQ_PENDING = {
-    "are-the-technicians-employees-of-smart-upkeep": { q: "Are The Technicians Employees Of Smart Upkeep?", hold: "legal", a: "<p>Most of the work on a visit is done by Smart Upkeep technicians. Specialized work, like handling radiant heat, is performed by licensed contractors.</p>" },
-    "is-smart-upkeep-a-licensed-residential-builder": { q: "Is Smart Upkeep A Licensed Residential Builder In The State Of Michigan?", hold: "license", a: "<p>Yes. Smart Upkeep is a licensed Residential Builder in the State of Michigan.</p>" },
-    "does-smart-upkeep-have-liability-insurance": { q: "Does Smart Upkeep Have Liability Insurance?", hold: "legal", a: "<p>Yes. Smart Upkeep carries general liability insurance of $1 million per occurrence and $2 million aggregate.</p>" },
-    "who-sees-my-credit-card-information": { q: "Who Sees My Credit Card Information?", hold: "legal", a: "<p>Your credit card information is handled by Stripe, our payment processor. Please don&#x27;t send card numbers in chat.</p>" },
-    "what-happens-during-a-furnace-tune-up": { q: "What Happens During A Furnace Tune-Up?", hold: "legal", a: "<p>Every plan includes a fall furnace tune-up for every furnace, ideally before heating season. Your filter is checked at every visit and changed when it&#x27;s due, and the thermostat battery and settings are checked. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>" },
-    "what-happens-during-an-ac-tune-up": { q: "What Happens During An AC Tune-Up?", hold: "legal", a: "<p>Every plan includes a spring AC tune-up for every AC unit, ideally before the first hot week. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>" },
-    "should-i-be-concerned-with-air-quality": { q: "Should I Be Concerned With Air Quality?", hold: "legal", a: "<p>We help you keep up with the home-care work that affects the air in your house: furnace filter changes at every visit when due, dryer vent cleaning, and a whole-home mold and moisture scan that flags damp spots where mold can grow. The scan is not a lab mold test and does not diagnose or rule out mold.</p>" }
+    "are-the-technicians-employees-of-smart-upkeep": { q: "Are The Technicians Employees Of Smart Upkeep?", hold: "legal", a: "<p>Most of the work on a visit is done by Smart Upkeep technicians. Specialized licensed work, like radiant heat, is done by partners with an active Michigan license you can check.</p>" },
+    "is-smart-upkeep-a-licensed-residential-builder": { q: "Is Smart Upkeep A Licensed Residential Builder In The State Of Michigan?", hold: "license", a: "<p>Yes. Smart Upkeep is a licensed Residential Builder in the State of Michigan, license #[number].</p>" },
+    "does-smart-upkeep-have-liability-insurance": { q: "Does Smart Upkeep Have Liability Insurance?", hold: "coi", a: "<p>Yes. Smart Upkeep carries general liability insurance of $1 million per occurrence and $2 million aggregate.</p>" }
   };
-  /* Home-only cards that reuse Legal-reviewed site copy (not added to FAQ_ALL). how-are-refunds-calculated excerpts the refund sentences from can-i-cancel, word for word. */
+  /* Home-only cards that reuse Legal-reviewed site copy (not added to FAQ_ALL). how-are-refunds-calculated excerpts the refund sentences from can-i-cancel, word for word.
+     Furnace, AC, air quality, and credit-card cards were approved by Legal on Nov 14 and are Home-only (not added to FAQ_ALL). */
   var HOME_FAQ_REUSED = {
     "how-are-refunds-calculated": {
       q: "How Are Refunds Calculated?",
       a: "<p>Before your first visit, you get a full refund. After visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet. Services already done aren&#x27;t refunded. Founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge. Refunds go out within 14 days. Free months have no cash or refund value.</p>"
+    },
+    "who-sees-my-credit-card-information": {
+      q: "Who Sees My Credit Card Information?",
+      a: "<p>Card payments are processed by Stripe, our payment processor. Please never send card numbers by email or message.</p>"
+    },
+    "what-happens-during-a-furnace-tune-up": {
+      q: "What Happens During A Furnace Tune-Up?",
+      a: "<p>Every plan includes a fall furnace tune-up for every furnace, ideally before heating season. Your filter is checked at every visit and changed when it&#x27;s due, and the thermostat battery and settings are checked. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>"
+    },
+    "what-happens-during-an-ac-tune-up": {
+      q: "What Happens During An AC Tune-Up?",
+      a: "<p>Every plan includes a spring AC tune-up for every AC unit, ideally before the first hot week. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>"
+    },
+    "should-i-be-concerned-with-air-quality": {
+      q: "Should I Be Concerned With Air Quality?",
+      a: "<p>We help you keep up with the home-care work that affects the air in your house: furnace filter changes at every visit when due, dryer vent cleaning, and a whole-home mold and moisture scan that flags damp spots where mold can grow. The scan is not a lab mold test and does not diagnose or rule out mold.</p>"
     }
   };
   /* Home carousel titles only. FAQ_ALL titles on /faq/ stay as they are. */
@@ -1552,7 +1568,11 @@
     "how-are-refunds-calculated": "How Are Refunds Calculated?",
     "what-happens-if-i-move": "What Happens If I Move?",
     "how-often-should-i-change-my-furnace-filter": "How Often Should A Furnace Filter Be Changed?",
-    "is-skipped-maintenance-really-that-costly": "Is Skipped Maintenance Really That Costly?"
+    "is-skipped-maintenance-really-that-costly": "Is Skipped Maintenance Really That Costly?",
+    "who-sees-my-credit-card-information": "Who Sees My Credit Card Information?",
+    "what-happens-during-a-furnace-tune-up": "What Happens During A Furnace Tune-Up?",
+    "what-happens-during-an-ac-tune-up": "What Happens During An AC Tune-Up?",
+    "should-i-be-concerned-with-air-quality": "Should I Be Concerned With Air Quality?"
   };
   /* Home FAQ carousel (Machan Nov 14 9:13 AM): one card per question. Home section only; /faq/ is unchanged. */
   function faqCarouselHtml() {
