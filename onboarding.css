@@ -1162,3 +1162,250 @@ html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-accept .su-cancel-line .link{
   padding-top:0 !important;
   padding-bottom:0 !important;
 }
+
+/* ===== ob-bar-1114 (Machan Nov 14 8:44–8:45 PM ICT) =====
+   Onboarding bottom bar matches the Home sticky dock (.hm-tabs.hm-dock):
+   Deeper Warm Cream #F5EDDF, top-half white sheen, hairline, inset highlight,
+   bar shadow, 16px edge, 8/4 padding, 6px gap. Flush, not floating. Light only.
+   Four controls cannot share one row with a 44px Get Started-style Next at 360
+   without clipping "Start Over" or "Accept And Continue", so the bar uses the
+   Home structure: three tab-style secondaries over a full-width Next CTA. */
+html body.on-ob .ob .ob-bar,
+html.ob-hb-on body.on-ob .ob .ob-bar,
+html body.on-ob .ob-accept .ob-bar,
+html body.on-ob .ob-accept.sfit-accept .ob-bar,
+html.ob-hb-on .ob-accept .ob-bar{
+  display:grid !important;
+  grid-template-columns:1fr 1fr 1fr !important;
+  grid-template-rows:auto auto !important;
+  column-gap:0 !important;
+  row-gap:6px !important;
+  align-items:center !important;
+  position:sticky;
+  bottom:0;
+  z-index:15;
+  width:100vw;
+  max-width:none;
+  margin-left:calc(50% - 50vw) !important;
+  margin-right:calc(50% - 50vw) !important;
+  margin-top:auto !important;
+  margin-bottom:0 !important;
+  box-sizing:border-box;
+  background-color:#F5EDDF !important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%) !important;
+  border:0 !important;
+  border-top:1px solid rgba(60,40,20,.08) !important;
+  border-radius:0 !important;
+  box-shadow:0 -4px 16px rgba(60,40,20,.08),inset 0 1px 0 rgba(255,255,255,.9) !important;
+  padding:8px 16px calc(4px + env(safe-area-inset-bottom,0px)) !important;
+  overflow:visible;
+}
+html body.on-ob .ob .ob-bar .back-pill,
+html body.on-ob .ob .ob-bar .home-pill,
+html body.on-ob .ob .ob-bar .qf-startover,
+html.ob-hb-on body.on-ob .ob .ob-bar .back-pill,
+html.ob-hb-on body.on-ob .ob .ob-bar .home-pill,
+html.ob-hb-on body.on-ob .ob .ob-bar .qf-startover{
+  grid-row:1 !important;
+  box-sizing:border-box;
+  width:100%;
+  min-width:48px;
+  max-width:none;
+  margin:0 !important;
+  padding:0 !important;
+  min-height:48px !important;
+  height:48px !important;
+  display:inline-flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  color:#6B625A !important;
+  font:600 11.5px/14px Hind,var(--mw-font-body),sans-serif !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+  overflow:visible;
+  box-shadow:none !important;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+html body.on-ob .ob .ob-bar .back-pill{grid-column:1 !important}
+html body.on-ob .ob .ob-bar .home-pill{grid-column:2 !important}
+html body.on-ob .ob .ob-bar .qf-startover{grid-column:3 !important;justify-self:stretch}
+html body.on-ob .ob .ob-bar .qf-startover[hidden]{display:inline-flex !important}
+html body.on-ob .ob .ob-bar .back-pill svg,
+html body.on-ob .ob .ob-bar .home-pill svg,
+html body.on-ob .ob .ob-bar .qf-startover svg{
+  display:block !important;
+  width:22px !important;
+  height:22px !important;
+  flex:none;
+  color:inherit !important;
+  stroke:currentColor !important;
+}
+html body.on-ob .ob .ob-bar .back-pill:focus,
+html body.on-ob .ob .ob-bar .home-pill:focus,
+html body.on-ob .ob .ob-bar .qf-startover:focus{outline:none}
+html body.on-ob .ob .ob-bar .back-pill:focus-visible,
+html body.on-ob .ob .ob-bar .home-pill:focus-visible,
+html body.on-ob .ob .ob-bar .qf-startover:focus-visible{
+  outline:2px solid rgba(168,67,31,.4);
+  outline-offset:-2px;
+  border-radius:12px;
+}
+html body.on-ob .ob .ob-bar .btn-big,
+html body.on-ob .ob .ob-bar > button[type="submit"],
+html body.on-ob .ob-accept .ob-bar > button[type="submit"],
+html body.on-ob .ob-accept .ob-bar > .btn-big,
+html body.on-ob .ob-accept.sfit-accept .ob-bar .btn-big,
+html.ob-hb-on .ob-accept .ob-bar .btn-big,
+html.ob-hb-on body.on-ob .ob .ob-bar .btn-big{
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+  box-sizing:border-box;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 16px !important;
+  min-height:44px !important;
+  height:44px !important;
+  display:inline-flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  background-color:var(--mw-terracotta,#C1502E) !important;
+  background-image:linear-gradient(to bottom,rgba(255,255,255,.15) 0%,rgba(255,255,255,0) 50%),linear-gradient(100deg,transparent 35%,rgba(255,255,255,.15) 50%,transparent 65%) !important;
+  background-size:100% 100%,260% 100% !important;
+  background-repeat:no-repeat !important;
+  background-position:0 0,160% 0;
+  color:#fff !important;
+  font:600 14px/1 Hind,var(--mw-font-body),sans-serif !important;
+  letter-spacing:.04em !important;
+  text-transform:none !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  box-shadow:0 2px 6px rgba(60,40,20,.10) !important;
+  cursor:pointer;
+}
+html body.on-ob .ob .ob-bar .btn-big:disabled,
+html body.on-ob .ob .ob-bar .btn-big[disabled]{
+  opacity:1 !important;
+  background-color:#E3B0A1 !important;
+  background-image:none !important;
+  color:#fff !important;
+  box-shadow:none !important;
+  cursor:not-allowed;
+}
+html body.on-ob .ob .ob-bar .btn-big svg{display:none}
+html body.on-ob .ob .ob-bar .ob-built,
+html body.on-ob .ob-accept .ob-bar .ob-built,
+html body.on-ob .ob-accept.sfit-accept .ob-bar .ob-built{
+  grid-column:1 / -1;
+  grid-row:3 !important;
+}
+html body.on-ob .ob{--ob-bar-clear:calc(128px + env(safe-area-inset-bottom,0px))}
+
+/* Step-to-step stage: only the pane (title + body) animates; header, house band, progress track and bar stay put. */
+.ob .ob-stage{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.ob .ob-pane{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%;z-index:0}
+.ob .ob-pane.ob-pane-leave{position:absolute;left:0;right:0;top:0;width:100%;z-index:1;pointer-events:none;margin:0}
+.ob .qf-segs.nine{position:relative}
+.ob .qf-segs.nine .qf-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  width:var(--ob-prog,0%);
+  background:var(--mw-terracotta,#C1502E);
+  border-radius:99px;
+  pointer-events:none;
+  transition:width 320ms cubic-bezier(.22,1,.36,1);
+}
+.ob .qf-segs.nine span.done,
+.ob .qf-segs.nine span.cur{background:transparent}
+@media (prefers-reduced-motion:reduce){
+  .ob .qf-segs.nine .qf-fill{transition:width 200ms ease}
+  .ob .ob-pane{transition:none}
+}
+
+/* Step 2: Home Size and How Many Stories as two equal-weight question cards. */
+.ob-homesize .ob-home-split{display:flex;flex-direction:column;gap:10px}
+.ob-homesize .ob-qcard{
+  background:#FFFCF7;
+  border:1px solid #ECE5DA;
+  border-radius:16px;
+  padding:12px 12px 10px;
+  box-sizing:border-box;
+}
+.ob-homesize .ob-qcard:focus{outline:none}
+.ob-homesize .ob-qcard:focus-visible{outline:2px solid rgba(168,67,31,.4);outline-offset:2px}
+.ob-homesize .ob-qcard .k{
+  margin:0;
+  font:600 15px/20px Hind,var(--mw-font-body),sans-serif;
+  color:#1a1a1a;
+  text-transform:none;
+  letter-spacing:0;
+}
+.ob-homesize .ob-qcard .s{
+  margin:0;
+  font:500 13px/17px Hind,var(--mw-font-body),sans-serif;
+  color:#737373;
+}
+.ob-homesize .ob-size .meta,
+.ob-homesize .ob-stories .meta{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:0 0 8px;
+}
+.ob-homesize .story-chips{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+.ob-homesize .story-chip{
+  min-height:44px;
+  height:auto;
+  padding:8px 6px;
+  border:1px solid #ECE5DA;
+  border-radius:var(--su-r-s,12px);
+  background:#fff;
+  color:#1a1a1a;
+  font:600 14px/1.2 Hind,var(--mw-font-body),sans-serif;
+  text-align:center;
+  cursor:pointer;
+}
+.ob-homesize .story-chip.on{
+  border-color:#1A1A1A;
+  box-shadow:inset 0 0 0 1.5px #1A1A1A;
+  background:#FFFCF7;
+}
+.ob-homesize .story-chip:focus-visible{outline:2px solid #05668D;outline-offset:2px}
+.ob-homesize .ob-qerr{min-height:0;margin:6px 0 0;font:500 13px/17px Hind,var(--mw-font-body),sans-serif;color:#A8431F}
+.ob-homesize .ob-qcard.ob-q-miss{
+  border-color:var(--mw-terracotta,#C1502E);
+  box-shadow:0 0 0 2px rgba(193,80,46,.22);
+  animation:obQPulse 700ms ease;
+}
+@keyframes obQPulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(193,80,46,.22)}
+  40%{box-shadow:0 0 0 4px rgba(193,80,46,.18)}
+}
+@media (prefers-reduced-motion:reduce){
+  .ob-homesize .ob-qcard.ob-q-miss{animation:none}
+}
+@media (max-width:360px) and (max-height:640px){
+  .ob-homesize .ob-home-split{gap:8px}
+  .ob-homesize .ob-qcard{padding:8px 10px 8px;border-radius:14px}
+  .ob-homesize .ob-size .meta,
+  .ob-homesize .ob-stories .meta{margin:0 0 6px;gap:6px}
+  .ob-homesize .ob-address .size-chips,
+  .ob-homesize .size-chips{gap:6px !important}
+  .ob-homesize .size-chip,
+  .ob-address.ob-homesize .size-chip{min-height:40px !important;height:40px !important;padding:4px 6px !important;font-size:13px !important}
+  .ob-homesize .story-chip{min-height:40px;padding:6px 4px;font-size:13px}
+}
