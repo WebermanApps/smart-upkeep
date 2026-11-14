@@ -179,12 +179,12 @@
       g.style.display = "";
       if (animate) {
         if (rm) anim(g, [{ opacity: 0 }, { opacity: 1 }], 150, "linear");
-        else { anim(inner, [{ opacity: 0, transform: "translateY(-46px)" }, { opacity: 1, transform: "translateY(0)", offset: .7 }, { transform: "translateY(-5px)", offset: .85 }, { transform: "translateY(0)" }], 380, "cubic-bezier(.3,0,.4,1)");
-          anim(sh, [{ opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "scale(1)" }], 380, "ease-out"); }
+        else { anim(inner, [{ opacity: 0, transform: "translateY(-46px)" }, { opacity: 1, transform: "translateY(0)", offset: .7 }, { transform: "translateY(-5px)", offset: .85 }, { transform: "translateY(0)" }], 280, "cubic-bezier(.3,0,.4,1)");
+          anim(sh, [{ opacity: 0, transform: "scale(.3)" }, { opacity: 1, transform: "scale(1)" }], 280, "ease-out"); }
       }
     } else if (!on && g.style.display !== "none") {
       if (!animate) g.style.display = "none";
-      else anim(g, [{ opacity: 1 }, { opacity: 0 }], 150, "linear", function () { if (!(pinWas)) g.style.display = "none"; }, true);
+      else anim(g, [{ opacity: 1 }, { opacity: 0 }], rm ? 150 : 200, "linear", function () { if (!(pinWas)) g.style.display = "none"; }, true);
     }
     pinWas = on;
   }
