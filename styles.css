@@ -2594,8 +2594,17 @@ body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(-
 
 /* ===== Plans Expand (Machan Nov 13 7:34 PM ICT): Essentials first with Plus peeking; And More opens a full-screen sheet grown from the tile ===== */
 @media(max-width:600px){
-  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory}
-  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:start!important}
+  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0;overscroll-behavior-x:contain;touch-action:pan-x}
+  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:center!important}
+  /* Essentials (first tile) keeps its left-aligned landing snap. Plus and Complete center. */
+  body.on-home #row-plans .hm-plan:first-child{scroll-snap-align:start!important}
+  /* Dimming starts only after a tap or swipe (pc-dimmed). On first land all three stay equal.
+     Active snap tile is full; others sit at 76% with a light desaturation. No green. */
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{opacity:.76;filter:saturate(.85);transition:opacity .2s ease,filter .2s ease}
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan.pc-on{opacity:1;filter:none}
+}
+@media (max-width:600px) and (prefers-reduced-motion:reduce){
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{transition:none}
 }
 body.on-home .hm-plan .pc-inc li[hidden]{display:none!important}
 body.on-home #row-plans .hm-plan,body.on-home #row-plans .pc-more-link{-webkit-tap-highlight-color:transparent} /* no blue tile flash on tap before the sheet grows */

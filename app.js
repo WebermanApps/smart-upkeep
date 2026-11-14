@@ -983,43 +983,84 @@
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
+  /* Plans phone snap (Machan Nov 14 3:36-3:37 PM ICT): Essentials stays left-aligned on landing
+     (he did not ask to change that). Plus and Complete snap to the center. Plus shows a peek of
+     Essentials and Complete; Complete shows a Plus peek on the left and empty space on the right.
+     Tile width is unchanged from the Nov 13 22% peek formula, plus the Nov 14 9% tighten. */
+  function hmPlanCards(sc) { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
+  function hmPlanSnapLeft(sc, card) {
+    var sr = sc.getBoundingClientRect(), cr = card.getBoundingClientRect();
+    var first = hmPlanCards(sc)[0];
+    var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
+    if (card === first) return sc.scrollLeft + (cr.left - sr.left - padL);
+    return sc.scrollLeft + (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
+  }
+  function hmPlanGo(sc, card, behavior) {
+    if (!sc || !card) return;
+    var left = Math.round(hmPlanSnapLeft(sc, card));
+    var max = Math.max(0, sc.scrollWidth - sc.clientWidth);
+    if (left < 0) left = 0; if (left > max) left = max;
+    sc.scrollTo({ left: left, behavior: behavior || "auto" });
+  }
   function bindPlanSwipe(root) {
     var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
     var dots = [].slice.call(root.querySelectorAll("#row-plans .pc-dot"));
     var mq = window.matchMedia("(max-width:600px)");
-    function cards() { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
-    /* Max 20:36 ICT Oct 15: cards ~82% wide, snap to center, Plus centered on load with Essentials/Complete peeking; positioned before first paint (no jump). */
-    function mid(el) { var cr = el.getBoundingClientRect(), sr = sc.getBoundingClientRect(); return (cr.left + cr.width / 2) - (sr.left + sr.width / 2); }
+    var armed = false, quiet = false;
+    function cards() { return hmPlanCards(sc); }
+    function arm() { if (armed) return; armed = true; sc.classList.add("pc-dimmed"); sync(); }
     function sync() {
       if (!mq.matches) return;
-      var best = null, d = 1e9;
-      var sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0), cs = cards();
-      cs.forEach(function (c) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; best = c; } });
-      if (sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
+      var best = null, d = 1e9, cs = cards(), sr = sc.getBoundingClientRect(), midX = sr.left + sr.width / 2;
+      if (sc.scrollLeft <= 2) best = cs[0] || null;
+      else {
+        cs.forEach(function (c) { var cr = c.getBoundingClientRect(), x = Math.abs((cr.left + cr.width / 2) - midX); if (x < d) { d = x; best = c; } });
+      }
       dots.forEach(function (o) { o.classList.toggle("on", !!best && o.getAttribute("data-dot") === best.getAttribute("data-tier")); });
+      cs.forEach(function (c) { c.classList.toggle("pc-on", armed && c === best); });
     }
-    /* Machan Nov 13 7:34 PM ICT ("for plans lets begin with essentials and show a little more of plus"): the row opens at its left edge on
-       Essentials; tile width is set so PC_PEEK % (22%) of the Plus tile shows at the right edge. Snap is to each tile's start. */
+    function viewW() {
+      /* Visible width only (never the content width), same guard as bindPeekSwipe. */
+      var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      var w = sc.clientWidth, host = sc.parentElement;
+      if (host && host.clientWidth && w > host.clientWidth + 40) w = host.clientWidth;
+      if (vw && w > vw + 1) w = vw;
+      return w;
+    }
     function size() {
-      if (!mq.matches) { sc.style.removeProperty("--pc-w"); return; }
+      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.scrollPadding = ""; return; }
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
+      var view = viewW();
       /* Machan Nov 14 9:25 AM: Plans tiles and text slightly smaller (~9% narrower). */
-      var w = (sc.clientWidth - padL - gap) / (1 + PC_PEEK / 100) * 0.91;
-      sc.style.setProperty("--pc-w", Math.floor(w) + "px"); sc.style.scrollPaddingLeft = padL + "px";
+      var w = Math.floor((view - padL - gap) / (1 + PC_PEEK / 100) * 0.91);
+      if (w < 200) w = Math.max(200, Math.floor(view * 0.72));
+      if (w > view - 24) w = Math.max(200, view - 48);
+      sc.style.setProperty("--pc-w", w + "px");
+      /* Right pad so Complete's center can reach the viewport center. */
+      sc.style.paddingRight = Math.max(0, Math.round((view - w) / 2)) + "px";
+      sc.style.scrollPadding = "0px";
     }
     function start() {
       size();
       if (!mq.matches) return;
+      quiet = true;
       var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
       sc.scrollLeft = 0;
       sc.style.scrollBehavior = sb;
       sync();
+      requestAnimationFrame(function () { quiet = false; });
     }
     var raf = 0;
-    sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
+    sc.addEventListener("scroll", function () {
+      if (!quiet && sc.scrollLeft > 2) arm();
+      if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); });
+    }, { passive: true });
     if (mq.addEventListener) mq.addEventListener("change", start);
-    window.addEventListener("resize", size);
+    window.addEventListener("resize", function () { size(); sync(); });
+    if (window.visualViewport) visualViewport.addEventListener("resize", function () { size(); sync(); });
+    sc.hmPlanArm = arm;
     start(); requestAnimationFrame(start);
+    [60, 300, 800].forEach(function (ms) { setTimeout(function () { if (!armed) start(); else { size(); sync(); } }, ms); });
   }
   /* Shared peek-swipe for Home Tailor and FAQ carousels. Same feel as Plans (22% peek, snap to start, dots in sync) but each card keeps its own look. Plans binding is unchanged. */
   function bindPeekSwipe(sc, cardSel, dots, onChange) {
@@ -1242,7 +1283,8 @@
     var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     function pick(c) {
       cards.forEach(function (x) { var on = x === c; x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on ? "true" : "false"); });
-      if (window.matchMedia("(max-width:600px)").matches) sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft), behavior: smooth });
+      if (sc.hmPlanArm) sc.hmPlanArm();
+      if (window.matchMedia("(max-width:600px)").matches) hmPlanGo(sc, c, smooth);
     }
     cards.forEach(function (c) {
       c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
@@ -2150,8 +2192,7 @@
     function syncRow(card) {
       var sc = card.parentNode; if (!sc || !sc.classList || !sc.classList.contains("hm-scroll") || sc.scrollWidth <= sc.clientWidth + 1) return;
       var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
-      var pl = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
-      sc.scrollLeft += card.getBoundingClientRect().left - sc.getBoundingClientRect().left - pl;
+      hmPlanGo(sc, card, "auto");
       sc.style.scrollBehavior = sb;
       try { sc.dispatchEvent(new Event("scroll")); } catch (e) {}
     }
