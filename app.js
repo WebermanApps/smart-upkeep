@@ -447,24 +447,73 @@
   /* Funnel Drop-Off deck #01 A (Machan Nov 13 8:57 AM): browser Back goes to the previous step and keeps the picks. Each screen change pushes a history entry;
      popstate moves to that screen without clearing answers. The in-app Back pill uses the same history so the two never disagree. */
   function suHist(screen, replace) { try { var st = { su: 1, s: screen }; if (replace) history.replaceState(st, "", location.pathname + location.search); else history.pushState(st, "", location.pathname + location.search); } catch (e) {} }
-  function go(screen) { if (typeof obSkip === "function" && obSkip(screen)) screen = obNextOf(screen); if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null; var moved = S.screen !== screen; if (moved) { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); } S.screen = screen; save(); if (moved) suHist(screen, screen === "confirm"); render(); try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {} window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
-  function back() { if (history.state && history.state.su && S.path.length) { suBackPending = true; history.back(); setTimeout(function () { if (suBackPending) { suBackPending = false; backNow(); } }, 400); return; } backNow(); }
+  var obTxLock = false, obTxQ = null;
+  function obReducedMot() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } }
+  function obCanTx(from, to) { return typeof isOb === "function" && isOb(from) && isOb(to) && from !== to; }
+  function obDir(from, to) { var a = obStepNo(from), b = obStepNo(to); if (a && b) return b >= a ? 1 : -1; return 1; }
+  function obFocusStep() {
+    var h = app.querySelector("h1.qf-h");
+    if (h) { if (!h.hasAttribute("tabindex")) h.setAttribute("tabindex", "-1"); try { h.focus({ preventScroll: true }); } catch (e) {} }
+    else { try { app.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function obFlushTxQ() {
+    obTxLock = false;
+    var q = obTxQ; obTxQ = null;
+    if (!q) return;
+    if (q.k === "go") go(q.screen);
+    else if (q.k === "back") back();
+    else if (q.k === "startOver") { S = fresh(); save(); go(OB[0]); }
+  }
+  function go(screen) {
+    if (obTxLock) { obTxQ = { k: "go", screen: screen }; return; }
+    if (typeof obSkip === "function" && obSkip(screen)) screen = obNextOf(screen);
+    if (screen !== "home" && screen !== "confirm") S.resume = screen; else if (screen === "confirm") S.resume = null;
+    var from = S.screen, moved = from !== screen;
+    if (moved) { S.path.push(from); if (S.path.length > 40) S.path.shift(); }
+    S.screen = screen; save();
+    if (moved) suHist(screen, screen === "confirm");
+    var tx = moved && obCanTx(from, screen);
+    render(tx ? { from: from, dir: obDir(from, screen) } : null);
+    try { window.suTrackScreen && suTrackScreen(screen); } catch (x) {}
+    if (!tx) { window.scrollTo(0, 0); obFocusStep(); }
+  }
+  function back() {
+    if (obTxLock) { obTxQ = { k: "back" }; return; }
+    if (history.state && history.state.su && S.path.length) { suBackPending = true; history.back(); setTimeout(function () { if (suBackPending) { suBackPending = false; backNow(); } }, 400); return; }
+    backNow();
+  }
   var suBackPending = false;
   window.addEventListener("popstate", function (e) {
     suBackPending = false;
     var t = e.state && e.state.su ? e.state.s : "home";
     if (t === S.screen) return;
     if (S.screen === "confirm" && isOb(t)) { suHist("confirm", true); return; } /* B7: no Back into Accept after You're In */
+    if (obTxLock) { /* finish in place, then honor this pop by going once the pane is free */
+      obTxQ = { k: "go", screen: t };
+      return;
+    }
     var ix = S.path.lastIndexOf(t);
     if (ix > -1) S.path = S.path.slice(0, ix); else { S.path.push(S.screen); if (S.path.length > 40) S.path.shift(); }
-    S.screen = t; if (t !== "home" && t !== "confirm") S.resume = t; save(); render(); window.scrollTo(0, 0);
+    var from = S.screen;
+    S.screen = t; if (t !== "home" && t !== "confirm") S.resume = t; save();
+    var tx = obCanTx(from, t);
+    render(tx ? { from: from, dir: obDir(from, t) } : null);
+    if (!tx) { window.scrollTo(0, 0); obFocusStep(); }
   });
-  function backNow() { var p = S.path.pop(); while (p && obSkip(p)) p = S.path.pop(); S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save(); render(); window.scrollTo(0, 0); }
+  function backNow() {
+    if (obTxLock) { obTxQ = { k: "back" }; return; }
+    var from = S.screen;
+    var p = S.path.pop(); while (p && obSkip(p)) p = S.path.pop();
+    S.screen = p || "home"; if (S.screen !== "home") S.resume = S.screen; save();
+    var tx = obCanTx(from, S.screen);
+    render(tx ? { from: from, dir: obDir(from, S.screen) } : null);
+    if (!tx) { window.scrollTo(0, 0); obFocusStep(); }
+  }
   /* B7: after You're In there is no Back into Accept; only the Home pill. */
   function homePill() { return '<span class="nav-pills">' + backBtn().replace(/^<span class="nav-pills">/, "").replace(/<button class="back back-pill[\s\S]*?<\/button>/, ""); }
-  function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#C1502E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2" stroke-linejoin="round"/></svg></button></span>'; }
+  function backBtn() { return '<span class="nav-pills"><button class="back back-pill mw-hover" data-act="back" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button><button class="home-pill mw-hover" data-act="home" type="button" aria-label="Home"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3.5 11.2 12 4l8.5 7.2M6 9.6V20h12V9.6" fill="none" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5.2h4V20" fill="none" stroke="#C1502E" stroke-width="2" stroke-linejoin="round"/></svg></button></span>'; }
 
-  function render() {
+  function render(tx) {
     /* Nov 11 2026 onboarding redo: the old question screens, photos, free tech visit, compare, sign-up and pay screens are retired. Saved state on any of them lands on step 1. */
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
@@ -480,7 +529,11 @@
     else if (s === "confirm") html = confirm();
     else if (s === "cancel") html = cancelPage();
     else { S.screen = "home"; html = home(); }
+    if (tx && tx.dir && isOb(s) && obPageTx(html, tx.dir, s)) return;
     app.innerHTML = html;
+    finishRender(s);
+  }
+  function finishRender(s) {
     app.setAttribute("data-screen", s);
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
@@ -494,6 +547,72 @@
     if (s === "home") bindHome();
     if (s === "cancel") bindCancel();
     var wf = app.querySelector("[data-wait]"); if (wf) wf.addEventListener("submit", function (e) { e.preventDefault(); var z = wf.querySelector("input").value.trim(), em = wf.querySelector("input[type=email]").value.trim(), m = app.querySelector(".hm-wait-msg"); if (!/^\d{5}$/.test(z) || !/.+@.+\..+/.test(em)) { m.textContent = "Enter a 5-digit ZIP and your email."; return; } try { localStorage.setItem("smartUpkeep.waitlist", JSON.stringify({ zip: z, email: em, at: new Date().toISOString() })); } catch (x) {} try { window.SUEvents && SUEvents.emit("waitlist.joined", "site", { payload: { zip: z, from: S.screen } }); } catch (x) {} m.textContent = "You're on the list. We'll email you when Smart Upkeep is coming to your area."; wf.reset(); });
+  }
+  /* Machan Nov 14 8:45 PM ICT: Next slides the new step in from the right (~24px) and fades it; Back mirrors. Progress fill moves with it. Bar, header and house band stay put. */
+  function obPageTx(html, dir, s) {
+    var oldSec = app.querySelector("section.ob");
+    var stage = oldSec && oldSec.querySelector(".ob-stage");
+    var leave = stage && stage.querySelector(".ob-pane:not(.ob-pane-leave)");
+    if (!oldSec || !stage || !leave) return false;
+    var tmp = document.createElement("div"); tmp.innerHTML = html;
+    var neu = tmp.querySelector("section.ob");
+    var enter = neu && neu.querySelector(".ob-pane");
+    if (!neu || !enter) return false;
+    obTxLock = true;
+    window.scrollTo(0, 0);
+    var reduce = obReducedMot();
+    var ms = reduce ? 200 : 320;
+    var ease = reduce ? "ease" : "cubic-bezier(0.22, 1, 0.36, 1)";
+    var dx = reduce ? 0 : (24 * dir);
+    var oldProg = oldSec.querySelector(".qf-prog");
+    var newProg = neu.querySelector(".qf-prog");
+    var oldBar = oldSec.querySelector(".ob-bar");
+    var newBar = neu.querySelector(".ob-bar");
+    oldSec.className = neu.className;
+    if (oldProg && newProg) {
+      var fill = oldProg.querySelector(".qf-fill"), segs = oldProg.querySelector(".qf-segs"), nSegs = newProg.querySelector(".qf-segs");
+      if (segs && nSegs) {
+        segs.setAttribute("aria-valuenow", nSegs.getAttribute("aria-valuenow") || "");
+        segs.setAttribute("aria-valuemax", nSegs.getAttribute("aria-valuemax") || "");
+        segs.setAttribute("aria-label", nSegs.getAttribute("aria-label") || "");
+        var np = nSegs.style.getPropertyValue("--ob-prog"); if (np) segs.style.setProperty("--ob-prog", np);
+        var stepLab = oldProg.querySelector(".qf-step"), nLab = newProg.querySelector(".qf-step");
+        if (stepLab && nLab) stepLab.textContent = nLab.textContent;
+      }
+    }
+    if (oldBar && newBar) oldBar.replaceWith(newBar);
+    var h = stage.getBoundingClientRect().height;
+    if (h) stage.style.height = h + "px";
+    leave.classList.add("ob-pane-leave");
+    leave.style.position = "absolute"; leave.style.left = "0"; leave.style.right = "0"; leave.style.top = "0"; leave.style.width = "100%";
+    enter.style.transform = "translateX(" + dx + "px)";
+    enter.style.opacity = "0";
+    leave.style.transform = "translateX(0)";
+    leave.style.opacity = "1";
+    leave.style.transition = "none";
+    enter.style.transition = "none";
+    stage.appendChild(enter);
+    void enter.offsetWidth;
+    leave.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
+    enter.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
+    leave.style.transform = "translateX(" + (-dx) + "px)";
+    leave.style.opacity = "0";
+    enter.style.transform = "translateX(0)";
+    enter.style.opacity = "1";
+    var ended = false;
+    function end() {
+      if (ended) return; ended = true;
+      if (leave.parentNode) leave.parentNode.removeChild(leave);
+      enter.style.transition = ""; enter.style.transform = ""; enter.style.opacity = "";
+      stage.style.height = "";
+      finishRender(s);
+      window.scrollTo(0, 0);
+      obFocusStep();
+      obFlushTxQ();
+    }
+    leave.addEventListener("transitionend", function te(e) { if (e.target === leave && (e.propertyName === "opacity" || e.propertyName === "transform")) { leave.removeEventListener("transitionend", te); end(); } });
+    setTimeout(end, ms + 80);
+    return true;
   }
 
   /* ---------- Screens ---------- */
@@ -3653,13 +3772,16 @@
   function obShell(id, art, tint, title, help, body, foot) {
     var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
     var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
-    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' Of ' + SQ.length) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' Of ' + SQ.length + '">' +
+    var pct = SQ.length ? Math.round(((i + 1) / SQ.length) * 1000) / 10 : 0;
+    var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' Of ' + SQ.length) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' Of ' + SQ.length + '" style="--ob-prog:' + pct + '%"><i class="qf-fill" aria-hidden="true"></i>' +
       SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
     var dyk = DYK[id] ? '<div class="qf-dyk">' + I("star", "xs") + '<p><b>Did You Know?</b> ' + DYK[id] + '</p></div>' : "";
     var heroArt = art ? '<div class="qf-art mid t' + tint + '" aria-hidden="true">' + I(art) + '</div>' : '';
     return '<section class="qf ob ob-' + id + ' ' + obCls() + '"><div class="ob-hb-slot"></div>' + prog +
-      '<div class="qf-hero stack compact' + (art ? '' : ' qf-hero-plain') + '">' + heroArt + '<h1 class="qf-h">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
-      '<div class="qf-body">' + body + '</div>' + dyk + obFoot(foot) + '</section>';
+      '<div class="ob-stage"><div class="ob-pane">' +
+      '<div class="qf-hero stack compact' + (art ? '' : ' qf-hero-plain') + '">' + heroArt + '<h1 class="qf-h" tabindex="-1">' + title + '</h1>' + (help ? '<p class="qf-help">' + help + '</p>' : '') + '</div>' +
+      '<div class="qf-body">' + body + '</div>' + dyk +
+      '</div></div>' + obFoot(foot) + '</section>';
   }
   /* Funnel decks #11 + #17 (sticky part): Back left and Next right in a sticky bottom bar on every step. The rest of the footer (tagline, Home, Start Over, Built by Machan) stays; the Back-only footer layout is held for the Extras deck. */
   function backOnly() { var m = backBtn().match(/<button class="back back-pill[\s\S]*?<\/button>/); return m ? m[0] : ""; }
@@ -3684,8 +3806,9 @@
     var m = String(foot || "").match(/<button class="btn btn-primary btn-big mw-hover" data-ob-next="1"[^>]*>[\s\S]*?<\/button>/), nx = m ? m[0] : "", rest = nx ? foot.replace(nx, "") : (foot || "");
     /* Funnel Extras deck 05 B (Machan Nov 12): sticky Back and Next bar with a small Built by Machan line under it; no full site footer on steps.
        Machan Nov 13 / Swatch: Start Over is a quiet link under Next, only when answers exist. */
-    /* Machan Nov 14: one row of four equal buttons — Back, Home, Start Over, Next. Home uses go("home") and keeps S.resume. */
-    return '<div class="ob-bar">' + backOnly() + homeBtn() + startOverBtn() + nx + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
+    /* Sign-Up Bar Deck (Machan Nov 14 9:20 PM ICT, "next over the tabs, opposite as Home Screen"): full-width Next on top, then Back / Home / Start Over tabs.
+       Next comes first in the markup too, so reading and tab order match what's on screen. Home uses go("home") and keeps S.resume. */
+    return '<div class="ob-bar">' + nx + backOnly() + homeBtn() + startOverBtn() + '<p class="ob-built machan-ft"><span class="uk-built-a"><span class="mw-machan" style="display:inline-flex;align-items:center;gap:6px"><svg class="mw-machan-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false" style="display:block;flex:none"><path d="M12 5.2C11.2 3 9.4 2 7.6 2.3c.3 1.9 1.9 3.2 4.4 2.9z" fill="#3F7D58"></path><path d="M12 5.2c.8-2.2 2.6-3.2 4.4-2.9-.3 1.9-1.9 3.2-4.4 2.9z" fill="#5E9A6E"></path><rect x="3.5" y="5.5" width="17" height="16" rx="7" fill="#C8643F"></rect><rect x="5.5" y="9" width="13" height="10" rx="5" fill="#FAF6EE"></rect><circle cx="9.6" cy="13.3" r="1.35" fill="#2E6F86"></circle><circle class="uk-eye-r" cx="14.4" cy="13.3" r="1.35" fill="#2E6F86"></circle><path d="M10.6 16.1q1.4 1.1 2.8 0" fill="none" stroke="#C8643F" stroke-width="1.1" stroke-linecap="round"></path><circle cx="7.6" cy="15.6" r=".9" fill="#E9B9A3"></circle><circle cx="16.4" cy="15.6" r=".9" fill="#E9B9A3"></circle><path class="uk-wink-l" d="M13.2 13.5q1.2-1.2 2.4 0" fill="none" stroke="#2E6F86" stroke-width="1.1" stroke-linecap="round"></path></svg>Built by Machan</span></span></p></div>' + (rest ? '<div class="qf-foot">' + rest + '</div>' : '');
   }
   function nextBtn(label, ok) {
     var short = { "Next": "Next", "Skip For Now": "Skip", "Continue To Your Proposal": "Next", "Looks Good": "Next", "Continue To Payment": "Next", "Back To Your Plan": "Done" }[label] || "Next";
@@ -3697,28 +3820,25 @@
   function addrOk() { var a = S.answers; return /\d+\s+\S+/.test(String(a.street || "").trim()) && /^\d{5}$/.test(String(a.zipcode || "")); }
   function obAddress() {
     var a = S.answers, out = S._outZip && S._outZip === a.zipcode;
-    /* #4: size and stories start on the first option (existing SIZE_OPTS tiers only, no new prices) */
-    if (a.sqft == null || a.sqft === "unsure" || !SIZE_OPTS.some(function (o) { return o[0] === String(a.sqft); })) a.sqft = SIZE_OPTS[0][0];
-    if (a.stories == null || a.stories === "unsure") a.stories = STORY_OPTS[0][0];
-    var si = 0; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
-    var st = String(a.stories);
-    /* Swatch Nov 13: Street full width, ZIP half width with the service-area helper under it; size chips 2x3, no box; stories as a plain stepper row. Same SIZE_OPTS / STORY_OPTS values. Autofill hints stay. */
+    /* Size and stories are asked on step 2 with no preselected value (Machan Nov 14 8:45 PM ICT). */
     var body = '<div class="ob-home-form"><div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
       '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
       '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") + '</div>';
     return obShell("address", "", 0, "Where's Your Home?", "", body, nextBtn("Next", addrOk() && !out));
   }
-  /* Step 2 Of 11: Home Size chips + Stories stepper (moved off step 1; same SIZE_OPTS / STORY_OPTS, same markup and CSS as before). */
+  function sizePicked() { var v = S.answers && S.answers.sqft; return SIZE_OPTS.some(function (o) { return o[0] === String(v); }); }
+  function storiesPicked() { var v = S.answers && S.answers.stories; return STORY_OPTS.some(function (o) { return o[0] === String(v); }); }
+  /* Step 2: Home Size and How Many Stories as two distinct questions. No preselected value; a saved resume keeps the pick. Pricing and the house band still use a.stories || "1". */
   function obHomeSize() {
-    var a = S.answers;
-    if (a.sqft == null || a.sqft === "unsure" || !SIZE_OPTS.some(function (o) { return o[0] === String(a.sqft); })) a.sqft = SIZE_OPTS[0][0];
-    if (a.stories == null || a.stories === "unsure") a.stories = STORY_OPTS[0][0];
-    var si = 0; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
-    var st = String(a.stories);
-    var body = '<div class="ob-home-form">' + '<div class="ob-size"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p></div>' +
+    var a = S.answers, hasSz = sizePicked(), hasSt = storiesPicked();
+    var si = -1; if (hasSz) SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(a.sqft)) si = k; });
+    var st = hasSt ? String(a.stories) : "";
+    var body = '<div class="ob-home-form ob-home-split">' +
+      '<div class="ob-qcard ob-size" id="obSizeCard" tabindex="-1"><div class="meta"><p class="k" id="obSizeK">Home Size</p><p class="s">A rough range is fine</p><p class="ferr ob-qerr" id="obSizeErr" role="alert"></p></div>' +
       '<div class="size-chips" role="radiogroup" aria-labelledby="obSizeK">' + SIZE_OPTS.map(function (o, k) { return '<button type="button" class="size-chip mw-hover' + (k === si ? " on" : "") + '" role="radio" aria-checked="' + (k === si) + '" data-ob-size="' + o[0] + '" aria-label="' + o[1] + ' sq ft">' + o[1] + '</button>'; }).join("") + '</div></div>' +
-      '<div class="ob-stories"><div class="ob-stories-row"><p class="k" id="obStoriesK">Stories</p>' + obStepper("stories", st, st === "1", st === "3", "Stories") + '</div></div></div>';
+      '<div class="ob-qcard ob-stories" id="obStoriesCard" tabindex="-1"><div class="meta"><p class="k" id="obStoriesK">How Many Stories?</p><p class="ferr ob-qerr" id="obStoriesErr" role="alert"></p></div>' +
+      '<div class="story-chips" role="radiogroup" aria-labelledby="obStoriesK">' + STORY_OPTS.map(function (o) { var on = st === o[0]; return '<button type="button" class="story-chip mw-hover' + (on ? " on" : "") + '" role="radio" aria-checked="' + on + '" data-ob-story="' + o[0] + '" aria-label="' + o[1] + (o[2] ? ", " + o[2] : "") + '">' + o[1] + '</button>'; }).join("") + '</div></div></div>'; /* #140 r2: the nudge sits on the card's title line, so a miss never adds height above the bar */
     return obShell("homesize", "", 0, "How Big Is Your Home?", "", body, nextBtn("Next", true)).replace('class="qf ob ob-homesize ', 'class="qf ob ob-address ob-homesize ');
   }
   function waitlistCard(z) {
@@ -3988,6 +4108,7 @@
         f.addEventListener("blur", function () { if (f.value.trim()) touched[id] = 1; chk(id, false); save(); }); });
     })();
     function next() {
+      if (obTxLock) return;
       keep(); save();
       var first = null;
       detailErrs(S.signup).forEach(function (x) { var el = document.getElementById("e-" + x[0]), f = document.getElementById(x[0]); if (el) el.textContent = x[1]; if (f) f.setAttribute("aria-invalid", x[1] ? "true" : "false"); if (x[1] && !first) first = f; });
@@ -4091,7 +4212,7 @@
     var afp = document.getElementById("afPop"); if (afp && s !== "plan") afp.remove();
     if (s === "plan") bindAfPop();
     var nx = app.querySelector("[data-ob-next]");
-    app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { go(b.getAttribute("data-ob-go")); }); });
+    app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { if (obTxLock) return; go(b.getAttribute("data-ob-go")); }); });
     if (s === "address") {
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
       function showSo() { /* Start Over stays visible in the four-button bar so the row stays even. */ }
@@ -4102,6 +4223,7 @@
         el.addEventListener("blur", function () { upd(); if (!addrOk() && (st.value.trim() || zp.value.trim())) er.textContent = "Enter your street address and 5-digit ZIP."; });
       });
       if (nx) nx.addEventListener("click", function () {
+        if (obTxLock) return;
         upd();
         if (!addrOk()) { er.textContent = "Enter your street address and 5-digit ZIP."; return; }
         if (!inArea(S.answers.zipcode)) { S._outZip = S.answers.zipcode; save(); render(); return; }
@@ -4110,14 +4232,28 @@
       return;
     }
     if (s === "homesize") {
-      if (nx) nx.addEventListener("click", function () { save(); go("systems"); });
+      function clearQ(card, err) { if (card) card.classList.remove("ob-q-miss"); if (err) err.textContent = ""; }
+      function missQ(which) {
+        var card = document.getElementById(which === "size" ? "obSizeCard" : "obStoriesCard");
+        var err = document.getElementById(which === "size" ? "obSizeErr" : "obStoriesErr");
+        var msg = which === "size" ? "Pick Home Size" : "Pick How Many Stories";
+        if (err) err.textContent = msg;
+        if (card) {
+          card.classList.add("ob-q-miss");
+          try { card.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {}
+          try { card.focus({ preventScroll: true }); } catch (e) {}
+        }
+      }
+      if (nx) nx.addEventListener("click", function () {
+        if (obTxLock) return;
+        if (!sizePicked()) { missQ("size"); return; }
+        if (!storiesPicked()) { missQ("stories"); return; }
+        save(); go("systems");
+      });
       app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () {
-        var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
-      app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
-        var kv = b.getAttribute("data-ob-step").split(":"), d = Number(kv[1]);
-        if (kv[0] === "sqft") { var si = -1; SIZE_OPTS.forEach(function (o, k) { if (o[0] === String(S.answers.sqft)) si = k; }); si = si < 0 ? 0 : Math.max(0, Math.min(SIZE_OPTS.length - 1, si + d)); S.answers.sqft = SIZE_OPTS[si][0]; }
-        else { var n = Number(S.answers.stories) || 0; n = n ? Math.max(1, Math.min(3, n + d)) : 1; S.answers.stories = String(n); }
-        rer(); }); });
+        var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; clearQ(document.getElementById("obSizeCard"), document.getElementById("obSizeErr")); rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
+      app.querySelectorAll("[data-ob-story]").forEach(function (b) { b.addEventListener("click", function () {
+        var v = b.getAttribute("data-ob-story"); if (STORY_OPTS.some(function (o) { return o[0] === v; })) { S.answers.stories = v; clearQ(document.getElementById("obStoriesCard"), document.getElementById("obStoriesErr")); rer(); var f = app.querySelector('[data-ob-story="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
       return;
     }
     if (s === "systems" || s === "systems2") {
@@ -4129,7 +4265,7 @@
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
-      if (nx) nx.addEventListener("click", function () { if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (obTxLock) return; if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
         try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}
@@ -4148,7 +4284,7 @@
     }
     if (s === "plan") {
       app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function () { S.tier = b.getAttribute("data-ob-tier"); rer(); }); });
-      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
+      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
       if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     }
     if (s === "billing") {
@@ -4170,7 +4306,7 @@
     }
     if (s === "accept") { bindAccept(); sfitAccept(); return; }
     if (s === "details") { bindDetails(); return; }
-    if (nx) nx.addEventListener("click", function () { go(obNextOf(s)); });
+    if (nx) nx.addEventListener("click", function () { if (obTxLock) return; go(obNextOf(s)); });
   }
 
   /* ===== Sign-Up Fit deck (Machan Nov 13 8:50 AM) =====
@@ -4239,7 +4375,7 @@
     card.classList.add("sfit-hold");
     var pay = form.querySelector(".paybox"); if (pay) rows.appendChild(pay);
     form.insertBefore(rows, form.firstChild);
-    var join = form.querySelector('button[type="submit"]'); if (join) { join.setAttribute("form", "obF"); bar.insertBefore(join, built); }
+    var join = form.querySelector('button[type="submit"]'); if (join) { join.setAttribute("form", "obF"); bar.insertBefore(join, bar.firstChild); } /* Next-over-tabs bar: the CTA leads */
     var tail = document.createElement("div"); tail.className = "sfit-tail"; [q(".ob-soon"), q(".su-cancel-line")].forEach(function (n) { if (n) tail.appendChild(n); }); form.appendChild(tail);
     /* errors on submit open the first box that needs a fix */
     form.addEventListener("submit", function () { setTimeout(function () { var m = [["agree", "agree"], ["chargeOk", "charge"], ["agreeSig", "sig"]].filter(function (x) { var e = document.getElementById("e-" + x[0]); return e && e.textContent; })[0]; if (m) api.open(m[1]); }, 0); });
@@ -4256,7 +4392,7 @@
       /* Tailor Your Plan has no Did You Know (Machan Nov 14); the priced note may still sit under the list. Measure the lowest one shown so the list can use the freed height. */
       var low = 0; [dyk, list, sec.querySelector(".qf-body .priced-note")].forEach(function (e) { if (e && e.getClientRects().length) low = Math.max(low, e.getBoundingClientRect().bottom); });
       var over = Math.ceil(low + 8 - bar.getBoundingClientRect().top);
-      var docOver = document.documentElement.scrollHeight - window.innerHeight;
+      var docOver = (window.suHouse && window.suHouse.docOver) ? window.suHouse.docOver() : document.documentElement.scrollHeight - window.innerHeight; /* #140 r2: the 36px page footer under the bar isn't overflow */
       return Math.max(over, docOver);
     }
     var over = overflowPx();
@@ -4521,7 +4657,7 @@
     if (a === "back") return back();
     if (a === "home") return go("home");
     if (a === "dismissResume") { S = fresh(); save(); render(); return; }
-    if (a === "startOver") { S = fresh(); save(); return go(OB[0]); }
+    if (a === "startOver") { if (obTxLock) { obTxQ = { k: "startOver" }; return; } S = fresh(); save(); return go(OB[0]); }
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : OB[0]); }
     if (a === "start") {
       if (hasResume()) { openResumePrompt(from); return; }
@@ -4770,9 +4906,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p3"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s4"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9p2"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s4"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
