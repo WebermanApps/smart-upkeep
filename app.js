@@ -1777,23 +1777,31 @@
       function apply(h) { h = Math.min(H, Math.round(h)); var ov = Math.round(Math.min(96, h * 0.2)); root.style.setProperty("--hero-ov", ov + "px"); root.style.setProperty("--hero-ov-pad", Math.max(gap, Math.round(ov * 0.4)) + "px"); thumb.style.height = h + "px"; thumb.style.aspectRatio = "auto"; }
       apply(H);
       if (chips && arrow) {
-        /* Arrow sits 8px above the real bar top. Section is content-sized, so measure against the bar, not a padding spacer. */
+        /* Arrow sits 8px above the real bar top. Section is content-sized, so measure against the bar, not a padding spacer.
+           chips.getBoundingClientRect().bottom is a viewport Y, so a refit while the hero is off-screen (footer pull-up,
+           Safari toolbar resize) treats a large negative bottom as leftover room and grows the video. Translate chips to
+           where they would sit if #hs-top were parked under the header, which is scroll-independent. */
+        var hdrEl = document.querySelector(".topbar");
+        var hdrB = hdrEl ? hdrEl.getBoundingClientRect().bottom / z : 0;
+        var parkedBottom = function (el) {
+          return (el.getBoundingClientRect().bottom - sec.getBoundingClientRect().top) / z + hdrB;
+        };
         var limit = function () { return barTop() - 8 - arrow.getBoundingClientRect().height / z; };
         for (var n = 0; n < 6; n++) {
-          var slack = limit() - gap - chips.getBoundingClientRect().bottom / z, cur = thumb.getBoundingClientRect().height / z;
+          var slack = limit() - gap - parkedBottom(chips), cur = thumb.getBoundingClientRect().height / z;
           if (slack >= 0 && (slack < 2 || cur >= H)) break;
           apply(Math.max(160, Math.floor(cur + slack / 0.88)));
         }
-        if (limit() - gap - chips.getBoundingClientRect().bottom / z < 0) apply(Math.max(160, thumb.getBoundingClientRect().height / z - 2));
+        if (limit() - gap - parkedBottom(chips) < 0) apply(Math.max(160, thumb.getBoundingClientRect().height / z - 2));
         /* Machan Nov 13 1:25 PM ("a little more room beneath see plans ... make the video section a little larger"): when the video is already at its
            full 3:4 and room is left above See Plans, grow it proportionally (wider and taller, same 3:4) into that room, up to 10px past each side margin. */
-        var room = limit() - gap - chips.getBoundingClientRect().bottom / z, curH = thumb.getBoundingClientRect().height / z;
+        var room = limit() - gap - parkedBottom(chips), curH = thumb.getBoundingClientRect().height / z;
         if (room > 2 && curH >= H - 1) {
           var grow = Math.min(20, Math.floor(room * 0.75 / 2) * 2);
           if (grow >= 2) {
             thumb.style.setProperty("width", (W + grow) + "px", "important"); thumb.style.setProperty("margin-left", "auto", "important"); thumb.style.setProperty("margin-right", "auto", "important");
             H = Math.round((W + grow) * 4 / 3); apply(H);
-            for (var m = 0; m < 4 && limit() - gap - chips.getBoundingClientRect().bottom / z < 0; m++) { grow -= 2; thumb.style.setProperty("width", (W + grow) + "px", "important"); H = Math.round((W + grow) * 4 / 3); apply(H); }
+            for (var m = 0; m < 4 && limit() - gap - parkedBottom(chips) < 0; m++) { grow -= 2; thumb.style.setProperty("width", (W + grow) + "px", "important"); H = Math.round((W + grow) * 4 / 3); apply(H); }
           }
         }
       }
