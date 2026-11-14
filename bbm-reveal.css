@@ -137,6 +137,8 @@ html:not(.su-boot):not(.bbm-has-bar) body{
   display:flex;
   flex-direction:column;
   min-height:calc(100dvh + var(--bbm-h));
+  box-sizing:border-box;
+  padding-bottom:0!important;
 }
 html:not(.su-boot):not(.bbm-has-bar) body > main,
 html:not(.su-boot):not(.bbm-has-bar) body > .phone{
@@ -161,25 +163,74 @@ html:not(.su-boot):not(.bbm-has-bar) .scr.on footer{
 
 /* Tech (and similar) login/screens: the footer lives inside a 100dvh
    panel, so grow the panel by one credit-line to hide it at rest. */
-html:not(.bbm-has-bar) .scr.on{min-height:calc(100dvh + var(--bbm-h))!important}
-html:not(.bbm-has-bar) .phone{min-height:calc(100dvh + var(--bbm-h))!important}
+html:not(.bbm-has-bar) .scr.on,
+html:not(.bbm-has-bar) .phone{
+  min-height:calc(100dvh + var(--bbm-h))!important;
+  box-sizing:border-box!important;
+}
+/* Tech sign-in: .login's 24px bottom padding sat under the credit inside
+   the 100dvh+36 panel, so 24px of the line peeked at load. */
+html:not(.bbm-has-bar) .scr.on .login{padding-bottom:0!important}
 
 /* Billing and other subpages must be able to scroll the reveal sliver. */
 html.bbm-has-bar,html.bbm-has-bar body{overflow-x:hidden;overflow-y:auto}
 
-/* Member subpages (help, billing, profile, notifications): visually tuck the
-   credit into the bar, and keep a bar-height of real scroll so a pull lifts
-   it out. Do not collapse the document with a negative margin. */
-html.bbm-has-bar body:has(nav.mbar) footer.ft{
+/* Member subpages (help, profile, notifications): pin the credit to the
+   bottom of the viewport, z-index under the bar, the same way Home does.
+   A one-bar-height translate is not enough when the in-flow footer sits
+   well above the bar on a short page. JS translates it up on pull. */
+html.bbm-has-bar body:has(nav.mbar) footer.ft:not(.bbm-sheet-ft){
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  margin:0!important;
+  margin-top:0!important;
   margin-bottom:0!important;
+  padding:0 16px!important;
+  z-index:1!important;
+  background:transparent!important;
+  min-height:var(--bbm-h)!important;
   padding-bottom:0!important;
-  transform:translateY(var(--bbm-under));
 }
 html.bbm-has-bar body:has(nav.mbar){
   padding-bottom:calc(78px + env(safe-area-inset-bottom,0px) + var(--bbm-under))!important;
-  min-height:calc(100dvh + var(--bbm-under));
+  min-height:calc(100dvh + var(--bbm-under))!important;
   overflow-x:hidden!important;
   overflow-y:auto!important;
+}
+
+/* Billing in-app sheet: the document cannot scroll (maxScroll=0) and
+   dockSheetHeight sizes the sheet to its content, including the credit
+   already at the end of .sh-body. JS caps the sheet just above that
+   line so a pull inside .sh-body reveals it. */
+#sheet.on:has(footer.bbm-sheet-ft){
+  overflow:hidden;
+}
+#sheet.on .sh-body:has(footer.bbm-sheet-ft){
+  padding-bottom:0!important;
+}
+#sheet.on footer.bbm-sheet-ft,
+#sheet.acct-on footer.bbm-sheet-ft,
+#sheet.acct-on footer{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  margin:0!important;
+  margin-top:0!important;
+  padding:0 16px!important;
+  min-height:var(--bbm-h)!important;
+  height:auto!important;
+  transform:none!important;
+  z-index:1;
+  background:transparent!important;
+  box-sizing:border-box;
 }
 
 /* Onboarding: hide the in-bar credit even after onboarding.css is injected
