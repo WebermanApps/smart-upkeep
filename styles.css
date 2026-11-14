@@ -3952,6 +3952,9 @@ html body.on-home #row-plans .hm-plan .pc-exp-x{
   color:#6B625A;
 }
 html body.on-home #row-plans .hm-plan.pc-exp .pc-exp-x{display:inline-flex}
+/* Swatch r2 F4: keep the Welcome Offer pill clear of the 44px X on the expanded tile. */
+html body.on-home #row-plans .hm-plan.pc-exp .pc-offer{right:44px;padding:.1rem .45rem;letter-spacing:.02em}
+@media (max-width:374px){html body.on-home #row-plans .hm-plan.pc-exp .pc-offer{top:.3rem;min-height:24px;padding:0 .4rem;letter-spacing:0}} /* 360: keeps >=4px before the plan name and lifts the pill off the price */
 html body.on-home #row-plans .hm-plan .pc-full{
   display:grid;
   grid-template-rows:0fr;
