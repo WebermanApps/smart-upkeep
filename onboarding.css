@@ -1522,4 +1522,41 @@ html.ob-hb-on .ob-hb .hb-it:is([data-k="f1"],[data-k="f2"],[data-k="a1"],[data-k
 .ob-hb .hb-orb{position:absolute;width:24px;height:24px;margin:0 -12px;border-radius:50%;background:#FFFCF7;border:1px solid #E4D5C6;box-shadow:0 2px 6px rgba(42,36,28,.1);display:grid;place-items:center;font:600 11px/1 Hind,system-ui,sans-serif;color:#A8431F}
 .ob-hb .hb-orb svg{width:14px;height:14px;fill:none;stroke:#A8431F;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 html.ob-hb-mini .ob-hb .hb-orbit{display:none}
+
+/* ===== Onboarding Polish C (Machan Nov 14 9:15 PM ICT, Onboarding Polish Deck: A on cards 8, 9, 10). Figures come from the live quote code; transform and opacity only; reduced motion fades. ===== */
+/* Card 8. Itemized Receipt And A Count-Up. */
+html body.on-ob .ob.qf.ob-review .bd-card{background-color:#FFF9F1!important;background-image:repeating-linear-gradient(0deg,transparent 0,transparent 27px,rgba(168,67,31,.05) 27px,rgba(168,67,31,.05) 28px),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.55  0 0 0 0 0.45  0 0 0 0 0.35  0 0 0 .07 0'/></filter><rect width='80' height='80' filter='url(%23n)'/></svg>")!important;background-size:auto,80px 80px!important;border-color:#E4D5C6!important;box-shadow:0 8px 20px rgba(42,36,28,.07)!important}
+html body.on-ob .ob.qf.ob-review .bd-row{border-top:1px dashed #E4D5C6;color:#1A1A1A}
+html body.on-ob .ob.qf.ob-review .bd-row:first-child{border-top:0}
+html body.on-ob .ob.qf.ob-review .bd-row .k small{color:#5C534C}
+html body.on-ob .ob.qf.ob-review .bd-total{border-top:1.5px solid #1A1A1A}
+html body.on-ob .ob.qf.ob-review .bd-total .k{font:600 17px/22px Khand,var(--mw-font-heading),sans-serif}
+html body.on-ob .ob.qf.ob-review .bd-total .v{color:#A8431F;font:700 26px/24px Khand,var(--mw-font-heading),sans-serif!important;display:inline-block;font-variant-numeric:tabular-nums}
+/* Card 9. Live Monthly Delta Pill on Tailor: once an add-on is on, the line under the title becomes a pill with the same add-on total as the note under the list. */
+html body.on-ob .ob.qf.ob-addons .qf-hero .pc-delta{grid-column:1/-1;justify-self:start;display:inline-flex;align-items:baseline;gap:6px;margin:0;padding:3px 12px 2px;border-radius:999px;background:#F3E6DF;border:1px solid #E0C9BC;box-shadow:0 2px 6px rgba(168,67,31,.1);font:600 16px/20px Khand,var(--mw-font-heading),sans-serif;color:#A8431F;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+html body.on-ob .ob.qf.ob-addons .qf-hero .pc-delta .pc-n{display:inline-block}
+html body.on-ob .ob.qf.ob-addons .qf-hero .pc-delta small{font:500 12px/1 Hind,var(--mw-font-body),sans-serif;color:#5C534C}
+/* Card 10. Swipeable Plan Cards: a horizontal snap row like the Home Plans tiles; the picked card is lit, outlined and lifted; neighbors peek. */
+html body.on-ob .ob.qf.ob-plan .plan-stack{display:flex!important;flex-direction:row!important;align-items:stretch;gap:10px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:12px 13% 8px!important;margin:0;scroll-padding:0 13%}
+html body.on-ob .ob.qf.ob-plan .plan-stack::-webkit-scrollbar{display:none}
+html body.on-ob .ob.qf.ob-plan .plan-card{flex:0 0 100%;min-width:0;scroll-snap-align:center;display:flex!important;flex-direction:column;align-items:stretch;background:#F9F5EF!important;border:1px solid #E6E0D6!important;border-top:5px solid var(--plan-c,#A8431F)!important;border-radius:16px!important;box-shadow:none!important;padding:8px 12px 10px!important;transition:transform .25s ease-out,box-shadow .25s ease-out}
+html body.on-ob .ob.qf.ob-plan .plan-card > *{margin-left:0;margin-right:0}
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-kicker{margin:0}
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-name,html body.on-ob .ob.qf.ob-plan .plan-card .plan-price{display:inline;margin:0}
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-cta{width:100%!important;margin-top:auto!important;min-height:44px!important;padding-top:0!important;padding-bottom:0!important}
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-base{margin:0 0 6px}
+html body.on-ob .ob.qf.ob-plan .plan-card .check-list{margin:0 0 8px!important}
+html body.on-ob .ob.qf.ob-plan .plan-card.sel{background:#FFFCF7!important;border:2px solid var(--plan-c,#A8431F)!important;border-top:5px solid var(--plan-c,#A8431F)!important;box-shadow:0 8px 22px color-mix(in srgb,var(--plan-c,#A8431F) 18%,transparent)!important;transform:translateY(-2px)}
+@media (min-width:900px){
+  html body.on-ob .ob.qf.ob-plan .plan-stack{padding:12px 2px 8px!important;margin:0;scroll-padding:0}
+  html body.on-ob .ob.qf.ob-plan .plan-card{flex:1 1 0}
+}
+@media (prefers-reduced-motion:reduce){
+  html body.on-ob .ob.qf.ob-plan .plan-card.sel{transform:none!important}
+  html body.on-ob .ob.qf.ob-plan .plan-card{transition:none}
+}
+html body.on-ob .ob.qf.ob-plan :is(.ob-stage,.ob-pane,.qf-body){min-width:0;max-width:100%}
+html body.on-ob .ob.qf.ob-plan .plan-stack{width:100%;max-width:100%;box-sizing:border-box;contain:inline-size}
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-base{color:#5C534C} /* 4.5:1+ on the #F9F5EF swipe cards */
+html body.on-ob .ob.qf.ob-plan .plan-card .plan-price small{color:#5C534C} /* Swatch #148 r1 F7: /mo at 4.5:1+ on the #F9F5EF card */
 html body.on-ob section.ob.qf{width:min(calc(100vw - 32px),420px);box-sizing:border-box} /* Swatch #147 r2: every step keeps a definite width so the Your Home strip has room (no 24-44px address chip) */

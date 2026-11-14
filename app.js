@@ -592,6 +592,7 @@
     leave.style.transition = "none";
     enter.style.transition = "none";
     stage.appendChild(enter);
+    if (s === "review") { var cuV = enter.querySelector(".bd-total .v"); if (cuV) { cuV.setAttribute("data-cu", "1"); obCountUp(cuV); } } /* Swatch #148 r1 F6: start the count-up as the pane slides in, so the total never flashes first */
     void enter.offsetWidth;
     leave.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
     enter.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
@@ -3952,7 +3953,12 @@
       '<button type="button" role="tab" class="mw-hover' + (tab === "once" ? " on" : "") + '" id="ob-ao-tab-once" aria-selected="' + (tab === "once") + '" aria-controls="ob-ao-panel" data-ob-ao-tab="once">One-Time Services</button></div>';
     var list = '<ul class="ob-ao-list" id="ob-ao-panel" role="tabpanel" aria-labelledby="' + (tab === "once" ? "ob-ao-tab-once" : "ob-ao-tab-monthly") + '">' + (tab === "once" ? once : monthly) + '</ul>';
     var body = '<div class="ob-ao-groups">' + tabs + list + '</div>' + (aoNoteBits.length ? '<p class="priced-note">Your add-ons: ' + aoNoteBits.join(" + ") + '</p>' : '');
-    return obShell("addons", "wrench", 3, "Tailor Your Plan", "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
+    /* Onboarding Polish C card 9 (Machan Nov 14 9:15 PM ICT): once an add-on is on, the line under the title becomes a pill with the same add-on total
+       as the note under the list (same figures, from the same code; the note and its wording stay). */
+    var pill = '';
+    if (addMoSum || addYrSum) pill = '<p class="pc-delta" aria-live="polite"><span class="pc-n">' + [addMoSum ? "+" + money(addMoSum) + "/mo" : "", addYrSum ? (addMoSum ? "+ " : "+") + money(addYrSum) + "/yr" : ""].filter(Boolean).join(" ") + '</span><small>Add-Ons</small></p>';
+    var html = obShell("addons", "wrench", 3, "Tailor Your Plan", pill ? "" : "Optional. Add any of these to your plan, or skip.", body, nextBtn(sel.length ? "Next" : "Skip For Now", true));
+    return pill ? html.replace('<h1 class="qf-h" tabindex="-1">Tailor Your Plan</h1>', '<h1 class="qf-h" tabindex="-1">Tailor Your Plan</h1>' + pill) : html;
   }
 
   /* 5. Plan with tags: Essentials / Plus / Complete, Plus by default, one "Tailor Your Plan" control. Deck card 2: A tag chips, B checklist. */
@@ -4214,6 +4220,43 @@
     if (xBtn) xBtn.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); shut(true); });
     pop.addEventListener("su-close-badge", function () { shut(false); });
   }
+  /* Onboarding Polish C card 8: Due Today counts up to the live total once when the proposal opens; it always ends on the exact figure money() printed.
+     Reduced motion fades the total in. */
+  function obCountUp(v) {
+    if (!v || !v.animate) return;
+    var fin = v.textContent, m = fin.match(/^([^\d]*)([\d,]+)(\.\d+)?(.*)$/);
+    if (obReducedMot() || !m) { v.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250 }); return; }
+    var dec = m[3] ? m[3].length - 1 : 0, to = parseFloat((m[2] + (m[3] || "")).replace(/,/g, "")), t0 = 0, D = 700;
+    if (!(to > 0)) return;
+    function fmt(x) { var s = x.toFixed(dec).split("."); return m[1] + s[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (dec ? "." + s[1] : "") + m[4]; }
+    v.style.minWidth = v.getBoundingClientRect().width + "px";
+    v.animate([{ opacity: .4, transform: "translateY(4px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 300, easing: "ease-out" });
+    function step(ts) {
+      if (!v.isConnected) return;
+      if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / D), e = 1 - Math.pow(1 - k, 3);
+      v.textContent = k >= 1 ? fin : fmt(to * e);
+      if (k < 1) requestAnimationFrame(step); else v.style.minWidth = "";
+    }
+    v.textContent = fmt(0); requestAnimationFrame(step);
+    setTimeout(function () { if (v.isConnected && v.textContent !== fin) { v.textContent = fin; v.style.minWidth = ""; } }, D + 400);
+  }
+  /* Onboarding Polish C card 9: the pill ticks when the add-on total changes. */
+  var obLastDelta = null;
+  function obDeltaTick() {
+    var p = app.querySelector(".ob-addons .pc-delta .pc-n"), now = p ? p.textContent : "";
+    if (p && obLastDelta !== null && now !== obLastDelta && p.animate) p.animate(obReducedMot() ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, transform: "translateY(-6px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: obReducedMot() ? 200 : 280, easing: "cubic-bezier(.2,.8,.2,1)" });
+    obLastDelta = now;
+  }
+  /* Onboarding Polish C card 10: keep the picked plan card centered in the swipe row; a new pick glides there from where the row was. */
+  var obPlanX = null;
+  function obPlanCenter() {
+    var sk = app.querySelector(".ob-plan .plan-stack"), c = sk && sk.querySelector(".plan-card.sel"); if (!sk || !c) return;
+    var sr = sk.getBoundingClientRect(), cr = c.getBoundingClientRect(), to = Math.max(0, sk.scrollLeft + (cr.left - sr.left) - (sr.width - cr.width) / 2);
+    if (obPlanX !== null && !obReducedMot() && sk.scrollTo) { sk.scrollLeft = obPlanX; sk.scrollTo({ left: to, behavior: "smooth" }); }
+    else sk.scrollLeft = to;
+    obPlanX = null;
+    sk.querySelectorAll(".plan-cta").forEach(function (b) { b.addEventListener("focus", function () { var card = b.closest(".plan-card"); if (card && card.scrollIntoView) card.scrollIntoView({ block: "nearest", inline: "center", behavior: obReducedMot() ? "auto" : "smooth" }); }); });
+  }
   /* Onboarding Polish A card 3: only the tile or chip that was just picked lifts and pops its check (a full re-render would otherwise replay every one). Reduced motion fades. */
   function obSelPop(el, pseudo) {
     if (!el || !el.animate) return;
@@ -4255,6 +4298,7 @@
     if (s === "plan") bindAfPop();
     var nx = app.querySelector("[data-ob-next]");
     app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { if (obTxLock) return; go(b.getAttribute("data-ob-go")); }); });
+    if (s === "review") { var cuT = app.querySelector(".ob-review .bd-total .v"); if (cuT && !cuT.hasAttribute("data-cu")) obCountUp(cuT); }
     if (s === "address") {
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
       function showSo() { /* Start Over stays visible in the four-button bar so the row stays even. */ }
@@ -4340,10 +4384,12 @@
         var id = b.getAttribute("data-ob-ao"); S.addons = Array.isArray(S.addons) ? S.addons.slice() : []; var ix = S.addons.indexOf(id);
         if (ix > -1) S.addons.splice(ix, 1); else S.addons.push(id); syncSharedExtras("addons"); logAddon(ix > -1 ? "untap" : "tap", id, "onboarding-addons"); rer(); }); });
       app.querySelectorAll("[data-ob-ao-open]").forEach(function (b) { b.addEventListener("click", function () { var id = b.getAttribute("data-ob-ao-open"); S._aoOpen = S._aoOpen === id ? null : id; rer(); }); });
+      obDeltaTick();
       sfitAddons(); setTimeout(sfitAddons, 300); if (document.fonts && document.fonts.ready) document.fonts.ready.then(sfitAddons);
     }
     if (s === "plan") {
-      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function () { S.tier = b.getAttribute("data-ob-tier"); rer(); }); });
+      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function (e) { e.stopPropagation(); var sk = app.querySelector(".ob-plan .plan-stack"); obPlanX = sk ? sk.scrollLeft : null; var k = b.getAttribute("data-ob-tier"); S.tier = k; rer(); var nb = app.querySelector('.plan-card.sel [data-ob-tailor]'); if (nb && b.tagName === "BUTTON") { try { nb.focus({ preventScroll: true }); } catch (x) {} } }); });
+      obPlanCenter();
       var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
       if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     }
@@ -4966,7 +5012,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s2"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s3"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
