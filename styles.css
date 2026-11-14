@@ -3967,7 +3967,6 @@ html body.on-home #row-plans .hm-plan.pc-exp .pc-full-in{
   padding-bottom:8px;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
-  touch-action:pan-y;
 }
 html body.on-home #row-plans .hm-plan.pc-exp .pc-inc{display:none!important}
 html body.on-home #row-plans .hm-plan.pc-exp .pc-more{display:none!important}
