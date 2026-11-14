@@ -4046,6 +4046,41 @@
       pop.hidden = false; place(); void pop.offsetWidth; pop.classList.add("on"); bt.setAttribute("aria-expanded", "true"); pop.focus({ preventScroll: true });
       document.addEventListener("pointerdown", outside, true); document.addEventListener("keydown", esc, true); });
   }
+  /* Onboarding Polish A card 3: only the tile or chip that was just picked lifts and pops its check (a full re-render would otherwise replay every one). Reduced motion fades. */
+  function obSelPop(el, pseudo) {
+    if (!el || !el.animate) return;
+    var rm = obReducedMot();
+    try {
+      if (rm) { (pseudo ? el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, pseudoElement: "::after" }) : null); var ok = el.querySelector(".qt-ok"); if (ok) ok.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }); return; }
+      el.animate([{ transform: "translateY(0)" }, { transform: "translateY(-2px)" }], { duration: 220, easing: "ease-out" });
+      if (pseudo) el.animate([{ opacity: 0, transform: "scale(.5)" }, { opacity: 1, transform: "scale(1)" }], { duration: 240, easing: "cubic-bezier(.3,1.4,.5,1)", pseudoElement: "::after" });
+      var c = el.querySelector(".qt-ok"); if (c) c.animate([{ opacity: 0, transform: "scale(.5)" }, { opacity: 1, transform: "scale(1)" }], { duration: 240, easing: "cubic-bezier(.3,1.4,.5,1)" });
+    } catch (e) {}
+  }
+  /* Onboarding Polish A card 6 (Machan Nov 14 9:15 PM ICT): after a -/+ tap the count rolls in from the side it moved and a small terracotta tick confirms it.
+     Transform and opacity only, about 260ms; reduced motion fades the new number and the tick. Focus goes back to the same -/+ button after the re-render.
+     Nothing here changes a count or a price. */
+  function obStepRoll(key, dir, was, now) {
+    var btn = app.querySelector('[data-ob-step="' + key + ':' + dir + '"]'), step = btn && btn.closest(".ob-step"), n = step && step.querySelector(".n");
+    if (btn && !btn.disabled) { try { btn.focus({ preventScroll: true }); } catch (e) {} }
+    else if (step) { var o = step.querySelector("button:not([disabled])"); if (o) { try { o.focus({ preventScroll: true }); } catch (e) {} } }
+    if (!step || !n || was === now || !n.animate) return;
+    var rm = obReducedMot(), up = dir > 0 ? 1 : -1;
+    if (rm) n.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: "linear" });
+    else {
+      var g = document.createElement("span"); g.className = "pa-ghost"; g.setAttribute("aria-hidden", "true"); g.textContent = String(was); n.appendChild(g);
+      n.firstChild && n.firstChild.nodeType === 3 && (function () { var t = document.createElement("span"); t.className = "pa-now"; t.style.display = "inline-block"; t.textContent = n.firstChild.textContent; n.replaceChild(t, n.firstChild); })();
+      var cur = n.querySelector(".pa-now");
+      if (cur) cur.animate([{ transform: "translateY(" + (up * 80) + "%)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
+      var a = g.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + (-up * 80) + "%)", opacity: 0 }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" });
+      a.onfinish = function () { if (g.parentNode) g.parentNode.removeChild(g); };
+      setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, 500);
+    }
+    var tk = document.createElement("i"); tk.className = "pa-tick"; tk.setAttribute("aria-hidden", "true"); step.appendChild(tk);
+    var ta = tk.animate(rm ? [{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .75 }, { opacity: 0 }]
+      : [{ opacity: 0, transform: "scale(.4)" }, { opacity: 1, transform: "scale(1)", offset: .25 }, { opacity: 1, transform: "scale(1)", offset: .75 }, { opacity: 0, transform: "scale(.9)" }], { duration: 1100, easing: "ease-out" });
+    ta.onfinish = function () { if (tk.parentNode) tk.parentNode.removeChild(tk); };
+  }
   function bindOb(s) {
     function rer() { save(); var y = window.scrollY; render(); window.scrollTo(0, y); }
     var afp = document.getElementById("afPop"); if (afp && s !== "plan") afp.remove();
@@ -4090,20 +4125,21 @@
         save(); go("systems");
       });
       app.querySelectorAll("[data-ob-size]").forEach(function (b) { b.addEventListener("click", function () {
-        var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; clearQ(document.getElementById("obSizeCard"), document.getElementById("obSizeErr")); rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
+        var v = b.getAttribute("data-ob-size"); if (SIZE_OPTS.some(function (o) { return o[0] === v; })) { S.answers.sqft = v; clearQ(document.getElementById("obSizeCard"), document.getElementById("obSizeErr")); var was = b.classList.contains("on"); rer(); var f = app.querySelector('[data-ob-size="' + v + '"]'); if (f) { f.focus({ preventScroll: true }); if (!was) obSelPop(f, true); } } }); });
       app.querySelectorAll("[data-ob-story]").forEach(function (b) { b.addEventListener("click", function () {
-        var v = b.getAttribute("data-ob-story"); if (STORY_OPTS.some(function (o) { return o[0] === v; })) { S.answers.stories = v; clearQ(document.getElementById("obStoriesCard"), document.getElementById("obStoriesErr")); rer(); var f = app.querySelector('[data-ob-story="' + v + '"]'); if (f) f.focus({ preventScroll: true }); } }); });
+        var v = b.getAttribute("data-ob-story"); if (STORY_OPTS.some(function (o) { return o[0] === v; })) { S.answers.stories = v; clearQ(document.getElementById("obStoriesCard"), document.getElementById("obStoriesErr")); var was = b.classList.contains("on"); rer(); var f = app.querySelector('[data-ob-story="' + v + '"]'); if (f) { f.focus({ preventScroll: true }); if (!was) obSelPop(f, true); } } }); });
       return;
     }
     if (s === "systems" || s === "systems2") {
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
-        var kv = b.getAttribute("data-ob-step").split(":"), n = Math.max(0, Math.min(SYS_MAX, cnt(kv[0]) + Number(kv[1])));
-        S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); }); });
+        var kv = b.getAttribute("data-ob-step").split(":"), was = cnt(kv[0]), n = Math.max(0, Math.min(SYS_MAX, was + Number(kv[1])));
+        S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); obStepRoll(kv[0], Number(kv[1]), was, n); }); });
       app.querySelectorAll("[data-ob-wh]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-wh").split(":"), t = whTypes(); t[Number(kv[0])] = kv[1]; S.answers.whTypes = t; rer(); }); });
       app.querySelectorAll("[data-ob-extra]").forEach(function (b) { b.addEventListener("click", function () {
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
-        if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer(); }); });
+        if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer();
+        var t = app.querySelector('[data-ob-extra="' + k + '"]'); if (t) { try { t.focus({ preventScroll: true }); } catch (e) {} if (ix < 0) obSelPop(t); } }); });
       if (nx) nx.addEventListener("click", function () { if (obTxLock) return; if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
@@ -4680,7 +4716,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s0"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9s1"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s0"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
