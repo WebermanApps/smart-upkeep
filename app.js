@@ -4435,6 +4435,32 @@
   /* Browsers block unmuted autoplay, so the video starts muted (speaker button + Sound arrow in video-pause.js). */
   function syncTfs() {} /* Max Oct 15 19:04: big Tap for Sound removed; speaker button + jungle arrow live in video-pause.js */
   vid.addEventListener("volumechange", function () { syncTfs(); unmute.textContent = vid.muted ? "Unmute" : "Mute"; });
+  /* Machan Nov 14 9:04 PM ICT: blur the page behind the intro video (#videoModal / #explainer), not the inline hero teaser. */
+  var vidBlurTimer = 0, vidBlurFocus = null, vidBlurScroll = 0;
+  function vidReduce() { return !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function vidPageInert(on) {
+    ["header.topbar", "main#app", "footer.foot"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (!el) return;
+      if (on) { el.setAttribute("inert", ""); el.setAttribute("aria-hidden", "true"); }
+      else { el.removeAttribute("inert"); el.removeAttribute("aria-hidden"); }
+    });
+  }
+  function vidBlurFinish(opts) {
+    opts = opts || {};
+    modal.hidden = true;
+    modal.classList.remove("is-open", "is-closing");
+    document.body.style.overflow = "";
+    vidPageInert(false);
+    if (!opts.skipRestore) {
+      try { window.scrollTo(0, vidBlurScroll || 0); } catch (e) {}
+      if (vidBlurFocus && typeof vidBlurFocus.focus === "function") {
+        try { vidBlurFocus.focus({ preventScroll: true }); } catch (e2) {}
+      }
+    }
+    vidBlurFocus = null;
+    if (typeof opts.after === "function") opts.after();
+  }
   function openVideo(userAsked) {
     var src = vSrc();
     if (vid.getAttribute("src") !== src) { vid.setAttribute("src", src); vid.setAttribute("poster", src.indexOf("9x16") > -1 ? "assets/poster-v7-9x16.jpg?v=v7a" : "assets/poster-v7-16x9.jpg?v=v7a"); }
@@ -4449,18 +4475,57 @@
       var actions = modal.querySelector(".modal-actions");
       if (actions) actions.parentNode.insertBefore(badge, actions);
     }
-    modal.hidden = false; document.body.style.overflow = "hidden";
+    if (vidBlurTimer) { clearTimeout(vidBlurTimer); vidBlurTimer = 0; }
+    vidBlurFocus = document.activeElement;
+    vidBlurScroll = window.scrollY || 0;
+    modal.hidden = false;
+    modal.classList.remove("is-closing");
+    if (vidReduce()) {
+      modal.classList.add("is-open");
+    } else {
+      modal.classList.remove("is-open");
+      void modal.offsetWidth;
+      modal.classList.add("is-open");
+    }
+    document.body.style.overflow = "hidden";
+    vidPageInert(true);
     try { vid.currentTime = 0; } catch (e) {}
     var pr = vid.play(); if (pr && pr.catch) pr.catch(function () { vid.muted = true; unmute.textContent = "Unmute"; syncTfs(); vid.play().catch(function () {}); });
     document.getElementById("skipBtn").focus({ preventScroll: true });
   }
-  function closeVideo() { vid.pause(); modal.hidden = true; document.body.style.overflow = ""; try { sessionStorage.setItem(VKEY, "1"); } catch (e) {} }
-  document.getElementById("videoClose").addEventListener("click", closeVideo);
-  document.getElementById("skipBtn").addEventListener("click", closeVideo);
+  function closeVideo(opts) {
+    opts = opts || {};
+    vid.pause();
+    try { sessionStorage.setItem(VKEY, "1"); } catch (e) {}
+    if (vidBlurTimer) { clearTimeout(vidBlurTimer); vidBlurTimer = 0; }
+    if (modal.hidden || vidReduce() || !modal.classList.contains("is-open")) {
+      vidBlurFinish(opts);
+      return;
+    }
+    modal.classList.remove("is-open");
+    modal.classList.add("is-closing");
+    vidBlurTimer = setTimeout(function () { vidBlurTimer = 0; vidBlurFinish(opts); }, 250);
+  }
+  document.getElementById("videoClose").addEventListener("click", function () { closeVideo(); });
+  document.getElementById("skipBtn").addEventListener("click", function () { closeVideo(); });
   unmute.addEventListener("click", function () { vid.muted = !vid.muted; unmute.textContent = vid.muted ? "Unmute" : "Mute"; syncTfs(); if (vid.paused) vid.play().catch(function () {}); });
-  vid.addEventListener("ended", function () { closeVideo(); var pl = document.getElementById("hs-plans") || document.getElementById("row-plans"); if (pl) setTimeout(function () { hmJumpSec(pl); }, 150); }); /* Funnel Deck: after the video, back to the home page plans */
+  vid.addEventListener("ended", function () { /* Funnel Deck: after the video, back to the home page plans, once the blur has cleared. */
+    closeVideo({ skipRestore: true, after: function () {
+      var pl = document.getElementById("hs-plans") || document.getElementById("row-plans");
+      if (pl) hmJumpSec(pl);
+    } });
+  });
   modal.addEventListener("click", function (e) { if (e.target === modal) closeVideo(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeVideo(); });
+  modal.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab" || modal.hidden) return;
+    var nodes = modal.querySelectorAll("button, [href], video, input, select, textarea, [tabindex]:not([tabindex='-1'])");
+    var list = [].filter.call(nodes, function (el) { return !el.disabled && el.getClientRects().length; });
+    if (!list.length) return;
+    var first = list[0], last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   /* ---------- Share ---------- */
   document.addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-share]"); if (b) doShare(b.parentNode.querySelector(".hm-share-msg")); });
