@@ -1442,3 +1442,60 @@ html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-plan .qf-hero{margin-bottom:6px}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-billing .f2-banner{margin-bottom:8px;padding-top:10px;padding-bottom:10px}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-billing .pay-card{padding-top:10px;padding-bottom:10px}
 html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-billing .pay-due{margin-top:6px}
+
+/* ===== Onboarding Polish A (Machan Nov 14 9:15 PM ICT, Onboarding Polish Deck: A on cards 1, 2, 3, 6). Look only: no step, copy or price changes.
+   Steps 1-7 (address to review). Motion is transform and opacity, 200-400ms ease-out; reduced motion fades only (block at the end). ===== */
+/* Card 1. Warm Tint Per Step: the house band and the title card take a light tint from the Tailor tile family. */
+body.on-ob .ob.ob-address{--pa-tint:#F8F1EA;--pa-edge:#E4D5C6}
+body.on-ob .ob.ob-homesize{--pa-tint:#F7EBE5;--pa-edge:#E8D0C6}
+body.on-ob .ob.ob-systems{--pa-tint:#F3E6DF;--pa-edge:#E0C9BC}
+body.on-ob .ob.ob-systems2{--pa-tint:#F8F1EA;--pa-edge:#E4D5C6}
+body.on-ob .ob.ob-addons{--pa-tint:#F7EBE5;--pa-edge:#E8D0C6}
+body.on-ob .ob.ob-plan{--pa-tint:#FCF9F4;--pa-edge:#E6E1D8}
+body.on-ob .ob.ob-review{--pa-tint:#F8F1EA;--pa-edge:#E4D5C6}
+html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .ob-hb-art{background:var(--pa-tint)!important;box-shadow:inset 0 0 0 1px var(--pa-edge)!important}
+html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .ob-pane > .qf-hero{background:var(--pa-tint);border:1px solid var(--pa-edge);border-radius:16px;padding:6px 12px 6px;box-shadow:0 6px 16px rgba(42,36,28,.07);margin-top:2px!important;margin-bottom:6px!important}
+html body.on-ob .ob.qf .ob-pane > .qf-hero .qf-art.mid{background:rgba(255,255,255,.6)!important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .ob-pane > .qf-hero{padding:3px 10px!important;margin-top:0!important;margin-bottom:4px!important}
+html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .ob-pane > .qf-hero{padding:2px 10px!important;margin-bottom:2px!important}
+/* Card 2. Bigger Khand, Shared Cards, Tip Chips. */
+html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .qf-hero .qf-h{font:600 30px/1.05 Khand,var(--mw-font-heading),sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:#1A1A1A!important;margin:0!important}
+html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .qf-hero .qf-help{font-family:Hind,var(--mw-font-body),sans-serif!important;font-weight:500!important;color:#5C534C!important}
+@media (max-width:390px) and (max-height:700px){
+  html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .qf-hero .qf-h{font-size:26px!important}
+}
+@media (max-width:360px) and (max-height:640px){
+  html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .qf-hero .qf-h{font-size:24px!important}
+  html body.on-ob .ob.qf:is(.ob-address,.ob-homesize,.ob-systems,.ob-systems2,.ob-addons,.ob-plan,.ob-review) .ob-pane > .qf-hero{padding:5px 10px 5px}
+}
+html body.on-ob .ob.qf :is(.sys-card,.ex-card,.ob-qcard,.bd-card){background:#FFFCF7!important;border:1px solid #ECE5DA!important;border-radius:16px!important;box-shadow:0 6px 16px rgba(42,36,28,.07)!important}
+html:not(.ob-hb-nodyk) body.on-ob .ob.qf .qf-dyk{display:inline-flex!important}
+html body.on-ob .ob.qf .qf-dyk{margin-bottom:10px!important;align-items:center!important;gap:8px!important;max-width:100%;padding:6px 12px!important;background:#F8F1EA!important;border:1px solid #E4D5C6!important;border-radius:18px!important;box-shadow:none!important;color:#1A1A1A!important;align-self:flex-start}
+html body.on-ob .ob.qf .qf-dyk .su-ico{color:#A8431F!important}
+html body.on-ob .ob.qf .qf-dyk .su-ico .f-s{fill:#A8431F!important;stroke:#A8431F!important}
+html body.on-ob .ob.qf .qf-dyk p{margin:0!important;font:500 13px/1.25 Hind,var(--mw-font-body),sans-serif!important;color:#1A1A1A!important}
+html body.on-ob .ob.qf :is(.sys-ic,.qt-ic,.qf-art,.qf-dyk) svg{stroke-width:1.75}
+html body.on-ob .ob.qf :is(.sys-sub,.blk-lab,.ob-area,.ob-qcard .s,.priced-note,.qf-step){color:#5C534C!important}
+html.ob-hb-on body.on-ob .ob-hb-cap{color:#5C534C!important}
+/* Card 3. Outline, Check, And A Soft Lift: terracotta outline, a check badge and a 2px lift replace the green fill. Prices and picks don't change. */
+html body.on-ob .ob.qf .ex-card .qt.sel,html body.on-ob .ob.qf .qt.sel{border-color:#A8431F!important;background:#F7EBE5!important;box-shadow:inset 0 0 0 1px #A8431F,0 8px 18px rgba(168,67,31,.16)!important;transform:translateY(-2px)}
+html body.on-ob .ob.qf .qt{transition:transform .22s ease-out,box-shadow .22s ease-out}
+html body.on-ob .ob.qf .qt.sel .qt-ok{background:#A8431F!important}
+html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip,.story-chip){position:relative;transition:transform .22s ease-out,box-shadow .22s ease-out}
+html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip.on,.story-chip.on){border-color:#A8431F!important;background:#FFFCF7!important;color:#A8431F!important;box-shadow:inset 0 0 0 1px #A8431F,0 8px 18px rgba(168,67,31,.16)!important;transform:translateY(-2px)}
+html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip.on,.story-chip.on)::after{content:"";position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;background:#A8431F url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.2 6.6 11.2 12.5 4.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/10px 10px no-repeat;pointer-events:none;box-shadow:0 0 0 2px #FFFCF7}
+html body.on-ob .ob.qf .ob-ao.on{border-color:#A8431F!important;box-shadow:inset 0 0 0 1px #A8431F!important}
+html body.on-ob .ob.qf .ob-sw[aria-checked="true"]{background:#A8431F!important}
+html body.on-ob .ob.qf.ob-plan .plan-card.sel{transform:translateY(-2px);box-shadow:0 8px 18px color-mix(in srgb,var(--plan-c,#A8431F) 18%,transparent)!important}
+/* Card 6. Stepper Tick And Number Roll: the count rolls in from the side it moved, and a small terracotta tick confirms it. The tick doesn't change any count or price. */
+html body.on-ob .ob.qf .ob-step{position:relative}
+html body.on-ob .ob.qf .ob-step .n{position:relative;overflow:hidden;display:inline-block}
+html body.on-ob .ob.qf .ob-step .n .pa-ghost{position:absolute;left:0;right:0;top:0;text-align:center}
+html body.on-ob .ob.qf .ob-step .pa-tick{position:absolute;top:-5px;right:-4px;width:16px;height:16px;border-radius:50%;background:#A8431F url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.2 6.6 11.2 12.5 4.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/11px 11px no-repeat;box-shadow:0 0 0 2px #FFFCF7;pointer-events:none;opacity:0}
+@media (prefers-reduced-motion:reduce){
+  html body.on-ob .ob.qf :is(.qt.sel,.size-chip.on,.story-chip.on,.plan-card.sel){transform:none!important}
+}
+/* Swatch #146 r1 F2: fit() measures each cut level with transitions off so repeated calls agree (see onboarding-house.js fit()). */
+html.ob-hb-measure body.on-ob .ob.qf,html.ob-hb-measure body.on-ob .ob.qf *,html.ob-hb-measure body.on-ob .ob.qf *::before,html.ob-hb-measure body.on-ob .ob.qf *::after{transition:none!important}
+/* Swatch #146 r1 N1 (moved from Polish C): Tailor CTAs stay 44px on every fit level. */
+html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta.filled,html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta{min-height:44px!important}
