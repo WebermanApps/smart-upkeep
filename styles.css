@@ -2280,9 +2280,8 @@ body.on-home #hs-faq > .hm-faqs{grid-template-columns:minmax(0,1fr)!important;co
 @media (max-width:480px){body.on-ob main#app{padding-left:var(--su-edge)!important;padding-right:var(--su-edge)!important}}
 /* ===== Preview Nov 13 2026 (Machan 4:15-4:18 PM ICT, Swatch spec): flush sticky bottom bar, brand band header (Home), full-screen sections,
    warranties line on the Plans header row. ===== */
-/* PR108 r4 (Machan Header Color Deck, Nov 13 6:45 PM ICT, Swatch values): Warm White band, charcoal ink, never green. The green band and the cream
-   variant (body.su-band-cream) are retired so green cannot come back on the header. */
-:root{--su-band:#FFFCF7;--su-band-ink:#0A0A0A;--su-band-h:56px;--su-skirt:32px;--su-overlap:24px}
+/* PR108 r4 (Machan Header Color Deck) then Header And Footer Shade Deck (Nov 14 3:28 PM ICT): Deeper Warm Cream #F5EDDF on the header and sticky bottom bar, charcoal ink, never green. The green band and body.su-band-cream stay retired. Hairline stays on the sticky bar only, not the Built by Machan footer. */
+:root{--su-band:#F5EDDF;--su-band-ink:#0A0A0A;--su-band-h:56px;--su-skirt:32px;--su-overlap:24px}
 @media (min-width:900px){:root{--su-band-h:64px;--su-skirt:40px}}
 /* Bottom bar: full width, flush to the bottom edge, square, safe-area padding; hairline top, warm bar shadow, the bottom bar gloss + <=15% top shine.
    Inner content on the 16px edge; Get Started 44px, tabs 48px. */
@@ -2739,7 +2738,7 @@ body.on-home .hs-sec,body.on-home .hs-sec.hs-top{scroll-margin-top:var(--su-hdr-
 body.su-band .topbar{height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;min-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important;max-height:calc(var(--su-band-h) + env(safe-area-inset-top,0px))!important}
 /* Bottom bar: keep existing height/padding/--tb (tabs 48 + 6 gap + Get Started 44 + 8/4 pad). Flush, not floating. Light only, no green. Order flipped Nov 14 (tabs first). */
 html body.on-home .hm-tabs.hm-dock,html body.on-home.hs-bar-off .hm-tabs.hm-dock{
-  background-color:#FFFCF7!important;
+  background-color:var(--su-band)!important;
   background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;
   border-top:1px solid rgba(60,40,20,.08)!important;
   box-shadow:var(--su-sh-bar),inset 0 1px 0 rgba(255,255,255,.9)!important;
@@ -2833,7 +2832,7 @@ html body.on-home .hm-dock button[data-hm-tab]:focus{outline:none}
 html body.on-home .hm-dock button[data-hm-tab]:focus-visible{outline:2px solid rgba(168,67,31,.4);outline-offset:-2px;border-radius:12px}
 
 /* ===== Continuous page (Machan 10:16): no header spacers, no forced 100vh gaps, proximity snap already on ===== */
-body.su-band .topbar{background:var(--su-band,#FFFCF7)!important;background-color:var(--su-band,#FFFCF7)!important;opacity:1!important}
+body.su-band .topbar{background:var(--su-band,#F5EDDF)!important;background-color:var(--su-band,#F5EDDF)!important;opacity:1!important}
 /* Size to content, cap at one screen. Offset only via scroll-margin / scroll-padding, never padding-top or spacer blocks. */
 body.on-home .hs-sec,
 body.on-home .hs-sec.hs-top,
@@ -2961,7 +2960,7 @@ html body.on-home #hs-top.hs-sec{min-height:var(--su-fill-h,0px)!important}
 html body.on-home #hs-top.hs-sec > .hs-arrow{margin-top:auto!important}
 
 /* Header shine (Machan Nov 13 11:12 PM ICT, "the header should get the same shine that the sticky footer got"): the bar's exact finish. */
-html body.su-band .topbar{background-color:#FFFCF7!important;background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important}
+html body.su-band .topbar{background-color:var(--su-band)!important;background-image:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 50%)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important}
 html body.su-band.su-band-scrolled .topbar{box-shadow:0 2px 12px rgba(60,40,20,.10),inset 0 1px 0 rgba(255,255,255,.9)!important}
 /* Bar tabs (Machan Nov 13 11:14 PM ICT, "i don't like the white box ... i want just the highlight"): no hover/tap lift, shadow or box on the
    section buttons (it stuck after a tap on phones); the sliding highlight stays, and keyboard focus keeps its outline. */
