@@ -592,6 +592,7 @@
     leave.style.transition = "none";
     enter.style.transition = "none";
     stage.appendChild(enter);
+    if (s === "review") { var cuV = enter.querySelector(".bd-total .v"); if (cuV) { cuV.setAttribute("data-cu", "1"); obCountUp(cuV); } } /* Swatch #148 r1 F6: start the count-up as the pane slides in, so the total never flashes first */
     void enter.offsetWidth;
     leave.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
     enter.style.transition = "transform " + ms + "ms " + ease + ", opacity " + ms + "ms " + ease;
@@ -4297,7 +4298,7 @@
     if (s === "plan") bindAfPop();
     var nx = app.querySelector("[data-ob-next]");
     app.querySelectorAll("[data-ob-go]").forEach(function (b) { b.addEventListener("click", function () { if (obTxLock) return; go(b.getAttribute("data-ob-go")); }); });
-    if (s === "review") obCountUp(app.querySelector(".ob-review .bd-total .v"));
+    if (s === "review") { var cuT = app.querySelector(".ob-review .bd-total .v"); if (cuT && !cuT.hasAttribute("data-cu")) obCountUp(cuT); }
     if (s === "address") {
       var st = document.getElementById("obStreet"), zp = document.getElementById("obZip"), er = document.getElementById("obAddrErr");
       function showSo() { /* Start Over stays visible in the four-button bar so the row stays even. */ }

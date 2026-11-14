@@ -329,6 +329,7 @@
     var bar = sec.querySelector(".ob-bar"), ih = window.innerHeight;
     var ok = true; if (window.suHouseRefit) { try { ok = window.suHouseRefit() !== false; } catch (x) {} }
     if (!ok || docOver() > 0) return false;
+    if (bar && bar.getBoundingClientRect().bottom > ih + 0.5) return false; /* Swatch #146 r1 F2: never accept a fit while the bar's bottom is off-screen */
     var bt = bar ? Math.min(ih, bar.getBoundingClientRect().top) : ih;
     return bt - contentBottom(sec, bar) >= AIR;
   }
@@ -338,11 +339,16 @@
     document.body.classList.add("on-ob", "on-qf"); /* app.js bind() sets these for every onboarding step; set them a beat early so the pre-bind check matches */
     var mini = html.classList.contains("ob-hb-mini"), n;
     if (mini) html.classList.remove("ob-hb-mini");
+    /* Swatch #146 r1 F2: the cut levels change paddings and margins that have CSS transitions, so a rect read right after a class toggle saw the
+       old (mid-transition) layout and repeated calls disagreed. Measure with transitions off; the final level is applied instantly, so nothing animates after. */
+    html.classList.add("ob-hb-measure");
     for (n = 0; n < TRY.length; n++) {
       setLv(TRY[n]);
       if (fitsNow(sec)) break;
     }
     if (n >= TRY.length) n = TRY.length - 1;
+    void sec.offsetHeight;
+    html.classList.remove("ob-hb-measure");
     if (mini) html.classList.add("ob-hb-mini");
     html.setAttribute("data-hb-fit", TRY[n].join("+") || "none");
     return n;
