@@ -772,7 +772,8 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 
 /* PR113 body flex (kill stacked margin-top:auto): leftover sits once, above Did You Know (or above the bar when there is no tip). */
 .ob .qf-body{flex:1 1 auto;margin-top:0;justify-content:flex-start}
-.ob-address .qf-body,.ob-homesize .qf-body,.ob-billing .qf-body{justify-content:space-evenly}
+.ob-address .qf-body,.ob-homesize .qf-body{justify-content:flex-start}
+.ob-billing .qf-body{justify-content:space-evenly}
 .ob-addons .qf-body{margin-top:0;margin-bottom:8px}
 .ob-addons.sfit-ao-tight .qf-body{margin-top:0 !important;margin-bottom:6px !important}
 
@@ -1114,3 +1115,48 @@ html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-area{margin-top:2px!impor
 .ob-addons .ob-bar{margin-top:8px !important}
 .ob-addons .ob-ao-groups{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
 .ob-addons .ob-ao-list{flex:1 1 auto;min-height:0}
+
+/* Accept: keep Back, Home, Start Over as equal 44px tiles; Accept And Continue full-width on a second row above Built by Machan. */
+.ob-accept .ob-bar,
+.ob-accept.sfit-accept .ob-bar{
+  grid-template-columns:1fr 1fr 1fr !important;
+  grid-template-rows:auto auto auto;
+  row-gap:8px;
+}
+.ob-accept .ob-bar .back-pill{grid-column:1;grid-row:1}
+.ob-accept .ob-bar .home-pill{grid-column:2;grid-row:1}
+.ob-accept .ob-bar .qf-startover{grid-column:3;grid-row:1}
+.ob-accept .ob-bar > button[type="submit"],
+.ob-accept .ob-bar > .btn-big,
+.ob-accept.sfit-accept .ob-bar .btn-big,
+html.ob-hb-on .ob-accept .ob-bar .btn-big{
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+  width:100%;
+  max-width:none;
+  height:auto !important;
+  min-height:44px !important;
+  flex-direction:row !important;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px !important;
+  font:600 16px/1.2 Hind,var(--mw-font-body),sans-serif !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  white-space:nowrap;
+  overflow:visible !important;
+}
+.ob-accept .ob-bar .ob-built,
+.ob-accept.sfit-accept .ob-bar .ob-built{
+  grid-column:1 / -1;
+  grid-row:3 !important;
+}
+
+/* Accept at 360x640: the second CTA row makes the bar taller. Recover >=8px air at the last fit cuts, without shrinking the house band. */
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-accept .sfit-tail{margin-top:0 !important}
+html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-accept .su-cancel-line .link{
+  min-height:0 !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+}
