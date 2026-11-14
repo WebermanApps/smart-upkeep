@@ -578,6 +578,8 @@
   function priceRange(a) { if (needsSiteVisit(a && a.label)) return "Needs A Site Visit"; if (a.quoteRequired || a.low==null || a.high==null || a.low !== a.high) return QUOTE_LABEL; return money(a.low); }
   /* Home Four Sections deck (Machan Nov 12 2026, receipt 2007): 01A simple 2px chevron, 02B Title Case label + chevron, 03A bottom center of the section it leaves, 04A full screen. Tap lands the next title ~12px under the header (hmJump). */
   function hsArrow(target, label) { return '<button type="button" class="hs-arrow mw-hover" data-hs-go="' + target + '"><span class="hs-arrow-lab">' + label + '</span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'; }
+  /* Machan Nov 14 9:26 AM: a small quiet up arrow under Plans / Tailor / FAQ headers glides to the previous section. Home keeps only its down arrow. */
+  function hsArrowUp(target) { return '<button type="button" class="hs-arrow hs-arrow-up mw-hover" data-hs-go="' + target + '" aria-label="Previous Section"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>'; }
   /* Four Sections 05 note (Machan: "with the more space we could show more lines, and not have to use the 'and more' so early on"): Home plan cards show more lines before And More. Legal-approved copy, Nov 12 2026 night (LEGAL-FINAL-COPY section 4). Home cards only; pricing-config.js keyPoints (also read by /member/ pages) stay unchanged. */
   var HOME_KEYPOINTS = { /* silver reads pricing-config.js keyPoints (Machan Nov 13 7:35-7:37 PM ICT); see homeKeypoints() */
     /* Machan Nov 13 11:09-11:11 PM ICT "6-8" real items per Plans preview (the lead line doesn't count): Plus and Complete show 7 services each,
@@ -947,7 +949,7 @@
       hsArrow("row-plans", "See Plans") + '</section>' +
       /* Services search removed from the home/sales page (Max, Oct 14). It belongs in the future member 'My Home' area. */
       '<section class="hs-sec hs-plans" id="hs-plans">' + row("plans", "Plans", tiers.map(function (k) { return planCard(k, phoneOrder.indexOf(k)); }).join(""), "" /* Machan Nov 13 11:09 PM ICT ("its already on the badge in hero ... so i guess we just remove from plans section"): the Warranties Checked header bar is gone from Plans. */ /* Machan Nov 13 11:06 AM: "Free Quote In Minutes" link removed from the Plans header too (bottom bar's Get Started covers it) */,
-        '').replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "Tailor Your Plan") + '</section>' +
+        hsArrowUp("hs-top")).replace('</div></section>', '</div><div class="pc-dots" aria-hidden="true">' + phoneOrder.map(function (k) { return '<span class="pc-dot" data-dot="' + k + '"></span>'; }).join("") + '</div></section>') + hsArrow("hs-alc", "Tailor Your Plan") + '</section>' +
       /* Waitlist card removed from home (Max, Oct 17): it shows only at the end of the quote flow for out-of-area ZIPs. */
       '<div class="hm-offer-pop" role="dialog" aria-modal="true" aria-label="Welcome Offer" hidden><div class="hm-offer-bg" data-offer-close></div><div class="hm-offer-card"><button type="button" class="hm-pop-x mw-hover" data-offer-close aria-label="Close">' + X_SVG + '</button><h3>Welcome Offer</h3><div class="hm-offer-body small"><p>Founding Member: 2 Years For The Price Of 1, while founding spots last. No code needed.</p><p>Refer A Neighbor: You both get a month free when your neighbor makes their first payment.</p><p class="muted">Free months have no cash value.</p></div></div></div>' +
       /* Machan Nov 13 9:09-9:11 AM: page sections are Hero, Plans, Shop À La Carte, FAQ. What We Take Care Of and the Details blocks (Why Trust Us, What's Included,
@@ -955,14 +957,14 @@
       /* Machan Nov 13 11:11 AM + Swatch default: every à la carte service on Home, grouped under always-visible headers, no inner scroll and no link out.
          Rows are buttons (aria-expanded) that open in place; one open at a time; scrollY unchanged. */
       '<section class="hs-sec hs-alc" id="hs-alc"><section class="hm-row" id="row-alc"><div class="hm-row-h"><div><h2>Tailor Your Plan</h2><p class="hm-sub alc-sub">Members can tailor their plan or add one-time services.</p></div></div>' +
-        alcGroupsHtml() + '</section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
+        hsArrowUp("hs-plans") + alcGroupsHtml() + '</section>' + hsArrow("hs-faq", "See FAQ") + '</section>' +
       '<div class="hm-pop" role="dialog" aria-modal="true" aria-labelledby="hmPopT" data-ptr-ignore hidden><div class="hm-pop-bg" data-pop-close></div><div class="hm-pop-card">' +
         '<button type="button" class="hm-pop-x mw-hover" data-pop-close aria-label="Close">' + X_SVG + '</button>' +
         '<div class="hm-pop-art"></div><p class="hm-pop-tag"></p><h3 id="hmPopT"></h3><p class="hm-pop-txt"></p>' +
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
       /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
-        faqCarouselHtml() +
+        hsArrowUp("hs-alc") + faqCarouselHtml() +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
       /* Floating Bottom Bar: 4 section tabs stacked above Get Started (Machan Nov 14 9:12 AM: "get started should go under the 4 tabs", "same sizing just flip it around"). Sizes unchanged (tabs 48, gap 6, CTA 44). Shown from load (Machan Nov 13 9:11 AM). */
       '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><div class="hm-pill"><div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
@@ -991,7 +993,8 @@
     function size() {
       if (!mq.matches) { sc.style.removeProperty("--pc-w"); return; }
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
-      var w = (sc.clientWidth - padL - gap) / (1 + PC_PEEK / 100);
+      /* Machan Nov 14 9:25 AM: Plans tiles and text slightly smaller (~9% narrower). */
+      var w = (sc.clientWidth - padL - gap) / (1 + PC_PEEK / 100) * 0.91;
       sc.style.setProperty("--pc-w", Math.floor(w) + "px"); sc.style.scrollPaddingLeft = padL + "px";
     }
     function start() {
@@ -1060,21 +1063,10 @@
   function bindFaqCar(root) {
     var sc = root.querySelector("#hs-faq .faq-car-scroll"); if (!sc) return;
     var lab = root.querySelector("#hs-faq .faq-car-lab");
-    var dotsWrap = root.querySelector("#hs-faq .faq-dots");
-    bindPeekSwipe(sc, ".faq-card", [].slice.call(root.querySelectorAll("#hs-faq .faq-dot")), function (best, i, cs) {
-      if (lab && best) {
-        var topic = best.getAttribute("data-faq-topic") || "";
-        var same = cs.filter(function (c) { return c.getAttribute("data-faq-topic") === topic; });
-        var n = same.indexOf(best) + 1;
-        lab.textContent = topic + " · " + n + " Of " + same.length;
-      }
-      if (dotsWrap) {
-        var on = dotsWrap.querySelector(".faq-dot.on");
-        if (on) {
-          var left = on.offsetLeft - (dotsWrap.clientWidth - on.offsetWidth) / 2;
-          dotsWrap.scrollLeft = Math.max(0, left);
-        }
-      }
+    var pos = root.querySelector("#hs-faq .faq-car-pos");
+    bindPeekSwipe(sc, ".faq-card", [], function (best, i, cs) {
+      if (lab && best) lab.textContent = best.getAttribute("data-faq-topic") || "";
+      if (pos) pos.textContent = (i + 1) + " / " + cs.length;
     });
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
@@ -1464,13 +1456,139 @@
         return '<button type="button" class="alc-dot' + (i ? "" : " on") + '" data-dot="' + i + '" aria-label="' + esc(G[0]) + '"' + (i ? "" : ' aria-current="true"') + '></button>';
       }).join("") + '</div></div>';
   }
-  /* Home FAQ carousel (Machan Nov 14 9:13 AM): one card per question, answer HTML kept word-for-word. Home section only; /faq/ is unchanged. */
+  /* Home-only shorter answers (Machan Nov 14 9:29 AM). FAQ_ALL is unchanged and still used by /faq/. Every fact, number, condition and legal caveat is kept; no new claims or prices. */
+  var HOME_FAQ_SHORT = {
+    "how-often-should-i-change-my-furnace-filter": "<p>About every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it&#x27;s due.</p>",
+    "what-should-i-do-in-an-emergency": "<p>Flooding or a burst pipe: shut off the main water valve, then give us a call or send a message in the app. Electrical (sparks, burning smell, hot panel): if it&#x27;s safe to reach, switch off the main breaker, then give us a call or send a message in the app; if there&#x27;s fire or smoke, get out and call 911. Carbon monoxide alarm: get everyone outside and call 911.</p><p>If you smell gas (a rotten-egg or sulfur smell): leave the home right away and get everyone out, pets too, and leave the door open behind you. Don&#x27;t flip light switches, unplug anything, use the garage door, light a match, or start a car near the home. Once you&#x27;re a safe distance away, call 911 and DTE Gas at 800-947-5000, then call us or send a message in the app; we&#x27;ll help with next steps once DTE says it&#x27;s safe.</p><p>Please don&#x27;t try to shut off the gas meter yourself unless DTE or 911 tells you to. Never turn the gas back on yourself; DTE needs to do that.</p><p class=\"fq-note\">This is general safety information, not professional emergency advice. In any emergency, follow the directions of 911, your utility, and first responders. Smart Upkeep is not an emergency service and does not respond to gas leaks.</p>",
+    "what-is-the-mold-and-moisture-scan": "<p>A pinless moisture meter and thermal camera check under bathrooms, windows, basement walls and sinks, and flags damp spots where mold can grow. It is not a lab mold test and doesn&#x27;t diagnose or rule out mold. Readings and photos go to your Home Record, and it&#x27;s in every plan.</p>",
+    "what-is-included-in-each-plan": "<p>Essentials includes 2 visits a year, with furnace and AC tune-ups; Plus includes 4, adding gutter cleaning and more; Complete includes 12, adding after-storm checks after major storms, up to 4 a year. Your Starter Visit counts as one of your yearly visits. See What&#x27;s Included on the home page for the full list.</p>",
+    "do-i-need-to-send-photos": "<p>No. We don&#x27;t ask for photos to sign up; your price is based on your answers, and your tech confirms your home&#x27;s systems at the first visit. If anything changes your price, we&#x27;ll send the new price within 7 days, and you can accept it or cancel with no fee. Photos from your visits are handled as described in our Privacy Policy.</p>",
+    "how-are-techs-vetted": "<p>Every tech is insured and background-checked each year by a third party. Licensed work (mechanical, plumbing, electrical and builder work) is done by partners with an active Michigan license you can check, and we keep general liability and auto insurance certificates on file. Required certifications include EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.</p>",
+    "what-will-i-get-after-a-visit": "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care: mold and moisture readings, dated roof drone photos, recall monitoring, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>",
+    "who-sees-photos-from-my-visits": "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing; photos of private living spaces are never used in marketing without your written OK, and you can opt out of marketing use anytime by messaging us in the app. Our Privacy Policy explains how we use and protect your information.</p>",
+    "can-i-cancel": "<p>Yes, anytime, with no fee. Cancel online in the member app under Profile &amp; Account. Before your first visit, you get a full refund; after visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet, services already done aren&#x27;t refunded, founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge; refunds go out within 14 days, and free months have no cash or refund value.</p>",
+    "can-i-pause-my-plan": "<p>Yes. You can pause for up to 3 months each membership year; paused months aren&#x27;t billed, and your membership term and renewal date move back by the length of the pause. Message us in the app to pause.</p>",
+    "what-happens-if-i-move": "<p>If you move within our area, your membership moves with you and we requote it for the new home; you can accept the new price or cancel with no fee. If you move out of the area, you can cancel. Your Home Record can transfer to your buyer, and you can gift them 3 months free.</p>"
+  };
+  /* Home FAQ sections (Machan Nov 14 9:28–9:36 AM). FAQ_ALL order and text stay as they are; /faq/ is unchanged.
+     Each section lists pinned questions in Machan's order. live:false cards stay in the list for order but are not rendered until Machan confirms the fact and Legal reviews the wording.
+     After the pinned cards, leftover questions from that FAQ_ALL group are appended (deduped). Other FAQ_ALL groups follow in their existing order. */
+  var HOME_FAQ_SECTIONS = [
+    {
+      topic: "Plans And Visits",
+      sourceGroup: "Plans And Visits",
+      ico: "clipboard",
+      items: [
+        { slug: "what-is-included-in-each-plan", live: true },
+        { slug: "what-do-you-do-on-a-visit", live: true },
+        { slug: "what-does-a-plan-cost", live: true },
+        { slug: "what-will-i-get-after-a-visit", live: true },
+        { slug: "what-is-the-first-50-founding-offer", live: true },
+        { slug: "is-smart-upkeep-a-home-warranty-or-insurance", live: true }
+      ]
+    },
+    {
+      topic: "Our Team And Coverage",
+      sourceGroup: "Our Techs And Service Area",
+      ico: "van",
+      items: [
+        { slug: "are-the-technicians-employees-of-smart-upkeep", live: false },
+        { slug: "how-are-techs-vetted", live: true },
+        { slug: "is-smart-upkeep-a-licensed-residential-builder", live: false },
+        { slug: "does-smart-upkeep-have-liability-insurance", live: false },
+        { slug: "where-do-you-work", live: true }
+      ]
+    },
+    {
+      topic: "Billing, Cancel And Moving",
+      sourceGroup: "Billing, Cancel And Moving",
+      ico: "tag",
+      items: [
+        { slug: "can-i-cancel", live: true },
+        { slug: "can-i-pause-my-plan", live: true },
+        { slug: "how-are-refunds-calculated", live: true },
+        { slug: "what-happens-if-i-move", live: true },
+        { slug: "who-sees-my-credit-card-information", live: false }
+      ]
+    },
+    {
+      topic: "Heating, Cooling And Furnace Filters",
+      sourceGroup: "Heating, Cooling And Furnace Filters",
+      ico: "furnace",
+      items: [
+        { slug: "what-happens-during-a-furnace-tune-up", live: false },
+        { slug: "what-happens-during-an-ac-tune-up", live: false },
+        { slug: "how-often-should-i-change-my-furnace-filter", live: true },
+        { slug: "is-skipped-maintenance-really-that-costly", live: true },
+        { slug: "should-i-be-concerned-with-air-quality", live: false }
+      ]
+    }
+  ];
+  /* Hidden Home-only placeholders. Answer text is never shown. Do not invent licensing, insurance, employment, payment-processor, tune-up-process, statistics, or health claims. */
+  var HOME_FAQ_PENDING = {
+    "are-the-technicians-employees-of-smart-upkeep": { q: "Are The Technicians Employees Of Smart Upkeep?", a: "ANSWER PENDING" },
+    "is-smart-upkeep-a-licensed-residential-builder": { q: "Is Smart Upkeep A Licensed Residential Builder In The State Of Michigan?", a: "ANSWER PENDING" },
+    "does-smart-upkeep-have-liability-insurance": { q: "Does Smart Upkeep Have Liability Insurance?", a: "ANSWER PENDING" },
+    "who-sees-my-credit-card-information": { q: "Who Sees My Credit Card Information?", a: "ANSWER PENDING" },
+    "what-happens-during-a-furnace-tune-up": { q: "What Happens During A Furnace Tune-Up?", a: "ANSWER PENDING" },
+    "what-happens-during-an-ac-tune-up": { q: "What Happens During An AC Tune-Up?", a: "ANSWER PENDING" },
+    "should-i-be-concerned-with-air-quality": { q: "Should I Be Concerned With Air Quality?", a: "ANSWER PENDING" }
+  };
+  /* Home-only cards that reuse Legal-reviewed site copy (not added to FAQ_ALL). how-are-refunds-calculated excerpts the refund sentences from can-i-cancel, word for word. */
+  var HOME_FAQ_REUSED = {
+    "how-are-refunds-calculated": {
+      q: "How Are Refunds Calculated?",
+      a: "<p>Before your first visit, you get a full refund. After visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet. Services already done aren&#x27;t refunded. Founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge. Refunds go out within 14 days. Free months have no cash or refund value.</p>"
+    }
+  };
+  /* Home carousel titles only. FAQ_ALL titles on /faq/ stay as they are. */
+  var HOME_FAQ_TITLES = {
+    "what-is-included-in-each-plan": "What's Included And How Many Do I Get?",
+    "what-do-you-do-on-a-visit": "What Do You Do On A Visit?",
+    "what-does-a-plan-cost": "What Does A Plan Cost?",
+    "what-will-i-get-after-a-visit": "What's In My Visit Report?",
+    "what-is-the-first-50-founding-offer": "What Is The Founding 50 Offer?",
+    "is-smart-upkeep-a-home-warranty-or-insurance": "Is Smart Upkeep A Home Warranty Or Insurance?",
+    "how-are-techs-vetted": "How Are Techs Vetted And Trained?",
+    "where-do-you-work": "What Areas Do You Service?",
+    "can-i-cancel": "Can I Cancel?",
+    "can-i-pause-my-plan": "Can I Pause?",
+    "how-are-refunds-calculated": "How Are Refunds Calculated?",
+    "what-happens-if-i-move": "What Happens If I Move?",
+    "how-often-should-i-change-my-furnace-filter": "How Often Should A Furnace Filter Be Changed?",
+    "is-skipped-maintenance-really-that-costly": "Is Skipped Maintenance Really That Costly?"
+  };
+  /* Home FAQ carousel (Machan Nov 14 9:13 AM): one card per question. Home section only; /faq/ is unchanged. */
   function faqCarouselHtml() {
-    var cards = [];
+    var bySlug = {}, cards = [], used = {};
+    var topicIco = {};
+    HOME_FAQ_SECTIONS.forEach(function (sec) { topicIco[sec.topic] = sec.ico; });
     FAQ_ALL.forEach(function (g, gi) {
       (g[1] || []).forEach(function (q) {
-        cards.push({ topic: g[0], ico: FAQ_ICONS[gi], q: q[0], a: q[1], slug: q[2], emerg: q[2] === "what-should-i-do-in-an-emergency" });
+        bySlug[q[2]] = { topic: g[0], ico: FAQ_ICONS[gi], q: HOME_FAQ_TITLES[q[2]] || q[0], a: HOME_FAQ_SHORT[q[2]] || q[1], slug: q[2], emerg: q[2] === "what-should-i-do-in-an-emergency" };
       });
+    });
+    Object.keys(HOME_FAQ_REUSED).forEach(function (slug) {
+      var r = HOME_FAQ_REUSED[slug];
+      if (!bySlug[slug]) bySlug[slug] = { topic: "", ico: "tag", q: HOME_FAQ_TITLES[slug] || r.q, a: HOME_FAQ_SHORT[slug] || r.a, slug: slug, emerg: false };
+    });
+    function add(slug, topic) {
+      var c = bySlug[slug]; if (!c || used[slug]) return; used[slug] = 1;
+      if (topic) c = Object.assign({}, c, { topic: topic, ico: topicIco[topic] || c.ico });
+      cards.push(c);
+    }
+    HOME_FAQ_SECTIONS.forEach(function (sec) {
+      sec.items.forEach(function (item) {
+        if (!item.live || HOME_FAQ_PENDING[item.slug]) return;
+        add(item.slug, sec.topic);
+      });
+      FAQ_ALL.forEach(function (g) {
+        if (g[0] === sec.sourceGroup) (g[1] || []).forEach(function (q) { add(q[2], sec.topic); });
+      });
+    });
+    FAQ_ALL.forEach(function (g) {
+      var pinned = HOME_FAQ_SECTIONS.some(function (sec) { return sec.sourceGroup === g[0]; });
+      if (!pinned) (g[1] || []).forEach(function (q) { add(q[2]); });
     });
     return '<div class="faq-car">' +
       '<div class="faq-car-scroll" data-ptr-ignore>' + cards.map(function (c, i) {
@@ -1479,9 +1597,7 @@
           '<h3 class="faq-card-q">' + esc(c.q) + '</h3>' +
           '<div class="faq-card-a">' + c.a + '</div></article>';
       }).join("") + '</div>' +
-      '<div class="faq-car-nav"><p class="faq-car-lab" aria-live="polite"></p><div class="faq-dots" aria-hidden="true">' +
-      cards.map(function (c, i) { return '<button type="button" class="faq-dot' + (i ? "" : " on") + '" data-dot="' + i + '" aria-label="' + esc(c.q) + '"></button>'; }).join("") +
-      '</div></div></div>';
+      '<div class="faq-car-nav"><p class="faq-car-lab" aria-live="polite"></p><p class="faq-car-pos" aria-hidden="true"></p></div></div>';
   }
   /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM): topic icons on the six chips, not on each question. Live SUIcon set. */
   var FAQ_ICONS = ["furnace", "shield", "gutter", "clipboard", "van", "tag"];
@@ -2033,15 +2149,15 @@
     cards.forEach(function (c, i) { c.setAttribute("data-lines", String(Math.min(n, sets[i].length))); });
     var lines = Math.max.apply(null, cards.map(function (c) { return [].filter.call(c.querySelectorAll(".pc-inc > li"), function (li) { return !li.hidden; }).length; }).concat([1]));
     var phone = window.innerWidth <= 600;
-    var fsMax = phone ? 18 : 16;
-    if (natural() < fill - 4) { /* bigger type first, one px at a time, only while the whole section still fits the room */
-      var li0 = sec.querySelector("#row-plans .pc-inc > li[data-i]"), fs = li0 ? Math.round(parseFloat(getComputedStyle(li0).fontSize) / z) : 15;
+    var fsMax = phone ? 15 : 14; /* slightly smaller than the old 18/16 cap (Machan Nov 14 9:25 AM) */
+    if (natural() < fill - 4) {
+      var li0 = sec.querySelector("#row-plans .pc-inc > li[data-i]"), fs = li0 ? Math.round(parseFloat(getComputedStyle(li0).fontSize) / z) : 13;
       sec.classList.add("pc-fs");
       while (fs < fsMax) { rs.setProperty("--pc-li-fs", (fs + 1) + "px"); if (natural() > fill - 4) break; fs++; }
-      rs.setProperty("--pc-li-fs", fs + "px");
+      rs.setProperty("--pc-li-fs", Math.max(13, fs) + "px");
     }
     var slack = fill - natural();
-    if (slack > 4) rs.setProperty("--pc-li-pad", Math.min(14, Math.floor(slack * 0.8 / lines / 2 * 10) / 10) + "px");
+    if (slack > 4) rs.setProperty("--pc-li-pad", Math.min(6, Math.floor(slack * 0.5 / lines / 2 * 10) / 10) + "px");
   }
 
   /* Badge carousel (Machan Nov 13 1:24 PM: "i want to be able to scroll the badges as they are passing"). The CSS keyframe loop is swapped for a
