@@ -962,14 +962,12 @@
         '<button type="button" class="btn btn-primary mw-hover hm-pop-go">Free Quote in Minutes</button></div></div>' +
       /* Machan Nov 13 11:12 AM: all FAQs on Home (no See All FAQs link), grouped like À La Carte. */
       '<section class="hs-sec hs-faq" id="hs-faq"><section class="hm-accs hm-faqs"><h2>FAQ</h2>' +
-        saTabsHtml("faqg", "faq-groups", "FAQ Topics", FAQ_ALL.map(function (g, gi) { return [g[0], g[1].map(function (q, qi) {
-          return saItem("faq-" + gi + "-" + qi, '<span class="sa-n">' + q[0] + '</span>', q[1], q[2] === "what-should-i-do-in-an-emergency" ? "sa-emerg" : ""); }).join(""), FAQ_ICONS[gi]]; })) +
+        faqCarouselHtml() +
       '</section></section>' + featuredAd() + /* lower Share pill removed (Max, Oct 17): the header share arrow is the only Share */ wiPop() + icSheet() + acPop() +
-      /* Floating Bottom Bar deck card 4 B, Two Pills, CTA Above Nav (Machan Nov 13 9:04 AM, replaces One Merged Pill): a large Get Started pill (the height of the
-         full-width .hm-sticky bar PR96 removed, parent 1800ae20) stacked directly above a separate section pill. Shown from load (Machan 9:11 AM). */
-      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button><div class="hm-pill"><div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
+      /* Floating Bottom Bar: 4 section tabs stacked above Get Started (Machan Nov 14 9:12 AM: "get started should go under the 4 tabs", "same sizing just flip it around"). Sizes unchanged (tabs 48, gap 6, CTA 44). Shown from load (Machan Nov 13 9:11 AM). */
+      '<nav class="hm-tabs hm-dock" aria-label="Page Sections"><div class="hm-pill"><div class="hm-tabs-row"><span class="hm-tab-ind" aria-hidden="true"></span>' +
         [["home", "Home", "hs-top", "house"], ["plans", "Plans", "hs-plans", "clipboard"], ["alacarte", "Tailor Your Plan", "hs-alc", "wrench"], ["faq", "FAQ", "hs-faq", "faq"]].map(function (t, i) { return '<button type="button" class="mw-hover' + (i === 0 ? " on" : "") + '" data-hm-tab="' + t[0] + '" data-hs-sec="' + t[2] + '"' + (i === 0 ? ' aria-current="page"' : "") + '><span class="hm-tab-core">' + I(t[3], "sm") + '<span>' + t[1] + '</span></span></button>'; }).join("") +
-      '</div></div></nav>' +
+      '</div></div><button type="button" class="btn btn-primary mw-hover hm-tab-cta" data-act="start">Get Started<span class="hm-cta-arr" aria-hidden="true">→</span></button></nav>' +
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
@@ -1009,6 +1007,75 @@
     if (mq.addEventListener) mq.addEventListener("change", start);
     window.addEventListener("resize", size);
     start(); requestAnimationFrame(start);
+  }
+  /* Shared peek-swipe for Home Tailor and FAQ carousels. Same feel as Plans (22% peek, snap to start, dots in sync) but each card keeps its own look. Plans binding is unchanged. */
+  function bindPeekSwipe(sc, cardSel, dots, onChange) {
+    if (!sc) return;
+    var PEEK = 22;
+    function cards() { return [].slice.call(sc.querySelectorAll(cardSel)); }
+    function size() {
+      var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
+      var w = (sc.clientWidth - padL - gap) / (1 + PEEK / 100);
+      sc.style.setProperty("--car-w", Math.max(200, Math.floor(w)) + "px");
+      sc.style.scrollPaddingLeft = padL + "px";
+    }
+    function sync() {
+      var best = null, d = 1e9, cs = cards();
+      var sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0);
+      cs.forEach(function (c) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; best = c; } });
+      if (cs.length && sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
+      var i = best ? cs.indexOf(best) : 0;
+      if (dots) dots.forEach(function (o, j) {
+        var on = (o.getAttribute("data-dot") != null ? o.getAttribute("data-dot") === String(i) : j === i);
+        o.classList.toggle("on", on);
+        if (on) o.setAttribute("aria-current", "true"); else o.removeAttribute("aria-current");
+      });
+      if (onChange) onChange(best, i, cs);
+    }
+    function go(i) {
+      var cs = cards(), c = cs[i]; if (!c) return;
+      var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
+      var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - padL, behavior: smooth });
+    }
+    if (dots) dots.forEach(function (o, j) {
+      o.addEventListener("click", function () { go(o.getAttribute("data-dot") != null ? +o.getAttribute("data-dot") : j); });
+    });
+    function start() {
+      size();
+      var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
+      sc.scrollLeft = 0;
+      sc.style.scrollBehavior = sb;
+      sync();
+    }
+    var raf = 0;
+    sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
+    window.addEventListener("resize", function () { size(); sync(); });
+    start(); requestAnimationFrame(start);
+  }
+  function bindAlcCar(root) {
+    var sc = root.querySelector("#hs-alc .alc-car-scroll"); if (!sc) return;
+    bindPeekSwipe(sc, ".alc-card", [].slice.call(root.querySelectorAll("#hs-alc .alc-dot")));
+  }
+  function bindFaqCar(root) {
+    var sc = root.querySelector("#hs-faq .faq-car-scroll"); if (!sc) return;
+    var lab = root.querySelector("#hs-faq .faq-car-lab");
+    var dotsWrap = root.querySelector("#hs-faq .faq-dots");
+    bindPeekSwipe(sc, ".faq-card", [].slice.call(root.querySelectorAll("#hs-faq .faq-dot")), function (best, i, cs) {
+      if (lab && best) {
+        var topic = best.getAttribute("data-faq-topic") || "";
+        var same = cs.filter(function (c) { return c.getAttribute("data-faq-topic") === topic; });
+        var n = same.indexOf(best) + 1;
+        lab.textContent = topic + " · " + n + " Of " + same.length;
+      }
+      if (dotsWrap) {
+        var on = dotsWrap.querySelector(".faq-dot.on");
+        if (on) {
+          var left = on.offsetLeft - (dotsWrap.clientWidth - on.offsetWidth) / 2;
+          dotsWrap.scrollLeft = Math.max(0, left);
+        }
+      }
+    });
   }
   /* One tap selects a plan card (one at a time); on phones the card also scrolls to center. */
   function bindPlanSelect(root) {
@@ -1382,13 +1449,39 @@
     var g = ALC_GROUPS.map(function () { return []; }), other = [];
     rows.forEach(function (r) { for (var i = 0; i < ALC_GROUPS.length; i++) { if (ALC_GROUPS[i][1].test(r.a.label)) { g[i].push(r); return; } } other.push(r); });
     var groups = ALC_GROUPS.map(function (G, i) { return [G[0], g[i]]; }); if (other.length) groups.push(["More Services", other]);
+    groups = groups.filter(function (G) { return G[1].length; });
     var n = 0;
-    return saTabsHtml("alc", "alc-groups", "Tailor Your Plan Groups", groups.filter(function (G) { return G[1].length; }).map(function (G) {
-      return [G[0], G[1].map(function (r) {
-        var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-        return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
-      }).join("")];
-    }));
+    /* Machan Nov 14 9:13 AM: drop the black/white pills; one swipeable card per section, peek + dots. Cards are designed for the service list, not copied from Plans. */
+    return '<div class="alc-car">' +
+      '<div class="alc-car-scroll" data-ptr-ignore>' + groups.map(function (G, i) {
+        var list = G[1].map(function (r) {
+          var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
+          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m));
+        }).join("");
+        return '<article class="alc-card" data-alc-g="' + i + '"><div class="alc-ghd"><span class="alc-gico" aria-hidden="true">' + alcIco(G[0], 28) + '</span><p>' + esc(G[0]) + '</p></div><div class="sa-list">' + list + '</div></article>';
+      }).join("") + '</div>' +
+      '<div class="alc-dots" role="tablist" aria-label="Tailor Your Plan Groups">' + groups.map(function (G, i) {
+        return '<button type="button" class="alc-dot' + (i ? "" : " on") + '" data-dot="' + i + '" aria-label="' + esc(G[0]) + '"' + (i ? "" : ' aria-current="true"') + '></button>';
+      }).join("") + '</div></div>';
+  }
+  /* Home FAQ carousel (Machan Nov 14 9:13 AM): one card per question, answer HTML kept word-for-word. Home section only; /faq/ is unchanged. */
+  function faqCarouselHtml() {
+    var cards = [];
+    FAQ_ALL.forEach(function (g, gi) {
+      (g[1] || []).forEach(function (q) {
+        cards.push({ topic: g[0], ico: FAQ_ICONS[gi], q: q[0], a: q[1], slug: q[2], emerg: q[2] === "what-should-i-do-in-an-emergency" });
+      });
+    });
+    return '<div class="faq-car">' +
+      '<div class="faq-car-scroll" data-ptr-ignore>' + cards.map(function (c, i) {
+        return '<article class="faq-card' + (c.emerg ? " is-emerg" : "") + '" data-faq-i="' + i + '" data-faq-topic="' + esc(c.topic) + '" data-faq-slug="' + esc(c.slug) + '">' +
+          '<p class="faq-card-topic"><span class="faq-ico" aria-hidden="true">' + I(c.ico, "sm") + '</span>' + esc(c.topic) + '</p>' +
+          '<h3 class="faq-card-q">' + esc(c.q) + '</h3>' +
+          '<div class="faq-card-a">' + c.a + '</div></article>';
+      }).join("") + '</div>' +
+      '<div class="faq-car-nav"><p class="faq-car-lab" aria-live="polite"></p><div class="faq-dots" aria-hidden="true">' +
+      cards.map(function (c, i) { return '<button type="button" class="faq-dot' + (i ? "" : " on") + '" data-dot="' + i + '" aria-label="' + esc(c.q) + '"></button>'; }).join("") +
+      '</div></div></div>';
   }
   /* FAQ Rich Look Deck (Machan Nov 13 8:46 PM): topic icons on the six chips, not on each question. Live SUIcon set. */
   var FAQ_ICONS = ["furnace", "shield", "gutter", "clipboard", "van", "tag"];
@@ -2137,7 +2230,7 @@
     bindSaRows(root);
     root.querySelectorAll(".hm-hchips").forEach(bindBadgeStrip); root.querySelectorAll(".hm-hchips").forEach(bindBadgeInfo);
     hmHdrSync();
-    bindPlanSwipe(root); bindOffer(root); bindInc(root); bindWiRedo(root);
+    bindPlanSwipe(root); bindAlcCar(root); bindFaqCar(root); bindOffer(root); bindInc(root); bindWiRedo(root);
     bindPlanSelect(root); bindAcPop(root);
     var accs = [].slice.call(root.querySelectorAll(".hm-acc"));
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
