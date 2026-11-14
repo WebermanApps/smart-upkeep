@@ -1495,6 +1495,7 @@
     if (d.classList.contains("faq-sheet-open") || d.classList.contains("hm-pop-open") || d.classList.contains("pc-lock")) return true;
     return false;
   }
+  function hmMenuOpen() { var m = document.getElementById("hdrMenu"); return !!(m && !m.hidden); }
   function hmFromOverlay(t) {
     if (!t || !t.closest) return false;
     return !!t.closest('.faq-sheet-wrap,.faq-sheet,.pc-sheet-wrap,.pc-sheet,.hm-pop,.wi-pop,.ic-pop,.hm-offer-pop,.hm-hc-info,.af-pop,.xt-sheet,.pc-lg,[role="dialog"][aria-modal="true"]');
@@ -1540,13 +1541,14 @@
     var curY = window.scrollY || 0;
     var target = next >= secs.length ? hmFooterY() : hmParkY(secs[next]);
     if (Math.abs(curY - target) < 1) return false;
-    hmPage.wheelUntil = performance.now() + 20000;
+    hmPage.wheelUntil = performance.now() + (hmReduced() ? 350 : 20000);
     hmPageTo(next);
     return true;
   }
   function hmPageOnWheel(e) {
     if (!hmPageMode()) return;
     if (hmPageBlocked() || hmFromOverlay(e.target)) return;
+    if (hmMenuOpen()) { e.preventDefault(); return; }
     var dx = e.deltaX || 0, dy = e.deltaY || 0;
     if (e.deltaMode === 1) { dx *= 16; dy *= 16; }
     if (e.deltaMode === 2) { dx *= window.innerWidth; dy *= window.innerHeight; }
@@ -1575,7 +1577,8 @@
   }
   function hmPageOnMove(e) {
     var g = hmPage.gest;
-    if (!g || g.done || !hmPageMode()) return;
+    if (!g || !hmPageMode()) return;
+    if (g.done) { if (g.axis === "y" && e.cancelable) e.preventDefault(); return; }
     var t = e.touches ? e.touches[0] : e;
     if (!t) return;
     var dx = t.clientX - g.x, dy = t.clientY - g.y;
@@ -1591,7 +1594,7 @@
       if (!atEnd) return;
     }
     if (e.cancelable) e.preventDefault();
-    if (hmPageBusy()) return;
+    if (hmMenuOpen() || hmPageBusy()) return;
     if (ady >= 40) {
       g.done = true;
       hmPageBy(dy < 0 ? 1 : -1);
@@ -1605,13 +1608,13 @@
     var dy = y - g.y;
     var dt = Math.max(1, performance.now() - g.t);
     var v = dy / dt;
-    if (g.axis === "y" && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
+    if (g.axis === "y" && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
       hmPageBy(dy < 0 ? 1 : -1);
     }
     hmPage.gest = null;
   }
   function hmPageOnKey(e) {
-    if (!hmPageMode() || hmPageBlocked() || e.defaultPrevented) return;
+    if (!hmPageMode() || hmPageBlocked() || hmMenuOpen() || e.defaultPrevented) return;
     var t = e.target;
     if (t && t.closest && t.closest("input,textarea,select,[contenteditable],.faq-sheet,.pc-sheet,.hm-pop,.wi-pop,.ic-pop")) return;
     var k = e.key, dir = 0;
@@ -1638,6 +1641,12 @@
     if (!hmPageMode() || hmPageBlocked() || hmGlide.lock) return;
     hmPageSnapNow();
   }
+  function hmPageOnFocus(e) {
+    if (!hmPageMode() || hmPageBlocked() || hmFromOverlay(e.target)) return;
+    var sec = e.target && e.target.closest ? e.target.closest("#hs-top,#hs-plans,#hs-alc,#hs-faq") : null; if (!sec) return;
+    var i = HM_PAGE_IDS.indexOf(sec.id);
+    requestAnimationFrame(function () { if (!hmGlide.lock && Math.abs((window.scrollY || 0) - hmParkY(sec)) > 1) hmPageTo(i, true); });
+  }
   function hmPageBind() {
     if (hmPage.bound) return;
     hmPage.bound = true;
@@ -1647,6 +1656,7 @@
     window.addEventListener("touchend", hmPageOnEnd, { capture: true, passive: true });
     window.addEventListener("touchcancel", hmPageOnEnd, { capture: true, passive: true });
     window.addEventListener("keydown", hmPageOnKey, { capture: true, passive: false });
+    document.addEventListener("focusin", hmPageOnFocus, true);
     window.addEventListener("resize", hmPageOnResize);
     window.addEventListener("orientationchange", function () {
       setTimeout(hmPageOnResize, 60);
@@ -1667,6 +1677,7 @@
     window.removeEventListener("touchend", hmPageOnEnd, { capture: true });
     window.removeEventListener("touchcancel", hmPageOnEnd, { capture: true });
     window.removeEventListener("keydown", hmPageOnKey, { capture: true });
+    document.removeEventListener("focusin", hmPageOnFocus, true);
     window.removeEventListener("resize", hmPageOnResize);
     document.documentElement.classList.remove("su-home-page");
     hmPage.gest = null;
