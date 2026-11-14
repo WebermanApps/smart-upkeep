@@ -4,13 +4,48 @@
 /* Machan 10:04 PM: Log In lives in the menu only. */
 .topbar .top-login,body.on-home .topbar .top-login,body.su-band .topbar .top-login{display:none!important}
 
-/* ---- 6. Resume Indicator: Menu Dot, Then Continue Row ---- */
-#hdrMenuBtn{position:relative}
-#hdrMenuBtn.has-resume::after{content:"";position:absolute;top:10px;right:6px;width:8px;height:8px;border-radius:50%;background:#C1502E;box-shadow:0 0 0 2px #FFFCF7}
-body.su-band .hdr-menu button.hdr-resume{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding-top:6px;padding-bottom:6px;color:#A8431F;font:600 15px/1.2 Hind,var(--mw-font-body),sans-serif}
-body.su-band .hdr-menu button.hdr-resume small{font:500 12px/1.2 Hind,var(--mw-font-body),sans-serif;color:#737373}
-body.su-band .hdr-menu button.hdr-resume[hidden]{display:none!important}
-body.su-band .hdr-menu.has-resume [data-menu-act="start"]{display:none!important}
+/* ---- Get Started resume prompt (Machan Nov 14 3:12 PM): no menu dot or Continue row. ---- */
+html.rs-pop-open,html.rs-pop-open body{overflow:hidden!important;overscroll-behavior:none}
+.rs-pop-wrap{
+  position:fixed;left:0;right:0;top:0;bottom:var(--su-dock-h,0px);z-index:220;
+  display:flex;flex-direction:column;justify-content:flex-end;pointer-events:none;
+  padding:8px 8px 8px;
+  box-sizing:border-box;
+}
+.rs-pop-wrap[hidden]{display:none!important}
+.rs-pop-bg{position:absolute;inset:0;background:rgba(40,28,16,.28);pointer-events:auto;touch-action:none}
+.rs-pop{
+  position:relative;width:100%;max-width:420px;margin:0 auto;box-sizing:border-box;
+  padding:18px 16px 16px;border-radius:16px;
+  background-color:#FFFCF7;background-image:var(--su-shine),var(--su-gloss);
+  box-shadow:var(--su-sh-sheet,0 -8px 28px rgba(40,28,16,.18));
+  color:#1A1A1A;color-scheme:light only;pointer-events:auto;
+  transition:transform .2s ease,opacity .2s ease;
+}
+.rs-pop-wrap:not(.on) .rs-pop{transform:translateY(10px);opacity:0}
+.rs-pop-wrap.on .rs-pop{transform:none;opacity:1}
+.rs-pop-x{
+  position:absolute;top:4px;right:4px;width:44px;height:44px;margin:0;padding:0;border:0;border-radius:8px;
+  display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#1A1A1A;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.rs-pop-x .x-ico{width:20px;height:20px}
+.rs-pop-x:focus-visible{outline:2px solid #0A0A0A;outline-offset:2px}
+.rs-pop h3{
+  margin:0 48px 14px 4px;font:700 22px/1.15 Khand,var(--mw-font-heading),sans-serif;color:#1A1A1A;letter-spacing:0;
+}
+.rs-pop-actions{display:flex;flex-direction:column;gap:8px}
+.rs-pop-actions .btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  width:100%;min-height:56px;height:auto;padding:8px 12px;border-radius:12px;box-sizing:border-box;
+  font:600 16px/1.2 Hind,var(--mw-font-body),sans-serif;text-transform:none;letter-spacing:0;
+}
+.rs-pop-go{background:#A8431F;border-color:#A8431F;color:#fff}
+.rs-pop-go small{font:500 12px/1.2 Hind,var(--mw-font-body),sans-serif;color:#FFFCF7;opacity:.92}
+.rs-pop-restart{background:#fff;border:1.5px solid #A8431F;color:#A8431F}
+@media (prefers-reduced-motion:reduce){
+  .rs-pop{transition:none;transform:none!important}
+}
 
 /* ---- 13. Menu motion: 160ms in (--su-ease), 120ms out (--su-ease-in), from the top right ---- */
 @keyframes suMenuIn{from{opacity:0;transform:translate3d(0,calc(var(--su-ly,0px) - 4px),0) scale(.98)}to{opacity:1;transform:translate3d(0,var(--su-ly,0px),0) scale(1)}}

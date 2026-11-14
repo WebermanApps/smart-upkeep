@@ -2711,15 +2711,73 @@
   /* Coming back later: Resume Card (Info Gather Deck). */
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
   function hasResume() { return !!S.resume && isOb(S.resume); }
-  /* Machan 11:16 PM: resume strip docked on top of the bar. Existing label + " · Step X" (same numbering as the funnel). Tap = Resume, × = clear (dismissResume). */
-  /* Resume Indicator Placement Deck (Machan Nov 13 9:12 PM; team pick Menu Dot, Then Continue Row, Swatch polish item 6): a small dot on the menu button and a
-     Continue Sign-Up row (with the step) at the top of the menu, replacing the strip on the dock. Sign Up hides while it shows; Log In stays. Not shown on the steps themselves. */
-  function syncResumeMenu(s) {
+  /* Machan Nov 14 3:12 PM: no resume dot or Continue row in the menu. Get Started (and Sign Up) asks Continue Where You Left Off or Start Over when hasResume(). */
+  function syncResumeMenu() {
     var btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu"); if (!btn || !menu) return;
-    var row = menu.querySelector(".hdr-resume"), on = hasResume() && !isOb(s) && s !== "confirm";
-    btn.classList.toggle("has-resume", on); menu.classList.toggle("has-resume", on);
-    btn.setAttribute("aria-label", on ? "Menu, sign-up in progress" : "Menu");
-    if (row) { row.hidden = !on; var sm = row.querySelector("small"); if (sm && on) sm.textContent = "Step " + obStepNo(S.resume) + " Of " + obSeq().length; }
+    btn.classList.remove("has-resume"); menu.classList.remove("has-resume");
+    btn.setAttribute("aria-label", "Menu");
+    var row = menu.querySelector(".hdr-resume"); if (row) row.remove();
+  }
+  function resumePromptReturn(from) {
+    if (from && document.body.contains(from)) {
+      var r = from.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return from;
+    }
+    return document.querySelector(".hm-tab-cta") || document.getElementById("hdrMenuBtn");
+  }
+  function openResumePrompt(from) {
+    var old = document.getElementById("rsPop"); if (old) old.remove();
+    document.documentElement.classList.remove("hm-pop-open");
+    document.querySelectorAll(".ic-pop, .wi-pop, .hm-offer-pop").forEach(function (p) { p.hidden = true; });
+    var step = "Step " + obStepNo(S.resume) + " Of " + obSeq().length;
+    var wrap = document.createElement("div");
+    wrap.id = "rsPop";
+    wrap.className = "rs-pop-wrap";
+    wrap.setAttribute("data-ptr-ignore", "");
+    wrap.innerHTML = '<div class="rs-pop-bg" data-rs-close></div>' +
+      '<div class="rs-pop" role="dialog" aria-modal="true" aria-labelledby="rsPopT" tabindex="-1">' +
+        '<button type="button" class="rs-pop-x mw-hover" data-rs-close aria-label="Close">' + X_SVG + '</button>' +
+        '<h3 id="rsPopT">Continue Where You Left Off</h3>' +
+        '<div class="rs-pop-actions">' +
+          '<button type="button" class="btn btn-primary mw-hover rs-pop-go" data-rs-resume>Continue Where You Left Off<small>' + step + '</small></button>' +
+          '<button type="button" class="btn btn-outline mw-hover rs-pop-restart" data-rs-restart>Start Over</button>' +
+        '</div>' +
+      '</div>';
+    var dock = document.querySelector(".hm-tabs.hm-dock") || document.querySelector(".hm-tabs");
+    var dockH = dock ? Math.max(0, Math.round(window.innerHeight - dock.getBoundingClientRect().top)) : 0;
+    wrap.style.setProperty("--su-dock-h", dockH + "px");
+    document.body.appendChild(wrap);
+    var box = wrap.querySelector(".rs-pop");
+    function focusables() {
+      return Array.prototype.filter.call(box.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'), function (el) {
+        return !el.disabled && el.getAttribute("aria-hidden") !== "true";
+      });
+    }
+    function key(e) {
+      if (e.key === "Escape") { e.preventDefault(); shut(true); return; }
+      if (e.key !== "Tab") return;
+      var fs = focusables(); if (!fs.length) { e.preventDefault(); box.focus(); return; }
+      var i = fs.indexOf(document.activeElement);
+      if (e.shiftKey) { if (i <= 0) { e.preventDefault(); fs[fs.length - 1].focus(); } }
+      else if (i === fs.length - 1 || i < 0) { e.preventDefault(); fs[0].focus(); }
+    }
+    function shut(refocus) {
+      if (!wrap.parentNode) return;
+      document.removeEventListener("keydown", key, true);
+      document.documentElement.classList.remove("rs-pop-open");
+      wrap.remove();
+      if (refocus) { var back = resumePromptReturn(from); if (back) try { back.focus({ preventScroll: true }); } catch (x) { back.focus(); } }
+    }
+    wrap.querySelectorAll("[data-rs-close]").forEach(function (c) {
+      c.addEventListener("click", function (e) { e.preventDefault(); shut(true); });
+    });
+    wrap.querySelector("[data-rs-resume]").addEventListener("click", function () { shut(false); act("resume"); });
+    wrap.querySelector("[data-rs-restart]").addEventListener("click", function () { shut(false); act("startOver"); });
+    document.documentElement.classList.add("rs-pop-open");
+    document.addEventListener("keydown", key, true);
+    requestAnimationFrame(function () { wrap.classList.add("on"); });
+    var goBtn = wrap.querySelector("[data-rs-resume]");
+    try { (goBtn || box).focus({ preventScroll: true }); } catch (x) { (goBtn || box).focus(); }
   }
   function resumeCard() {
     var done = Math.max(0, OB.indexOf(S.resume));
@@ -3838,7 +3896,7 @@
         if (r) { r.hidden = false; b.classList.add("done"); b.lastChild.textContent = "License Verified"; }
       });
     });
-    app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
+    app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act"), b); }); });
     var s = S.screen;
     document.body.classList.toggle("on-qf", isOb(s));
     document.body.classList.toggle("on-ob", isOb(s));
@@ -3852,14 +3910,18 @@
     }
     if (s === "confirm") bindReferralShare();
   }
-  function act(a) {
+  function act(a, from) {
     if (a === "back") return back();
     if (a === "home") return go("home");
     if (a === "dismissResume") { S = fresh(); save(); render(); return; }
     if (a === "startOver") { S = fresh(); save(); return go(OB[0]); }
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : OB[0]); }
-    if (a === "start") { try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {} }
-    if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go(OB[0]); }
+    if (a === "start") {
+      if (hasResume()) { openResumePrompt(from); return; }
+      var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier");
+      try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {}
+      return go(OB[0]);
+    }
     if (a === "watch") return openVideo(true);
     if (a === "toQuote") return go(OB[0]);
     if (a === "alacarte") return go("alacarte");
@@ -3989,7 +4051,7 @@
     btn.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden, true); });
     document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false, true); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { e.preventDefault(); setOpen(false, true); } });
-    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act")); }); });
+    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act"), b.getAttribute("data-menu-act") === "start" ? btn : b); }); });
   })();
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
@@ -4005,7 +4067,7 @@
     copy();
   }
   /* Hotfix Nov 13 2026 (Machan 10:26 PM): a fresh visit always opens on Home at the top. Saved sign-up progress never auto-opens;
-     it resumes only through the resume strip / menu dot (S.resume keeps the step). */
+     it resumes through Get Started (Continue / Start Over prompt). S.resume keeps the step. */
   try { history.scrollRestoration = "manual"; } catch (e) {}
   if (S.screen !== "home") { if (isOb(S.screen)) S.resume = S.screen; S.screen = "home"; S.path = []; save(); }
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
