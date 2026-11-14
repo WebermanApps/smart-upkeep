@@ -2593,8 +2593,17 @@ body.on-ob .qf,body.on-ob .ob.qf{padding-bottom:0;min-height:calc(100dvh - var(-
 
 /* ===== Plans Expand (Machan Nov 13 7:34 PM ICT): Essentials first with Plus peeking; And More opens a full-screen sheet grown from the tile ===== */
 @media(max-width:600px){
-  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory}
-  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:start!important}
+  body.on-home #row-plans .hm-scroll{scroll-snap-type:x mandatory;scroll-padding:0;overscroll-behavior-x:contain;touch-action:pan-x}
+  body.on-home #row-plans .hm-plan{flex:0 0 var(--pc-w,78%)!important;scroll-snap-align:center!important}
+  /* Essentials (first tile) keeps its left-aligned landing snap. Plus and Complete center. */
+  body.on-home #row-plans .hm-plan:first-child{scroll-snap-align:start!important}
+  /* Dimming starts only after a tap or swipe (pc-dimmed). On first land all three stay equal.
+     Active snap tile is full; others sit at 76% with a light desaturation. No green. */
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{opacity:.76;filter:saturate(.85);transition:opacity .2s ease,filter .2s ease}
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan.pc-on{opacity:1;filter:none}
+}
+@media (max-width:600px) and (prefers-reduced-motion:reduce){
+  body.on-home #row-plans .hm-scroll.pc-dimmed .hm-plan{transition:none}
 }
 body.on-home .hm-plan .pc-inc li[hidden]{display:none!important}
 body.on-home #row-plans .hm-plan,body.on-home #row-plans .pc-more-link{-webkit-tap-highlight-color:transparent} /* no blue tile flash on tap before the sheet grows */
@@ -3378,44 +3387,43 @@ html body.on-home .alc-card .sa-list{
   gap:0!important;
 }
 html body.on-home .alc-card .sa-item + .sa-item{border-top:1px solid #E6E0D6!important}
+/* Machan Nov 14 3:38 PM ICT: compact list rows. Name + tag on the left, Khand price
+   on the right, descriptions moved into the expansion. Deck picks kept: hairline,
+   terracotta Quote, section icon, add-on tag, terracotta title rule. No green. */
 html body.on-home .alc-card .sa-q{
-  align-items:flex-start!important;
+  align-items:center!important;
   min-height:44px!important;
-  padding:14px 0!important;
-  gap:10px!important;
+  padding:8px 0!important;
+  gap:8px!important;
 }
 html body.on-home .alc-card .sa-q .sa-n{
   display:flex;
   flex-direction:column;
   align-items:flex-start;
-  gap:4px;
-  font:600 16px/1.25 Hind,var(--mw-font-body),sans-serif;
+  gap:1px;
+  font:600 15px/1.2 Hind,var(--mw-font-body),sans-serif;
   color:#1A1A1A;
 }
 html body.on-home .alc-card .sa-q:hover .sa-n,
 html body.on-home .alc-card .sa-q:focus-visible .sa-n{color:#1A1A1A}
 html body.on-home .alc-card .sa-q .sa-desc,
-html body.on-home .alc-card .sa-q .sa-note{
-  display:block;
-  font:400 13.5px/1.35 Hind,var(--mw-font-body),sans-serif!important;
-  color:#6B625A!important;
-  font-weight:400!important;
-}
+html body.on-home .alc-card .sa-q .sa-note{display:none!important}
 html body.on-home .alc-card .sa-q .sa-n small{
   display:block;
-  margin-top:1px;
-  font:500 12px/1.25 Hind,var(--mw-font-body),sans-serif!important;
+  margin-top:0;
+  font:500 11px/1.2 Hind,var(--mw-font-body),sans-serif!important;
   color:#8A8178!important;
+  white-space:nowrap;
 }
 html body.on-home .alc-card .sa-q .sa-p{
   flex:none;
-  margin-top:1px;
+  margin-top:0;
   padding:0!important;
   border:0!important;
   border-radius:0!important;
   background:none!important;
   box-shadow:none!important;
-  font:600 18px/1.1 Khand,var(--mw-font-heading),sans-serif!important;
+  font:600 16px/1.1 Khand,var(--mw-font-heading),sans-serif!important;
   color:#1A1A1A!important;
   white-space:nowrap;
 }
@@ -3423,17 +3431,20 @@ html body.on-home .alc-card .sa-q .sa-p.is-quote{
   color:#C1502E!important;
   background:none!important;
 }
-html body.on-home .alc-card .sa-q .sa-chev{margin-top:4px;color:#6B625A}
-/* Tighten roomy rows on the short 360x640 panel so more of the list fits; the card body can still scroll. */
+html body.on-home .alc-card .sa-q .sa-chev{margin-top:0;color:#6B625A;flex:none}
+html body.on-home .alc-card .sa-a .sa-full-name{
+  margin:0 0 6px;
+  font:600 14px/1.3 Hind,var(--mw-font-body),sans-serif;
+  color:#1A1A1A;
+}
+html body.on-home .alc-card .sa-list{padding:0 16px 8px!important}
 @media (max-width:360px) and (max-height:640px){
   html body.on-home .alc-card .alc-ghd{padding:8px 12px 8px!important}
   html body.on-home .alc-card .alc-ghd p{font-size:20px!important}
-  html body.on-home .alc-card .sa-list{padding:0 12px 8px!important}
-  html body.on-home .alc-card .sa-q{padding:9px 0!important}
-  html body.on-home .alc-card .sa-q .sa-n{font-size:15px!important;gap:2px}
-  html body.on-home .alc-card .sa-q .sa-desc,
-  html body.on-home .alc-card .sa-q .sa-note{font-size:12.5px!important;line-height:1.3!important}
-  html body.on-home .alc-card .sa-q .sa-p{font-size:16px!important}
+  html body.on-home .alc-card .sa-list{padding:0 12px 6px!important}
+  html body.on-home .alc-card .sa-q{padding:6px 0!important}
+  html body.on-home .alc-card .sa-q .sa-n{font-size:14px!important}
+  html body.on-home .alc-card .sa-q .sa-p{font-size:15px!important}
 }
 
 
