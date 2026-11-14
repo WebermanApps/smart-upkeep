@@ -1836,7 +1836,7 @@ body.on-home .hm-tabs .hm-tab-cta{
   font:600 12px/1 Hind,var(--mw-font-body),sans-serif;white-space:nowrap;border-radius:999px;
 }
 /* Arrow guard: hide Get Started only, never the tabs. Keep its slot so the pill does not jump. */
-body.on-home .hm-tabs.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+body.on-home .hm-tabs.arrow-off .hm-tab-cta{opacity:1;visibility:visible;pointer-events:auto}
 
 /* Desktop floating pill from 1100px up: min(560px, 90vw), centered, bottom 1rem, border and shadow. */
 @media (min-width:1100px){
@@ -2018,7 +2018,7 @@ body.on-home .hm-tabs.hm-dock{background:transparent!important;border:0!importan
 body.on-home .hm-tabs.hm-dock > *{pointer-events:auto}
 body.on-home .hm-dock .hm-tab-cta{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:52px;height:52px;margin:0!important;padding:0 1rem!important;border-radius:999px!important;font:600 15px/1 Hind,var(--mw-font-body),sans-serif!important;letter-spacing:.06em;box-shadow:0 8px 20px rgba(168,67,31,.22);transition:opacity .2s ease,visibility .2s}
 body.on-home .hm-dock .hm-pill{display:flex;flex-direction:column;background:#fff;border:1px solid #E6E0D6;border-radius:28px;box-shadow:var(--su-sh-2);overflow:hidden}
-body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:0;visibility:hidden;pointer-events:none}
+body.on-home .hm-dock.arrow-off .hm-tab-cta{opacity:1;visibility:visible;pointer-events:auto}
 body.on-home.hs-bar-off .hm-tabs{opacity:1!important;visibility:visible!important;pointer-events:none!important;transform:none!important}
 @media (min-width:1100px){body.on-home.hs-bar-off .hm-tabs{transform:translateX(-50%)!important}}
 /* Shop À La Carte section and FAQ section (Machan 9:09-9:11 AM) */

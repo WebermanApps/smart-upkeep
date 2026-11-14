@@ -706,7 +706,7 @@
     ["detector", "Air & Safety", "Alarms that work when it counts", [["Dryer Vent Cleaning", "Essentials"], ["Smoke and CO Checks and Battery Swap", "Essentials"], ["Main Water Shut-Off Tag", "Essentials"]]],
     ["meter", "Mold and Moisture Scan", "Every visit, whole home", [["Moisture Meter and Thermal Camera Check", "Essentials"], ["Damp Spots Flagged With Photos", "Essentials"], ["Readings Saved to Your Home Record", "Essentials"]]],
     ["gutter", "Outside", "Gutters, roof and winter prep", [["Roof Drone Inspection", "Essentials"], ["Drone Gutter Check", "Essentials"], ["Gutter and Downspout Cleaning", "Plus"], ["Garage Door Tune-Up", "Plus"], ["After-Storm Checks, Up To 4 A Year", "Complete"], ["Vent and Ice Dam Clearing After Storms", "Complete"]]],
-    ["clipboard", "Records", "Records for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Downloadable Visit Record", "Essentials"], ["Recall Monitoring", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
+    ["clipboard", "Records", "Records for warranties and resale", [["Written Report After Every Visit", "Essentials"], ["Downloadable Visit Record", "Essentials"], ["Recall Check", "Essentials"], ["Home Record Transfers When You Sell", "Essentials"]]]];
   function fsBg(c, fill, inner) { return '<svg class="' + c + '" viewBox="0 0 120 80" fill="none" stroke="#1f1b17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="2" width="116" height="76" rx="8" fill="' + fill + '" stroke="none"/>' + inner + '</svg>'; }
   var FS_ART = {
     warranty: function (c) { return fsBg(c, "#FAF3EB", '<rect x="18" y="14" width="40" height="52" rx="4" fill="#fff"/><path d="M26 26h24M26 34h24M26 42h16"/><path d="M38 52l4 4 8-9" stroke="#0B6E4F" stroke-width="2.2"/><rect x="70" y="30" width="30" height="34" rx="3" fill="#fff"/><path d="M70 38h30" stroke="#C1502E"/><path d="M78 26v8M92 26v8"/><circle cx="85" cy="51" r="6" stroke="#05668D"/><path d="M85 48v3l2 2" stroke="#05668D"/>'); },
@@ -1281,10 +1281,8 @@
     if (!tabs || !pl || !document.body.classList.contains("on-home")) return;
     var line = hdr ? hdr.getBoundingClientRect().bottom : 0;
     document.body.classList.remove("hs-bar-off"); /* Machan Nov 13 9:11 AM: the bar shows from load, no scroll gate. */
-    var cta = tabs.querySelector(".hm-tab-cta"), hit = false;
-    if (cta && !document.body.classList.contains("hs-bar-off")) { var c = cta.getBoundingClientRect();
-      document.querySelectorAll(".hs-arrow").forEach(function (a) { var r = a.getBoundingClientRect(); if (r.bottom > c.top && r.top < c.bottom && r.right > c.left && r.left < c.right) hit = true; }); }
-    tabs.classList.toggle("arrow-off", hit);
+    /* Get Started stays visible on every Home section (do not hide it when a section arrow overlaps the dock). */
+    tabs.classList.remove("arrow-off");
   }
   function hsBarFill(root) {
     var tabs = root.querySelector(".hm-tabs"), z = zoomFactor();
@@ -1462,13 +1460,9 @@
     "what-should-i-do-in-an-emergency": "<p>Flooding or a burst pipe: shut off the main water valve, then give us a call or send a message in the app. Electrical (sparks, burning smell, hot panel): if it&#x27;s safe to reach, switch off the main breaker, then give us a call or send a message in the app; if there&#x27;s fire or smoke, get out and call 911. Carbon monoxide alarm: get everyone outside and call 911.</p><p>If you smell gas (a rotten-egg or sulfur smell): leave the home right away and get everyone out, pets too, and leave the door open behind you. Don&#x27;t flip light switches, unplug anything, use the garage door, light a match, or start a car near the home. Once you&#x27;re a safe distance away, call 911 and DTE Gas at 800-947-5000, then call us or send a message in the app; we&#x27;ll help with next steps once DTE says it&#x27;s safe.</p><p>Please don&#x27;t try to shut off the gas meter yourself unless DTE or 911 tells you to. Never turn the gas back on yourself; DTE needs to do that.</p><p class=\"fq-note\">This is general safety information, not professional emergency advice. In any emergency, follow the directions of 911, your utility, and first responders. Smart Upkeep is not an emergency service and does not respond to gas leaks.</p>",
     "what-is-the-mold-and-moisture-scan": "<p>A pinless moisture meter and thermal camera check under bathrooms, windows, basement walls and sinks, and flags damp spots where mold can grow. It is not a lab mold test and doesn&#x27;t diagnose or rule out mold. Readings and photos go to your Home Record, and it&#x27;s in every plan.</p>",
     "what-is-included-in-each-plan": "<p>Essentials includes 2 visits a year, with furnace and AC tune-ups; Plus includes 4, adding gutter cleaning and more; Complete includes 12, adding after-storm checks after major storms, up to 4 a year. Your Starter Visit counts as one of your yearly visits. See What&#x27;s Included on the home page for the full list.</p>",
-    "do-i-need-to-send-photos": "<p>No. We don&#x27;t ask for photos to sign up; your price is based on your answers, and your tech confirms your home&#x27;s systems at the first visit. If anything changes your price, we&#x27;ll send the new price within 7 days, and you can accept it or cancel with no fee. Photos from your visits are handled as described in our Privacy Policy.</p>",
     "how-are-techs-vetted": "<p>Every tech is insured and background-checked each year by a third party. Licensed work (mechanical, plumbing, electrical and builder work) is done by partners with an active Michigan license you can check, and we keep general liability and auto insurance certificates on file. Required certifications include EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.</p>",
-    "what-will-i-get-after-a-visit": "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care: mold and moisture readings, dated roof drone photos, recall monitoring, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>",
-    "who-sees-photos-from-my-visits": "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing; photos of private living spaces are never used in marketing without your written OK, and you can opt out of marketing use anytime by messaging us in the app. Our Privacy Policy explains how we use and protect your information.</p>",
-    "can-i-cancel": "<p>Yes, anytime, with no fee. Cancel online in the member app under Profile &amp; Account. Before your first visit, you get a full refund; after visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet, services already done aren&#x27;t refunded, founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge; refunds go out within 14 days, and free months have no cash or refund value.</p>",
-    "can-i-pause-my-plan": "<p>Yes. You can pause for up to 3 months each membership year; paused months aren&#x27;t billed, and your membership term and renewal date move back by the length of the pause. Message us in the app to pause.</p>",
-    "what-happens-if-i-move": "<p>If you move within our area, your membership moves with you and we requote it for the new home; you can accept the new price or cancel with no fee. If you move out of the area, you can cancel. Your Home Record can transfer to your buyer, and you can gift them 3 months free.</p>"
+    "what-will-i-get-after-a-visit": "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care: mold and moisture readings, dated roof drone photos, recall checks, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>",
+    "who-sees-photos-from-my-visits": "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing. Photos of private living spaces are never used in marketing without your written OK, and you can opt out of marketing use anytime. Our Privacy Policy explains how we use and protect your information.</p>"
   };
   /* Home FAQ sections (Machan Nov 14 9:28–9:36 AM). FAQ_ALL order and text stay as they are; /faq/ is unchanged.
      Each section lists pinned questions in Machan's order. live:false cards stay in the list for order but are not rendered until Machan confirms the fact and Legal reviews the wording.
@@ -1524,15 +1518,16 @@
       ]
     }
   ];
-  /* Hidden Home-only placeholders. Answer text is never shown. Do not invent licensing, insurance, employment, payment-processor, tune-up-process, statistics, or health claims. */
+  /* Draft answers for hidden Home FAQ cards (Machan Nov 14 9:41 AM). All seven stay unrendered until Legal approves (item.live stays false).
+     The Residential Builder license card also stays unrendered after Legal until Smart Upkeep's own license is issued. Do not set that slug live before issuance. */
   var HOME_FAQ_PENDING = {
-    "are-the-technicians-employees-of-smart-upkeep": { q: "Are The Technicians Employees Of Smart Upkeep?", a: "ANSWER PENDING" },
-    "is-smart-upkeep-a-licensed-residential-builder": { q: "Is Smart Upkeep A Licensed Residential Builder In The State Of Michigan?", a: "ANSWER PENDING" },
-    "does-smart-upkeep-have-liability-insurance": { q: "Does Smart Upkeep Have Liability Insurance?", a: "ANSWER PENDING" },
-    "who-sees-my-credit-card-information": { q: "Who Sees My Credit Card Information?", a: "ANSWER PENDING" },
-    "what-happens-during-a-furnace-tune-up": { q: "What Happens During A Furnace Tune-Up?", a: "ANSWER PENDING" },
-    "what-happens-during-an-ac-tune-up": { q: "What Happens During An AC Tune-Up?", a: "ANSWER PENDING" },
-    "should-i-be-concerned-with-air-quality": { q: "Should I Be Concerned With Air Quality?", a: "ANSWER PENDING" }
+    "are-the-technicians-employees-of-smart-upkeep": { q: "Are The Technicians Employees Of Smart Upkeep?", hold: "legal", a: "<p>Most of the work on a visit is done by Smart Upkeep technicians. Specialized work, like handling radiant heat, is performed by licensed contractors.</p>" },
+    "is-smart-upkeep-a-licensed-residential-builder": { q: "Is Smart Upkeep A Licensed Residential Builder In The State Of Michigan?", hold: "license", a: "<p>Yes. Smart Upkeep is a licensed Residential Builder in the State of Michigan.</p>" },
+    "does-smart-upkeep-have-liability-insurance": { q: "Does Smart Upkeep Have Liability Insurance?", hold: "legal", a: "<p>Yes. Smart Upkeep carries general liability insurance of $1 million per occurrence and $2 million aggregate.</p>" },
+    "who-sees-my-credit-card-information": { q: "Who Sees My Credit Card Information?", hold: "legal", a: "<p>Your credit card information is handled by Stripe, our payment processor. Please don&#x27;t send card numbers in chat.</p>" },
+    "what-happens-during-a-furnace-tune-up": { q: "What Happens During A Furnace Tune-Up?", hold: "legal", a: "<p>Every plan includes a fall furnace tune-up for every furnace, ideally before heating season. Your filter is checked at every visit and changed when it&#x27;s due, and the thermostat battery and settings are checked. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>" },
+    "what-happens-during-an-ac-tune-up": { q: "What Happens During An AC Tune-Up?", hold: "legal", a: "<p>Every plan includes a spring AC tune-up for every AC unit, ideally before the first hot week. Licensed mechanical work is done by partners with an active Michigan license you can check.</p>" },
+    "should-i-be-concerned-with-air-quality": { q: "Should I Be Concerned With Air Quality?", hold: "legal", a: "<p>We help you keep up with the home-care work that affects the air in your house: furnace filter changes at every visit when due, dryer vent cleaning, and a whole-home mold and moisture scan that flags damp spots where mold can grow. The scan is not a lab mold test and does not diagnose or rule out mold.</p>" }
   };
   /* Home-only cards that reuse Legal-reviewed site copy (not added to FAQ_ALL). how-are-refunds-calculated excerpts the refund sentences from can-i-cancel, word for word. */
   var HOME_FAQ_REUSED = {
@@ -1796,7 +1791,7 @@
     ["Records And Perks", "Drone Roof Photos In Your Home Record", "silver"],
     ["Records And Perks", "Annual Home Health Score", "silver"],
     ["Records And Perks", "Seasonal Checklist Email", "silver"],
-    ["Records And Perks", "Recall Monitoring", "silver"],
+    ["Records And Perks", "Recall Check", "silver"],
     ["Records And Perks", "Vetted Contractor Network", "silver"],
     ["Records And Perks", "Home Record Transfers When You Sell", "silver"]
   ];
