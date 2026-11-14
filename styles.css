@@ -8,6 +8,7 @@
   --su-ease:cubic-bezier(.2,.8,.2,1);--su-ease-in:cubic-bezier(.4,0,1,1);--su-ease-sheet:cubic-bezier(.22,.8,.26,1);
   --su-mo-1:160ms;--su-mo-2:240ms;--su-mo-3:360ms;--su-mo-3x:280ms;
   --su-r-s:12px;--su-r-m:16px;--su-r-l:20px;
+  --su-muted:#6B635C;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -945,7 +946,7 @@ body.on-qf main{padding-bottom:0}
 @media (min-width:900px){.topbar .brand img{height:58px}}
 @media (max-width:600px){.hm-hero{grid-template-columns:50% 1fr}}
 @media (min-width:601px){.hm-hero{grid-template-columns:1.22fr 1fr}}
-.pc-offer{display:none;position:absolute;top:.55rem;right:.55rem;z-index:2;align-items:center;gap:.25rem;margin:0;min-height:28px;padding:.1rem .55rem;border:1px solid var(--mw-terracotta,#C1502E);border-radius:999px;background:#fff7f2;color:#C1502E;font-family:inherit;font-weight:700;font-size:.62rem;line-height:1;letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;cursor:pointer}
+.pc-offer{display:none;position:absolute;top:.55rem;right:.55rem;z-index:2;align-items:center;gap:.25rem;margin:0;min-height:28px;padding:.1rem .55rem;border:1px solid var(--mw-terracotta,#C1502E);border-radius:999px;background:#fff7f2;color:#A8431F;font-family:inherit;font-weight:700;font-size:.62rem;line-height:1;letter-spacing:.05em;white-space:nowrap;text-transform:uppercase;cursor:pointer}
 .hm-plan.sel .pc-offer{display:inline-flex}
 .hm-offer-pop{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}.hm-offer-pop[hidden]{display:none}
 .hm-offer-bg{position:absolute;inset:0;background:rgba(10,10,10,.35)}
@@ -1256,7 +1257,12 @@ body.on-home .hdr-van.moving .vb{animation:vanBob .3s ease-in-out infinite alter
   .hm-hero .hm-thumb{grid-column:2!important;grid-row:1/span 4!important;margin:0;align-self:center}
 }
 .hm-hero{background:#FBF6EE!important;border-color:#EADFCF!important;border-top-color:#C1502E!important}
-.hm-hero .hm-thumb{background:#FBF6EE url(video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2) center/cover no-repeat;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+.hm-hero .hm-thumb{background-color:#FBF6EE;box-shadow:0 6px 18px rgba(120,60,30,.10)!important;overflow:hidden}
+/* N1: do not put the 16x9 poster url on the shared rule — phones would fetch it
+   even after the 3x4 override. Desktop (min-width 481px) keeps the 16x9 poster. */
+@media (min-width:481px){
+  .hm-hero .hm-thumb{background:#FBF6EE url(video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2) center/cover no-repeat}
+}
 .hm-hero .hm-teaser{filter:saturate(1.15) contrast(1.06) sepia(.06);background:transparent}
 .hm-hero .start-at{border-color:#C1502E!important}
 /* Oct 16 2026 (e): waving tech on drive-off, bigger logo, more space between home sections */
@@ -3440,7 +3446,7 @@ html body.on-home .alc-card .sa-q .sa-n small{
   display:block;
   margin-top:0;
   font:500 11px/1.2 Hind,var(--mw-font-body),sans-serif!important;
-  color:#8A8178!important;
+  color:var(--su-muted,#6B635C)!important;
   white-space:nowrap;
 }
 html body.on-home .alc-card .sa-q .sa-p{

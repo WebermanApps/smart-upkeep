@@ -1,0 +1,2118 @@
+{
+  "passed": 30,
+  "failed": 1,
+  "total": 31,
+  "checks": [
+    {
+      "name": "360x640: phones do not fetch 16x9 poster",
+      "ok": true,
+      "info": [
+        [
+          16.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          406.6,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          425.3,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "360x640: phones fetch 3x4 poster",
+      "ok": true,
+      "info": [
+        [
+          16.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          406.6,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          425.3,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "360x640: phone poster fetched early (<1500ms)",
+      "ok": true,
+      "info": "16.3ms [(16.3, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (406.6, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (425.3, 'teaser-v10.1-phone-5svc-even-3x4.mp4', 'media')]"
+    },
+    {
+      "name": "360x640: all measured muted/offer text >=4.5",
+      "ok": true,
+      "info": []
+    },
+    {
+      "name": "360x640: hero is a video and autoplaying",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "360x640: muted + playsinline + loop + preload auto",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "390x660: phones do not fetch 16x9 poster",
+      "ok": true,
+      "info": [
+        [
+          9.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          225.7,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          246.5,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "390x660: phones fetch 3x4 poster",
+      "ok": true,
+      "info": [
+        [
+          9.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          225.7,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          246.5,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "390x660: phone poster fetched early (<1500ms)",
+      "ok": true,
+      "info": "9.3ms [(9.3, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (225.7, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (246.5, 'teaser-v10.1-phone-5svc-even-3x4.mp4', 'media')]"
+    },
+    {
+      "name": "390x660: all measured muted/offer text >=4.5",
+      "ok": true,
+      "info": []
+    },
+    {
+      "name": "390x660: hero is a video and autoplaying",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "390x660: muted + playsinline + loop + preload auto",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "430x746: phones do not fetch 16x9 poster",
+      "ok": true,
+      "info": [
+        [
+          11.4,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          229.0,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          255.4,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "430x746: phones fetch 3x4 poster",
+      "ok": true,
+      "info": [
+        [
+          11.4,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          229.0,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          255.4,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "430x746: phone poster fetched early (<1500ms)",
+      "ok": true,
+      "info": "11.4ms [(11.4, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (229.0, 'teaser-v10-phone-5svc-even-3x4-poster.jpg', 'image'), (255.4, 'teaser-v10.1-phone-5svc-even-3x4.mp4', 'media')]"
+    },
+    {
+      "name": "430x746: all measured muted/offer text >=4.5",
+      "ok": true,
+      "info": []
+    },
+    {
+      "name": "430x746: hero is a video and autoplaying",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "430x746: muted + playsinline + loop + preload auto",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "1280x800: desktop fetches 16x9 poster",
+      "ok": true,
+      "info": [
+        [
+          218.4,
+          "teaser-v10-5svc-even-16x9-poster.jpg",
+          "image"
+        ],
+        [
+          240.4,
+          "teaser-v10-5svc-even-16x9.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "1280x800: desktop does not fetch 3x4 poster",
+      "ok": true,
+      "info": [
+        [
+          218.4,
+          "teaser-v10-5svc-even-16x9-poster.jpg",
+          "image"
+        ],
+        [
+          240.4,
+          "teaser-v10-5svc-even-16x9.mp4",
+          "media"
+        ]
+      ]
+    },
+    {
+      "name": "1280x800: all measured muted/offer text >=4.5",
+      "ok": true,
+      "info": []
+    },
+    {
+      "name": "1280x800: hero is a video and autoplaying",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10-5svc-even-16x9.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "1280x800: muted + playsinline + loop + preload auto",
+      "ok": true,
+      "info": {
+        "kind": "video",
+        "src": "http://127.0.0.1:19760/video/teaser-v10-5svc-even-16x9.mp4?v=h9z2",
+        "hold": false,
+        "paused": false,
+        "muted": true,
+        "loop": true,
+        "autoplay": true,
+        "playsinline": true,
+        "preload": "auto"
+      }
+    },
+    {
+      "name": "LCP measured before and after",
+      "ok": true,
+      "info": {
+        "before": {
+          "t": 1008,
+          "url": "http://127.0.0.1:19751/video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2",
+          "size": 190512,
+          "tag": "BUTTON"
+        },
+        "after": {
+          "t": 1116,
+          "url": "http://127.0.0.1:19760/video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2",
+          "size": 190512,
+          "tag": "BUTTON"
+        }
+      }
+    },
+    {
+      "name": "paging rAF p95 before recorded",
+      "ok": true,
+      "info": {
+        "n": 127,
+        "p50": 16.7,
+        "p95": 16.8,
+        "p99": 16.8,
+        "over33": 0,
+        "playing": true,
+        "playing_at_start": false
+      }
+    },
+    {
+      "name": "paging rAF p95 after recorded",
+      "ok": true,
+      "info": {
+        "n": 127,
+        "p50": 16.7,
+        "p95": 16.8,
+        "p99": 16.8,
+        "over33": 0,
+        "playing": true,
+        "playing_at_start": true
+      }
+    },
+    {
+      "name": "paging rAF ran with video playing",
+      "ok": true,
+      "info": {
+        "n": 127,
+        "p50": 16.7,
+        "p95": 16.8,
+        "p99": 16.8,
+        "over33": 0,
+        "playing": true,
+        "playing_at_start": true
+      }
+    },
+    {
+      "name": "reduced 390: poster only, no video",
+      "ok": true,
+      "info": {
+        "videos": 0,
+        "img": "http://127.0.0.1:19760/video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2"
+      }
+    },
+    {
+      "name": "reduced 1280: poster only, no video",
+      "ok": true,
+      "info": {
+        "videos": 0,
+        "img": "http://127.0.0.1:19760/video/teaser-v10-5svc-even-16x9-poster.jpg?v=h9z2"
+      }
+    },
+    {
+      "name": "blocked autoplay: poster kept (paused, data-hold)",
+      "ok": false,
+      "info": {
+        "hold": true,
+        "paused": false,
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2",
+        "poster": "video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2"
+      }
+    },
+    {
+      "name": "blocked autoplay: first touch starts playback",
+      "ok": true,
+      "info": {
+        "hold": false,
+        "paused": false,
+        "src": "http://127.0.0.1:19760/video/teaser-v10.1-phone-5svc-even-3x4.mp4?v=h9z2"
+      }
+    }
+  ],
+  "lcp": {
+    "before": {
+      "wall_load_ms": 1914.5,
+      "nav_load": 937,
+      "dcl": 935.6999999955297,
+      "lcp": {
+        "t": 1008,
+        "url": "http://127.0.0.1:19751/video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2",
+        "size": 190512,
+        "tag": "BUTTON"
+      },
+      "net": [
+        "teaser-v10-5svc-even-16x9-poster.jpg",
+        "teaser-v10-phone-5svc-even-3x4-poster.jpg"
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(193, 80, 46)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 4.45,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(138, 129, 120)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 3.82,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    },
+    "after": {
+      "wall_load_ms": 2071.4,
+      "nav_load": 1341.8999999985099,
+      "dcl": 1081.1999999955297,
+      "lcp": {
+        "t": 1116,
+        "url": "http://127.0.0.1:19760/video/teaser-v10-phone-5svc-even-3x4-poster.jpg?v=h9z2",
+        "size": 190512,
+        "tag": "BUTTON"
+      },
+      "net": [
+        "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+        "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+        "teaser-v10.1-phone-5svc-even-3x4.mp4"
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(168, 67, 31)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 5.69,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    }
+  },
+  "raf": {
+    "before": {
+      "n": 127,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "over33": 0,
+      "playing": true,
+      "playing_at_start": false
+    },
+    "after": {
+      "n": 127,
+      "p50": 16.7,
+      "p95": 16.8,
+      "p99": 16.8,
+      "over33": 0,
+      "playing": true,
+      "playing_at_start": true
+    }
+  },
+  "views": [
+    {
+      "w": 360,
+      "h": 640,
+      "net": [
+        [
+          16.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          406.6,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          425.3,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(168, 67, 31)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 5.69,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "w": 390,
+      "h": 660,
+      "net": [
+        [
+          9.3,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          225.7,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          246.5,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(168, 67, 31)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 5.69,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "w": 430,
+      "h": 746,
+      "net": [
+        [
+          11.4,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          229.0,
+          "teaser-v10-phone-5svc-even-3x4-poster.jpg",
+          "image"
+        ],
+        [
+          255.4,
+          "teaser-v10.1-phone-5svc-even-3x4.mp4",
+          "media"
+        ]
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(168, 67, 31)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 5.69,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    },
+    {
+      "w": 1280,
+      "h": 800,
+      "net": [
+        [
+          218.4,
+          "teaser-v10-5svc-even-16x9-poster.jpg",
+          "image"
+        ],
+        [
+          240.4,
+          "teaser-v10-5svc-even-16x9.mp4",
+          "media"
+        ]
+      ],
+      "contrast": [
+        {
+          "kind": "welcome-offer",
+          "text": "WELCOME OFFER",
+          "color": "rgb(168, 67, 31)",
+          "bg": "rgb(255, 247, 242)",
+          "bgFrom": "BUTTON.pc-offer",
+          "ratio": 5.69,
+          "fontSize": "9.92px",
+          "visible": false
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "Plan Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        },
+        {
+          "kind": "addon-label",
+          "text": "One-Time Add-On",
+          "color": "rgb(107, 99, 92)",
+          "bg": "rgb(255, 255, 255)",
+          "bgFrom": "DIV.sa-list",
+          "ratio": 5.89,
+          "fontSize": "11px",
+          "visible": true
+        }
+      ]
+    }
+  ]
+}

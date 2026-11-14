@@ -687,11 +687,11 @@
     var T = heroPick(), poster = T.poster, tsrc = T.src, wh = T.wh;
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!tsrc || reduce) return '<img src="' + esc(poster) + '" alt="" loading="eager" ' + wh + '>';
-    /* Phones hold the poster until the first touch/scroll/key (same as main). Src is withheld
-       so the mp4 is not requested up front. After release, play natively at 1x from frame 0.
-       No seek, no playbackRate change. Desktop autoplays as on main. */
-    var hold = hmHeroPhone() && !window.__suFirst;
-    return '<video class="hm-teaser" ' + (hold ? 'data-hold="1" data-src="' + esc(tsrc) + '" poster="' + esc(poster) + '" preload="none"' : 'src="' + esc(tsrc) + '" poster="' + esc(poster) + '" autoplay preload="auto"') + ' muted loop playsinline disablepictureinpicture ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
+    /* Machan 9:22–9:23 PM ICT: autoplay on load on phones and desktop, muted,
+       playsinline, looping. play() is called on load; a rejected promise (for
+       example iOS Low Power Mode) keeps the poster and falls back to the first
+       touch. Reduced motion still returns the poster image above. */
+    return '<video class="hm-teaser" src="' + esc(tsrc) + '" poster="' + esc(poster) + '" autoplay preload="auto" muted loop playsinline disablepictureinpicture ' + wh + ' aria-hidden="true" tabindex="-1" style="filter:saturate(1.15) contrast(1.06) sepia(.06)"></video>';
   }
 
   /* Phone hero trust chips (Oct 17 2026). Each backed by existing site copy (FAQ / Refund Promise / plan features). */
@@ -740,8 +740,9 @@
     el.setAttribute("width", m[1]);
     el.setAttribute("height", m[2]);
   }
-  /* Phone: hold the poster until first interaction, then play natively at 1x from frame 0.
-     No currentTime seek, no playbackRate write. Keeps main's first-interaction set and su:first. */
+  /* Autoplay on load. If play() is rejected (Low Power Mode / autoplay policy),
+     keep the poster and start on the first touch/scroll/key, as before.
+     No currentTime seek, no playbackRate write. su:first still fires on first interaction. */
   (function heroHold() {
     function playNative(v) {
       var src = v.getAttribute("data-src") || v.getAttribute("src");
@@ -752,6 +753,16 @@
       v.setAttribute("preload", "auto");
       if (src && v.getAttribute("src") !== src) v.setAttribute("src", src);
       var p = v.play(); if (p && p.catch) p.catch(function () {});
+    }
+    function tryPlay(v) {
+      if (!v || v.tagName !== "VIDEO") return;
+      var p = v.play();
+      if (p && p.then) {
+        p.then(function () { v.removeAttribute("data-hold"); }).catch(function () {
+          v.setAttribute("data-hold", "1");
+          try { v.pause(); } catch (e) {}
+        });
+      }
     }
     function first(e) {
       if (window.__suFirst) return;
@@ -764,6 +775,11 @@
       document.querySelectorAll(".hm-teaser[data-hold]").forEach(function (v) { playNative(v); });
       try { window.dispatchEvent(new Event("su:first")); } catch (err) {}
     }
+    function boot() {
+      document.querySelectorAll("video.hm-teaser").forEach(tryPlay);
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+    else boot();
     ["scroll", "wheel", "touchstart", "pointerdown", "keydown"].forEach(function (t) { window.addEventListener(t, first, { capture: true, passive: true }); });
   })();
   /* Swap the hero source once when the 480px breakpoint is crossed (resize or orientation). The same source is left alone so it is not loaded twice. */
@@ -797,16 +813,15 @@
       }
       if (media.tagName !== "VIDEO") {
         var v = document.createElement("video");
-        heroFillVideo(v, T, hmHeroPhone() && !window.__suFirst);
+        heroFillVideo(v, T, false);
         media.parentNode.replaceChild(v, media);
         if (!v.getAttribute("data-hold")) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
         return;
       }
       var curSrc = media.getAttribute("src") || media.getAttribute("data-src") || "";
       if (curSrc === T.src) return;
-      var hold = hmHeroPhone() && !window.__suFirst && media.paused;
-      heroFillVideo(media, T, hold);
-      if (!hold) { var pr = media.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      heroFillVideo(media, T, false);
+      var pr = media.play(); if (pr && pr.catch) pr.catch(function () { media.setAttribute("data-hold", "1"); try { media.pause(); } catch (e) {} });
     }
     function onChange() { apply(); }
     var mq = window.matchMedia && matchMedia("(max-width: 480px)");
