@@ -1483,10 +1483,10 @@ html body.on-ob .ob.qf .qt{transition:transform .22s ease-out,box-shadow .22s ea
 html body.on-ob .ob.qf .qt.sel .qt-ok{background:#A8431F!important}
 html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip,.story-chip){position:relative;transition:transform .22s ease-out,box-shadow .22s ease-out}
 html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip.on,.story-chip.on){border-color:#A8431F!important;background:#FFFCF7!important;color:#A8431F!important;box-shadow:inset 0 0 0 1px #A8431F,0 8px 18px rgba(168,67,31,.16)!important;transform:translateY(-2px)}
-html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip.on,.story-chip.on)::after{content:"";position:absolute;top:4px;right:4px;width:14px;height:14px;border-radius:50%;background:#A8431F url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.2 6.6 11.2 12.5 4.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/10px 10px no-repeat;pointer-events:none}
+html body.on-ob .ob.qf:is(.ob-homesize) :is(.size-chip.on,.story-chip.on)::after{content:"";position:absolute;top:-6px;right:-6px;width:14px;height:14px;border-radius:50%;background:#A8431F url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.2 6.6 11.2 12.5 4.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/10px 10px no-repeat;pointer-events:none;box-shadow:0 0 0 2px #FFFCF7}
 html body.on-ob .ob.qf .ob-ao.on{border-color:#A8431F!important;box-shadow:inset 0 0 0 1px #A8431F!important}
 html body.on-ob .ob.qf .ob-sw[aria-checked="true"]{background:#A8431F!important}
-html body.on-ob .ob.qf.ob-plan .plan-card.sel{transform:translateY(-2px);box-shadow:0 8px 18px rgba(168,67,31,.16)!important}
+html body.on-ob .ob.qf.ob-plan .plan-card.sel{transform:translateY(-2px);box-shadow:0 8px 18px color-mix(in srgb,var(--plan-c,#A8431F) 18%,transparent)!important}
 /* Card 6. Stepper Tick And Number Roll: the count rolls in from the side it moved, and a small terracotta tick confirms it. The tick doesn't change any count or price. */
 html body.on-ob .ob.qf .ob-step{position:relative}
 html body.on-ob .ob.qf .ob-step .n{position:relative;overflow:hidden;display:inline-block}
@@ -1495,15 +1495,20 @@ html body.on-ob .ob.qf .ob-step .pa-tick{position:absolute;top:-5px;right:-4px;w
 @media (prefers-reduced-motion:reduce){
   html body.on-ob .ob.qf :is(.qt.sel,.size-chip.on,.story-chip.on,.plan-card.sel){transform:none!important}
 }
+/* Swatch #146 r1 F2: fit() measures each cut level with transitions off so repeated calls agree (see onboarding-house.js fit()). */
+html.ob-hb-measure body.on-ob .ob.qf,html.ob-hb-measure body.on-ob .ob.qf *,html.ob-hb-measure body.on-ob .ob.qf *::before,html.ob-hb-measure body.on-ob .ob.qf *::after{transition:none!important}
+/* Swatch #146 r1 N1 (moved from Polish C): Tailor CTAs stay 44px on every fit level. */
+html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta.filled,html.ob-hb-on:is(.ob-hb-t,.ob-hb-on) body.on-ob section.ob.qf.ob-plan .plan-stack .plan-card .plan-cta{min-height:44px!important}
 
 /* ===== Onboarding Polish B (Machan Nov 14 9:15 PM ICT, Onboarding Polish Deck: A on cards 4, 5, 7). Transform and opacity only; reduced motion fades. ===== */
 /* Card 4. Your Home Strip: answer chips on the house caption line (band height unchanged). */
-html.ob-hb-on .ob-hb-cap.hb-chips{display:flex;justify-content:center;align-items:center;gap:4px;height:16px;overflow:hidden;text-overflow:clip}
-html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip{flex:0 1 auto;min-width:0;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 7px;border-radius:999px;background:#F7EBE5;border:1px solid #E8D0C6;font:500 11px/14px Hind,system-ui,sans-serif;color:#1A1A1A;transform-origin:50% 50%}
+html.ob-hb-on .ob-hb-cap.hb-chips{contain:inline-size;width:100%;box-sizing:border-box;display:flex;justify-content:center;align-items:center;gap:4px;height:16px;overflow:hidden;text-overflow:clip}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip{flex:none;min-width:0;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 7px;border-radius:999px;background:#F7EBE5;border:1px solid #E8D0C6;font:500 11px/14px Hind,system-ui,sans-serif;color:#1A1A1A;transform-origin:50% 50%}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip[data-c="addr"]{flex:0 1 auto;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* Swatch #147 r1 F3: only the street shrinks; the strip never widens the page */
 html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip[data-c="sys"]{background:#FFFCF7;border-color:#E0C9BC;color:#A8431F;font-weight:600}
 /* Card 5. Pin Drop, Then An Address Card. */
 .ob-address .pb-addr-card{display:none}
-.ob-address .ob-home-form.pb-carded .pb-addr-card{display:flex;align-items:center;gap:12px;background:#FFFCF7;border:1px solid #E4D5C6;border-radius:16px;box-shadow:0 8px 20px rgba(42,36,28,.08);padding:10px 8px 10px 16px;margin:4px 0 6px}
+.ob-address .ob-home-form.pb-carded .pb-addr-card{width:min(calc(100vw - 32px),398px);box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#FFFCF7;border:1px solid #E4D5C6;border-radius:16px;box-shadow:0 8px 20px rgba(42,36,28,.08);padding:10px 8px 10px 16px;margin:4px 0 6px}
 .ob-address .ob-home-form.pb-carded > .ob-fields{display:none!important}
 .ob-address .pb-addr-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ob-address .pb-addr-t b{font:600 20px/1.15 Khand,var(--mw-font-heading),sans-serif;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
