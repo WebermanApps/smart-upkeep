@@ -485,7 +485,7 @@
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
     if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
-    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.suBandSync) window.suBandSync();
+    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.hmSyncPageClass) window.hmSyncPageClass(); else document.documentElement.classList.toggle("su-home-page", s === "home" && window.innerWidth <= 600); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -1327,7 +1327,8 @@
   function hmEaseInOutSine(tt) {
     return -(Math.cos(Math.PI * tt) - 1) / 2;
   }
-  function hmGlideDur(dist) { return Math.round(Math.min(780, Math.max(700, 640 + Math.abs(dist) * 0.08))); }
+  var HM_PAGE_DUR = 740;
+  function hmGlideDur(dist) { if (typeof hmPageMode === "function" && hmPageMode()) return HM_PAGE_DUR; return Math.round(Math.min(780, Math.max(700, 640 + Math.abs(dist) * 0.08))); }
   function hmGlideStop(keepTab) {
     if (hmGlide.raf) { cancelAnimationFrame(hmGlide.raf); hmGlide.raf = 0; }
     if (hmGlide.onEnd) {
@@ -1338,9 +1339,13 @@
     hmSnapHold(false);
     hmGlide.lock = false;
     if (!keepTab) hmGlide.tab = null;
+    if (typeof hmPage !== "undefined" && hmPage && typeof hmPageMode === "function" && hmPageMode()) {
+      hmPage.wheelUntil = performance.now() + 180;
+    }
   }
   function hmOnUserScroll(e) {
     if (!hmGlide.lock) return;
+    if (typeof hmPageMode === "function" && hmPageMode()) return;
     if (performance.now() < hmGlide.ignoreUntil) return;
     if (e && e.target && e.target.closest && e.target.closest(".hm-dock, .hs-arrow, [data-hs-go], [data-hs-next], [data-hm-tab]")) return;
     hmGlideStop(true);
@@ -1442,6 +1447,231 @@
     var el = document.getElementById(id); if (!el) return;
     hmJumpSec(el);
   }
+  /* Phone Home paging (Machan Nov 14 3:08 PM ICT, via Grok): no free scroll on phones.
+     Each vertical swipe, wheel, or trackpad gesture moves exactly one full section, the
+     same as the up/down buttons and the bottom bar. Desktop and tablet keep normal scrolling.
+     Shared easeInOutSine + 740ms glide; prefers-reduced-motion is an instant jump. */
+  var HM_PAGE_IDS = ["hs-top", "hs-plans", "hs-alc", "hs-faq"];
+  var hmPage = { on: false, gest: null, wheelUntil: 0, bound: false };
+  function hmIsPhone() {
+    return !!(window.matchMedia && matchMedia("(max-width:600px)").matches);
+  }
+  function hmPageMode() {
+    return !!(document.body && document.body.classList.contains("on-home") && hmIsPhone());
+  }
+  function hmSyncPageClass() {
+    document.documentElement.classList.toggle("su-home-page", hmPageMode());
+  }
+  function hmPageBusy() {
+    return !!(hmGlide.lock || performance.now() < hmPage.wheelUntil);
+  }
+  function hmPageSecs() {
+    return HM_PAGE_IDS.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  }
+  function hmParkY(sec) {
+    if (!sec) return 0;
+    var hdr = document.querySelector(".topbar");
+    var off = hdr ? hdr.getBoundingClientRect().bottom : 0;
+    return Math.max(0, Math.round((window.scrollY || 0) + (sec.getBoundingClientRect().top - off)));
+  }
+  function hmFooterY() {
+    var sec = document.getElementById("hs-faq");
+    var bar = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    var barH = bar ? Math.round(bar.getBoundingClientRect().height) : 0;
+    return hmParkY(sec) + barH;
+  }
+  function hmPageIndex() {
+    var secs = hmPageSecs(), y = window.scrollY || 0, best = 0, dist = 1e9, i;
+    for (i = 0; i < secs.length; i++) {
+      var d = Math.abs(y - hmParkY(secs[i]));
+      if (d < dist) { dist = d; best = i; }
+    }
+    if (secs.length && Math.abs(y - hmFooterY()) <= dist) return secs.length;
+    return best;
+  }
+  function hmPageBlocked() {
+    var d = document.documentElement;
+    if (!document.body || !document.body.classList.contains("on-home")) return true;
+    if (d.classList.contains("faq-sheet-open") || d.classList.contains("hm-pop-open") || d.classList.contains("pc-lock")) return true;
+    return false;
+  }
+  function hmFromOverlay(t) {
+    if (!t || !t.closest) return false;
+    return !!t.closest('.faq-sheet-wrap,.faq-sheet,.pc-sheet-wrap,.pc-sheet,.hm-pop,.wi-pop,.ic-pop,.hm-offer-pop,.hm-hc-info,.af-pop,.xt-sheet,.pc-lg,[role="dialog"][aria-modal="true"]');
+  }
+  function hmHCar(t) {
+    if (!t || !t.closest) return false;
+    return !!t.closest(".hm-scroll,.alc-car-scroll,.faq-car-scroll,.hm-hchips,.hm-hc-track");
+  }
+  function hmYBox(t) {
+    var el = t;
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (el.nodeType === 1) {
+        var st = window.getComputedStyle(el);
+        var oy = st.overflowY;
+        if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight + 1) return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function hmPageTo(idx, instant) {
+    var secs = hmPageSecs();
+    if (!secs.length) return;
+    if (idx < 0) idx = 0;
+    if (idx < secs.length) {
+      hmJumpSec(secs[idx], instant ? false : undefined);
+      return;
+    }
+    var top = hmFooterY();
+    if (instant || hmReduced()) {
+      if (typeof window.suMarkTab === "function") window.suMarkTab("faq", true);
+      window.scrollTo(0, top);
+      return;
+    }
+    hmGlideTo(top, "faq");
+  }
+  function hmPageBy(dir) {
+    if (!hmPageMode() || hmPageBlocked() || hmPageBusy()) return false;
+    var secs = hmPageSecs();
+    var next = hmPageIndex() + (dir > 0 ? 1 : -1);
+    if (next < 0) next = 0;
+    if (next > secs.length) next = secs.length;
+    var curY = window.scrollY || 0;
+    var target = next >= secs.length ? hmFooterY() : hmParkY(secs[next]);
+    if (Math.abs(curY - target) < 1) return false;
+    hmPage.wheelUntil = performance.now() + 20000;
+    hmPageTo(next);
+    return true;
+  }
+  function hmPageOnWheel(e) {
+    if (!hmPageMode()) return;
+    if (hmPageBlocked() || hmFromOverlay(e.target)) return;
+    var dx = e.deltaX || 0, dy = e.deltaY || 0;
+    if (e.deltaMode === 1) { dx *= 16; dy *= 16; }
+    if (e.deltaMode === 2) { dx *= window.innerWidth; dy *= window.innerHeight; }
+    if (Math.abs(dx) > Math.abs(dy)) return;
+    var box = hmYBox(e.target);
+    if (box && !hmHCar(e.target)) {
+      var atEnd = dy > 0 ? (box.scrollTop + box.clientHeight >= box.scrollHeight - 1) : (box.scrollTop <= 0);
+      if (!atEnd) return;
+    }
+    e.preventDefault();
+    if (Math.abs(dy) < 8) return;
+    if (hmPageBusy()) {
+      hmPage.wheelUntil = Math.max(hmPage.wheelUntil, performance.now() + 140);
+      return;
+    }
+    hmPageBy(dy > 0 ? 1 : -1);
+  }
+  function hmPageOnStart(e) {
+    if (!hmPageMode() || hmPageBlocked() || hmFromOverlay(e.target)) { hmPage.gest = null; return; }
+    var t = e.touches ? e.touches[0] : e;
+    if (!t) { hmPage.gest = null; return; }
+    hmPage.gest = {
+      x: t.clientX, y: t.clientY, t: performance.now(),
+      axis: null, done: false, car: hmHCar(e.target), box: hmYBox(e.target)
+    };
+  }
+  function hmPageOnMove(e) {
+    var g = hmPage.gest;
+    if (!g || g.done || !hmPageMode()) return;
+    var t = e.touches ? e.touches[0] : e;
+    if (!t) return;
+    var dx = t.clientX - g.x, dy = t.clientY - g.y;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if (!g.axis) {
+      if (adx < 8 && ady < 8) return;
+      g.axis = adx > ady ? "x" : "y";
+    }
+    if (g.axis === "x") return;
+    if (g.box && !g.car) {
+      var dir = dy < 0 ? 1 : -1;
+      var atEnd = dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0);
+      if (!atEnd) return;
+    }
+    if (e.cancelable) e.preventDefault();
+    if (hmPageBusy()) return;
+    if (ady >= 40) {
+      g.done = true;
+      hmPageBy(dy < 0 ? 1 : -1);
+    }
+  }
+  function hmPageOnEnd(e) {
+    var g = hmPage.gest;
+    if (!g || g.done) { hmPage.gest = null; return; }
+    var t = (e.changedTouches && e.changedTouches[0]) || {};
+    var y = t.clientY != null ? t.clientY : g.y;
+    var dy = y - g.y;
+    var dt = Math.max(1, performance.now() - g.t);
+    var v = dy / dt;
+    if (g.axis === "y" && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
+      hmPageBy(dy < 0 ? 1 : -1);
+    }
+    hmPage.gest = null;
+  }
+  function hmPageOnKey(e) {
+    if (!hmPageMode() || hmPageBlocked() || e.defaultPrevented) return;
+    var t = e.target;
+    if (t && t.closest && t.closest("input,textarea,select,[contenteditable],.faq-sheet,.pc-sheet,.hm-pop,.wi-pop,.ic-pop")) return;
+    var k = e.key, dir = 0;
+    if (t && t.closest && t.closest("button,a,[role='button'],[data-hm-tab]") && k === " ") return;
+    if (k === "ArrowDown" || k === "PageDown" || (k === " " && !e.shiftKey)) dir = 1;
+    else if (k === "ArrowUp" || k === "PageUp" || (k === " " && e.shiftKey)) dir = -1;
+    else if (k === "Home") { e.preventDefault(); if (!hmPageBusy()) hmPageTo(0); return; }
+    else if (k === "End") { e.preventDefault(); if (!hmPageBusy()) hmPageTo(Math.max(0, hmPageSecs().length - 1)); return; }
+    if (!dir) return;
+    e.preventDefault();
+    hmPageBy(dir);
+  }
+  function hmPageSnapNow() {
+    hmSyncPageClass();
+    if (!hmPageMode() || hmPageBlocked() || hmGlide.lock) return;
+    var secs = hmPageSecs();
+    if (!secs.length) return;
+    var i = hmPageIndex();
+    var target = i >= secs.length ? hmFooterY() : hmParkY(secs[i]);
+    if (Math.abs((window.scrollY || 0) - target) > 1) window.scrollTo(0, target);
+  }
+  function hmPageOnResize() {
+    hmSyncPageClass();
+    if (!hmPageMode() || hmPageBlocked() || hmGlide.lock) return;
+    hmPageSnapNow();
+  }
+  function hmPageBind() {
+    if (hmPage.bound) return;
+    hmPage.bound = true;
+    window.addEventListener("wheel", hmPageOnWheel, { capture: true, passive: false });
+    window.addEventListener("touchstart", hmPageOnStart, { capture: true, passive: true });
+    window.addEventListener("touchmove", hmPageOnMove, { capture: true, passive: false });
+    window.addEventListener("touchend", hmPageOnEnd, { capture: true, passive: true });
+    window.addEventListener("touchcancel", hmPageOnEnd, { capture: true, passive: true });
+    window.addEventListener("keydown", hmPageOnKey, { capture: true, passive: false });
+    window.addEventListener("resize", hmPageOnResize);
+    window.addEventListener("orientationchange", function () {
+      setTimeout(hmPageOnResize, 60);
+      setTimeout(hmPageOnResize, 300);
+    });
+    hmSyncPageClass();
+    window.suHomePage = {
+      mode: hmPageMode, isPhone: hmIsPhone, index: hmPageIndex,
+      parkY: hmParkY, footerY: hmFooterY, by: hmPageBy, to: hmPageTo, snap: hmPageSnapNow
+    };
+  }
+  function hmPageUnbind() {
+    if (!hmPage.bound) return;
+    hmPage.bound = false;
+    window.removeEventListener("wheel", hmPageOnWheel, { capture: true });
+    window.removeEventListener("touchstart", hmPageOnStart, { capture: true });
+    window.removeEventListener("touchmove", hmPageOnMove, { capture: true });
+    window.removeEventListener("touchend", hmPageOnEnd, { capture: true });
+    window.removeEventListener("touchcancel", hmPageOnEnd, { capture: true });
+    window.removeEventListener("keydown", hmPageOnKey, { capture: true });
+    window.removeEventListener("resize", hmPageOnResize);
+    document.documentElement.classList.remove("su-home-page");
+    hmPage.gest = null;
+  }
+  window.hmSyncPageClass = hmSyncPageClass;
   window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
   /* Late build Nov 12: bar hidden on the top section only, always shown after it; arrow guard hides Get Started only.
      Every section is one screen (innerHeight - header); the bar (with the resume strip when shown) is subtracted, and the main block fills what is left. */
@@ -1538,7 +1768,7 @@
     hsBarSync();
   }
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
-  function hmRefit() { var r = app.querySelector(".hm"); if (!r) return; hmHdrSync(); hsBarFill(r); }
+  function hmRefit() { var r = app.querySelector(".hm"); if (!r) return; hmHdrSync(); hsBarFill(r); if (typeof hmPageSnapNow === "function") hmPageSnapNow(); }
   window.addEventListener("resize", hmRefit);
   [60, 300, 800].forEach(function (ms) { setTimeout(hmRefit, ms); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { hmRefit(); }).catch(function () {});
@@ -2656,8 +2886,10 @@
       window.removeEventListener("wheel", hmOnUserScroll, { capture: true });
       window.removeEventListener("touchstart", hmOnUserScroll, { capture: true });
       window.removeEventListener("keydown", hmOnUserScroll, { capture: true, passive: true });
+      if (typeof hmPageUnbind === "function") hmPageUnbind();
       if (io) io.disconnect();
     };
+    if (typeof hmPageBind === "function") hmPageBind();
     spyTabs();
     requestAnimationFrame(function () { placeInd((root.querySelector("[data-hm-tab].on") || {}).getAttribute ? root.querySelector("[data-hm-tab].on").getAttribute("data-hm-tab") : "home", true); });
     hsBarFill(root);
