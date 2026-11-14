@@ -485,7 +485,7 @@
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
     if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
-    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.suBandSync) window.suBandSync();
+    document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.hmSyncPageClass) window.hmSyncPageClass(); else document.documentElement.classList.toggle("su-home-page", s === "home" && window.innerWidth <= 600); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
@@ -656,8 +656,8 @@
   /* Oct 15 (Max 19:03): phones and narrow/portrait screens get 9:16 media, big screens 16:9. Chosen in JS at load (Safari ignores <source media>). */
   function suPortrait() { return !!(window.matchMedia && window.matchMedia("(max-width: 768px), (orientation: portrait)").matches); }
   /* Nov 14 (Machan: "Yes, put the new hero loop live"): phone 3:4 and wide 16:9, four even scenes, native loop at 1x from frame 0. One breakpoint: max-width 480px. */
-  var HERO_PHONE = { src: "video/teaser-v8-phone-4svc-even-3x4-r3.mp4?v=h9u1", poster: "video/teaser-v8-phone-4svc-even-3x4-r3-poster.jpg?v=h9u1", wh: 'width="1080" height="1440"' };
-  var HERO_WIDE = { src: "video/teaser-v8-4svc-even-16x9-r3.mp4?v=h9u1", poster: "video/teaser-v8-4svc-even-16x9-r3-poster.jpg?v=h9u1", wh: 'width="1920" height="1080"' };
+  var HERO_PHONE = { src: "video/teaser-v8-phone-4svc-even-3x4-r3.mp4?v=h9u2", poster: "video/teaser-v8-phone-4svc-even-3x4-r3-poster.jpg?v=h9u2", wh: 'width="1080" height="1440"' };
+  var HERO_WIDE = { src: "video/teaser-v8-4svc-even-16x9-r3.mp4?v=h9u2", poster: "video/teaser-v8-4svc-even-16x9-r3-poster.jpg?v=h9u2", wh: 'width="1920" height="1080"' };
   function hmHeroPhone() { return !!(window.matchMedia && matchMedia("(max-width: 480px)").matches); }
   function heroPick() { return hmHeroPhone() ? HERO_PHONE : HERO_WIDE; }
   /* Hero: muted looping teaser (poster only when reduced motion is preferred). */
@@ -1029,43 +1029,84 @@
       '</div>';
   }
   /* Phones (<=600px): center the recommended plan and keep the dots in sync with the swipe row. */
+  /* Plans phone snap (Machan Nov 14 3:36-3:37 PM ICT): Essentials stays left-aligned on landing
+     (he did not ask to change that). Plus and Complete snap to the center. Plus shows a peek of
+     Essentials and Complete; Complete shows a Plus peek on the left and empty space on the right.
+     Tile width is unchanged from the Nov 13 22% peek formula, plus the Nov 14 9% tighten. */
+  function hmPlanCards(sc) { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
+  function hmPlanSnapLeft(sc, card) {
+    var sr = sc.getBoundingClientRect(), cr = card.getBoundingClientRect();
+    var first = hmPlanCards(sc)[0];
+    var padL = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
+    if (card === first) return sc.scrollLeft + (cr.left - sr.left - padL);
+    return sc.scrollLeft + (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
+  }
+  function hmPlanGo(sc, card, behavior) {
+    if (!sc || !card) return;
+    var left = Math.round(hmPlanSnapLeft(sc, card));
+    var max = Math.max(0, sc.scrollWidth - sc.clientWidth);
+    if (left < 0) left = 0; if (left > max) left = max;
+    sc.scrollTo({ left: left, behavior: behavior || "auto" });
+  }
   function bindPlanSwipe(root) {
     var sc = root.querySelector("#row-plans .hm-scroll"); if (!sc) return;
     var dots = [].slice.call(root.querySelectorAll("#row-plans .pc-dot"));
     var mq = window.matchMedia("(max-width:600px)");
-    function cards() { return [].slice.call(sc.querySelectorAll(".hm-plan")); }
-    /* Max 20:36 ICT Oct 15: cards ~82% wide, snap to center, Plus centered on load with Essentials/Complete peeking; positioned before first paint (no jump). */
-    function mid(el) { var cr = el.getBoundingClientRect(), sr = sc.getBoundingClientRect(); return (cr.left + cr.width / 2) - (sr.left + sr.width / 2); }
+    var armed = false, quiet = false;
+    function cards() { return hmPlanCards(sc); }
+    function arm() { if (armed) return; armed = true; sc.classList.add("pc-dimmed"); sync(); }
     function sync() {
       if (!mq.matches) return;
-      var best = null, d = 1e9;
-      var sl = sc.getBoundingClientRect().left + (parseFloat(getComputedStyle(sc).paddingLeft) || 0), cs = cards();
-      cs.forEach(function (c) { var x = Math.abs(c.getBoundingClientRect().left - sl); if (x < d) { d = x; best = c; } });
-      if (sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 4) best = cs[cs.length - 1];
+      var best = null, d = 1e9, cs = cards(), sr = sc.getBoundingClientRect(), midX = sr.left + sr.width / 2;
+      if (sc.scrollLeft <= 2) best = cs[0] || null;
+      else {
+        cs.forEach(function (c) { var cr = c.getBoundingClientRect(), x = Math.abs((cr.left + cr.width / 2) - midX); if (x < d) { d = x; best = c; } });
+      }
       dots.forEach(function (o) { o.classList.toggle("on", !!best && o.getAttribute("data-dot") === best.getAttribute("data-tier")); });
+      cs.forEach(function (c) { c.classList.toggle("pc-on", armed && c === best); });
     }
-    /* Machan Nov 13 7:34 PM ICT ("for plans lets begin with essentials and show a little more of plus"): the row opens at its left edge on
-       Essentials; tile width is set so PC_PEEK % (22%) of the Plus tile shows at the right edge. Snap is to each tile's start. */
+    function viewW() {
+      /* Visible width only (never the content width), same guard as bindPeekSwipe. */
+      var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+      var w = sc.clientWidth, host = sc.parentElement;
+      if (host && host.clientWidth && w > host.clientWidth + 40) w = host.clientWidth;
+      if (vw && w > vw + 1) w = vw;
+      return w;
+    }
     function size() {
-      if (!mq.matches) { sc.style.removeProperty("--pc-w"); return; }
+      if (!mq.matches) { sc.style.removeProperty("--pc-w"); sc.style.paddingRight = ""; sc.style.scrollPadding = ""; return; }
       var cs = getComputedStyle(sc), padL = parseFloat(cs.paddingLeft) || 0, gap = parseFloat(cs.columnGap || cs.gap) || 0;
+      var view = viewW();
       /* Machan Nov 14 9:25 AM: Plans tiles and text slightly smaller (~9% narrower). */
-      var w = (sc.clientWidth - padL - gap) / (1 + PC_PEEK / 100) * 0.91;
-      sc.style.setProperty("--pc-w", Math.floor(w) + "px"); sc.style.scrollPaddingLeft = padL + "px";
+      var w = Math.floor((view - padL - gap) / (1 + PC_PEEK / 100) * 0.91);
+      if (w < 200) w = Math.max(200, Math.floor(view * 0.72));
+      if (w > view - 24) w = Math.max(200, view - 48);
+      sc.style.setProperty("--pc-w", w + "px");
+      /* Right pad so Complete's center can reach the viewport center. */
+      sc.style.paddingRight = Math.max(0, Math.round((view - w) / 2)) + "px";
+      sc.style.scrollPadding = "0px";
     }
     function start() {
       size();
       if (!mq.matches) return;
+      quiet = true;
       var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
       sc.scrollLeft = 0;
       sc.style.scrollBehavior = sb;
       sync();
+      requestAnimationFrame(function () { quiet = false; });
     }
     var raf = 0;
-    sc.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); }); }, { passive: true });
+    sc.addEventListener("scroll", function () {
+      if (!quiet && sc.scrollLeft > 2) arm();
+      if (!raf) raf = requestAnimationFrame(function () { raf = 0; sync(); });
+    }, { passive: true });
     if (mq.addEventListener) mq.addEventListener("change", start);
-    window.addEventListener("resize", size);
+    window.addEventListener("resize", function () { size(); sync(); });
+    if (window.visualViewport) visualViewport.addEventListener("resize", function () { size(); sync(); });
+    sc.hmPlanArm = arm;
     start(); requestAnimationFrame(start);
+    [60, 300, 800].forEach(function (ms) { setTimeout(function () { if (!armed) start(); else { size(); sync(); } }, ms); });
   }
   /* Shared peek-swipe for Home Tailor and FAQ carousels. Same feel as Plans (22% peek, snap to start, dots in sync) but each card keeps its own look. Plans binding is unchanged. */
   function bindPeekSwipe(sc, cardSel, dots, onChange) {
@@ -1288,7 +1329,8 @@
     var smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     function pick(c) {
       cards.forEach(function (x) { var on = x === c; x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on ? "true" : "false"); });
-      if (window.matchMedia("(max-width:600px)").matches) sc.scrollTo({ left: c.offsetLeft - sc.offsetLeft - parseFloat(getComputedStyle(sc).paddingLeft), behavior: smooth });
+      if (sc.hmPlanArm) sc.hmPlanArm();
+      if (window.matchMedia("(max-width:600px)").matches) hmPlanGo(sc, c, smooth);
     }
     cards.forEach(function (c) {
       c.addEventListener("click", function (e) { if (e.target.closest(".pc-see, .pc-more-link, [data-hs-next]")) return; pick(c); });
@@ -1373,7 +1415,8 @@
   function hmEaseInOutSine(tt) {
     return -(Math.cos(Math.PI * tt) - 1) / 2;
   }
-  function hmGlideDur(dist) { return Math.round(Math.min(780, Math.max(700, 640 + Math.abs(dist) * 0.08))); }
+  var HM_PAGE_DUR = 740;
+  function hmGlideDur(dist) { if (typeof hmPageMode === "function" && hmPageMode()) return HM_PAGE_DUR; return Math.round(Math.min(780, Math.max(700, 640 + Math.abs(dist) * 0.08))); }
   function hmGlideStop(keepTab) {
     if (hmGlide.raf) { cancelAnimationFrame(hmGlide.raf); hmGlide.raf = 0; }
     if (hmGlide.onEnd) {
@@ -1384,9 +1427,13 @@
     hmSnapHold(false);
     hmGlide.lock = false;
     if (!keepTab) hmGlide.tab = null;
+    if (typeof hmPage !== "undefined" && hmPage && typeof hmPageMode === "function" && hmPageMode()) {
+      hmPage.wheelUntil = performance.now() + 180;
+    }
   }
   function hmOnUserScroll(e) {
     if (!hmGlide.lock) return;
+    if (typeof hmPageMode === "function" && hmPageMode()) return;
     if (performance.now() < hmGlide.ignoreUntil) return;
     if (e && e.target && e.target.closest && e.target.closest(".hm-dock, .hs-arrow, [data-hs-go], [data-hs-next], [data-hm-tab]")) return;
     hmGlideStop(true);
@@ -1488,6 +1535,242 @@
     var el = document.getElementById(id); if (!el) return;
     hmJumpSec(el);
   }
+  /* Phone Home paging (Machan Nov 14 3:08 PM ICT, via Grok): no free scroll on phones.
+     Each vertical swipe, wheel, or trackpad gesture moves exactly one full section, the
+     same as the up/down buttons and the bottom bar. Desktop and tablet keep normal scrolling.
+     Shared easeInOutSine + 740ms glide; prefers-reduced-motion is an instant jump. */
+  var HM_PAGE_IDS = ["hs-top", "hs-plans", "hs-alc", "hs-faq"];
+  var hmPage = { on: false, gest: null, wheelUntil: 0, bound: false };
+  function hmIsPhone() {
+    return !!(window.matchMedia && matchMedia("(max-width:600px)").matches);
+  }
+  function hmPageMode() {
+    return !!(document.body && document.body.classList.contains("on-home") && hmIsPhone());
+  }
+  function hmSyncPageClass() {
+    document.documentElement.classList.toggle("su-home-page", hmPageMode());
+  }
+  function hmPageBusy() {
+    return !!(hmGlide.lock || performance.now() < hmPage.wheelUntil);
+  }
+  function hmPageSecs() {
+    return HM_PAGE_IDS.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  }
+  function hmParkY(sec) {
+    if (!sec) return 0;
+    var hdr = document.querySelector(".topbar");
+    var off = hdr ? hdr.getBoundingClientRect().bottom : 0;
+    return Math.max(0, Math.round((window.scrollY || 0) + (sec.getBoundingClientRect().top - off)));
+  }
+  function hmFooterY() {
+    var sec = document.getElementById("hs-faq");
+    var bar = document.querySelector("body.on-home .hm-tabs.hm-dock") || document.querySelector(".hm-dock");
+    var barH = bar ? Math.round(bar.getBoundingClientRect().height) : 0;
+    return hmParkY(sec) + barH;
+  }
+  function hmPageIndex() {
+    var secs = hmPageSecs(), y = window.scrollY || 0, best = 0, dist = 1e9, i;
+    for (i = 0; i < secs.length; i++) {
+      var d = Math.abs(y - hmParkY(secs[i]));
+      if (d < dist) { dist = d; best = i; }
+    }
+    if (secs.length && Math.abs(y - hmFooterY()) <= dist) return secs.length;
+    return best;
+  }
+  function hmPageBlocked() {
+    var d = document.documentElement;
+    if (!document.body || !document.body.classList.contains("on-home")) return true;
+    if (d.classList.contains("faq-sheet-open") || d.classList.contains("hm-pop-open") || d.classList.contains("pc-lock")) return true;
+    return false;
+  }
+  function hmMenuOpen() { var m = document.getElementById("hdrMenu"); return !!(m && !m.hidden) || document.documentElement.classList.contains("rs-pop-open"); }
+  function hmFromOverlay(t) {
+    if (!t || !t.closest) return false;
+    return !!t.closest('.faq-sheet-wrap,.faq-sheet,.pc-sheet-wrap,.pc-sheet,.hm-pop,.wi-pop,.ic-pop,.hm-offer-pop,.hm-hc-info,.af-pop,.xt-sheet,.pc-lg,[role="dialog"][aria-modal="true"]');
+  }
+  function hmHCar(t) {
+    if (!t || !t.closest) return false;
+    return !!t.closest(".hm-scroll,.alc-car-scroll,.faq-car-scroll,.hm-hchips,.hm-hc-track");
+  }
+  function hmYBox(t) {
+    var el = t;
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (el.nodeType === 1) {
+        var st = window.getComputedStyle(el);
+        var oy = st.overflowY;
+        if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight + 1) return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function hmPageTo(idx, instant) {
+    var secs = hmPageSecs();
+    if (!secs.length) return;
+    if (idx < 0) idx = 0;
+    if (idx < secs.length) {
+      hmJumpSec(secs[idx], instant ? false : undefined);
+      return;
+    }
+    var top = hmFooterY();
+    if (instant || hmReduced()) {
+      if (typeof window.suMarkTab === "function") window.suMarkTab("faq", true);
+      window.scrollTo(0, top);
+      return;
+    }
+    hmGlideTo(top, "faq");
+  }
+  function hmPageBy(dir) {
+    if (!hmPageMode() || hmPageBlocked() || hmPageBusy()) return false;
+    var secs = hmPageSecs();
+    var next = hmPageIndex() + (dir > 0 ? 1 : -1);
+    if (next < 0) next = 0;
+    if (next > secs.length) next = secs.length;
+    var curY = window.scrollY || 0;
+    var target = next >= secs.length ? hmFooterY() : hmParkY(secs[next]);
+    if (Math.abs(curY - target) < 1) return false;
+    hmPage.wheelUntil = performance.now() + (hmReduced() ? 350 : 20000);
+    hmPageTo(next);
+    return true;
+  }
+  function hmPageOnWheel(e) {
+    if (!hmPageMode()) return;
+    if (hmPageBlocked() || hmFromOverlay(e.target)) return;
+    if (hmMenuOpen()) { e.preventDefault(); return; }
+    var dx = e.deltaX || 0, dy = e.deltaY || 0;
+    if (e.deltaMode === 1) { dx *= 16; dy *= 16; }
+    if (e.deltaMode === 2) { dx *= window.innerWidth; dy *= window.innerHeight; }
+    if (Math.abs(dx) > Math.abs(dy)) return;
+    var box = hmYBox(e.target);
+    if (box && !hmHCar(e.target)) {
+      var atEnd = dy > 0 ? (box.scrollTop + box.clientHeight >= box.scrollHeight - 1) : (box.scrollTop <= 0);
+      if (!atEnd) return;
+    }
+    e.preventDefault();
+    if (Math.abs(dy) < 8) return;
+    if (hmPageBusy()) {
+      hmPage.wheelUntil = Math.max(hmPage.wheelUntil, performance.now() + 140);
+      return;
+    }
+    hmPageBy(dy > 0 ? 1 : -1);
+  }
+  function hmPageOnStart(e) {
+    if (!hmPageMode() || hmPageBlocked() || hmFromOverlay(e.target)) { hmPage.gest = null; return; }
+    var t = e.touches ? e.touches[0] : e;
+    if (!t) { hmPage.gest = null; return; }
+    hmPage.gest = {
+      x: t.clientX, y: t.clientY, t: performance.now(),
+      axis: null, done: false, car: hmHCar(e.target), box: hmYBox(e.target)
+    };
+  }
+  function hmPageOnMove(e) {
+    var g = hmPage.gest;
+    if (!g || !hmPageMode()) return;
+    if (g.done) { if (g.axis === "y" && e.cancelable) e.preventDefault(); return; }
+    var t = e.touches ? e.touches[0] : e;
+    if (!t) return;
+    var dx = t.clientX - g.x, dy = t.clientY - g.y;
+    var adx = Math.abs(dx), ady = Math.abs(dy);
+    if (!g.axis) {
+      if (adx < 8 && ady < 8) return;
+      g.axis = adx > ady ? "x" : "y";
+    }
+    if (g.axis === "x") return;
+    if (g.box && !g.car) {
+      var dir = dy < 0 ? 1 : -1;
+      var atEnd = dir > 0 ? (g.box.scrollTop + g.box.clientHeight >= g.box.scrollHeight - 1) : (g.box.scrollTop <= 0);
+      if (!atEnd) return;
+    }
+    if (e.cancelable) e.preventDefault();
+    if (hmMenuOpen() || hmPageBusy()) return;
+    if (ady >= 40) {
+      g.done = true;
+      hmPageBy(dy < 0 ? 1 : -1);
+    }
+  }
+  function hmPageOnEnd(e) {
+    var g = hmPage.gest;
+    if (!g || g.done) { hmPage.gest = null; return; }
+    var t = (e.changedTouches && e.changedTouches[0]) || {};
+    var y = t.clientY != null ? t.clientY : g.y;
+    var dy = y - g.y;
+    var dt = Math.max(1, performance.now() - g.t);
+    var v = dy / dt;
+    if (g.axis === "y" && !hmMenuOpen() && !hmPageBusy() && !hmPageBlocked() && (Math.abs(v) >= 0.35 || Math.abs(dy) >= 40)) {
+      hmPageBy(dy < 0 ? 1 : -1);
+    }
+    hmPage.gest = null;
+  }
+  function hmPageOnKey(e) {
+    if (!hmPageMode() || hmPageBlocked() || hmMenuOpen() || e.defaultPrevented) return;
+    var t = e.target;
+    if (t && t.closest && t.closest("input,textarea,select,[contenteditable],.faq-sheet,.pc-sheet,.hm-pop,.wi-pop,.ic-pop")) return;
+    var k = e.key, dir = 0;
+    if (t && t.closest && t.closest("button,a,[role='button'],[data-hm-tab]") && k === " ") return;
+    if (k === "ArrowDown" || k === "PageDown" || (k === " " && !e.shiftKey)) dir = 1;
+    else if (k === "ArrowUp" || k === "PageUp" || (k === " " && e.shiftKey)) dir = -1;
+    else if (k === "Home") { e.preventDefault(); if (!hmPageBusy()) hmPageTo(0); return; }
+    else if (k === "End") { e.preventDefault(); if (!hmPageBusy()) hmPageTo(Math.max(0, hmPageSecs().length - 1)); return; }
+    if (!dir) return;
+    e.preventDefault();
+    hmPageBy(dir);
+  }
+  function hmPageSnapNow() {
+    hmSyncPageClass();
+    if (!hmPageMode() || hmPageBlocked() || hmGlide.lock) return;
+    var secs = hmPageSecs();
+    if (!secs.length) return;
+    var i = hmPageIndex();
+    var target = i >= secs.length ? hmFooterY() : hmParkY(secs[i]);
+    if (Math.abs((window.scrollY || 0) - target) > 1) window.scrollTo(0, target);
+  }
+  function hmPageOnResize() {
+    hmSyncPageClass();
+    if (!hmPageMode() || hmPageBlocked() || hmGlide.lock) return;
+    hmPageSnapNow();
+  }
+  function hmPageOnFocus(e) {
+    if (!hmPageMode() || hmPageBlocked() || hmFromOverlay(e.target)) return;
+    var sec = e.target && e.target.closest ? e.target.closest("#hs-top,#hs-plans,#hs-alc,#hs-faq") : null; if (!sec) return;
+    var i = HM_PAGE_IDS.indexOf(sec.id);
+    requestAnimationFrame(function () { if (!hmGlide.lock && Math.abs((window.scrollY || 0) - hmParkY(sec)) > 1) hmPageTo(i, true); });
+  }
+  function hmPageBind() {
+    if (hmPage.bound) return;
+    hmPage.bound = true;
+    window.addEventListener("wheel", hmPageOnWheel, { capture: true, passive: false });
+    window.addEventListener("touchstart", hmPageOnStart, { capture: true, passive: true });
+    window.addEventListener("touchmove", hmPageOnMove, { capture: true, passive: false });
+    window.addEventListener("touchend", hmPageOnEnd, { capture: true, passive: true });
+    window.addEventListener("touchcancel", hmPageOnEnd, { capture: true, passive: true });
+    window.addEventListener("keydown", hmPageOnKey, { capture: true, passive: false });
+    document.addEventListener("focusin", hmPageOnFocus, true);
+    window.addEventListener("resize", hmPageOnResize);
+    window.addEventListener("orientationchange", function () {
+      setTimeout(hmPageOnResize, 60);
+      setTimeout(hmPageOnResize, 300);
+    });
+    hmSyncPageClass();
+    window.suHomePage = {
+      mode: hmPageMode, isPhone: hmIsPhone, index: hmPageIndex,
+      parkY: hmParkY, footerY: hmFooterY, by: hmPageBy, to: hmPageTo, snap: hmPageSnapNow
+    };
+  }
+  function hmPageUnbind() {
+    if (!hmPage.bound) return;
+    hmPage.bound = false;
+    window.removeEventListener("wheel", hmPageOnWheel, { capture: true });
+    window.removeEventListener("touchstart", hmPageOnStart, { capture: true });
+    window.removeEventListener("touchmove", hmPageOnMove, { capture: true });
+    window.removeEventListener("touchend", hmPageOnEnd, { capture: true });
+    window.removeEventListener("touchcancel", hmPageOnEnd, { capture: true });
+    window.removeEventListener("keydown", hmPageOnKey, { capture: true });
+    document.removeEventListener("focusin", hmPageOnFocus, true);
+    window.removeEventListener("resize", hmPageOnResize);
+    document.documentElement.classList.remove("su-home-page");
+    hmPage.gest = null;
+  }
+  window.hmSyncPageClass = hmSyncPageClass;
   window.addEventListener("resize", hmHdrSync); window.addEventListener("orientationchange", hmHdrSync);
   /* Late build Nov 12: bar hidden on the top section only, always shown after it; arrow guard hides Get Started only.
      Every section is one screen (innerHeight - header); the bar (with the resume strip when shown) is subtracted, and the main block fills what is left. */
@@ -1584,7 +1867,7 @@
     hsBarSync();
   }
   window.addEventListener("scroll", function () { hsBarSync(); }, { passive: true });
-  function hmRefit() { var r = app.querySelector(".hm"); if (!r) return; hmHdrSync(); hsBarFill(r); }
+  function hmRefit() { var r = app.querySelector(".hm"); if (!r) return; hmHdrSync(); hsBarFill(r); if (typeof hmPageSnapNow === "function") hmPageSnapNow(); }
   window.addEventListener("resize", hmRefit);
   [60, 300, 800].forEach(function (ms) { setTimeout(hmRefit, ms); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { hmRefit(); }).catch(function () {});
@@ -1640,6 +1923,22 @@
     ["Inside The Home", /bath fan|radon|appliance|doorbell/i],
     ["Seasonal Equipment", /generator|mower|snowblower/i]
   ];
+  /* Home Tailor list (Machan Nov 14 3:38 PM ICT): shorter Title Case names on the
+     collapsed row. Official catalog labels and all scope copy live in the expansion.
+     pricing-config.js is untouched. */
+  var HOME_ALC_SHORT = {
+    "Flat Roof Inspection And Clean": "Flat Roof Inspect And Clean",
+    "Irrigation System Startup Or Shutdown": "Irrigation Start Or Shutdown",
+    "Exterior Window Washing": "Exterior Windows",
+    "Christmas Lights Up And Down": "Hang Christmas Lights",
+    "Water Leak Sensor Setup": "Leak Sensor Setup",
+    "Generator Annual Service": "Generator Service",
+    "Extra Flat Roof Cleaning": "Extra Flat Roof Clean",
+    "Bath Fans Clean And Check": "Bath Fan Clean And Check",
+    "Sump Pump Battery Backup": "Sump Battery Backup",
+    "Lawn Mower Winterizing": "Mower Winterizing"
+  };
+  function alcRowName(label) { return pcTitle(HOME_ALC_SHORT[label] || label); }
   function alcDetail(a, monthly, skipDesc) {
     var d = [];
     if (a.desc && !skipDesc) d.push('<p>' + esc(a.desc) + '</p>');
@@ -1664,7 +1963,9 @@
       '<div class="alc-car-scroll" data-ptr-ignore>' + groups.map(function (G, i) {
         var list = G[1].map(function (r) {
           var price = r.m ? addMo(r.a) : oncePriceLabel(r.a);
-          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(r.a.label) + (r.a.desc ? '<span class="sa-desc">' + esc(r.a.desc) + '</span>' : '') + (r.a.note ? '<span class="sa-note">' + esc(r.a.note) + '</span>' : '') + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', alcDetail(r.a, r.m, true));
+          var official = r.a.label, name = alcRowName(official);
+          var body = (name !== official ? '<p class="sa-full-name">' + esc(official) + '</p>' : '') + alcDetail(r.a, r.m, false);
+          return saItem("alc-" + (n++), '<span class="sa-n">' + esc(name) + '<small>' + (r.m ? "Plan Add-On" : "One-Time Add-On") + '</small></span><b class="sa-p' + (price === QUOTE_LABEL ? ' is-quote' : '') + '" data-alc-id="' + esc(r.a.id) + '">' + esc(price) + '</b>', body);
         }).join("");
         return '<article class="alc-card" data-alc-g="' + i + '"><div class="alc-ghd"><span class="alc-gico" aria-hidden="true">' + alcIco(G[0], 28) + '</span><p>' + esc(G[0]) + '</p></div><div class="sa-list">' + list + '</div></article>';
       }).join("") + '</div>' +
@@ -2196,8 +2497,7 @@
     function syncRow(card) {
       var sc = card.parentNode; if (!sc || !sc.classList || !sc.classList.contains("hm-scroll") || sc.scrollWidth <= sc.clientWidth + 1) return;
       var sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto";
-      var pl = parseFloat(getComputedStyle(sc).paddingLeft) || 0;
-      sc.scrollLeft += card.getBoundingClientRect().left - sc.getBoundingClientRect().left - pl;
+      hmPlanGo(sc, card, "auto");
       sc.style.scrollBehavior = sb;
       try { sc.dispatchEvent(new Event("scroll")); } catch (e) {}
     }
@@ -2702,8 +3002,10 @@
       window.removeEventListener("wheel", hmOnUserScroll, { capture: true });
       window.removeEventListener("touchstart", hmOnUserScroll, { capture: true });
       window.removeEventListener("keydown", hmOnUserScroll, { capture: true, passive: true });
+      if (typeof hmPageUnbind === "function") hmPageUnbind();
       if (io) io.disconnect();
     };
+    if (typeof hmPageBind === "function") hmPageBind();
     spyTabs();
     requestAnimationFrame(function () { placeInd((root.querySelector("[data-hm-tab].on") || {}).getAttribute ? root.querySelector("[data-hm-tab].on").getAttribute("data-hm-tab") : "home", true); });
     hsBarFill(root);
@@ -2757,21 +3059,73 @@
   /* Coming back later: Resume Card (Info Gather Deck). */
   /* Max 20:33 ICT Oct 15: resume card only for a real in-progress step; X clears saved progress; Start Over clears and goes to step 1. */
   function hasResume() { return !!S.resume && isOb(S.resume); }
-  /* Machan 11:16 PM: resume strip docked on top of the bar. Existing label + " · Step X" (same numbering as the funnel). Tap = Resume, × = clear (dismissResume). */
-  /* Resume Indicator Placement Deck (Machan Nov 13 9:12 PM; team pick Menu Dot, Then Continue Row, Swatch polish item 6): a small dot on the menu button and a
-     Continue Sign-Up row (with the step) at the top of the menu, replacing the strip on the dock. Sign Up hides while it shows; Log In stays. Not shown on the steps themselves. */
-  function syncResumeMenu(s) {
+  /* Machan Nov 14 3:12 PM: no resume dot or Continue row in the menu. Get Started (and Sign Up) asks Continue Where You Left Off or Start Over when hasResume(). */
+  function syncResumeMenu() {
     var btn = document.getElementById("hdrMenuBtn"), menu = document.getElementById("hdrMenu"); if (!btn || !menu) return;
-    var row = menu.querySelector(".hdr-resume"), on = hasResume() && !isOb(s) && s !== "confirm";
-    btn.classList.toggle("has-resume", on); menu.classList.toggle("has-resume", on);
-    btn.setAttribute("aria-label", on ? "Menu, sign-up in progress" : "Menu");
-    if (row) { row.hidden = !on; var sm = row.querySelector("small"); if (sm && on) sm.textContent = "Step " + obStepNo(S.resume) + " Of " + obSeq().length; }
+    btn.classList.remove("has-resume"); menu.classList.remove("has-resume");
+    btn.setAttribute("aria-label", "Menu");
+    var row = menu.querySelector(".hdr-resume"); if (row) row.remove();
   }
-  function resumeCard() {
-    var done = Math.max(0, OB.indexOf(S.resume));
-    return '<div class="hm-resume-card"><span class="qf-art t3" aria-hidden="true">' + I("clock") + '</span><div><b>Pick Up Where You Left Off</b><small>' + done + ' of ' + OB.length + ' questions answered</small></div>' +
-      '<button type="button" class="hm-resume-x mw-hover" data-act="dismissResume" aria-label="Dismiss and clear saved progress">' + X_SVG + '</button>' +
-      '<span class="hm-resume-btns"><button class="btn btn-primary mw-hover" data-act="resume" type="button">Resume</button><button class="btn btn-outline mw-hover" data-act="startOver" type="button">Start Over</button></span></div>';
+  function resumePromptReturn(from) {
+    if (from && document.body.contains(from)) {
+      var r = from.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return from;
+    }
+    return document.querySelector(".hm-tab-cta") || document.getElementById("hdrMenuBtn");
+  }
+  function openResumePrompt(from) {
+    var old = document.getElementById("rsPop"); if (old) old.remove();
+    document.documentElement.classList.remove("hm-pop-open");
+    document.querySelectorAll(".ic-pop, .wi-pop, .hm-offer-pop").forEach(function (p) { p.hidden = true; });
+    var step = "Step " + obStepNo(S.resume) + " Of " + obSeq().length;
+    var wrap = document.createElement("div");
+    wrap.id = "rsPop";
+    wrap.className = "rs-pop-wrap";
+    wrap.setAttribute("data-ptr-ignore", "");
+    wrap.innerHTML = '<div class="rs-pop-bg" data-rs-close></div>' +
+      '<div class="rs-pop" role="dialog" aria-modal="true" aria-labelledby="rsPopT" tabindex="-1">' +
+        '<button type="button" class="rs-pop-x mw-hover" data-rs-close aria-label="Close">' + X_SVG + '</button>' +
+        '<h3 id="rsPopT">Continue Where You Left Off</h3>' +
+        '<div class="rs-pop-actions">' +
+          '<button type="button" class="btn btn-primary mw-hover rs-pop-go" data-rs-resume>Continue Where You Left Off<small>' + step + '</small></button>' +
+          '<button type="button" class="btn btn-outline mw-hover rs-pop-restart" data-rs-restart>Start Over</button>' +
+        '</div>' +
+      '</div>';
+    var dock = document.querySelector(".hm-tabs.hm-dock") || document.querySelector(".hm-tabs");
+    var dockH = dock ? Math.max(0, Math.round(window.innerHeight - dock.getBoundingClientRect().top)) : 0;
+    wrap.style.setProperty("--su-dock-h", dockH + "px");
+    document.body.appendChild(wrap);
+    var box = wrap.querySelector(".rs-pop");
+    function focusables() {
+      return Array.prototype.filter.call(box.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'), function (el) {
+        return !el.disabled && el.getAttribute("aria-hidden") !== "true";
+      });
+    }
+    function key(e) {
+      if (e.key === "Escape") { e.preventDefault(); shut(true); return; }
+      if (e.key !== "Tab") return;
+      var fs = focusables(); if (!fs.length) { e.preventDefault(); box.focus(); return; }
+      var i = fs.indexOf(document.activeElement);
+      if (e.shiftKey) { if (i <= 0) { e.preventDefault(); fs[fs.length - 1].focus(); } }
+      else if (i === fs.length - 1 || i < 0) { e.preventDefault(); fs[0].focus(); }
+    }
+    function shut(refocus) {
+      if (!wrap.parentNode) return;
+      document.removeEventListener("keydown", key, true);
+      document.documentElement.classList.remove("rs-pop-open");
+      wrap.remove();
+      if (refocus) { var back = resumePromptReturn(from); if (back) try { back.focus({ preventScroll: true }); } catch (x) { back.focus(); } }
+    }
+    wrap.querySelectorAll("[data-rs-close]").forEach(function (c) {
+      c.addEventListener("click", function (e) { e.preventDefault(); shut(true); });
+    });
+    wrap.querySelector("[data-rs-resume]").addEventListener("click", function () { shut(false); act("resume"); });
+    wrap.querySelector("[data-rs-restart]").addEventListener("click", function () { shut(false); act("startOver"); });
+    document.documentElement.classList.add("rs-pop-open");
+    document.addEventListener("keydown", key, true);
+    requestAnimationFrame(function () { wrap.classList.add("on"); });
+    var goBtn = wrap.querySelector("[data-rs-resume]");
+    try { (goBtn || box).focus({ preventScroll: true }); } catch (x) { (goBtn || box).focus(); }
   }
   var XICO = { irrigation: "spray", sump: "meter", fireplace: "chimney", generator: "wrench", humidifier: "radon", softener: "meter" };
   /* ---------- Onboarding: homeowner quote funnel, 9 screens (Machan Nov 11 2026, 1:32-1:36 PM ICT answers) ----------
@@ -3884,7 +4238,7 @@
         if (r) { r.hidden = false; b.classList.add("done"); b.lastChild.textContent = "License Verified"; }
       });
     });
-    app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act")); }); });
+    app.querySelectorAll("[data-act]").forEach(function (b) { b.addEventListener("click", function () { act(b.getAttribute("data-act"), b); }); });
     var s = S.screen;
     document.body.classList.toggle("on-qf", isOb(s));
     document.body.classList.toggle("on-ob", isOb(s));
@@ -3898,14 +4252,18 @@
     }
     if (s === "confirm") bindReferralShare();
   }
-  function act(a) {
+  function act(a, from) {
     if (a === "back") return back();
     if (a === "home") return go("home");
     if (a === "dismissResume") { S = fresh(); save(); render(); return; }
     if (a === "startOver") { S = fresh(); save(); return go(OB[0]); }
     if (a === "resume") { var r = S.resume; return go(r && r !== "home" ? r : OB[0]); }
-    if (a === "start") { try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {} }
-    if (a === "start") { var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier"); return go(OB[0]); }
+    if (a === "start") {
+      if (hasResume()) { openResumePrompt(from); return; }
+      var sc = app.querySelector("#row-plans .hm-plan.sel"); if (sc && P.tiers[sc.getAttribute("data-tier")]) S.tier = sc.getAttribute("data-tier");
+      try { window.SUEvents && SUEvents.emit("scan.started", "site", {}); } catch (x) {}
+      return go(OB[0]);
+    }
     if (a === "watch") return openVideo(true);
     if (a === "toQuote") return go(OB[0]);
     if (a === "alacarte") return go("alacarte");
@@ -4035,7 +4393,7 @@
     btn.addEventListener("click", function (e) { e.stopPropagation(); setOpen(menu.hidden, true); });
     document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false, true); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !menu.hidden) { e.preventDefault(); setOpen(false, true); } });
-    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act")); }); });
+    menu.querySelectorAll("[data-menu-act]").forEach(function (b) { b.addEventListener("click", function () { setOpen(false, false); act(b.getAttribute("data-menu-act"), b.getAttribute("data-menu-act") === "start" ? btn : b); }); });
   })();
   function doShare(mEl) {
     var url = location.origin + location.pathname, p = price(), msg = mEl || document.getElementById("shareMsg");
@@ -4051,7 +4409,7 @@
     copy();
   }
   /* Hotfix Nov 13 2026 (Machan 10:26 PM): a fresh visit always opens on Home at the top. Saved sign-up progress never auto-opens;
-     it resumes only through the resume strip / menu dot (S.resume keeps the step). */
+     it resumes through Get Started (Continue / Start Over prompt). S.resume keeps the step. */
   try { history.scrollRestoration = "manual"; } catch (e) {}
   if (S.screen !== "home") { if (isOb(S.screen)) S.resume = S.screen; S.screen = "home"; S.path = []; save(); }
   if (location.hash === "#home") { history.replaceState(null, "", location.pathname); S.screen = "home"; save(); }
