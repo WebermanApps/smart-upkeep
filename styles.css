@@ -3715,3 +3715,71 @@ body.on-home .faq-sheet-body .fq-note{font:italic 13px/1.45 Hind,var(--mw-font-b
     overscroll-behavior:none;
   }
 }
+
+/* Header bleed (Machan Nov 14 7:12-7:14 PM ICT): the page reads as if it flows out of
+   Safari's cream URL bar. Exact top color is #F5EDDF — the #131 header shade — and
+   theme-color, the html/body top background, and the header's top edge are the same
+   pixel, so there is no line, border, or color step at the join. Shine and shade
+   fade in going down, ending in the #F5EDDF polished finish plus a soft shadow under
+   the header. Hairline stays off the header (it remains on the sticky bottom bar only).
+   The logo and the Share / Menu icons carry the most polish (a Meta-style soft sheen,
+   light mode, charcoal / grey / white / brand terracotta only). No green header band.
+   The sticky bottom bar keeps its existing #F5EDDF + top shine + hairline + bar shadow. */
+html{background-color:#F5EDDF}
+html body.su-band,html body.on-home{background-color:#F5EDDF!important}
+html body.su-band .topbar{
+  background-color:#F5EDDF!important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 16%,rgba(255,255,255,.22) 42%,rgba(255,255,255,.40) 68%,rgba(255,255,255,.16) 100%)!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:0 8px 20px rgba(60,40,20,.10)!important;
+}
+html body.su-band.su-band-scrolled .topbar{
+  box-shadow:0 10px 24px rgba(60,40,20,.12)!important;
+}
+/* Logo: a soft diagonal highlight clipped to the mark, so the wordmark stays crisp
+   and on-brand (charcoal smart/keep, muted up, terracotta roof). */
+html body.su-band .topbar .brand{position:absolute!important}
+html body.su-band .topbar .brand::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(105deg,rgba(255,255,255,0) 18%,rgba(255,255,255,.55) 44%,rgba(255,255,255,.12) 52%,rgba(255,255,255,0) 76%);
+  -webkit-mask:url(assets/logo-band.svg?v=1) center/contain no-repeat;
+  mask:url(assets/logo-band.svg?v=1) center/contain no-repeat;
+  -webkit-mask-size:contain;
+  mask-size:contain;
+}
+html body.su-band .topbar .btn-share{position:relative!important}
+/* Share and Menu: a crisp top-edge highlight and a faint warm sit-shadow, no blur. */
+html body.su-band .topbar .btn-share svg,
+html body.su-band .topbar .top-menu svg{
+  filter:drop-shadow(0 -1px 0 rgba(255,255,255,.8)) drop-shadow(0 1px 0 rgba(60,40,20,.16));
+}
+html body.su-band .topbar .btn-share::after,
+html body.su-band .topbar .top-menu::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:22px;
+  height:22px;
+  margin:-11px 0 0 -11px;
+  pointer-events:none;
+  background:linear-gradient(165deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 46%,rgba(255,255,255,0) 100%);
+  -webkit-mask:inherit;
+  opacity:.9;
+}
+html body.su-band .topbar .btn-share::after{
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11'/%3E%3Cpath d='M8 8l4-4 4 4'/%3E%3Cpath d='M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7'/%3E%3C/svg%3E") center/22px 22px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v11'/%3E%3Cpath d='M8 8l4-4 4 4'/%3E%3Cpath d='M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7'/%3E%3C/svg%3E") center/22px 22px no-repeat;
+}
+html body.su-band .topbar .top-menu::after{
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center/22px 22px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E") center/22px 22px no-repeat;
+}
+@media (prefers-reduced-motion:reduce){
+  html body.su-band .topbar,
+  html body.su-band.su-band-scrolled .topbar{transition:none}
+}
