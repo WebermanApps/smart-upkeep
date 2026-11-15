@@ -1610,6 +1610,8 @@ html body.on-ob .ob-accept .checkrow::before{
   transform:translate(-50%,-50%);
   z-index:1;
 }
+html body.on-ob .ob .type-seg{overflow:visible}
+html body.on-ob .ob .cal-d::before{height:calc(100% + 2px)}
 
 /* Onboarding bar already includes safe-area padding; restate the winning #140 rule so it cannot be dropped. */
 html body.on-ob .ob .ob-bar,

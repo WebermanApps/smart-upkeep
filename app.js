@@ -3830,7 +3830,7 @@
        the fields stay in the page (hidden) so Next reads the same values. Typing keeps the fields; leaving them with a good address snaps the card in. */
     var card = addrOk() && inArea(a.zipcode) && !out && !obAddrEdit;
     var body = '<div class="ob-home-form' + (card ? ' pb-carded' : '') + '">' + '<div class="pb-addr-card" role="group" aria-label="Your Address"><span class="pb-addr-t"><b id="pbAddrS">' + esc(String(a.street || "").trim()) + '</b><span id="pbAddrZ">ZIP ' + esc(a.zipcode || "") + '</span></span><button type="button" class="pb-addr-edit mw-hover" data-pb-addr-edit="1" aria-label="Edit Address">Edit</button></div>' +
-      '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="street-address" inputmode="text" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
+      '<div class="ob-fields"><label class="fl" for="obStreet">Street Address</label><input id="obStreet" type="text" autocomplete="address-line1" inputmode="text" enterkeyhint="next" placeholder="123 Main St, Novi" value="' + esc(a.street || "") + '">' +
       '<label class="fl" for="obZip">ZIP Code</label><input id="obZip" class="ob-zip" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code" enterkeyhint="go" placeholder="48322" value="' + esc(a.zipcode || "") + '">' +
       '<p class="ob-area small">We serve metro Detroit: Wayne, Oakland, Macomb and nearby</p></div>' +
       '<p class="ferr" id="obAddrErr" role="alert"></p>' + (out ? waitlistCard(a.zipcode) : "") + '</div>';
@@ -5031,7 +5031,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9p2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {

@@ -4161,13 +4161,9 @@ html body.on-home .hm-dock button[data-hm-tab]:active{
   #videoModal .modal-inner{transition:opacity 160ms ease;transform:none!important}
 }
 
-/* N3: on short phones keep the Tailor up-arrow in flow so its 44px hit does not overlap the subtitle or the first card. */
+/* N3: on short phones hide the Tailor up-arrow so it cannot overlap the subtitle or push the sixth row off-screen. */
 @media (max-width:430px) and (max-height:700px){
-  html body.on-home #hs-alc .hs-arrow-up{
-    margin:0 auto 0!important;
-    position:relative;
-    z-index:2;
-  }
+  html body.on-home #hs-alc .hs-arrow-up{display:none!important}
 }
 
 /* Home dock already includes safe-area padding; restate it here so a later rule cannot drop it. */
