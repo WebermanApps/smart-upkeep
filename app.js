@@ -5181,7 +5181,7 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9u1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9u2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
     (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9u1"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
