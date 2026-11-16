@@ -402,6 +402,10 @@
        Last resort: 120px. Desktop uses the same ladder so the bar never sits below the fold. */
     var scr = (sec.className.match(/\bob-([a-z0-9]+)\b/g) || []).join(" ");
     var isAddons = /ob-addons/.test(scr), floor = isAddons ? 210 : 150;
+    /* Swatch #151 r2 taste: Billing and Accept keep 180 between 240 steps; desktop Start Date keeps 180+ */
+    var cls = " " + sec.className + " "; /* exact tokens: variant classes like ob-billing-a sit on every step */
+    if (/ (ob-billing|ob-accept) /.test(cls)) floor = 180;
+    if (cls.indexOf(" ob-start ") >= 0 && window.innerWidth > 600) floor = 180;
     function noInnerScroll() {
       if (isAddons) return true; /* the Tailor list is meant to scroll */
       var b = sec.querySelector(".ob-pane > .qf-body");
@@ -419,7 +423,7 @@
     }
     var heights = HOUSE_TRY;
     found = tryPass(HOUSE_TRY.filter(function (h) { return h >= floor; }), true) ||
-            tryPass([floor], false) ||
+            tryPass(HOUSE_TRY.filter(function (h) { return h <= floor && h >= 150; }), false) ||
             tryPass([120], false);
     if (!found) { used = heights[heights.length - 1]; cuts = TRY[TRY.length - 1]; setHouseH(used); setLv(cuts); n = TRY.length - 1; }
     else { n = TRY.indexOf(cuts); if (n < 0) n = 0; }
