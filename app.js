@@ -581,7 +581,7 @@
     app.setAttribute("data-screen", s);
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
-    if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
+    if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} if (S.screen === "plan") obPlanRecenter(); } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
     document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.hmSyncPageClass) window.hmSyncPageClass(); else document.documentElement.classList.toggle("su-home-page", s === "home" && window.innerWidth <= 600); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
@@ -3922,6 +3922,7 @@
       street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", zipcode: String(a.zipcode || "").trim(), storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
   }
   window.suHouseState = obHouseState;
+  window.suPlanRecenter = function () { if (S.screen === "plan") obPlanRecenter(); };
   /* Called by onboarding-house.js fit() for each cut-order level: re-size the Add-Ons list for that level, and only accept the level if the list keeps at least ~3 rows. */
   window.suHouseRefit = function () { if (S.screen !== "addons") return true; sfitAddons(); var l = app.querySelector("section.ob-addons .ob-ao-list"); return !l || !l.style.maxHeight || parseFloat(l.style.maxHeight) >= 150; };
   function obShell(id, art, tint, title, help, body, foot) {
@@ -4397,6 +4398,12 @@
   }
   /* Onboarding Polish C card 10: keep the picked plan card centered in the swipe row; a new pick glides there from where the row was. */
   var obPlanX = null;
+  /* Swatch #151 r1 F3: fit() re-lays the step, which left the stack at scrollLeft 0. Re-center the picked card (14px peek each side) without animation. */
+  function obPlanRecenter() {
+    var sk = app.querySelector(".ob-plan .plan-stack"), c = sk && sk.querySelector(".plan-card.sel"); if (!sk || !c) return;
+    var sr = sk.getBoundingClientRect(), cr = c.getBoundingClientRect();
+    sk.scrollLeft = Math.max(0, sk.scrollLeft + (cr.left - sr.left) - (sr.width - cr.width) / 2);
+  }
   function obPlanCenter() {
     var sk = app.querySelector(".ob-plan .plan-stack"), c = sk && sk.querySelector(".plan-card.sel"); if (!sk || !c) return;
     var sr = sk.getBoundingClientRect(), cr = c.getBoundingClientRect(), to = Math.max(0, sk.scrollLeft + (cr.left - sr.left) - (sr.width - cr.width) / 2);
@@ -5174,9 +5181,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9t1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9t2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9t1"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9t2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

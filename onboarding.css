@@ -1649,10 +1649,12 @@ html.ob-hb-on .ob-hb[data-mode="map"],
 html.ob-hb-on .ob-hb[data-mode="house"]{height:var(--ob-hb-h)!important}
 html.ob-hb-on .ob-hb-art,
 html.ob-hb-on .ob-hb[data-mode="map"] .ob-hb-art{height:var(--ob-hb-art)!important}
-html.ob-hb-mini .ob-hb,
-html.ob-hb-mini .ob-hb-art,
-html.ob-hb-mini .ob-hb[data-mode="map"],
-html.ob-hb-mini .ob-hb[data-mode="map"] .ob-hb-art{height:48px!important}
+html.ob-hb-on.ob-hb-mini .ob-hb,
+html.ob-hb-on.ob-hb-mini .ob-hb-art,
+html.ob-hb-on.ob-hb-mini .ob-hb[data-mode="map"],
+html.ob-hb-on.ob-hb-mini .ob-hb[data-mode="map"] .ob-hb-art,
+html.ob-hb-on.ob-hb-mini .ob-hb[data-mode="house"],
+html.ob-hb-on.ob-hb-mini .ob-hb[data-mode="house"] .ob-hb-art{height:48px!important}
 
 /* Inner-scroll the step body on phones so the page itself does not move; the house and bar stay fixed. */
 @media (max-width:600px){
@@ -1714,19 +1716,20 @@ html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-systems .qf-hero .qf-help{
 }
 
 
-/* ===== ob-one-screen-1116: plan-card peek 12–16px at 360, address chip sheet ===== */
+/* ===== ob-one-screen-1116 r2 (Swatch #151 r1): centered plan card with a 14px peek each side ===== */
 @media (max-width:600px){
-  html body.on-ob .ob.qf.ob-plan .plan-stack{
-    padding:12px 0 8px!important;
-    scroll-padding:0!important;
-    gap:10px!important;
-  }
-  html body.on-ob .ob.qf.ob-plan .plan-card{
-    flex:0 0 calc(100% - 24px)!important; /* 10px gap + 14px peek of the next card */
-    scroll-snap-align:start!important;
-  }
+  html body.on-ob .ob.qf.ob-plan .plan-stack{padding:12px 22px 8px!important;scroll-padding:0 22px!important;gap:8px!important}
+  html body.on-ob .ob.qf.ob-plan .plan-card{flex:0 0 100%!important;scroll-snap-align:center!important}
 }
-html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip[data-c="addr"]{cursor:pointer}
+/* 8px air under the scroll areas so they never end flush on the bar (Swatch #151 r1 F4) */
+html body.on-ob .ob .ob-pane > .qf-body{margin-bottom:9px!important}
+html body.on-ob .ob.qf.ob-plan .plan-stack{margin-bottom:8px!important}
+/* Address chip: 44px tap area, same look (Swatch #151 r1 F2) */
+html.ob-hb-on .ob-hb-cap.hb-chips{overflow:visible}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-addr-hit{position:relative;z-index:3;flex:0 1 auto;min-width:0;display:flex;padding:0;margin:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-addr-hit::before{content:"";position:absolute;inset:-14px -4px}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-addr-hit .hb-chip{max-width:100%}
+
 .hb-addr-sheet{
   position:fixed;left:12px;right:12px;
   bottom:calc(8px + var(--su-ob-bar-h,105px));

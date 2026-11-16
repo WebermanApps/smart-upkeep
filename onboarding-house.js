@@ -151,7 +151,7 @@
     capEl._st = st;
     capEl._hbAddrBound = true;
     capEl.addEventListener("click", function (e) {
-      var b = e.target.closest && e.target.closest('[data-c="addr"]');
+      var b = e.target.closest && e.target.closest('.hb-addr-hit');
       if (!b) return;
       e.preventDefault();
       openAddrSheet(capEl._st || st);
@@ -166,7 +166,7 @@
     capEl.setAttribute("aria-label", "Your Home: " + cs.map(function (c) { return c[2]; }).join(", "));
     capEl.innerHTML = cs.map(function (c) {
       now[c[0]] = c[1];
-      if (c[0] === "addr") return '<button type="button" class="hb-chip" data-c="addr" aria-label="Show Full Address">' + escH(c[1]) + '</button>';
+      if (c[0] === "addr") return '<button type="button" class="hb-addr-hit" aria-label="Show Full Address"><span class="hb-chip" data-c="addr">' + escH(c[1]) + '</span></button>';
       return '<span class="hb-chip" data-c="' + c[0] + '" aria-hidden="true">' + escH(c[1]) + '</span>';
     }).join("");
     bindAddrChip(capEl, st);
@@ -397,22 +397,37 @@
     /* Swatch #146 r1 F2: the cut levels change paddings and margins that have CSS transitions, so a rect read right after a class toggle saw the
        old (mid-transition) layout and repeated calls disagreed. Measure with transitions off; the final level is applied instantly, so nothing animates after. */
     html.classList.add("ob-hb-measure");
-    var phone = window.innerWidth <= 600;
-    var heights = phone ? HOUSE_TRY : [240];
-    for (hi = 0; hi < heights.length && !found; hi++) {
-      setHouseH(heights[hi]);
-      void sec.offsetHeight;
-      for (n = 0; n < TRY.length; n++) {
-        setLv(TRY[n]);
-        if (fitsNow(sec)) { used = heights[hi]; cuts = TRY[n]; found = true; break; }
-      }
+    /* Pass 1: the tallest band where the whole step shows with no inner scroll. Pass 2: if nothing fits, keep the band at the step floor
+       (150px; Tailor 210px so it stays within one size step of its 240px neighbours) and let the card scroll inside, with 8px+ air above the bar.
+       Last resort: 120px. Desktop uses the same ladder so the bar never sits below the fold. */
+    var scr = (sec.className.match(/\bob-([a-z0-9]+)\b/g) || []).join(" ");
+    var isAddons = /ob-addons/.test(scr), floor = isAddons ? 210 : 150;
+    function noInnerScroll() {
+      if (isAddons) return true; /* the Tailor list is meant to scroll */
+      var b = sec.querySelector(".ob-pane > .qf-body");
+      return !b || b.scrollHeight <= b.clientHeight + 1;
     }
+    function tryPass(list, strict) {
+      for (hi = 0; hi < list.length; hi++) {
+        setHouseH(list[hi]); void sec.offsetHeight;
+        for (n = 0; n < TRY.length; n++) {
+          setLv(TRY[n]);
+          if (fitsNow(sec) && (!strict || noInnerScroll())) { used = list[hi]; cuts = TRY[n]; return true; }
+        }
+      }
+      return false;
+    }
+    var heights = HOUSE_TRY;
+    found = tryPass(HOUSE_TRY.filter(function (h) { return h >= floor; }), true) ||
+            tryPass([floor], false) ||
+            tryPass([120], false);
     if (!found) { used = heights[heights.length - 1]; cuts = TRY[TRY.length - 1]; setHouseH(used); setLv(cuts); n = TRY.length - 1; }
     else { n = TRY.indexOf(cuts); if (n < 0) n = 0; }
     void sec.offsetHeight;
     html.classList.remove("ob-hb-measure");
     if (mini) html.classList.add("ob-hb-mini");
     html.setAttribute("data-hb-fit", (cuts.join("+") || "none") + "@" + used);
+    if (window.suPlanRecenter) { try { window.suPlanRecenter(); } catch (x) {} } /* measuring toggles reset the plan stack scroll */
     return n;
   }
   var fitT = 0;

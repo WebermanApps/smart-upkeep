@@ -4195,6 +4195,7 @@ body.on-home .hm-plan .pc-more-link::before{
 /* ===== home-flip-1116 (Machan Nov 16): serving line, mailing-list sheet (flagged), menu Continue ===== */
 .su-serving-block{text-align:center}
 .su-serving{margin:0;font:500 13px/1.35 Hind,var(--mw-font-body),sans-serif;color:#6B625A}
+@media (max-width:375px){.su-serving{font-size:12px}} /* Swatch #151 r1 F1: one line at 360 and 375 */
 body.on-home #hs-faq .su-serving-block{margin-top:10px;padding:0;flex:none}
 .su-mail-launch{margin:2px 0 0}
 .su-mail-link{
