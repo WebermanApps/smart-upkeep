@@ -522,7 +522,13 @@
     document.documentElement.classList.add("ob-hb-zooming");
     band.classList.add("hb-zoom-run");
     band.setAttribute("data-mode", "house"); /* homesize is showing; the run class keeps the map visible while it zooms */
-    fitOrig(); /* once: park the bar in the final Home Size position so it stays flush during the zoom (Swatch #153 r1) */
+    /* Swatch #153 r2: the entering pane still has translateY(10px) scale(.97), which makes this
+       one-shot fit miss the 150 floor on phones. Clear it for the measure, then restore. Opacity is 0, so nothing flashes. */
+    var enter = document.querySelector("section.ob .ob-stage .ob-pane");
+    var prevTf = enter ? enter.style.transform : "", prevTs = enter ? enter.style.transition : "";
+    if (enter) { enter.style.transition = "none"; enter.style.transform = "none"; void enter.offsetHeight; }
+    fitOrig(); /* once: park the bar and house at the final Home Size size so neither snaps at onDone */
+    if (enter) { enter.style.transform = prevTf; enter.style.transition = prevTs; }
     band.setAttribute("data-zoom-county", county);
     mapEl.classList.add("hb-zooming");
     mapEl.style.opacity = "1"; mapEl.style.pointerEvents = "none";
