@@ -522,6 +522,7 @@
     document.documentElement.classList.add("ob-hb-zooming");
     band.classList.add("hb-zoom-run");
     band.setAttribute("data-mode", "house"); /* homesize is showing; the run class keeps the map visible while it zooms */
+    fitOrig(); /* once: park the bar in the final Home Size position so it stays flush during the zoom (Swatch #153 r1) */
     band.setAttribute("data-zoom-county", county);
     mapEl.classList.add("hb-zooming");
     mapEl.style.opacity = "1"; mapEl.style.pointerEvents = "none";
