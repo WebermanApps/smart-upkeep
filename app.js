@@ -91,7 +91,7 @@
     var ids = Array.isArray(S.addons) ? S.addons : [];
     var seen = {}, out = [];
     monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) {
-      if (a && ids.indexOf(a.id) > -1 && !seen[a.id] && !(a.gutter && gutterIncluded())) { seen[a.id] = 1; out.push(a); }
+      if (a && ids.indexOf(a.id) > -1 && !seen[a.id] && !planCoversAddon(a)) { seen[a.id] = 1; out.push(a); }
     });
     return out;
   }
@@ -192,14 +192,43 @@
       return {id:(once?"q_o_":"q_m_")+suNorm(label).replace(/ /g,"_"), label:suTitle(label), quoteRequired:true, desc:""};
     });
   }
+  function isSoftenerAddon(a){
+    if (!a) return false;
+    if (a.softener || a.id === "x_softener" || a.id === "softener") return true;
+    return typeof suClose === "function" && suClose(a.label, "Water Softener");
+  }
+  function planCoversAddon(a, tier){
+    tier = tier || S.tier;
+    if (!a) return false;
+    if (a.gutter && gutterIncluded(tier)) return true;
+    if (isSoftenerAddon(a) && tier !== "silver") return true;
+    return false;
+  }
+  function dropCoveredAddons(tier){
+    tier = tier || S.tier;
+    var ids = Array.isArray(S.addons) ? S.addons.slice() : [];
+    var keep = ids.filter(function (id) {
+      var a = findService(id);
+      return a ? !planCoversAddon(a, tier) : true;
+    });
+    if (keep.length !== ids.length) S.addons = keep;
+    if (S.answers && Array.isArray(S.answers.extras)) {
+      S.answers.extras = S.answers.extras.filter(function (k) {
+        if (k === "sump" || k === "humidifier") return false;
+        if (k === "softener" && tier !== "silver") return false;
+        return true;
+      });
+    }
+  }
   function monthlyAddonCatalog(){
     var pool=[];
     Object.keys((P&&P.extras)||{}).forEach(function(k){
+      if (k === "sump" || k === "humidifier" || k === "softener") return; /* asked nowhere / handled below */
       var e=P.extras[k]; if(!e) return;
       pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all, fromExtras:true});
     });
     pool=pool.concat(P.addons||[]);
-    return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
+    var list=suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
       /* Swatch D2 (Nov 12): Gutter Cleaning uses gutters2Cleanings by stories (Essentials only; Plus and up include it). */
       if(a && a.id===GUTTER_ID){ var g=gutterAnnual(); a.gutter=true; a.annual=g||null; a.quoteRequired=!g; a.label="Added Gutter Cleaning"; a.note="For homes with lots of trees and leaves."; }
       var v = flatRoofPerVisit();
@@ -211,6 +240,13 @@
       }
       return a;
     });
+    /* Water Softener: Essentials-only add-on at $120/yr (Machan Nov 16). Included on Plus and up. Monthly spreads with monthlySpread ($10/mo). Not in SU_MONTHLY_ADDONS. */
+    var hasSoft=list.some(isSoftenerAddon);
+    if(!hasSoft){
+      var sc=P.extras && P.extras.softener, yr=(sc && +sc.silver>0) ? +sc.silver : 0;
+      list.push({id:"x_softener", label:"Water Softener", quoteRequired:!(yr>0), annual: yr>0 ? yr : null, all: yr>0 ? yr : 0, fromExtras:false, softener:true, desc: (sc && sc.note) || "Service on the 2 Essentials visits: brine tank clean, resin cleaner, a hardness test, and a valve and settings check. Salt is not included."});
+    }
+    return list;
   }
   var GUTTER_ID="q_m_gutter_cleaning";
   function gutterAnnual(){
@@ -288,7 +324,7 @@
   function isApprovedFlatOnce(a){ return !!(a && APPROVED_FLAT_ONCE[suNorm(a.label)]); }
   function isApprovedFlatAnnual(a){
     return !!(a && !a.once && !a.fromExtras && !a.gutter && !a.quoteRequired && a.annual!=null && isFinite(+a.annual) && +a.annual>0 && (
-      suClose(a.label, "Generator Annual Service") || suClose(a.label, "Chimney Sweep") || suClose(a.label, "Flat Roof Inspection And Clean") || a.flatRoof
+      suClose(a.label, "Generator Annual Service") || suClose(a.label, "Chimney Sweep") || suClose(a.label, "Flat Roof Inspection And Clean") || suClose(a.label, "Water Softener") || a.flatRoof || a.softener
     ));
   }
   function yrLabel(annual){ return money(annual) + "/yr"; }
@@ -525,6 +561,7 @@
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
     if (S.screen === "access") S.screen = "start"; if (S.resume === "access") S.resume = "start"; /* Access step removed (Machan Nov 13 10:18 PM): resume on Start Date */
+    if (S.screen === "systems2") S.screen = "plan"; if (S.resume === "systems2") S.resume = "plan"; /* Do You Have Any Of These? removed (Machan Nov 16) */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     if (obSkip(S.screen)) S.screen = obNextOf(S.screen); if (obSkip(S.resume)) S.resume = obNextOf(S.resume);
     var s = S.screen, html;
@@ -551,6 +588,8 @@
     document.body.classList.toggle("on-ob", isOb(s));
     setObSess(s);
     syncResumeMenu(s);
+    var obBar = app.querySelector(".ob-bar");
+    if (obBar) document.documentElement.style.setProperty("--su-ob-bar-h", Math.round(obBar.getBoundingClientRect().height) + "px");
     try { document.title = isOb(s) && OB_NAME[s] ? OB_NAME[s] + " | Smart Upkeep" : (s === "confirm" ? "Thank You | Smart Upkeep" : "Smart Upkeep"); } catch (x) {}
     if (s === "home") bindHome();
     bindMailLaunch();
@@ -570,9 +609,9 @@
     obTxLock = true;
     window.scrollTo(0, 0);
     var reduce = obReducedMot();
-    var ms = reduce ? 200 : 250;
+    var ms = reduce ? 200 : 350; /* Machan Nov 16: 300-400ms on the motion token; reduced motion is a plain fade */
     var ease = reduce ? "ease" : "cubic-bezier(.2,.7,.2,1)"; /* --ease-ui */
-    var dx = reduce ? 0 : (24 * dir);
+    var dx = reduce ? 0 : (dir >= 0 ? 28 : -28);
     var oldProg = oldSec.querySelector(".qf-prog");
     var newProg = neu.querySelector(".qf-prog");
     var oldBar = oldSec.querySelector(".ob-bar");
@@ -3538,8 +3577,8 @@
      Old saved state on "access" resumes on Start Date (see render), and an old S.access is ignored by the UI. */
   /* Pay Choice Deck (Machan Nov 13 ~10:27 PM via Grok; Swatch two-step plan): Review ("Your Home Care Proposal") then Pay ("Pick How You'd Like To Pay"). */
   /* Machan Nov 13 11:00 PM: payment right after the proposal: Review, Pay, Accept (agreement, charge OK, signature), then Start Date and Details; Details finishes sign-up. */
-  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "review", "billing", "accept", "start", "details"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", review: "Your Home Care Proposal", billing: "Pick How You'd Like To Pay", start: "Start Date", details: "Your Details", accept: "Accept" };
+  var OB = ["address", "homesize", "systems", "plan", "addons", "review", "billing", "accept", "start", "details"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", addons: "Tailor Your Plan", plan: "Choose Your Plan", review: "Your Home Care Proposal", billing: "Pick How You'd Like To Pay", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -3578,7 +3617,6 @@
   var DYK_HOME = ["Every visit ends with a written report saved to your Home Record.", "After every visit you get a written report with photos, saved to your Home Record."];
   /* DYK_HOME is held (deck card may bring Did You Know back on step 1). Step 1 has no tip; other steps keep PR103 lines. */
   var DYK = {
-    systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
     /* addons (Tailor Your Plan): Did You Know removed so the services list can use the height (Machan Nov 14). */
     details: "You've seen your price. We ask for these details so we can reach you about your visits."
@@ -3591,7 +3629,7 @@
      Set url when Legal publishes it. Until then Accept shows a marked slot instead of agreement text (no new legal text is written here). */
   var AGREEMENT = { id: "member-agreement-draft", rev: "54e4f1d", url: "" };
 
-  function isOb(s) { return OB.indexOf(s) > -1; }
+  function isOb(s) { return OB.indexOf(s) > -1 || s === "systems2"; }
   /* One Screen At A Time (Machan Nov 12 10:07 PM): each step fills the space under the header (--tb, set in bind). With the phone keyboard open,
      the Back/Next bar rides above the keyboard (visualViewport) and the focused field scrolls into the space above the bar. */
   /* Keyboard lift (Swatch PR97 note 4). How it behaves:
@@ -3881,14 +3919,13 @@
     var seq = obSeq();
     return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels,
       /* Onboarding Polish B: Your Home chips (answers already given) and the step 1 pin (street + in-area ZIP). */
-      street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
+      street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", zipcode: String(a.zipcode || "").trim(), storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
   }
   window.suHouseState = obHouseState;
   /* Called by onboarding-house.js fit() for each cut-order level: re-size the Add-Ons list for that level, and only accept the level if the list keeps at least ~3 rows. */
   window.suHouseRefit = function () { if (S.screen !== "addons") return true; sfitAddons(); var l = app.querySelector("section.ob-addons .ob-ao-list"); return !l || !l.style.maxHeight || parseFloat(l.style.maxHeight) >= 150; };
   function obShell(id, art, tint, title, help, body, foot) {
-    var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
-    var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
+    var SQ = obSeq(), i = obStepNo(id) - 1, tl = false;
     var pct = SQ.length ? Math.round(((i + 1) / SQ.length) * 1000) / 10 : 0;
     var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' Of ' + SQ.length) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' Of ' + SQ.length + '" style="--ob-prog:' + pct + '%"><i class="qf-fill" aria-hidden="true"></i>' +
       SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
@@ -3993,31 +4030,10 @@
     var body = '<div class="sys-list sys-card">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh) + (wh ? '<div class="ob-whs ob-whs-line">' + whx + '</div>' : '') + '</div>';
     return obShell("systems", "furnace", 2, "Your Systems", "How Many Of Each", body, nextBtn("Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
-  /* 3b. Extras (#8 second short screen): #10 priced extras first with prices, included ones below their label; #13 in one white card with the heading. Stays synced with the Add-Ons Monthly tab. */
-  function sys2Keys() {
-    var aoShared = sharedExtraMap(), aoLabels = {};
-    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
-    return Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; });
-  }
-  /* Swatch PR97 residual 2: when every item on Do You Have Any Of These? is already in Extras or Add-Ons, the step is skipped. Numbering, progress bar, Back and Next follow obSeq(). */
-  function obSkip(s) { return s === "systems2" && !sys2Keys().length; }
-  function obSeq() { return OB.filter(function (s) { return !obSkip(s); }); }
+  /* systems2 ("Do You Have Any Of These?") was removed Nov 16. obSkip stays as a no-op so existing go/path helpers keep working. */
+  function obSkip(s) { return false; }
+  function obSeq() { return OB.slice(); }
   function obStepNo(s) { var q = obSeq(), i = q.indexOf(s); return (i < 0 ? q.indexOf(obNextOf(s)) : i) + 1; }
-  function obSystems2() {
-    var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
-    function tile(k, j, sub) {
-      var e = P.extras[k], on = ex.indexOf(k) > -1;
-      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-    }
-    /* Machan Nov 12 10:08 PM: skip any item here that's already offered on the Add-Ons step (Monthly or One-Time). Shared items keep one selection
-       (S.answers.extras + S.addons via syncSharedExtras), so picking it on Add-Ons fills the same fields and prices as before. */
-    var keys = sys2Keys(), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
-    var body = '<div class="ex-card">' + (priced.length ? '<div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' : '') +
-      (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
-      (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
-    return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
-  }
-
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
   function aoPrice(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
@@ -4047,7 +4063,9 @@
   function obAddons() {
     var sel = S.addons || [];
     var tab = S._aoTab === "once" ? "once" : "monthly";
-    var monthly = monthlyAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
+    dropCoveredAddons();
+    sel = S.addons || [];
+    var monthly = monthlyAddonCatalog().filter(function (a) { return !planCoversAddon(a); }).map(function (a) { return aoRow(a, sel); }).join("");
     var onceAll = onceAddonCatalog(), oncePriced = onceAll.filter(isPricedBookable), onceQuote = onceAll.filter(function (a) { return oncePriced.indexOf(a) < 0; });
     /* quote-only one-time rows are no longer offered here (they stay on À La Carte); drop any old picks of them so nothing hidden rides along */
     var hid = onceQuote.map(function (a) { return a.id; }); if (sel.some(function (id) { return hid.indexOf(id) > -1; })) { S.addons = sel = sel.filter(function (id) { return hid.indexOf(id) < 0; }); save(); }
@@ -4099,7 +4117,7 @@
         (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
     }).join("");
-    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Continue To Your Proposal", true));
+    return obShell("plan", "clipboard", 3, "Choose Your Plan", "Pick The Plan That Fits This Home. You Can Tailor It Next.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Next", true));
   }
 
   /* 6a. Review: "Your Home Care Proposal" (Pay Choice Deck, Layout A Stacked Cards, Tone A Calm). Machan Nov 13 10:20 PM: "meaning the plan + extras and how they
@@ -4297,7 +4315,6 @@
   function obRender(s) {
     if (s === "address") return obAddress();
     if (s === "homesize") return obHomeSize();
-    if (s === "systems2") return obSystems2();
     if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
     if (s === "addons") return obAddons();
     if (s === "plan") return obPlanScreen();
@@ -4490,7 +4507,7 @@
         var v = b.getAttribute("data-ob-story"); if (STORY_OPTS.some(function (o) { return o[0] === v; })) { S.answers.stories = v; clearQ(document.getElementById("obStoriesCard"), document.getElementById("obStoriesErr")); var was = b.classList.contains("on"); rer(); var f = app.querySelector('[data-ob-story="' + v + '"]'); if (f) { f.focus({ preventScroll: true }); if (!was) obSelPop(f, true); } } }); });
       return;
     }
-    if (s === "systems" || s === "systems2") {
+    if (s === "systems") {
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-step").split(":"), was = cnt(kv[0]), n = Math.max(0, Math.min(SYS_MAX, was + Number(kv[1])));
         S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); obStepRoll(kv[0], Number(kv[1]), was, n); }); });
@@ -4500,7 +4517,7 @@
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer();
         var t = app.querySelector('[data-ob-extra="' + k + '"]'); if (t) { try { t.focus({ preventScroll: true }); } catch (e) {} if (ix < 0) obSelPop(t); } }); });
-      if (nx) nx.addEventListener("click", function () { if (obTxLock) return; if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (obTxLock) return; go("plan"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
         try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}
@@ -4519,9 +4536,9 @@
       sfitAddons(); setTimeout(sfitAddons, 300); if (document.fonts && document.fonts.ready) document.fonts.ready.then(sfitAddons);
     }
     if (s === "plan") {
-      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function (e) { e.stopPropagation(); var sk = app.querySelector(".ob-plan .plan-stack"); obPlanX = sk ? sk.scrollLeft : null; var k = b.getAttribute("data-ob-tier"); S.tier = k; rer(); var nb = app.querySelector('.plan-card.sel [data-ob-tailor]'); if (nb && b.tagName === "BUTTON") { try { nb.focus({ preventScroll: true }); } catch (x) {} } }); });
+      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function (e) { e.stopPropagation(); var sk = app.querySelector(".ob-plan .plan-stack"); obPlanX = sk ? sk.scrollLeft : null; var k = b.getAttribute("data-ob-tier"); S.tier = k; dropCoveredAddons(k); rer(); var nb = app.querySelector('.plan-card.sel [data-ob-tailor]'); if (nb && b.tagName === "BUTTON") { try { nb.focus({ preventScroll: true }); } catch (x) {} } }); });
       obPlanCenter();
-      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
+      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; dropCoveredAddons(S.tier); go("addons"); });
       if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     }
     if (s === "billing") {
@@ -5157,9 +5174,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9r1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9t1"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9t1"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

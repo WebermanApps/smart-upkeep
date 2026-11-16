@@ -1,6 +1,6 @@
 /* Onboarding house build (Machan Nov 13 7:44 PM; Home Build Motion & Map Deck picks 11:25 PM).
    One band above the step title on every onboarding step. Step 1 uses a taller (~2x) line-art map of Michigan
-   (Lower Peninsula and Upper Peninsula), with Wayne, Oakland and Macomb highlighted and pin dots. Other steps keep the 120px house band.
+   (Lower Peninsula and Upper Peninsula), with Wayne, Oakland and Macomb highlighted and pin dots. Other steps use a 240px house band (2x the earlier 120px share), stepping down only if a phone step still cannot keep 8px of air.
    Step 2 on: one inline SVG house that updates live from the saved onboarding answers: Floors Stack On for stories, Pop In for each system or extra,
    Reveal on the last step. Transform and opacity only, 200-300ms, each change plays once (no loops). prefers-reduced-motion: Quick Fade (opacity only, ~150ms).
    With the phone keyboard open (visualViewport), the band shrinks to a mini strip so the field stays in view.
@@ -115,6 +115,48 @@
     return out;
   }
   function escH(x) { return String(x).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function addrSheetText(st) {
+    var street = String(st.street || "").trim();
+    var zip = String(st.zip || st.zipcode || "").trim();
+    return street + (zip ? (street ? ", " : "") + zip : "");
+  }
+  function closeAddrSheet() {
+    var sh = document.getElementById("hbAddrSheet");
+    if (sh) sh.hidden = true;
+  }
+  function openAddrSheet(st) {
+    var sh = document.getElementById("hbAddrSheet");
+    if (!sh) {
+      sh = document.createElement("div");
+      sh.id = "hbAddrSheet";
+      sh.className = "hb-addr-sheet";
+      sh.setAttribute("role", "dialog");
+      sh.setAttribute("aria-label", "Full Address");
+      sh.innerHTML = '<button type="button" class="hb-addr-close" aria-label="Close">×</button><h2>Your Home</h2><p class="hb-addr-full"></p>';
+      document.body.appendChild(sh);
+      sh.querySelector(".hb-addr-close").addEventListener("click", closeAddrSheet);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAddrSheet(); });
+    }
+    var p = sh.querySelector(".hb-addr-full");
+    if (p) p.textContent = addrSheetText(st) || String(st.street || "");
+    sh.hidden = false;
+  }
+  var addrChipBound = false;
+  function bindAddrChip(capEl, st) {
+    if (!capEl || capEl._hbAddrBound) {
+      capEl._st = st;
+      return;
+    }
+    capEl._st = st;
+    capEl._hbAddrBound = true;
+    capEl.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest('[data-c="addr"]');
+      if (!b) return;
+      e.preventDefault();
+      openAddrSheet(capEl._st || st);
+    });
+  }
   var lastChips = null;
   function paintChips(capEl, st, animate, rm) {
     var cs = chipsOf(st);
@@ -122,7 +164,12 @@
     var prev = lastChips || {}, now = {};
     capEl.classList.add("hb-chips");
     capEl.setAttribute("aria-label", "Your Home: " + cs.map(function (c) { return c[2]; }).join(", "));
-    capEl.innerHTML = cs.map(function (c) { now[c[0]] = c[1]; return '<span class="hb-chip" data-c="' + c[0] + '" aria-hidden="true">' + escH(c[1]) + '</span>'; }).join("");
+    capEl.innerHTML = cs.map(function (c) {
+      now[c[0]] = c[1];
+      if (c[0] === "addr") return '<button type="button" class="hb-chip" data-c="addr" aria-label="Show Full Address">' + escH(c[1]) + '</button>';
+      return '<span class="hb-chip" data-c="' + c[0] + '" aria-hidden="true">' + escH(c[1]) + '</span>';
+    }).join("");
+    bindAddrChip(capEl, st);
     if (animate && lastChips) cs.forEach(function (c) {
       if (prev[c[0]] === c[1]) return;
       var node = capEl.querySelector('[data-c="' + c[0] + '"]'); if (!node) return;
@@ -285,7 +332,7 @@
     fit();
   }
   /* One screen with the band, in Machan's cut order: tighter question and answer sizing, then the step icon, then Did You Know.
-     The house band is never shrunk. Measured with the full band (240px map on step 1, 120px house on later steps; the keyboard mini strip is ignored) and 8px of air above the Back/Next bar.
+     The house band targets 240px (2x the earlier 120px share; the map was already 240). If a phone step still cannot keep 8px of air after the content cuts, fit() steps the band down and records the height used. The keyboard mini strip is ignored.
      Runs from sync() (before app.js binds the step) and again after bind, on font load and on resize. Reads layout only, no state. */
   /* Tried in order; the first that fits wins. The icon goes before Did You Know, but comes back if Did You Know has to drop anyway and there's room. */
   /* ob-hb-afx (hide the collapsed after-Founding line) is the very last resort. ob-hb-t2 is a last, deeper tightening for the few carts that still don't fit with every other cut (big homes on Plan, the heaviest Review). */
@@ -328,29 +375,44 @@
   function fitsNow(sec) {
     var bar = sec.querySelector(".ob-bar"), ih = window.innerHeight;
     var ok = true; if (window.suHouseRefit) { try { ok = window.suHouseRefit() !== false; } catch (x) {} }
-    if (!ok || docOver() > 0) return false;
+    /* 36px is the Built by Machan footer under the bar, not step overflow. On phones the step body scrolls inside its card, so a footer-sized docOver is allowed. */
+    if (!ok || docOver() > 40) return false;
     if (bar && bar.getBoundingClientRect().bottom > ih + 0.5) return false; /* Swatch #146 r1 F2: never accept a fit while the bar's bottom is off-screen */
     var bt = bar ? Math.min(ih, bar.getBoundingClientRect().top) : ih;
     return bt - contentBottom(sec, bar) >= AIR;
   }
+  var HOUSE_TRY = [240, 210, 180, 150, 120];
+  function setHouseH(px) {
+    var html = document.documentElement;
+    html.style.setProperty("--ob-hb-h", px + "px");
+    html.setAttribute("data-hb-h", String(px));
+    try { window.suHouseShare = px; } catch (e) {}
+  }
   function fit() {
     var html = document.documentElement, sec = document.querySelector("section.ob");
-    if (!sec || !band || !band.parentNode || !html.classList.contains("ob-hb-on")) { LV.forEach(function (c) { html.classList.remove(c); }); return 0; }
+    if (!sec || !band || !band.parentNode || !html.classList.contains("ob-hb-on")) { LV.forEach(function (c) { html.classList.remove(c); }); setHouseH(240); return 0; }
     document.body.classList.add("on-ob", "on-qf"); /* app.js bind() sets these for every onboarding step; set them a beat early so the pre-bind check matches */
-    var mini = html.classList.contains("ob-hb-mini"), n;
+    var mini = html.classList.contains("ob-hb-mini"), n, hi, used = HOUSE_TRY[0], cuts = TRY[TRY.length - 1], found = false;
     if (mini) html.classList.remove("ob-hb-mini");
     /* Swatch #146 r1 F2: the cut levels change paddings and margins that have CSS transitions, so a rect read right after a class toggle saw the
        old (mid-transition) layout and repeated calls disagreed. Measure with transitions off; the final level is applied instantly, so nothing animates after. */
     html.classList.add("ob-hb-measure");
-    for (n = 0; n < TRY.length; n++) {
-      setLv(TRY[n]);
-      if (fitsNow(sec)) break;
+    var phone = window.innerWidth <= 600;
+    var heights = phone ? HOUSE_TRY : [240];
+    for (hi = 0; hi < heights.length && !found; hi++) {
+      setHouseH(heights[hi]);
+      void sec.offsetHeight;
+      for (n = 0; n < TRY.length; n++) {
+        setLv(TRY[n]);
+        if (fitsNow(sec)) { used = heights[hi]; cuts = TRY[n]; found = true; break; }
+      }
     }
-    if (n >= TRY.length) n = TRY.length - 1;
+    if (!found) { used = heights[heights.length - 1]; cuts = TRY[TRY.length - 1]; setHouseH(used); setLv(cuts); n = TRY.length - 1; }
+    else { n = TRY.indexOf(cuts); if (n < 0) n = 0; }
     void sec.offsetHeight;
     html.classList.remove("ob-hb-measure");
     if (mini) html.classList.add("ob-hb-mini");
-    html.setAttribute("data-hb-fit", TRY[n].join("+") || "none");
+    html.setAttribute("data-hb-fit", (cuts.join("+") || "none") + "@" + used);
     return n;
   }
   var fitT = 0;

@@ -1516,7 +1516,7 @@ html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip[data-c="sys"]{background:#FFFCF7;bord
 .ob-address .pb-addr-edit{flex:none;min-width:64px;min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid #A8431F;background:#FFFCF7;color:#A8431F;font:600 15px/1 Hind,var(--mw-font-body),sans-serif;cursor:pointer}
 .ob-hb .hb-drop-in,.ob-hb .hb-drop-sh{transform-box:fill-box;transform-origin:50% 100%}
 /* Card 7. House Reacts: counted systems glow, extras sit around the house as small line icons. */
-html.ob-hb-on .ob-hb .hb-it:is([data-k="f1"],[data-k="f2"],[data-k="a1"],[data-k="a2"],[data-k="w1t"],[data-k="w1k"],[data-k="w2t"],[data-k="w2k"]){filter:drop-shadow(0 0 2.2px rgba(224,164,88,.95))}
+html.ob-hb-on .ob-hb .hb-it:is([data-k="f1"],[data-k="f2"],[data-k="a1"],[data-k="a2"],[data-k="w1t"],[data-k="w1k"],[data-k="w2t"],[data-k="w2k"]){filter:drop-shadow(0 0 3px rgba(168,67,31,.4))}
 .ob-hb .hb-orbit{position:absolute;inset:0;pointer-events:none;z-index:2}
 .ob-hb[data-mode="map"] .hb-orbit{display:none}
 .ob-hb .hb-orb{position:absolute;width:24px;height:24px;margin:0 -12px;border-radius:50%;background:#FFFCF7;border:1px solid #E4D5C6;box-shadow:0 2px 6px rgba(42,36,28,.1);display:grid;place-items:center;font:600 11px/1 Hind,system-ui,sans-serif;color:#A8431F}
@@ -1637,3 +1637,106 @@ html.ob-hb-on .ob-accept .ob-bar{
    which left Details 0.36px under the 8px air floor at 360x640. Reclaim 2px from the card's
    top padding (cut order: Q/A sizing first). Did You Know is already hidden on this path. */
 html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-details .det-card{padding-top:6px!important}
+
+
+/* ===== ob-one-screen-1116 (Machan Nov 16): one phone screen, 2x house, expanders up ===== */
+html.ob-hb-on{
+  --ob-hb-h:240px; /* 2x the previous 120px house band; map was already 240 */
+  --ob-hb-art:calc(var(--ob-hb-h) - 16px);
+}
+html.ob-hb-on .ob-hb,
+html.ob-hb-on .ob-hb[data-mode="map"],
+html.ob-hb-on .ob-hb[data-mode="house"]{height:var(--ob-hb-h)!important}
+html.ob-hb-on .ob-hb-art,
+html.ob-hb-on .ob-hb[data-mode="map"] .ob-hb-art{height:var(--ob-hb-art)!important}
+html.ob-hb-mini .ob-hb,
+html.ob-hb-mini .ob-hb-art,
+html.ob-hb-mini .ob-hb[data-mode="map"],
+html.ob-hb-mini .ob-hb[data-mode="map"] .ob-hb-art{height:48px!important}
+
+/* Inner-scroll the step body on phones so the page itself does not move; the house and bar stay fixed. */
+@media (max-width:600px){
+  html body.on-ob{overflow:hidden;height:100dvh;max-height:100dvh}
+  html body.on-ob .ob.qf{
+    height:calc(100dvh - var(--tb,56px));
+    max-height:calc(100dvh - var(--tb,56px));
+    overflow:hidden;
+  }
+  html body.on-ob .ob .ob-pane{
+    min-height:0;
+    overflow:hidden;
+  }
+  html body.on-ob .ob .ob-pane > .qf-body{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  html body.on-ob .ob.qf.ob-plan .plan-stack,
+  html body.on-ob .ob.qf.ob-addons .ob-ao-list,
+  html body.on-ob .ob.qf.ob-review .bd-card,
+  html body.on-ob .ob.qf.ob-systems .sys-list,
+  html body.on-ob .ob.qf.ob-billing .qf-body,
+  html body.on-ob .ob.qf.ob-accept .qf-body{
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  /* Coming Soon waitlist opens as a sheet above the bar, not downward off the screen. */
+  html body.on-ob .ob-wait{
+    position:fixed;
+    left:12px;right:12px;
+    bottom:calc(8px + var(--su-ob-bar-h,105px));
+    z-index:18;
+    max-height:min(46dvh, calc(100dvh - var(--su-ob-bar-h,105px) - 72px - 16px));
+    overflow:auto;
+    margin:0;
+    box-shadow:0 -8px 28px rgba(40,28,16,.16);
+    border-radius:16px;
+  }
+}
+
+/* "Need More?" and similar notes expand upward, staying above the bar. */
+.ob .ob-more{position:relative}
+.ob .ob-more[open] .ob-more-list{
+  position:absolute;left:0;right:0;bottom:calc(100% - 4px);
+  z-index:6;margin:0;padding:10px 14px;
+  background:#FFFCF7;border:1px solid #E6E0D6;border-radius:12px;
+  box-shadow:0 -8px 20px rgba(40,28,16,.12);
+  max-height:40vh;overflow:auto;
+}
+
+/* Prefer keeping the Plan subtitle and "How Many Of Each" visible now that the body can scroll. */
+html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-plan .qf-hero .qf-help,
+html.ob-hb-on.ob-hb-afx body.on-ob .ob.qf.ob-systems .qf-hero .qf-help{
+  position:static!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;
+  overflow:visible!important;clip:auto!important;white-space:normal!important;border:0!important;
+}
+
+
+/* ===== ob-one-screen-1116: plan-card peek 12–16px at 360, address chip sheet ===== */
+@media (max-width:600px){
+  html body.on-ob .ob.qf.ob-plan .plan-stack{
+    padding:12px 0 8px!important;
+    scroll-padding:0!important;
+    gap:10px!important;
+  }
+  html body.on-ob .ob.qf.ob-plan .plan-card{
+    flex:0 0 calc(100% - 24px)!important; /* 10px gap + 14px peek of the next card */
+    scroll-snap-align:start!important;
+  }
+}
+html.ob-hb-on .ob-hb-cap.hb-chips .hb-chip[data-c="addr"]{cursor:pointer}
+.hb-addr-sheet{
+  position:fixed;left:12px;right:12px;
+  bottom:calc(8px + var(--su-ob-bar-h,105px));
+  z-index:19;margin:0;padding:14px 16px 16px;
+  background:#FFFCF7;border:1px solid #E0C9BC;border-radius:16px;
+  box-shadow:0 -8px 28px rgba(40,28,16,.16);
+  max-height:min(40dvh, calc(100dvh - var(--su-ob-bar-h,105px) - 72px));
+  overflow:auto;
+}
+.hb-addr-sheet[hidden]{display:none!important}
+.hb-addr-sheet h2{margin:0 0 6px;font:600 18px/1.2 Khand,sans-serif;color:#1A1A1A}
+.hb-addr-sheet p{margin:0;font:500 15px/1.35 Hind,sans-serif;color:#1A1A1A}
+.hb-addr-sheet .hb-addr-close{position:absolute;top:8px;right:8px;min-width:44px;min-height:44px;border:0;background:transparent;font:600 18px/1 Hind,sans-serif;color:#5C534C;cursor:pointer}

@@ -53,9 +53,8 @@ window.SMART_UPKEEP_PRICING = {
      at the yearly price below (higher monthly price); the member can remove it on the Accept step. Draft prices unchanged. */
   extras: {        // Nov 5 2026: Standby Generator and Gas Fireplace moved to a la carte (no longer plan extras questions). all = added to every plan when the member has it
     irrigation:  { label: "Irrigation System", all: 229 },
-    sump:        { label: "Sump Pump", all: 76 },
-    humidifier:  { label: "Whole-House Humidifier", all: 76 },
-    softener:    { label: "Water Softener", gold: 0, note: "Salt top-off and service check included on Plus and up" } /* Funnel Deck Oct 14: softener is one tile in Extras, not its own screen */
+    /* Sump Pump and Whole-House Humidifier extras ($76) removed Nov 16 (Machan): included in every plan, not a priced extra. */
+    softener:    { label: "Water Softener", silver: 120, gold: 0, note: "Service on the 2 Essentials visits: brine tank clean, resin cleaner, a hardness test, and a valve and settings check. Salt is not included. Included on Plus and up." } /* Machan Nov 16: $120/yr on Essentials only; included on Plus and up */
   },
   platinumRoofInspection: 318,
   platinumAnnualDiscount: 0.10, // DRAFT — unused in the funnel; do not apply alongside annualDiscount (never stack)
