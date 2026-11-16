@@ -1763,3 +1763,14 @@ html.ob-hb-on .ob-hb-cap.hb-chips .hb-addr-hit .hb-chip{max-width:100%}
   html body.on-ob .ob.qf.ob-start .ob-pane{min-height:0;overflow:hidden}
   html body.on-ob .ob.qf.ob-start .ob-pane > .qf-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 }
+
+/* ===== county-zoom-1116 (Machan Nov 16): zoom the #125 map into the served county, then fade to the house ===== */
+html.ob-hb-zooming .ob-hb.hb-zoom-run .ob-hb-map,
+html.ob-hb-zooming .ob-hb.hb-zoom-run .ob-hb-house{opacity:1;pointer-events:none}
+.ob-hb-map.hb-zooming path[data-county]{transition:fill 220ms ease,stroke 220ms ease,opacity 220ms ease}
+.ob-hb-map.hb-zooming path[data-county]:not(.hb-zoom-on){opacity:.32}
+.ob-hb-map.hb-zooming path.hb-zoom-on{fill:#C1502E;fill-opacity:.38;stroke:#A8431F;stroke-width:1.35}
+html.ob-hb-zooming body.on-ob{cursor:pointer}
+@media (prefers-reduced-motion:reduce){
+  .ob-hb-map.hb-zooming path[data-county]{transition:opacity 200ms linear,fill 200ms linear}
+}

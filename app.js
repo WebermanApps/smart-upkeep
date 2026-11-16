@@ -573,9 +573,136 @@
     else if (s === "confirm") html = confirm();
     else if (s === "cancel") html = cancelPage();
     else { S.screen = "home"; html = home(); }
+    if (tx && tx.dir && isOb(s) && obCountyZoomTx(html, tx, s)) return;
     if (tx && tx.dir && isOb(s) && obPageTx(html, tx.dir, s)) return;
     app.innerHTML = html;
     finishRender(s);
+  }
+  /* Machan Nov 16: in-area Address -> Home Size zooms the #125 county map, then fades into the house as Home Size and Stories pop in. Out-of-area, unknown county, Back, and a refresh on Home Size keep the regular slide or no motion. */
+  function obWantCountyZoom(from, to, dir) {
+    if (from !== "address" || to !== "homesize" || !(dir > 0)) return "";
+    if (!inArea(S.answers && S.answers.zipcode)) return "";
+    return suCountyOf(S.answers.zipcode) || "";
+  }
+  function obCountyZoomTx(html, tx, s) {
+    var county = obWantCountyZoom(tx.from, s, tx.dir);
+    if (!county || !window.suHouse || !window.suHouse.zoomToCounty) return false;
+    var oldSec = app.querySelector("section.ob");
+    var stage = oldSec && oldSec.querySelector(".ob-stage");
+    var leave = stage && stage.querySelector(".ob-pane:not(.ob-pane-leave)");
+    if (!oldSec || !stage || !leave) return false;
+    var tmp = document.createElement("div"); tmp.innerHTML = html;
+    var neu = tmp.querySelector("section.ob");
+    var enter = neu && neu.querySelector(".ob-pane");
+    if (!neu || !enter) return false;
+    var reduce = obReducedMot();
+    obTxLock = true;
+    window.scrollTo(0, 0);
+    var oldProg = oldSec.querySelector(".qf-prog");
+    var newProg = neu.querySelector(".qf-prog");
+    var oldBar = oldSec.querySelector(".ob-bar");
+    var newBar = neu.querySelector(".ob-bar");
+    oldSec.className = neu.className;
+    if (oldProg && newProg) {
+      var segs = oldProg.querySelector(".qf-segs"), nSegs = newProg.querySelector(".qf-segs");
+      if (segs && nSegs) {
+        segs.setAttribute("aria-valuenow", nSegs.getAttribute("aria-valuenow") || "");
+        segs.setAttribute("aria-valuemax", nSegs.getAttribute("aria-valuemax") || "");
+        segs.setAttribute("aria-label", nSegs.getAttribute("aria-label") || "");
+        var np = nSegs.style.getPropertyValue("--ob-prog"); if (np) segs.style.setProperty("--ob-prog", np);
+        var stepLab = oldProg.querySelector(".qf-step"), nLab = newProg.querySelector(".qf-step");
+        if (stepLab && nLab) stepLab.textContent = nLab.textContent;
+      }
+    }
+    if (oldBar && newBar) oldBar.replaceWith(newBar);
+    leave.style.transition = "none"; leave.style.opacity = "0"; leave.style.pointerEvents = "none";
+    enter.style.opacity = "0";
+    enter.style.transform = reduce ? "none" : "translateY(10px) scale(.97)";
+    if (leave.parentNode) leave.parentNode.removeChild(leave);
+    stage.appendChild(enter);
+    var popped = false, ended = false;
+    function popCards() {
+      if (popped) return; popped = true;
+      enter.style.pointerEvents = "";
+      var cards = enter.querySelectorAll(".ob-qcard, .qf-hero");
+      var ms = reduce ? 200 : 450;
+      if (!cards.length) {
+        enter.style.transition = "opacity " + ms + "ms ease, transform " + ms + "ms cubic-bezier(.3,1.4,.5,1)";
+        enter.style.opacity = "1"; enter.style.transform = "none";
+        return;
+      }
+      enter.style.opacity = "1"; enter.style.transform = "none";
+      [].forEach.call(cards, function (c, i) {
+        c.style.opacity = "0";
+        c.style.transform = reduce ? "none" : "translateY(10px) scale(.96)";
+        var delay = reduce ? 0 : i * 90;
+        setTimeout(function () {
+          c.style.transition = "opacity " + ms + "ms ease, transform " + ms + "ms cubic-bezier(.3,1.4,.5,1)";
+          c.style.opacity = "1"; c.style.transform = "none";
+        }, delay);
+      });
+    }
+    function end() {
+      if (ended) return; ended = true;
+      document.removeEventListener("pointerdown", onSkip, true);
+      document.removeEventListener("keydown", onKey, true);
+      popCards();
+      enter.style.opacity = "1"; enter.style.transform = "none"; enter.style.pointerEvents = "";
+      enter.style.transition = "";
+      [].forEach.call(enter.querySelectorAll(".ob-qcard, .qf-hero"), function (c) {
+        c.style.opacity = ""; c.style.transform = ""; c.style.transition = "";
+      });
+      if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} try { if (window.suHouse.fit) window.suHouse.fit(); } catch (x) {} }
+      window.scrollTo(0, 0);
+      obFocusStep();
+      obTxLock = false;
+      obFlushTxQ();
+    }
+    var pendingSkip = false;
+    function finishZoom() {
+      if (window.suHouse && window.suHouse.skipCountyZoom) window.suHouse.skipCountyZoom();
+      else end();
+    }
+    function onSkip(e) {
+      var t = e.target;
+      var bar = t && t.closest && t.closest(".ob-bar, .nav-pills, [data-ob-next], [data-act=back], [data-act=home]");
+      var control = t && t.closest && t.closest("[data-ob-size], [data-ob-story], .size-chip, .story-chip, .ob-pane button, .ob-pane input, .ob-qcard");
+      if (control && !bar) {
+        if (!pendingSkip) {
+          pendingSkip = true;
+          document.addEventListener("click", function later() {
+            document.removeEventListener("click", later, false);
+            pendingSkip = false;
+            finishZoom();
+          }, false);
+        }
+        return;
+      }
+      if (popped && bar) { finishZoom(); return; }
+      if (bar) { e.preventDefault(); e.stopPropagation(); }
+      finishZoom();
+    }
+    function onKey(e) {
+      if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (window.suHouse && window.suHouse.skipCountyZoom) window.suHouse.skipCountyZoom();
+        else end();
+      }
+    }
+    if (window.suHouse.canZoomCounty && !window.suHouse.canZoomCounty(county)) return false;
+    document.addEventListener("pointerdown", onSkip, true);
+    document.addEventListener("keydown", onKey, true);
+    if (window.suHouse.armCountyZoom) window.suHouse.armCountyZoom();
+    finishRender(s);
+    var started = window.suHouse.zoomToCounty(county, { reduced: reduce, onPop: popCards, onDone: end });
+    if (!started) {
+      document.removeEventListener("pointerdown", onSkip, true);
+      document.removeEventListener("keydown", onKey, true);
+      if (window.suHouse.disarmCountyZoom) window.suHouse.disarmCountyZoom();
+      obTxLock = false;
+      return false;
+    }
+    return true;
   }
   function finishRender(s) {
     app.setAttribute("data-screen", s);
@@ -3678,6 +3805,15 @@
   })();
   /* Service area: metro Detroit ZIPs 480xx to 483xx (same check as before). */
   function inArea(zip) { return /^48[0-3]\d\d$/.test(zip); }
+  /* Census 2020 ZCTA-to-county, baked in so the county zoom needs no map API or network. 48000-48399: O=Oakland, M=Macomb, W=Wayne, .=unknown or a split ZIP. A served county is used only when it has 80%+ of the land. */
+  var SU_ZIP_COUNTY = ".....M...O.....M.O...M...OM...O..OOMM.M...MMMM.MM.MM..........M..MMO.OOOOO.OO...MMMOOO..MM.MMMMMM.O..W.........W........W.W.WWWWW.....WW..W..W....W...W.W.W.........WO.......WW.....W..WWWWWW...WW.W.....WWWWWWWWWWWWWWWWWWWOW.WWWWWWWW..WWWWOWWW.WW.........................................................OO.O.OO.OM.MMMMMM..O.OOO.OOOO.O..OOO...OOO...O.O.O.....OO.OO.OO...O..OO..OO.O...OOO..O...O..O......";
+  function suCountyOf(zip) {
+    if (!/^\d{5}$/.test(String(zip || ""))) return "";
+    var n = +zip - 48000;
+    if (n < 0 || n >= SU_ZIP_COUNTY.length) return "";
+    return { O: "Oakland", M: "Macomb", W: "Wayne" }[SU_ZIP_COUNTY.charAt(n)] || "";
+  }
+  window.suCountyOf = suCountyOf;
   function localISO(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function minStart() { return localISO(new Date(Date.now() + 2 * 864e5)); }
   function longDate(iso) { var t = new Date(iso + "T12:00:00"); return isNaN(t) ? iso : t.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }); }
@@ -5181,9 +5317,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9u2"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9v4"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9u1"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9v4"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);

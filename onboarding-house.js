@@ -449,6 +449,179 @@
   window.addEventListener("resize", queue);
   window.addEventListener("resize", fitLater);
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fit(); }); } catch (x) {}
-  window.suHouse = { sync: sync, itemsOf: itemsOf, fit: fit, docOver: docOver };
+
+  /* County zoom (Machan Nov 16): Next from an in-area Address zooms the #125 line-art map into that county, then cross-fades to the house as Home Size and Stories pop in. 1.2-1.8s; tap skips; reduced motion is a fade only. */
+  var countyZoom = null;
+  function pathBBox(p) {
+    try { var b = p.getBBox(); if (b && b.width > 1 && b.height > 1) return b; } catch (e) {}
+    return null;
+  }
+  function zoomViewBox(svg, from, to, ms, ease, step) {
+    var t0 = performance.now(), cancelled = false, raf = 0;
+    function lerp(a, b, p) { return a + (b - a) * p; }
+    function frame(now) {
+      if (cancelled) return;
+      var p = Math.min(1, (now - t0) / ms), e = ease(p);
+      var vb = [lerp(from[0], to[0], e), lerp(from[1], to[1], e), lerp(from[2], to[2], e), lerp(from[3], to[3], e)];
+      svg.setAttribute("viewBox", vb.map(function (n) { return Math.round(n * 100) / 100; }).join(" "));
+      if (step) step(p, e);
+      if (p < 1) raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    return {
+      cancel: function () { cancelled = true; if (raf) cancelAnimationFrame(raf); },
+      finish: function () { cancelled = true; if (raf) cancelAnimationFrame(raf); svg.setAttribute("viewBox", to.join(" ")); }
+    };
+  }
+  function easeInOut(p) { return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+  function fadeOpacity(el, fr, to, ms) {
+    var t0 = performance.now(), cancelled = false, raf = 0;
+    function frame(now) {
+      if (cancelled) return;
+      var p = Math.min(1, (now - t0) / ms);
+      el.style.opacity = String(fr + (to - fr) * p);
+      if (p < 1) raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    return {
+      cancel: function () { cancelled = true; if (raf) cancelAnimationFrame(raf); },
+      finish: function () { cancelled = true; if (raf) cancelAnimationFrame(raf); el.style.opacity = String(to); }
+    };
+  }
+  function paddedBox(b, aw, ah) {
+    var pad = Math.max(6, Math.min(b.width, b.height) * 0.12);
+    var x = b.x - pad, y = b.y - pad, w = b.width + pad * 2, h = b.height + pad * 2;
+    var a = aw / ah;
+    if (w / h < a) { var nw = h * a; x -= (nw - w) / 2; w = nw; } else { var nh = w / a; y -= (nh - h) / 2; h = nh; }
+    return [x, y, w, h];
+  }
+  function zoomToCounty(county, opts) {
+    opts = opts || {};
+    if (countyZoom) { try { countyZoom.skip(); } catch (e) {} }
+    if (!band || !county) return false;
+    var mapEl = el(".ob-hb-map"), houseEl = el(".ob-hb-house"), svg = mapEl && mapEl.querySelector(".hb-map-svg");
+    if (!mapEl || !houseEl || !svg) return false;
+    var paths = mapEl.querySelectorAll('path[data-county="' + county + '"]'), best = null, bestA = 0, i, b;
+    for (i = 0; i < paths.length; i++) {
+      b = pathBBox(paths[i]);
+      if (b && b.width * b.height > bestA) { bestA = b.width * b.height; best = { path: paths[i], box: b }; }
+    }
+    if (!best) return false;
+    var rm = opts.reduced != null ? opts.reduced : reduced();
+    var origVB = (svg.getAttribute("viewBox") || "0 0 360 220").split(/\s+/).map(Number);
+    var destVB = paddedBox(best.box, origVB[2], origVB[3]);
+    var cap = el(".ob-hb-cap");
+    var started = performance.now();
+    var total = rm ? 360 : 1500;
+    var popAt = rm ? 80 : 800;
+    var fadeAt = rm ? 0 : 700;
+    var fadeMs = rm ? 150 : 300;
+    var zoomMs = rm ? 0 : 900;
+    var popped = false, done = false, vbAnim = null, fadeAnims = [];
+    document.documentElement.setAttribute("data-hb-zoom", "on");
+    document.documentElement.classList.add("ob-hb-zooming");
+    band.classList.add("hb-zoom-run");
+    band.setAttribute("data-mode", "house"); /* homesize is showing; the run class keeps the map visible while it zooms */
+    /* Swatch #153 r2: the entering pane still has translateY(10px) scale(.97), which makes this
+       one-shot fit miss the 150 floor on phones. Clear it for the measure, then restore. Opacity is 0, so nothing flashes. */
+    var enter = document.querySelector("section.ob .ob-stage .ob-pane");
+    var prevTf = enter ? enter.style.transform : "", prevTs = enter ? enter.style.transition : "";
+    if (enter) { enter.style.transition = "none"; enter.style.transform = "none"; void enter.offsetHeight; }
+    fitOrig(); /* once: park the bar and house at the final Home Size size so neither snaps at onDone */
+    if (enter) { enter.style.transform = prevTf; enter.style.transition = prevTs; }
+    band.setAttribute("data-zoom-county", county);
+    mapEl.classList.add("hb-zooming");
+    mapEl.style.opacity = "1"; mapEl.style.pointerEvents = "none";
+    houseEl.style.opacity = "0"; houseEl.style.pointerEvents = "none";
+    for (i = 0; i < paths.length; i++) paths[i].classList.add("hb-zoom-on");
+    if (cap) { cap.classList.remove("hb-chips"); cap.textContent = county + " County"; }
+    var pins = mapEl.querySelectorAll(".hb-pin, .hb-drop");
+    function clearPins(hide) { for (i = 0; i < pins.length; i++) pins[i].style.opacity = hide ? "0" : ""; }
+    function pop() { if (popped) return; popped = true; if (opts.onPop) opts.onPop(); }
+    function cleanup(snap) {
+      if (vbAnim) { try { (snap ? vbAnim.finish : vbAnim.cancel)(); } catch (e) {} vbAnim = null; }
+      fadeAnims.forEach(function (a) { try { if (snap && a.finish) a.finish(); else a.cancel(); } catch (e) {} });
+      fadeAnims = [];
+      mapEl.classList.remove("hb-zooming");
+      mapEl.querySelectorAll(".hb-zoom-on").forEach(function (p) { p.classList.remove("hb-zoom-on"); });
+      svg.setAttribute("viewBox", origVB.join(" "));
+      mapEl.style.opacity = ""; mapEl.style.pointerEvents = "";
+      houseEl.style.opacity = ""; houseEl.style.pointerEvents = "";
+      houseEl.style.transform = "";
+      clearPins(false);
+      band.classList.remove("hb-zoom-run");
+      band.removeAttribute("data-zoom-county");
+      band.setAttribute("data-mode", "house");
+      document.documentElement.removeAttribute("data-hb-zoom");
+      document.documentElement.classList.remove("ob-hb-zooming");
+    }
+    function finish(skipped) {
+      if (done) return; done = true;
+      countyZoom = null;
+      pop();
+      cleanup(true);
+      document.documentElement.setAttribute("data-hb-zoom-ms", String(Math.round(performance.now() - started)));
+      document.documentElement.setAttribute("data-hb-zoom", skipped ? "skipped" : "done");
+      document.documentElement.setAttribute("data-hb-zoom-county", county);
+      last = { mode: "house", stories: last ? last.stories : 1 };
+      if (opts.onDone) opts.onDone({ skipped: !!skipped, ms: performance.now() - started, reduced: rm, county: county });
+    }
+    countyZoom = { skip: function () { finish(true); }, county: county, started: started };
+    clearPins(true);
+    if (rm) {
+      fadeAnims.push(fadeOpacity(mapEl, 1, 0, fadeMs));
+      fadeAnims.push(fadeOpacity(houseEl, 0, 1, fadeMs));
+      setTimeout(pop, popAt);
+      setTimeout(function () { finish(false); }, total);
+      return true;
+    }
+    vbAnim = zoomViewBox(svg, origVB, destVB, zoomMs, easeInOut);
+    setTimeout(function () {
+      if (done) return;
+      fadeAnims.push(fadeOpacity(mapEl, 1, 0, fadeMs));
+      fadeAnims.push(fadeOpacity(houseEl, 0, 1, fadeMs));
+    }, fadeAt);
+    setTimeout(function () { if (!done) pop(); }, popAt);
+    setTimeout(function () { finish(false); }, total);
+    return true;
+  }
+  function skipCountyZoom() { if (countyZoom) countyZoom.skip(); }
+  function countyZoomPlaying() { return !!countyZoom; }
+  var zoomArmed = false;
+  function armCountyZoom() { zoomArmed = true; }
+  function disarmCountyZoom() { zoomArmed = false; countyZoom = null; }
+  function canZoomCounty(county) {
+    if (!band || !county) return false;
+    var mapEl = el(".ob-hb-map"), svg = mapEl && mapEl.querySelector(".hb-map-svg");
+    if (!mapEl || !svg) return false;
+    var paths = mapEl.querySelectorAll('path[data-county="' + county + '"]'), i, b, ok = false;
+    for (i = 0; i < paths.length; i++) { b = pathBBox(paths[i]); if (b && b.width * b.height > 1) ok = true; }
+    return ok;
+  }
+  var syncOrig = sync;
+  sync = function (st) {
+    if (countyZoom || zoomArmed) return;
+    return syncOrig(st);
+  };
+  var fitOrig = fit;
+  fit = function () {
+    if (countyZoom || zoomArmed) return;
+    return fitOrig();
+  };
+  var zoomToCountyOrig = zoomToCounty;
+  zoomToCounty = function (county, opts) {
+    opts = opts || {};
+    var prevDone = opts.onDone;
+    opts.onDone = function (info) {
+      zoomArmed = false;
+      if (prevDone) prevDone(info);
+    };
+    var ok = zoomToCountyOrig(county, opts);
+    if (!ok) zoomArmed = false;
+    return ok;
+  };
+
+  window.suHouse = { sync: sync, itemsOf: itemsOf, fit: fit, docOver: docOver, zoomToCounty: zoomToCounty, skipCountyZoom: skipCountyZoom, countyZoomPlaying: countyZoomPlaying, armCountyZoom: armCountyZoom, disarmCountyZoom: disarmCountyZoom, canZoomCounty: canZoomCounty };
+
   if (window.suHouseState) sync(window.suHouseState());
 })();
