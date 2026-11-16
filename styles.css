@@ -4190,3 +4190,76 @@ body.on-home .hm-plan .pc-more-link::before{
   height:44px;
   transform:translate(-50%,-50%);
 }
+
+
+/* ===== home-flip-1116 (Machan Nov 16): serving line, mailing-list sheet (flagged), menu Continue ===== */
+.su-serving-block{text-align:center}
+.su-serving{margin:0;font:500 13px/1.35 Hind,var(--mw-font-body),sans-serif;color:#6B625A}
+body.on-home #hs-faq .su-serving-block{margin-top:10px;padding:0;flex:none}
+.su-mail-launch{margin:2px 0 0}
+.su-mail-link{
+  position:relative;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin:0;padding:0;border:0;background:none;
+  font:600 13px/1.3 Hind,var(--mw-font-body),sans-serif;
+  color:#A8431F;text-decoration:underline;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.su-mail-link::before{
+  content:"";position:absolute;left:50%;top:50%;
+  width:max(100%,44px);height:44px;transform:translate(-50%,-50%);
+}
+.su-mail-link:focus{outline:none}
+.su-mail-link:focus-visible{outline:2px solid rgba(168,67,31,.4);outline-offset:3px;border-radius:4px}
+
+html.su-mail-open,html.su-mail-open body{overflow:hidden!important;overscroll-behavior:none}
+.su-mail-wrap{
+  position:fixed;inset:0;z-index:240;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));
+  box-sizing:border-box;
+}
+.su-mail-bg{position:absolute;inset:0;background:rgba(40,28,16,.28);pointer-events:auto;touch-action:none}
+.su-mail-sheet{
+  position:relative;width:100%;max-width:420px;margin:0 auto;box-sizing:border-box;
+  padding:18px 16px 16px;border-radius:16px;
+  background-color:#FFFCF7;background-image:var(--su-shine),var(--su-gloss);
+  box-shadow:var(--su-sh-sheet,0 -8px 28px rgba(40,28,16,.18));
+  color:#1A1A1A;color-scheme:light only;
+  transition:transform .2s ease,opacity .2s ease;
+}
+.su-mail-wrap:not(.on) .su-mail-sheet{transform:translateY(10px);opacity:0}
+.su-mail-wrap.on .su-mail-sheet{transform:none;opacity:1}
+.su-mail-sheet .su-mail-x,
+.su-mail-sheet .hm-pop-x{
+  position:absolute;top:4px;right:4px;width:44px;height:44px;margin:0;padding:0;border:0;border-radius:8px;
+  display:inline-flex;align-items:center;justify-content:center;background:transparent;color:#1A1A1A;cursor:pointer;
+}
+.su-mail-sheet h3{
+  margin:0 48px 8px 4px;font:700 22px/1.15 Khand,var(--mw-font-heading),sans-serif;color:#1A1A1A;letter-spacing:0;
+}
+.su-mail-lead{margin:0 4px 12px;color:#6B625A}
+.su-mail-f{display:flex;flex-direction:column}
+.su-mail-f .fl{margin:8px 0 4px;font:600 13px/1.2 Hind,var(--mw-font-body),sans-serif}
+.su-mail-f input{
+  width:100%;box-sizing:border-box;
+  font-size:16px;min-height:44px;height:44px;
+  padding:0 12px;border:1px solid #E6E0D6;border-radius:10px;background:#fff;color:#1A1A1A;
+}
+.su-mail-err{min-height:1.2em;margin:6px 0 0}
+.su-mail-join{width:100%;margin-top:10px;min-height:44px}
+.su-mail-thanks{text-align:center;padding:8px 4px 0}
+.su-mail-thanks h3{margin:8px 48px 8px}
+.su-mail-thanks .btn{width:100%;margin-top:12px;min-height:44px}
+@media (prefers-reduced-motion:reduce){
+  .su-mail-sheet{transition:none;transform:none!important;opacity:1!important}
+}
+
+/* Menu Continue (Nov 13 rule, restored Nov 16): terracotta mark on the menu button when saved progress exists. */
+body.su-band #hdrMenuBtn.has-resume{position:relative}
+body.su-band #hdrMenuBtn.has-resume::after{
+  content:"";position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;
+  background:#A8431F;box-shadow:0 0 0 2px #F5EDDF;
+  pointer-events:none;
+}
+body.su-band .hdr-menu button.hdr-resume{color:#0B6E4F}

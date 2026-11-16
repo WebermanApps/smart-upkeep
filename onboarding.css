@@ -1118,10 +1118,10 @@ html.ob-hb-on.ob-hb-t body.on-ob .ob.qf.ob-address .ob-area{margin-top:2px!impor
 .ob-addons .ob-ao-groups{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
 .ob-addons .ob-ao-list{flex:1 1 auto;min-height:0}
 
-/* Accept: keep Back, Home, Start Over as equal 44px tiles; Accept And Continue full-width on a second row above Built by Machan. */
+/* Accept: Back and Home as equal 44px tiles; Accept And Continue full-width on a second row above Built by Machan. */
 .ob-accept .ob-bar,
 .ob-accept.sfit-accept .ob-bar{
-  grid-template-columns:1fr 1fr 1fr !important;
+  grid-template-columns:1fr 1fr !important;
   grid-template-rows:auto auto auto;
   row-gap:8px;
 }
@@ -1170,7 +1170,7 @@ html.ob-hb-on.ob-hb-t2 body.on-ob .ob.qf.ob-accept .su-cancel-line .link{
    Four controls cannot share one row with a 44px Get Started-style Next at 360
    without clipping "Start Over" or "Accept And Continue", so the bar uses two rows.
    Sign-Up Bar Deck (Machan Nov 14 9:20 PM ICT): "next over the tabs, opposite as
-   Home Screen" = full-width Next on row 1, Back / Home / Start Over tabs on row 2.
+   Home Screen" = full-width Next on row 1, Back / Home tabs on row 2. Start Over was removed Nov 16.
    Tabs are 44px (was 48) and the row gap 4px (was 6) so every step keeps 8px+ of
    air above the bar at 360x640, 390x660 and 430x746. Bar: 1 + 8 + 44 + 4 + 44 + 4 = 105px. */
 html body.on-ob .ob .ob-bar,
@@ -1179,7 +1179,7 @@ html body.on-ob .ob-accept .ob-bar,
 html body.on-ob .ob-accept.sfit-accept .ob-bar,
 html.ob-hb-on .ob-accept .ob-bar{
   display:grid !important;
-  grid-template-columns:1fr 1fr 1fr !important;
+  grid-template-columns:1fr 1fr !important;
   grid-template-rows:auto auto !important;
   column-gap:0 !important;
   row-gap:4px !important;
