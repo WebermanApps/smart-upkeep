@@ -91,7 +91,7 @@
     var ids = Array.isArray(S.addons) ? S.addons : [];
     var seen = {}, out = [];
     monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) {
-      if (a && ids.indexOf(a.id) > -1 && !seen[a.id] && !(a.gutter && gutterIncluded())) { seen[a.id] = 1; out.push(a); }
+      if (a && ids.indexOf(a.id) > -1 && !seen[a.id] && !planCoversAddon(a)) { seen[a.id] = 1; out.push(a); }
     });
     return out;
   }
@@ -192,14 +192,43 @@
       return {id:(once?"q_o_":"q_m_")+suNorm(label).replace(/ /g,"_"), label:suTitle(label), quoteRequired:true, desc:""};
     });
   }
+  function isSoftenerAddon(a){
+    if (!a) return false;
+    if (a.softener || a.id === "x_softener" || a.id === "softener") return true;
+    return typeof suClose === "function" && suClose(a.label, "Water Softener");
+  }
+  function planCoversAddon(a, tier){
+    tier = tier || S.tier;
+    if (!a) return false;
+    if (a.gutter && gutterIncluded(tier)) return true;
+    if (isSoftenerAddon(a) && tier !== "silver") return true;
+    return false;
+  }
+  function dropCoveredAddons(tier){
+    tier = tier || S.tier;
+    var ids = Array.isArray(S.addons) ? S.addons.slice() : [];
+    var keep = ids.filter(function (id) {
+      var a = findService(id);
+      return a ? !planCoversAddon(a, tier) : true;
+    });
+    if (keep.length !== ids.length) S.addons = keep;
+    if (S.answers && Array.isArray(S.answers.extras)) {
+      S.answers.extras = S.answers.extras.filter(function (k) {
+        if (k === "sump" || k === "humidifier") return false;
+        if (k === "softener" && tier !== "silver") return false;
+        return true;
+      });
+    }
+  }
   function monthlyAddonCatalog(){
     var pool=[];
     Object.keys((P&&P.extras)||{}).forEach(function(k){
+      if (k === "sump" || k === "humidifier" || k === "softener") return; /* asked nowhere / handled below */
       var e=P.extras[k]; if(!e) return;
       pool.push({id:"x_"+k, label:e.label, annual:e.all, all:e.all, quoteRequired:!e.all, fromExtras:true});
     });
     pool=pool.concat(P.addons||[]);
-    return suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
+    var list=suCatalogByLabels(SU_MONTHLY_ADDONS, pool, false).map(function(a){
       /* Swatch D2 (Nov 12): Gutter Cleaning uses gutters2Cleanings by stories (Essentials only; Plus and up include it). */
       if(a && a.id===GUTTER_ID){ var g=gutterAnnual(); a.gutter=true; a.annual=g||null; a.quoteRequired=!g; a.label="Added Gutter Cleaning"; a.note="For homes with lots of trees and leaves."; }
       var v = flatRoofPerVisit();
@@ -211,6 +240,13 @@
       }
       return a;
     });
+    /* Water Softener: Essentials-only add-on at $120/yr (Machan Nov 16). Included on Plus and up. Monthly spreads with monthlySpread ($10/mo). Not in SU_MONTHLY_ADDONS. */
+    var hasSoft=list.some(isSoftenerAddon);
+    if(!hasSoft){
+      var sc=P.extras && P.extras.softener, yr=(sc && +sc.silver>0) ? +sc.silver : 0;
+      list.push({id:"x_softener", label:"Water Softener", quoteRequired:!(yr>0), annual: yr>0 ? yr : null, all: yr>0 ? yr : 0, fromExtras:false, softener:true, desc: (sc && sc.note) || "Service on the 2 Essentials visits: brine tank clean, resin cleaner, a hardness test, and a valve and settings check. Salt is not included."});
+    }
+    return list;
   }
   var GUTTER_ID="q_m_gutter_cleaning";
   function gutterAnnual(){
@@ -288,7 +324,7 @@
   function isApprovedFlatOnce(a){ return !!(a && APPROVED_FLAT_ONCE[suNorm(a.label)]); }
   function isApprovedFlatAnnual(a){
     return !!(a && !a.once && !a.fromExtras && !a.gutter && !a.quoteRequired && a.annual!=null && isFinite(+a.annual) && +a.annual>0 && (
-      suClose(a.label, "Generator Annual Service") || suClose(a.label, "Chimney Sweep") || suClose(a.label, "Flat Roof Inspection And Clean") || a.flatRoof
+      suClose(a.label, "Generator Annual Service") || suClose(a.label, "Chimney Sweep") || suClose(a.label, "Flat Roof Inspection And Clean") || suClose(a.label, "Water Softener") || a.flatRoof || a.softener
     ));
   }
   function yrLabel(annual){ return money(annual) + "/yr"; }
@@ -525,6 +561,7 @@
     if (/^(overview|q\d|choice|photos|visit|quote|extras|signup|pay)$/.test(S.screen)) S.screen = OB[0];
     if (S.screen === "basics") S.screen = "address"; if (S.resume === "basics") S.resume = "address"; /* Home Basics merged into step 1 (Nov 12) */
     if (S.screen === "access") S.screen = "start"; if (S.resume === "access") S.resume = "start"; /* Access step removed (Machan Nov 13 10:18 PM): resume on Start Date */
+    if (S.screen === "systems2") S.screen = "plan"; if (S.resume === "systems2") S.resume = "plan"; /* Do You Have Any Of These? removed (Machan Nov 16) */
     S.path = S.path.filter(function (x) { return x === "home" || isOb(x) || /^(alacarte|alacarteConfirm|confirm|cancel)$/.test(x); });
     if (obSkip(S.screen)) S.screen = obNextOf(S.screen); if (obSkip(S.resume)) S.resume = obNextOf(S.resume);
     var s = S.screen, html;
@@ -544,13 +581,15 @@
     app.setAttribute("data-screen", s);
     if (window.suHouse) { try { window.suHouse.sync(obHouseState()); } catch (x) {} } /* before bind(), so the one-screen fits (sfit*) measure with the house band in place */
     bind();
-    if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
+    if (window.suHouse && window.suHouse.fit) { try { window.suHouse.fit(); } catch (x) {} if (S.screen === "plan") obPlanRecenter(); } /* house-build-1113: re-check the one-screen cut order after the step's own fits run */
     document.body.classList.toggle("on-home", s === "home"); document.body.classList.toggle("su-band", s === "home" || isOb(s)); /* Machan Nov 13 7:41 PM: Home header on every onboarding step */ document.documentElement.classList.toggle("su-home-snap", s === "home"); if (window.hmSyncPageClass) window.hmSyncPageClass(); else document.documentElement.classList.toggle("su-home-page", s === "home" && window.innerWidth <= 600); if (window.suBandSync) window.suBandSync();
     document.documentElement.classList.remove("su-boot"); /* Swatch QA F1: Share stays hidden until the first render */
     document.body.classList.toggle("on-accept", s === "accept");
     document.body.classList.toggle("on-ob", isOb(s));
     setObSess(s);
     syncResumeMenu(s);
+    var obBar = app.querySelector(".ob-bar");
+    if (obBar) document.documentElement.style.setProperty("--su-ob-bar-h", Math.round(obBar.getBoundingClientRect().height) + "px");
     try { document.title = isOb(s) && OB_NAME[s] ? OB_NAME[s] + " | Smart Upkeep" : (s === "confirm" ? "Thank You | Smart Upkeep" : "Smart Upkeep"); } catch (x) {}
     if (s === "home") bindHome();
     bindMailLaunch();
@@ -570,9 +609,9 @@
     obTxLock = true;
     window.scrollTo(0, 0);
     var reduce = obReducedMot();
-    var ms = reduce ? 200 : 250;
+    var ms = reduce ? 200 : 350; /* Machan Nov 16: 300-400ms on the motion token; reduced motion is a plain fade */
     var ease = reduce ? "ease" : "cubic-bezier(.2,.7,.2,1)"; /* --ease-ui */
-    var dx = reduce ? 0 : (24 * dir);
+    var dx = reduce ? 0 : (dir >= 0 ? 28 : -28);
     var oldProg = oldSec.querySelector(".qf-prog");
     var newProg = neu.querySelector(".qf-prog");
     var oldBar = oldSec.querySelector(".ob-bar");
@@ -744,7 +783,7 @@
   /* Home FAQ (Machan Nov 13 9:11 AM "we can do just an FAQ section"): the same five questions and answers the Details FAQ drop-down had, word for word. */
   /* Machan Nov 13 11:12 AM: every FAQ lives on Home, grouped by the /faq/ page's own categories and order. Questions and answers are copied
      word for word from the live /faq/ page (main e8df4a2; PR #80's unmerged lines are not used). Format: [category, [[question, answer HTML, id]]]. */
-  var FAQ_ALL = [["Heating, Cooling And Furnace Filters", [["How Often Should I Change My Furnace Filter?", "<p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it&#x27;s due.</p>", "how-often-should-i-change-my-furnace-filter"], ["How Often Does a Furnace Need a Tune-Up?", "<p>Once a year, ideally in the fall before heating season. Every plan includes a fall furnace tune-up for every furnace.</p>", "how-often-does-a-furnace-need-a-tune-up"], ["How Often Should My AC Be Serviced?", "<p>Once a year in spring, before the first hot week. Every plan includes a spring AC tune-up for every AC unit.</p>", "how-often-should-my-ac-be-serviced"], ["Is Skipped Maintenance Really That Costly?", "<p>Often, yes. A clogged filter, a blocked dryer vent or an overflowing gutter can turn a small fix into a repair or a denied warranty claim. A plan keeps a dated record of every visit.</p>", "is-skipped-maintenance-really-that-costly"]]], ["Safety Checks", [["What Should I Do In An Emergency?", "<ul><li>Flooding or a burst pipe: shut off the main water valve, then give us a call or send a message in the app.</li><li>Electrical (sparks, burning smell, hot panel): if it&#x27;s safe to reach, switch off the main breaker, then give us a call or send a message in the app. If there&#x27;s fire or smoke, get out and call 911.</li><li>Carbon monoxide alarm: get everyone outside and call 911.</li></ul><p>If you smell gas (a rotten-egg or sulfur smell):</p><ol><li>Leave the home right away and get everyone out, pets too. Leave the door open behind you.</li><li>Don&#x27;t flip light switches, unplug anything, use the garage door, light a match, or start a car near the home.</li><li>Once you&#x27;re a safe distance away, call 911 and DTE Gas at 800-947-5000.</li><li>Then call us or send a message in the app. We&#x27;ll help with next steps once DTE says it&#x27;s safe.</li></ol><p>Please don&#x27;t try to shut off the gas meter yourself unless DTE or 911 tells you to. Never turn the gas back on yourself; DTE needs to do that.</p><p class=\"fq-note\">This is general safety information, not professional emergency advice. In any emergency, follow the directions of 911, your utility, and first responders. Smart Upkeep is not an emergency service and does not respond to gas leaks.</p>", "what-should-i-do-in-an-emergency"], ["How Often Should Smoke Detector Batteries Be Changed?", "<p>Test monthly and replace batteries at least once a year, unless the unit has a sealed 10-year battery. Every plan tests smoke and CO detectors at each visit.</p>", "how-often-should-smoke-detector-batteries-be-changed"], ["When Should Smoke and CO Detectors Be Replaced?", "<p>Smoke alarms at 10 years. CO alarms typically at 5 to 7 years, depending on the model; check the date on the back. We flag expired units during visits.</p>", "when-should-smoke-and-co-detectors-be-replaced"], ["How Risky Is a Clogged Dryer Vent?", "<p>Lint buildup is a leading cause of home dryer fires, and a clogged vent also makes drying slower. Clean it at least once a year. Every plan includes dryer vent cleaning.</p>", "how-risky-is-a-clogged-dryer-vent"]]], ["Water, Gutters And Michigan Winters", [["How Often Should Gutters Be Cleaned?", "<p>At least twice a year, spring and fall, and more under heavy trees. Plus and Complete include gutter and downspout cleaning, spring and fall.</p>", "how-often-should-gutters-be-cleaned"], ["How Is Gutter Cleaning Priced?", "<p>By how many stories your home has. Plus and Complete include gutter and downspout cleaning in spring and fall. If heavy trees need more, you can add an Extra Gutter Cleaning.</p>", "how-is-gutter-cleaning-priced"], ["Should I Flush My Water Heater?", "<p>Yes, about once a year, to clear sediment that shortens tank life. Tankless units need descaling. Every plan includes a water heater flush or tankless descale.</p>", "should-i-flush-my-water-heater"], ["How Often Should I Test My Sump Pump?", "<p>Every few months and before spring thaw: pour water into the pit and make sure it starts and drains. Every plan tests your sump pump before spring thaw.</p>", "how-often-should-i-test-my-sump-pump"], ["How Do I Prep My Home for a Michigan Winter?", "<p>Tune the furnace, clean gutters, shut off and drain outside spigots, blow out irrigation and check weatherstripping. Every plan includes Winter Freeze Prep; Complete adds vent and ice dam clearing after storms.</p>", "how-do-i-prep-my-home-for-a-michigan-winter"], ["What Is the Mold and Moisture Scan?", "<p>A pinless moisture meter and thermal camera check under bathrooms, windows, basement walls and sinks. It flags damp spots where mold can grow. It is not a lab mold test and doesn&#x27;t diagnose or rule out mold. Readings and photos go to your Home Record. It&#x27;s in every plan.</p>", "what-is-the-mold-and-moisture-scan"]]], ["Plans And Visits", [["What's Included, and How Many Visits Do I Get?", "<p>Essentials: 2 visits a year, with furnace and AC tune-ups. Plus: 4 visits a year, adding gutter cleaning and more. Complete: 12 visits a year, adding after-storm checks after major storms, up to 4 a year. Your Starter Visit counts as one of your yearly visits. See What&#x27;s Included on the home page for the full list.</p>", "what-is-included-in-each-plan"], ["Is Smart Upkeep a Home Warranty or Insurance?", "<p>No. Smart Upkeep is preventive maintenance that lowers the chance of breakdowns. It doesn&#x27;t pay for repairs or replacements when something breaks, so keep your homeowner&#x27;s insurance.</p>", "is-smart-upkeep-a-home-warranty-or-insurance"], ["What Do You Do on a Visit?", "<p>Every plan includes a fall furnace tune-up, a spring AC tune-up, furnace filter changes, fridge water filter changes, a water heater flush or tankless descale, dryer vent cleaning, smoke and CO detector checks and battery swap, a whole-home mold and moisture scan, a drone roof inspection and gutter check, winter freeze prep, and a written report saved to your Home Record. Plus adds quarterly visits, gutter cleaning, a garage door tune-up, and water softener salt. Complete visits monthly and adds after-storm checks after major storms, up to 4 a year, with vent and ice dam clearing.</p>", "what-do-you-do-on-a-visit"], ["What Does a Plan Cost?", "<p>Essentials from $139 a month, Plus from $209 a month, Complete from $379 a month. Your price depends on home size and equipment. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-does-a-plan-cost"], ["Why Is My Price Different From the Starting Price?", "<p>Every plan has a starting price: Essentials $139, Plus $209 and Complete $379 a month. Your plan price depends on your home&#x27;s size and equipment and never goes below that starting price. Any extras you add go on top.</p>", "why-is-my-price-different-from-the-starting-price"], ["What Is the First 50 Founding Offer?", "<p>The first 50 members get 2 years for the price of 1: prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care, while the 50 spots last. Offers do not stack. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-is-the-first-50-founding-offer"], ["Do I Need to Send Photos?", "<p>No. We don&#x27;t ask for photos to sign up. Your price is based on your answers, and your tech confirms your home&#x27;s systems at the first visit. If anything changes your price, we&#x27;ll send the new price within 7 days, and you can accept it or cancel with no fee. Photos from your visits are handled as described in our Privacy Policy.</p>", "do-i-need-to-send-photos"], ["What One-Time Services Can I Book?", "<p>With Tailor Your Plan, you can book one-time services, no membership needed. A radon test, an extra gutter cleaning, a chimney sweep and generator annual service show a price you can book. Air duct cleaning is quote-only: we follow up with a price, and nothing is done or charged without your OK.</p>", "how-does-shop-a-la-carte-work"], ["Can I Add Extras After I Join?", "<p>Yes. In the member app you can tailor your plan or change it: turn extras on or off, add monthly extras, or request a one-time job. Nothing bills until the team confirms the change with you.</p>", "can-i-add-extras-after-i-join"], ["What If Something Breaks Between Visits?", "<p>Send us a message in the app or give us a call, and we&#x27;ll help with next steps and who to call. In an emergency, call 911 or your utility first. Smart Upkeep is not an emergency service.</p>", "what-if-something-breaks-between-visits"]]], ["Our Techs And Service Area", [["Where Do You Work?", "<p>Currently Serving Oakland, Macomb, And Wayne County. If your ZIP is outside our area today, join the waitlist and we&#x27;ll let you know when Smart Upkeep comes to your area.</p>", "where-do-you-work"], ["How Are Techs Vetted, Licensed and Insured?", "<p>Every tech is insured and background-checked each year by a third party. Licensed work (mechanical, plumbing, electrical and builder work) is done by partners with an active Michigan license you can check. We keep general liability and auto insurance certificates on file. Required certifications include EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.</p>", "how-are-techs-vetted"], ["What Do I Get After a Visit, and What Is the Home Record?", "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care. It also keeps mold and moisture readings, dated roof drone photos, recall checks, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>", "what-will-i-get-after-a-visit"], ["Who Sees Photos From My Visits?", "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing. Photos of private living spaces are never used in marketing without your written OK. You can opt out of marketing use anytime by messaging us in the app. Our Privacy Policy explains how we use and protect your information.</p>", "who-sees-photos-from-my-visits"]]], ["Billing, Cancel And Moving", [["Can I Cancel?", "<p>Yes, anytime, with no fee. Cancel online in the member app under Profile &amp; Account. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet. Services already done aren&#x27;t refunded. Founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge. Refunds go out within 14 days. Free months have no cash or refund value.</p>", "can-i-cancel"], ["Can I Pause My Plan?", "<p>Yes. You can pause for up to 3 months each membership year. Paused months aren&#x27;t billed, and your membership term and renewal date move back by the length of the pause. Message us in the app to pause.</p>", "can-i-pause-my-plan"], ["What Happens If I Move?", "<p>If you move within our area, your membership moves with you and we requote it for the new home. You can accept the new price or cancel with no fee. If you move out of the area, you can cancel. Your Home Record can transfer to your buyer, and you can gift them 3 months free.</p>", "what-happens-if-i-move"], ["Is There a Cancellation Right in Michigan?", "<p>Yes. If you sign up in person at your home, at an event, or on a sales call we start, you can cancel within 3 business days. This is in addition to the full refund before your first visit.</p>", "is-there-a-cancellation-right-in-michigan"]]]];
+  var FAQ_ALL = [["Heating, Cooling And Furnace Filters", [["How Often Should I Change My Furnace Filter?", "<p>It depends on the filter: about every 1 to 3 months for standard 1-inch filters, and about every 6 to 12 months for 4- to 5-inch media filters. Homes with pets often need changes sooner. Our tech checks your filter at every visit and changes it when it&#x27;s due.</p>", "how-often-should-i-change-my-furnace-filter"], ["How Often Does a Furnace Need a Tune-Up?", "<p>Once a year, ideally in the fall before heating season. Every plan includes a fall furnace tune-up for every furnace.</p>", "how-often-does-a-furnace-need-a-tune-up"], ["How Often Should My AC Be Serviced?", "<p>Once a year in spring, before the first hot week. Every plan includes a spring AC tune-up for every AC unit.</p>", "how-often-should-my-ac-be-serviced"], ["Is Skipped Maintenance Really That Costly?", "<p>Often, yes. A clogged filter, a blocked dryer vent or an overflowing gutter can turn a small fix into a repair or a denied warranty claim. A plan keeps a dated record of every visit.</p>", "is-skipped-maintenance-really-that-costly"]]], ["Safety Checks", [["What Should I Do In An Emergency?", "<ul><li>Flooding or a burst pipe: shut off the main water valve, then give us a call or send a message in the app.</li><li>Electrical (sparks, burning smell, hot panel): if it&#x27;s safe to reach, switch off the main breaker, then give us a call or send a message in the app. If there&#x27;s fire or smoke, get out and call 911.</li><li>Carbon monoxide alarm: get everyone outside and call 911.</li></ul><p>If you smell gas (a rotten-egg or sulfur smell):</p><ol><li>Leave the home right away and get everyone out, pets too. Leave the door open behind you.</li><li>Don&#x27;t flip light switches, unplug anything, use the garage door, light a match, or start a car near the home.</li><li>Once you&#x27;re a safe distance away, call 911 and DTE Gas at 800-947-5000.</li><li>Then call us or send a message in the app. We&#x27;ll help with next steps once DTE says it&#x27;s safe.</li></ol><p>Please don&#x27;t try to shut off the gas meter yourself unless DTE or 911 tells you to. Never turn the gas back on yourself; DTE needs to do that.</p><p class=\"fq-note\">This is general safety information, not professional emergency advice. In any emergency, follow the directions of 911, your utility, and first responders. Smart Upkeep is not an emergency service and does not respond to gas leaks.</p>", "what-should-i-do-in-an-emergency"], ["How Often Should Smoke Detector Batteries Be Changed?", "<p>Test monthly and replace batteries at least once a year, unless the unit has a sealed 10-year battery. Every plan tests smoke and CO detectors at each visit.</p>", "how-often-should-smoke-detector-batteries-be-changed"], ["When Should Smoke and CO Detectors Be Replaced?", "<p>Smoke alarms at 10 years. CO alarms typically at 5 to 7 years, depending on the model; check the date on the back. We flag expired units during visits.</p>", "when-should-smoke-and-co-detectors-be-replaced"], ["How Risky Is a Clogged Dryer Vent?", "<p>Lint buildup is a leading cause of home dryer fires, and a clogged vent also makes drying slower. Clean it at least once a year. Every plan includes dryer vent cleaning.</p>", "how-risky-is-a-clogged-dryer-vent"]]], ["Water, Gutters And Michigan Winters", [["How Often Should Gutters Be Cleaned?", "<p>At least twice a year, spring and fall, and more under heavy trees. Plus and Complete include gutter and downspout cleaning, spring and fall.</p>", "how-often-should-gutters-be-cleaned"], ["How Is Gutter Cleaning Priced?", "<p>By how many stories your home has. Plus and Complete include gutter and downspout cleaning in spring and fall. If heavy trees need more, you can add an Extra Gutter Cleaning.</p>", "how-is-gutter-cleaning-priced"], ["Should I Flush My Water Heater?", "<p>Yes, about once a year, to clear sediment that shortens tank life. Tankless units need descaling. Every plan includes a water heater flush or tankless descale.</p>", "should-i-flush-my-water-heater"], ["How Often Should I Test My Sump Pump?", "<p>Every few months and before spring thaw: pour water into the pit and make sure it starts and drains. Every plan tests your sump pump before spring thaw.</p>", "how-often-should-i-test-my-sump-pump"], ["How Do I Prep My Home for a Michigan Winter?", "<p>Tune the furnace, clean gutters, shut off and drain outside spigots, blow out irrigation and check weatherstripping. Every plan includes Winter Freeze Prep; Complete adds vent and ice dam clearing after storms.</p>", "how-do-i-prep-my-home-for-a-michigan-winter"], ["What Is the Mold and Moisture Scan?", "<p>A pinless moisture meter and thermal camera check under bathrooms, windows, basement walls and sinks. It flags damp spots where mold can grow. It is not a lab mold test and doesn&#x27;t diagnose or rule out mold. Readings and photos go to your Home Record. It&#x27;s in every plan.</p>", "what-is-the-mold-and-moisture-scan"]]], ["Plans And Visits", [["What's Included, and How Many Visits Do I Get?", "<p>Essentials: 2 visits a year, with furnace and AC tune-ups. Plus: 4 visits a year, adding gutter cleaning and more. Complete: 12 visits a year, adding after-storm checks after major storms, up to 4 a year. Your Starter Visit counts as one of your yearly visits. See What&#x27;s Included on the home page for the full list.</p>", "what-is-included-in-each-plan"], ["Is Smart Upkeep a Home Warranty or Insurance?", "<p>No. Smart Upkeep is preventive maintenance that lowers the chance of breakdowns. It doesn&#x27;t pay for repairs or replacements when something breaks, so keep your homeowner&#x27;s insurance.</p>", "is-smart-upkeep-a-home-warranty-or-insurance"], ["What Do You Do on a Visit?", "<p>Every plan includes a fall furnace tune-up, a spring AC tune-up, furnace filter changes, fridge water filter changes, a water heater flush or tankless descale, dryer vent cleaning, smoke and CO detector checks and battery swap, a whole-home mold and moisture scan, a drone roof inspection and gutter check, winter freeze prep, and a written report saved to your Home Record. Plus adds quarterly visits, gutter cleaning, a garage door tune-up, and water softener salt. Complete visits monthly and adds after-storm checks after major storms, up to 4 a year, with vent and ice dam clearing.</p>", "what-do-you-do-on-a-visit"], ["What Does a Plan Cost?", "<p>Essentials from $139 a month, Plus from $209 a month, Complete from $379 a month. Your price depends on home size and equipment. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-does-a-plan-cost"], ["Why Is My Price Different From the Starting Price?", "<p>Every plan has a starting price: Essentials $139, Plus $209 and Complete $379 a month. Your plan price depends on your home&#x27;s size and equipment and never goes below that starting price. Any extras you add go on top.</p>", "why-is-my-price-different-from-the-starting-price"], ["What Is the First 50 Founding Offer?", "<p>The first 50 members get 2 years for the price of 1: prepay 12 months at your full quoted plan price, including any add-ons, and get 24 months of care, while the 50 spots last. Offers do not stack. After our 50 Founding spots are gone, you can pay monthly or prepay 12 months at 10% off your monthly price.</p>", "what-is-the-first-50-founding-offer"], ["Do I Need to Send Photos?", "<p>No. We don&#x27;t ask for photos to sign up. Your price is based on your answers, and your tech confirms your home&#x27;s systems at the first visit. If anything changes your price, we&#x27;ll send the new price within 7 days, and you can accept it or cancel with no fee. Photos from your visits are handled as described in our Privacy Policy.</p>", "do-i-need-to-send-photos"], ["What One-Time Services Can I Book?", "<p>With Tailor Your Plan, you can book one-time services, no membership needed. A radon test, an extra gutter cleaning, a chimney sweep and generator annual service show a price you can book. Air duct cleaning is quote-only: we follow up with a price, and nothing is done or charged without your OK.</p>", "how-does-shop-a-la-carte-work"], ["Can I Add Extras After I Join?", "<p>Yes. In the member app you can tailor your plan or change it: turn extras on or off, add monthly extras, or request a one-time job. Nothing bills until the team confirms the change with you.</p>", "can-i-add-extras-after-i-join"], ["What If Something Breaks Between Visits?", "<p>Send us a message in the app or give us a call, and we&#x27;ll help with next steps and who to call. In an emergency, call 911 or your utility first. Smart Upkeep is not an emergency service.</p>", "what-if-something-breaks-between-visits"]]], ["Our Techs And Service Area", [["Where Do You Work?", "<p>Currently Serving Oakland, Macomb, And Wayne Counties. If your ZIP is outside our area today, join the waitlist and we&#x27;ll let you know when Smart Upkeep comes to your area.</p>", "where-do-you-work"], ["How Are Techs Vetted, Licensed and Insured?", "<p>Every tech is insured and background-checked each year by a third party. Licensed work (mechanical, plumbing, electrical and builder work) is done by partners with an active Michigan license you can check. We keep general liability and auto insurance certificates on file. Required certifications include EPA Section 608, EPA Lead-Safe RRP, OSHA 10, and CPR and First Aid.</p>", "how-are-techs-vetted"], ["What Do I Get After a Visit, and What Is the Home Record?", "<p>After every visit you get a written report with photos, saved to your Home Record, plus a Downloadable Visit Record with dates, photos and work done. The Home Record is the file of your home&#x27;s care. It also keeps mold and moisture readings, dated roof drone photos, recall checks, a Warranties Checked badge and an Annual Home Health Score. It transfers when you sell, and you can gift the buyers 3 months free.</p>", "what-will-i-get-after-a-visit"], ["Who Sees Photos From My Visits?", "<p>Your visit photos are kept in your Home Record and visit reports. We may also use photos with personal details removed (no faces, street numbers or documents) to train our team, improve our service, and in our marketing. Photos of private living spaces are never used in marketing without your written OK. You can opt out of marketing use anytime by messaging us in the app. Our Privacy Policy explains how we use and protect your information.</p>", "who-sees-photos-from-my-visits"]]], ["Billing, Cancel And Moving", [["Can I Cancel?", "<p>Yes, anytime, with no fee. Cancel online in the member app under Profile &amp; Account. Before your first visit, you get a full refund. After visits begin, prepaid members are refunded for services they&#x27;ve paid for that we haven&#x27;t done yet. Services already done aren&#x27;t refunded. Founding members are refunded at the 2-for-1 price they paid, and annual prepaid members at the 10%-off price they paid. Monthly members just stop being billed and keep service until the day before their next charge. Refunds go out within 14 days. Free months have no cash or refund value.</p>", "can-i-cancel"], ["Can I Pause My Plan?", "<p>Yes. You can pause for up to 3 months each membership year. Paused months aren&#x27;t billed, and your membership term and renewal date move back by the length of the pause. Message us in the app to pause.</p>", "can-i-pause-my-plan"], ["What Happens If I Move?", "<p>If you move within our area, your membership moves with you and we requote it for the new home. You can accept the new price or cancel with no fee. If you move out of the area, you can cancel. Your Home Record can transfer to your buyer, and you can gift them 3 months free.</p>", "what-happens-if-i-move"], ["Is There a Cancellation Right in Michigan?", "<p>Yes. If you sign up in person at your home, at an event, or on a sales call we start, you can cancel within 3 business days. This is in addition to the full refund before your first visit.</p>", "is-there-a-cancellation-right-in-michigan"]]]];
   function hmAcc(id, icon, title, body) {
     return '<details class="acc hm-acc" id="acc-' + id + '"' + (arguments[4] ? " open" : "") + '><summary class="mw-hover">' + I(icon, "sm") + '<span>' + title + '</span></summary><div class="acc-body">' + body + '</div></details>';
   }
@@ -2740,7 +2779,7 @@
     price: "Your plan price depends on your home's size and equipment and never goes below that starting price. Any extras you add go on top.", /* FAQ why-is-my-price-different-from-the-starting-price */
     confirm: "Your price is based on your answers, and your tech confirms your home's systems at the first visit. If anything changes your price, we'll send the new price within 7 days, and you can accept it or cancel with no fee.", /* FAQ do-i-need-to-send-photos */
     trees: "If heavy trees need more, you can add an Extra Gutter Cleaning.", /* FAQ how-is-gutter-cleaning-priced */
-    area: "Currently Serving Oakland, Macomb, And Wayne County." /* FAQ where-do-you-work */
+    area: "Currently Serving Oakland, Macomb, And Wayne Counties." /* FAQ where-do-you-work */
   };
   /* Legal-approved pop-up lines (Legal on PR #124, Nov 13 11:4x PM ICT; logged on /workspace/legal-docs/PRE-LAUNCH-LEGAL-LIST.md): G1 highlights
      line (no link until the attorney-reviewed agreement is posted), the Recall Check line in place of "Recall Monitoring on your equipment"
@@ -3538,8 +3577,8 @@
      Old saved state on "access" resumes on Start Date (see render), and an old S.access is ignored by the UI. */
   /* Pay Choice Deck (Machan Nov 13 ~10:27 PM via Grok; Swatch two-step plan): Review ("Your Home Care Proposal") then Pay ("Pick How You'd Like To Pay"). */
   /* Machan Nov 13 11:00 PM: payment right after the proposal: Review, Pay, Accept (agreement, charge OK, signature), then Start Date and Details; Details finishes sign-up. */
-  var OB = ["address", "homesize", "systems", "systems2", "addons", "plan", "review", "billing", "accept", "start", "details"];
-  var OB_NAME = { address: "Your Home", systems: "Your Systems", systems2: "Extras", addons: "Tailor Your Plan", plan: "Your Plan", review: "Your Home Care Proposal", billing: "Pick How You'd Like To Pay", start: "Start Date", details: "Your Details", accept: "Accept" };
+  var OB = ["address", "homesize", "systems", "plan", "addons", "review", "billing", "accept", "start", "details"];
+  var OB_NAME = { address: "Your Home", systems: "Your Systems", addons: "Tailor Your Plan", plan: "Choose Your Plan", review: "Your Home Care Proposal", billing: "Pick How You'd Like To Pay", start: "Start Date", details: "Your Details", accept: "Accept" };
   /* Onboarding Flow Deck (b4c76e3). Each key adds class ob-<key>-a / ob-<key>-b on the screen; the ?ob= preview switch was removed once picks were final. */
   /* Onboarding Flow Deck picks (Machan, submitted Nov 11 2026 3:58 PM ICT): Inline Pill Stepper, Checklist With Tags, Segmented Control (+ Limited Offer badge), Itemized Summary, Steppers. */
   var OB_STYLE = { stepper: "A", plan: "B", billing: "A", accept: "B", basics: "B" };
@@ -3578,7 +3617,6 @@
   var DYK_HOME = ["Every visit ends with a written report saved to your Home Record.", "After every visit you get a written report with photos, saved to your Home Record."];
   /* DYK_HOME is held (deck card may bring Did You Know back on step 1). Step 1 has no tip; other steps keep PR103 lines. */
   var DYK = {
-    systems2: "Plus includes gutter and downspout cleaning every spring and fall.",
     systems: "We check your furnace filter every visit and change it when it's due.",
     /* addons (Tailor Your Plan): Did You Know removed so the services list can use the height (Machan Nov 14). */
     details: "You've seen your price. We ask for these details so we can reach you about your visits."
@@ -3591,7 +3629,7 @@
      Set url when Legal publishes it. Until then Accept shows a marked slot instead of agreement text (no new legal text is written here). */
   var AGREEMENT = { id: "member-agreement-draft", rev: "54e4f1d", url: "" };
 
-  function isOb(s) { return OB.indexOf(s) > -1; }
+  function isOb(s) { return OB.indexOf(s) > -1 || s === "systems2"; }
   /* One Screen At A Time (Machan Nov 12 10:07 PM): each step fills the space under the header (--tb, set in bind). With the phone keyboard open,
      the Back/Next bar rides above the keyboard (visualViewport) and the focused field scrolls into the space above the bar. */
   /* Keyboard lift (Swatch PR97 note 4). How it behaves:
@@ -3780,7 +3818,7 @@
   function tagLine() { return '<p class="qf-tagline">' + I("shield", "xs") + 'Tailored To Your Home &middot; Warranties Checked</p>'; }
   function startOverBtn() { return ""; } /* Machan Nov 16: Start Over is removed from the UI; handler stays for safety. */
   function mailFlagOn() { return !!(window.SU_FLAGS && SU_FLAGS.mailingList); }
-  function servingCopy() { return "Currently Serving Oakland, Macomb, And Wayne County"; }
+  function servingCopy() { return "Currently Serving Oakland, Macomb, And Wayne Counties"; }
   function servingLine(extra) {
     var h = '<p class="su-serving' + (extra ? " " + extra : "") + '">' + servingCopy() + '</p>';
     if (mailFlagOn()) h += '<p class="su-mail-launch"><button type="button" class="su-mail-link mw-hover" data-mail-open>Out Of Area? Join Our Mailing List</button></p>';
@@ -3881,14 +3919,14 @@
     var seq = obSeq();
     return { screen: S.screen, last: seq[seq.length - 1], stories: a.stories || "1", sizeLabel: sz, furnaces: sys ? cnt("furnaces") : 0, acs: sys ? cnt("acs") : 0, wh: sys ? whTypes() : [], labels: labels,
       /* Onboarding Polish B: Your Home chips (answers already given) and the step 1 pin (street + in-area ZIP). */
-      street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
+      street: OB.indexOf(S.screen) > 0 ? String(a.street || "").trim() : "", zipcode: String(a.zipcode || "").trim(), storiesSet: storiesPicked(), sys: sys, addrOk: S.screen === "address" && addrOk() && inArea(a.zipcode) };
   }
   window.suHouseState = obHouseState;
+  window.suPlanRecenter = function () { if (S.screen === "plan") obPlanRecenter(); };
   /* Called by onboarding-house.js fit() for each cut-order level: re-size the Add-Ons list for that level, and only accept the level if the list keeps at least ~3 rows. */
   window.suHouseRefit = function () { if (S.screen !== "addons") return true; sfitAddons(); var l = app.querySelector("section.ob-addons .ob-ao-list"); return !l || !l.style.maxHeight || parseFloat(l.style.maxHeight) >= 150; };
   function obShell(id, art, tint, title, help, body, foot) {
-    var tl = !!S.tailor && (id === "systems" || id === "systems2"); /* Swatch D16: tailoring keeps the bar on Your Plan instead of jumping to Step 3 */
-    var SQ = obSeq(), i = obStepNo(tl ? "plan" : id) - 1;
+    var SQ = obSeq(), i = obStepNo(id) - 1, tl = false;
     var pct = SQ.length ? Math.round(((i + 1) / SQ.length) * 1000) / 10 : 0;
     var prog = '<div class="qf-prog"><span class="qf-step">' + (tl ? "Tailor Your Plan" : 'Step ' + (i + 1) + ' Of ' + SQ.length) + '</span><div class="qf-segs nine" role="progressbar" aria-valuenow="' + (i + 1) + '" aria-valuemin="1" aria-valuemax="' + SQ.length + '" aria-label="Step ' + (i + 1) + ' Of ' + SQ.length + '" style="--ob-prog:' + pct + '%"><i class="qf-fill" aria-hidden="true"></i>' +
       SQ.map(function (x, k) { return '<span class="' + (k < i ? "done" : k === i ? "cur" : "") + '"></span>'; }).join("") + '</div></div>';
@@ -3993,31 +4031,10 @@
     var body = '<div class="sys-list sys-card">' + row("furnaces", "furnace", 0, "Furnace", f) + row("acs", "ac", 1, "AC", ac) + row("waterHeaters", "waterheater", 2, "Water Heater", wh) + (wh ? '<div class="ob-whs ob-whs-line">' + whx + '</div>' : '') + '</div>';
     return obShell("systems", "furnace", 2, "Your Systems", "How Many Of Each", body, nextBtn("Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
   }
-  /* 3b. Extras (#8 second short screen): #10 priced extras first with prices, included ones below their label; #13 in one white card with the heading. Stays synced with the Add-Ons Monthly tab. */
-  function sys2Keys() {
-    var aoShared = sharedExtraMap(), aoLabels = {};
-    monthlyAddonCatalog().concat(onceAddonCatalog()).forEach(function (a) { if (a && a.label) aoLabels[suNorm(a.label)] = 1; });
-    return Object.keys(P.extras).filter(function (k) { return !aoShared[k] && !aoLabels[suNorm(P.extras[k].label)] && !aoLabels[suNorm(P.extras[k].label.replace("Whole-House ", ""))]; });
-  }
-  /* Swatch PR97 residual 2: when every item on Do You Have Any Of These? is already in Extras or Add-Ons, the step is skipped. Numbering, progress bar, Back and Next follow obSeq(). */
-  function obSkip(s) { return s === "systems2" && !sys2Keys().length; }
-  function obSeq() { return OB.filter(function (s) { return !obSkip(s); }); }
+  /* systems2 ("Do You Have Any Of These?") was removed Nov 16. obSkip stays as a no-op so existing go/path helpers keep working. */
+  function obSkip(s) { return false; }
+  function obSeq() { return OB.slice(); }
   function obStepNo(s) { var q = obSeq(), i = q.indexOf(s); return (i < 0 ? q.indexOf(obNextOf(s)) : i) + 1; }
-  function obSystems2() {
-    var ex = Array.isArray(S.answers.extras) ? S.answers.extras : [];
-    function tile(k, j, sub) {
-      var e = P.extras[k], on = ex.indexOf(k) > -1;
-      return '<button type="button" class="qt chkt mw-hover t' + (j % 4) + (on ? " sel" : "") + '" data-ob-extra="' + k + '" aria-pressed="' + on + '"><span class="qt-ic">' + I(XICO[k] || "wrench", "sm") + '</span><span class="qt-lab">' + esc(suTitle(e.label.replace("Whole-House ", ""))) + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (on ? '<i class="qt-ok" aria-hidden="true"></i>' : '') + '</button>';
-    }
-    /* Machan Nov 12 10:08 PM: skip any item here that's already offered on the Add-Ons step (Monthly or One-Time). Shared items keep one selection
-       (S.answers.extras + S.addons via syncSharedExtras), so picking it on Add-Ons fills the same fields and prices as before. */
-    var keys = sys2Keys(), priced = keys.filter(function (k) { return P.extras[k].all > 0; }), every = keys.filter(function (k) { return P.extras[k].included; }), incl = keys.filter(function (k) { return !(P.extras[k].all > 0) && !P.extras[k].included; });
-    var body = '<div class="ex-card">' + (priced.length ? '<div class="qt-grid two" data-ptr-ignore>' + priced.map(function (k, j) { return tile(k, j, moLabel(P.extras[k].all)); }).join("") + '</div>' : '') +
-      (every.length ? '<p class="blk-lab ex-incl">Included In Every Plan</p><div class="qt-grid two" data-ptr-ignore>' + every.map(function (k, j) { return tile(k, j + priced.length, ""); }).join("") + '</div>' : '') +
-      (incl.length ? '<p class="blk-lab ex-incl">Included On Plus And Up</p><div class="qt-grid two" data-ptr-ignore>' + incl.map(function (k, j) { return tile(k, j + priced.length + every.length, ""); }).join("") + '</div>' : '') + '</div>';
-    return obShell("systems2", "wrench", 3, "Do You Have Any Of These?", "", body, nextBtn(S.tailor ? "Back To Your Plan" : "Next", true) + (S.tailor ? '<button type="button" class="link mw-hover ob-undo" data-ob-undo="1">Undo Changes</button>' : ''));
-  }
-
   /* 4. Add-Ons: short optional list, on/off switch per row; tap a row to open its detail in place. */
   function aoPrice(a) {
     if (needsSiteVisit(a && a.label)) return "Needs A Site Visit";
@@ -4047,7 +4064,9 @@
   function obAddons() {
     var sel = S.addons || [];
     var tab = S._aoTab === "once" ? "once" : "monthly";
-    var monthly = monthlyAddonCatalog().map(function (a) { return aoRow(a, sel); }).join("");
+    dropCoveredAddons();
+    sel = S.addons || [];
+    var monthly = monthlyAddonCatalog().filter(function (a) { return !planCoversAddon(a); }).map(function (a) { return aoRow(a, sel); }).join("");
     var onceAll = onceAddonCatalog(), oncePriced = onceAll.filter(isPricedBookable), onceQuote = onceAll.filter(function (a) { return oncePriced.indexOf(a) < 0; });
     /* quote-only one-time rows are no longer offered here (they stay on À La Carte); drop any old picks of them so nothing hidden rides along */
     var hid = onceQuote.map(function (a) { return a.id; }); if (sel.some(function (id) { return hid.indexOf(id) > -1; })) { S.addons = sel = sel.filter(function (id) { return hid.indexOf(id) < 0; }); save(); }
@@ -4099,7 +4118,7 @@
         (tx.fromMonthly && monthlyOf(p[x]) !== +tx.fromMonthly ? '<p class="plan-base">Base plan ' + money(tx.fromMonthly) + '/mo</p>' : '') +
         (sel ? detail : "") + cta + "</div>";
     }).join("");
-    return obShell("plan", "clipboard", 3, "Your Plan", "Here's the plan that fits this home. You can tailor it before you join.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Continue To Your Proposal", true));
+    return obShell("plan", "clipboard", 3, "Choose Your Plan", "Pick The Plan That Fits This Home. You Can Tailor It Next.", '<div class="plan-stack">' + cards + '</div>' + (foundingFull() ? afterFoundingBlock(liveMonthly(k)) : ''), nextBtn("Next", true));
   }
 
   /* 6a. Review: "Your Home Care Proposal" (Pay Choice Deck, Layout A Stacked Cards, Tone A Calm). Machan Nov 13 10:20 PM: "meaning the plan + extras and how they
@@ -4297,7 +4316,6 @@
   function obRender(s) {
     if (s === "address") return obAddress();
     if (s === "homesize") return obHomeSize();
-    if (s === "systems2") return obSystems2();
     if (s === "systems") { ["furnaces", "acs", "waterHeaters"].forEach(function (k) { if (S.answers[k] === undefined || S.answers[k] === "unsure") S.answers[k] = String(BASE_SET[k]); }); S.answers.whTypes = whTypes(); return obSystems(); }
     if (s === "addons") return obAddons();
     if (s === "plan") return obPlanScreen();
@@ -4380,6 +4398,12 @@
   }
   /* Onboarding Polish C card 10: keep the picked plan card centered in the swipe row; a new pick glides there from where the row was. */
   var obPlanX = null;
+  /* Swatch #151 r1 F3: fit() re-lays the step, which left the stack at scrollLeft 0. Re-center the picked card (14px peek each side) without animation. */
+  function obPlanRecenter() {
+    var sk = app.querySelector(".ob-plan .plan-stack"), c = sk && sk.querySelector(".plan-card.sel"); if (!sk || !c) return;
+    var sr = sk.getBoundingClientRect(), cr = c.getBoundingClientRect();
+    sk.scrollLeft = Math.max(0, sk.scrollLeft + (cr.left - sr.left) - (sr.width - cr.width) / 2);
+  }
   function obPlanCenter() {
     var sk = app.querySelector(".ob-plan .plan-stack"), c = sk && sk.querySelector(".plan-card.sel"); if (!sk || !c) return;
     var sr = sk.getBoundingClientRect(), cr = c.getBoundingClientRect(), to = Math.max(0, sk.scrollLeft + (cr.left - sr.left) - (sr.width - cr.width) / 2);
@@ -4490,7 +4514,7 @@
         var v = b.getAttribute("data-ob-story"); if (STORY_OPTS.some(function (o) { return o[0] === v; })) { S.answers.stories = v; clearQ(document.getElementById("obStoriesCard"), document.getElementById("obStoriesErr")); var was = b.classList.contains("on"); rer(); var f = app.querySelector('[data-ob-story="' + v + '"]'); if (f) { f.focus({ preventScroll: true }); if (!was) obSelPop(f, true); } } }); });
       return;
     }
-    if (s === "systems" || s === "systems2") {
+    if (s === "systems") {
       app.querySelectorAll("[data-ob-step]").forEach(function (b) { b.addEventListener("click", function () {
         var kv = b.getAttribute("data-ob-step").split(":"), was = cnt(kv[0]), n = Math.max(0, Math.min(SYS_MAX, was + Number(kv[1])));
         S.answers[kv[0]] = String(n); if (kv[0] === "waterHeaters") S.answers.whTypes = whTypes(); rer(); obStepRoll(kv[0], Number(kv[1]), was, n); }); });
@@ -4500,7 +4524,7 @@
         var k = b.getAttribute("data-ob-extra"), cur = Array.isArray(S.answers.extras) ? S.answers.extras.slice() : [], ix = cur.indexOf(k);
         if (ix > -1) cur.splice(ix, 1); else cur.push(k); S.answers.extras = cur; syncSharedExtras("extras"); rer();
         var t = app.querySelector('[data-ob-extra="' + k + '"]'); if (t) { try { t.focus({ preventScroll: true }); } catch (e) {} if (ix < 0) obSelPop(t); } }); });
-      if (nx) nx.addEventListener("click", function () { if (obTxLock) return; if (s === "systems" && !obSkip("systems2")) return go("systems2"); if (S.tailor) { S.tailor = false; S._tailorSnap = null; go("plan"); } else go("addons"); });
+      if (nx) nx.addEventListener("click", function () { if (obTxLock) return; go("plan"); });
       var un = app.querySelector("[data-ob-undo]");
       if (un) un.addEventListener("click", function () {
         try { var sn = JSON.parse(S._tailorSnap || "null"); if (sn) { S.answers = sn.answers || {}; S.addons = sn.addons || []; S.tier = sn.tier || S.tier; } } catch (e) {}
@@ -4519,9 +4543,9 @@
       sfitAddons(); setTimeout(sfitAddons, 300); if (document.fonts && document.fonts.ready) document.fonts.ready.then(sfitAddons);
     }
     if (s === "plan") {
-      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function (e) { e.stopPropagation(); var sk = app.querySelector(".ob-plan .plan-stack"); obPlanX = sk ? sk.scrollLeft : null; var k = b.getAttribute("data-ob-tier"); S.tier = k; rer(); var nb = app.querySelector('.plan-card.sel [data-ob-tailor]'); if (nb && b.tagName === "BUTTON") { try { nb.focus({ preventScroll: true }); } catch (x) {} } }); });
+      app.querySelectorAll("[data-ob-tier]").forEach(function (b) { if (b.classList.contains("sel")) return; b.addEventListener("click", function (e) { e.stopPropagation(); var sk = app.querySelector(".ob-plan .plan-stack"); obPlanX = sk ? sk.scrollLeft : null; var k = b.getAttribute("data-ob-tier"); S.tier = k; dropCoveredAddons(k); rer(); var nb = app.querySelector('.plan-card.sel [data-ob-tailor]'); if (nb && b.tagName === "BUTTON") { try { nb.focus({ preventScroll: true }); } catch (x) {} } }); });
       obPlanCenter();
-      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; S._tailorSnap = JSON.stringify({ answers: S.answers, addons: S.addons || [], tier: S.tier }); S.tailor = true; go("systems"); });
+      var tl = app.querySelector("[data-ob-tailor]"); if (tl) tl.addEventListener("click", function () { if (obTxLock) return; dropCoveredAddons(S.tier); go("addons"); });
       if (!bindOb._quoted) { bindOb._quoted = 1; try { window.SUEvents && SUEvents.emit("quote.generated", "site", { payload: { tier: P.tiers[S.tier].label } }); } catch (x) {} }
     }
     if (s === "billing") {
@@ -5157,9 +5181,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9r1"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9t2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9s2"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9t2"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
