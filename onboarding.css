@@ -908,6 +908,7 @@ body.on-ob .hdr-van,body.on-ob .hdr-road{display:none!important}
 @media (prefers-reduced-motion:reduce){
   .ob *,.ob *::before,.ob *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   .ob-billing .f2-pop,.ob-billing .f2-pop.on{transform:none;transition:opacity 120ms linear!important}
+  .ob .ob-pane{transition-duration:200ms!important} /* plain fade between cards (opacity only; dx is 0 under reduced motion) */
 }
 .ob.ob-review .qf-body,.ob.ob-billing .qf-body{justify-content:flex-start}
 .ob-review .bd-edit .link{text-transform:none;letter-spacing:0}
@@ -1587,6 +1588,9 @@ html body.on-ob .ob.qf.ob-address .ob-fields input{
 /* 44px hit slops for controls whose layout size was cut to keep air (Tank/Tankless, Annual Option, Review Edit, calendar, Accept rows). Visual size stays; the pointer box is at least 44px. */
 html body.on-ob .ob .type-seg button,
 html body.on-ob .ob-review .bd-edit .link,
+html body.on-ob .ob-details .det-addr .link,
+html body.on-ob .ob-details .su-havecode .link,
+html body.on-ob .ob-billing .f2-badge,
 html body.on-ob .ob .after-founding .af-open,
 html body.on-ob .ob .cal-d,
 html body.on-ob .ob .cal-nav,
@@ -1596,6 +1600,9 @@ html body.on-ob .ob-accept .checkrow{
 }
 html body.on-ob .ob .type-seg button::before,
 html body.on-ob .ob-review .bd-edit .link::before,
+html body.on-ob .ob-details .det-addr .link::before,
+html body.on-ob .ob-details .su-havecode .link::before,
+html body.on-ob .ob-billing .f2-badge::before,
 html body.on-ob .ob .after-founding .af-open::before,
 html body.on-ob .ob .cal-d::before,
 html body.on-ob .ob .cal-nav::before,
@@ -1611,7 +1618,10 @@ html body.on-ob .ob-accept .checkrow::before{
   z-index:1;
 }
 html body.on-ob .ob .type-seg{overflow:visible}
-html body.on-ob .ob .cal-d::before{height:calc(100% + 2px)}
+html body.on-ob .ob-details .det-addr,
+html body.on-ob .ob-details .su-havecode{overflow:visible}
+html body.on-ob .ob-details .su-havecode{padding-bottom:10px}
+html body.on-ob .ob .cal-d::before{height:calc(100% + 2px)} /* compact Start Date grid cannot host a 44px day hit without overlapping the next week on 6-week months */
 
 /* Onboarding bar already includes safe-area padding; restate the winning #140 rule so it cannot be dropped. */
 html body.on-ob .ob .ob-bar,
@@ -1743,3 +1753,13 @@ html.ob-hb-on .ob-hb-cap.hb-chips .hb-addr-hit .hb-chip{max-width:100%}
 .hb-addr-sheet h2{margin:0 0 6px;font:600 18px/1.2 Khand,sans-serif;color:#1A1A1A}
 .hb-addr-sheet p{margin:0;font:500 15px/1.35 Hind,sans-serif;color:#1A1A1A}
 .hb-addr-sheet .hb-addr-close{position:absolute;top:8px;right:8px;min-width:44px;min-height:44px;border:0;background:transparent;font:600 18px/1 Hind,sans-serif;color:#5C534C;cursor:pointer}
+
+/* ===== ob-polish-1116 (Swatch #151 r2 / #152 r2): 44px tap areas, same look ===== */
+.ob .ob-sw{position:relative}
+.ob .ob-sw::before{content:"";position:absolute;inset:-7px -2px}
+/* Desktop Start Date keeps a 180px+ house (Swatch #151 r2): the step body scrolls inside its card, the same as phones, instead of shrinking the house to 120 */
+@media (min-width:601px){
+  html body.on-ob .ob.qf.ob-start{height:calc(100dvh - var(--tb,56px));max-height:calc(100dvh - var(--tb,56px));overflow:hidden}
+  html body.on-ob .ob.qf.ob-start .ob-pane{min-height:0;overflow:hidden}
+  html body.on-ob .ob.qf.ob-start .ob-pane > .qf-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+}

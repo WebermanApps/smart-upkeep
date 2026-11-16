@@ -489,7 +489,7 @@
   /* ---------- Navigation ---------- */
   /* Funnel Drop-Off deck #01 A (Machan Nov 13 8:57 AM): browser Back goes to the previous step and keeps the picks. Each screen change pushes a history entry;
      popstate moves to that screen without clearing answers. The in-app Back pill uses the same history so the two never disagree. */
-  function suHist(screen, replace) { try { var st = { su: 1, s: screen }; if (replace) history.replaceState(st, "", location.pathname + location.search); else history.pushState(st, "", location.pathname + location.search); } catch (e) {} }
+  function suHist(screen, replace) { try { var cur = history.state && history.state.su ? (+history.state.i || 0) : 0; var st = { su: 1, s: screen, i: replace ? cur : cur + 1 }; /* i = in-app history depth; 0 is the first entry this load (Swatch #151 r2) */ if (replace) history.replaceState(st, "", location.pathname + location.search); else history.pushState(st, "", location.pathname + location.search); } catch (e) {} }
   var obTxLock = false, obTxQ = null;
   function obReducedMot() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } }
   function obCanTx(from, to) { return typeof isOb === "function" && isOb(from) && isOb(to) && from !== to; }
@@ -522,7 +522,7 @@
   }
   function back() {
     if (obTxLock) { obTxQ = { k: "back" }; return; }
-    if (history.state && history.state.su && S.path.length) { suBackPending = true; history.back(); setTimeout(function () { if (suBackPending) { suBackPending = false; backNow(); } }, 400); return; }
+    if (history.state && history.state.su && (+history.state.i || 0) > 0 && S.path.length) { /* only step back through history we pushed; a restored step has none, so Back stays in-app */ suBackPending = true; history.back(); setTimeout(function () { if (suBackPending) { suBackPending = false; backNow(); } }, 400); return; }
     backNow();
   }
   var suBackPending = false;
@@ -5181,9 +5181,9 @@
       render();
     }
   };
-    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9t2"; document.head.appendChild(l); })();
+    (function () { if (document.getElementById("obCss")) return; var l = document.createElement("link"); l.id = "obCss"; l.rel = "stylesheet"; l.href = "onboarding.css?v=h9u2"; document.head.appendChild(l); })();
     /* house-build-1113: the onboarding house band (map on step 1, live house from step 2). Loaded here so the diff stays out of index.html's page body. */
-    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9t2"; j.async = true; document.head.appendChild(j); })();
+    (function () { if (document.getElementById("obHouseJs")) return; var j = document.createElement("script"); j.id = "obHouseJs"; j.src = "onboarding-house.js?v=h9u1"; j.async = true; document.head.appendChild(j); })();
   function bootApp() {
     var h0 = location.hash; /* snapshot: suHist's replaceState drops the hash */
     render(); suHist(S.screen, true);
